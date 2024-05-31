@@ -1,8 +1,8 @@
 import pickle
 
-from nodax.dataloader import DataLoader
-from nodax.learner import ContextParams
-from nodax.visualtester import VisualTester
+from idncflow.dataloader import DataLoader
+from idncflow.learner import ContextParams
+from idncflow.visualtester import VisualTester
 from ._utils import *
 
 class Trainer:
