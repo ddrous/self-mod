@@ -1,11 +1,12 @@
 #%%
 # import os
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 ## Do not preallocate GPU memory
 # os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = '\"platform\"'
 
+import jax.flatten_util
 from idncflow import *
 # jax.config.update("jax_debug_nans", True)
 
@@ -21,20 +22,20 @@ from idncflow import *
 seed = 2026
 # seed = int(np.random.randint(0, 10000))
 
-context_pool_size = 2               ## Number of neighboring contexts j to use for a flow in env e
-context_size = 16
-nb_epochs = 2400
+context_pool_size = 4               ## Number of neighboring contexts j to use for a flow in env e
+context_size = 256
+# nb_epochs = 2400
 nb_epochs_adapt = 24*1
-init_lr = 1e-4
-sched_factor = 0.2            ## Multiply the lr by this factor at each third of the training
+init_lr = 1e-3
+sched_factor = 0.75            ## Multiply the lr by this factor at each third of the training
 
-nb_outer_steps = 500
+nb_outer_steps = 1500
 nb_inner_steps_max = 10
 proximal_beta = 1e1
-inner_tol_node = 2e-10
-inner_tol_ctx = 1e-9
+inner_tol_node = 2e-11
+inner_tol_ctx = 1e-10
 
-print_error_every = 100
+print_error_every = 300
 
 
 train = True
@@ -124,15 +125,18 @@ class Augmentation(eqx.Module):
     layers_context: list
     layers_shared: list
     activations: list
+    ctx_utils:any
 
-    def __init__(self, data_size, int_size, context_size, key=None):
+    def __init__(self, data_size, int_size, context_size, ctx_utils, key=None):
+        self.ctx_utils = ctx_utils
+
         keys = generate_new_keys(key, num=12)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
         self.layers_context = [eqx.nn.Linear(context_size, context_size//4, key=keys[0]), self.activations[0],
                                eqx.nn.Linear(context_size//4, int_size, key=keys[1]), self.activations[1], eqx.nn.Linear(int_size, int_size, key=keys[2])]
 
-        self.layers_data = [eqx.nn.Linear(data_size, int_size, key=keys[3]), self.activations[2], 
+        self.layers_data = [eqx.nn.Linear(1+data_size, int_size, key=keys[3]), self.activations[2], 
                             eqx.nn.Linear(int_size, int_size, key=keys[4]), self.activations[3], 
                             eqx.nn.Linear(int_size, int_size, key=keys[5])]
 
@@ -141,11 +145,19 @@ class Augmentation(eqx.Module):
                               eqx.nn.Linear(int_size, int_size, key=keys[8]), self.activations[6], 
                               eqx.nn.Linear(int_size, data_size, key=keys[9])]
 
-    def __call__(self, t, y, ctx):
+    def __call__(self, t, y, ctx_arr):
 
+        ctx_shapes, ctx_treedef, ctx_static = self.ctx_utils
+        ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
+        ctx_fun = eqx.combine(ctx_params, ctx_static)
+
+        t_arr = jnp.array([t])
+
+        ctx = ctx_fun(t_arr)
         for layer in self.layers_context:
             ctx = layer(ctx)
 
+        y = jnp.concatenate([t_arr, y], axis=0)
         for layer in self.layers_data:
             y = layer(y)
 
@@ -177,14 +189,14 @@ class ContextFlowVectorField(eqx.Module):
         return vf(ctx_) + gradvf(ctx_, ctx)
 
 
-augmentation = Augmentation(data_size=2, int_size=122, context_size=context_size, key=seed)
+contexts = IDContextParams(nb_envs=nb_envs, context_size=context_size, hidden_size=16, depth=4, key=seed)
 
+augmentation = Augmentation(data_size=2, int_size=32, context_size=context_size, ctx_utils=contexts.ctx_utils, key=seed)
 
 vectorfield = ContextFlowVectorField(augmentation, physics=None)
 
-print("\n\nTotal number of parameters in the model:", sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(vectorfield,eqx.is_array)) if x is not None), "\n\n")
 
-contexts = IDContextParams(nb_envs, context_size, key=None)
+print("\n\nTotal number of parameters in the model:", sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(vectorfield,eqx.is_array)) if x is not None), "\n\n")
 
 ## Define a custom loss function here
 def loss_fn_ctx(model, trajs, t_eval, ctx, all_ctx_s, key):
@@ -197,11 +209,11 @@ def loss_fn_ctx(model, trajs, t_eval, ctx, all_ctx_s, key):
     new_trajs = jnp.broadcast_to(trajs, trajs_hat.shape)
 
     term1 = jnp.mean((new_trajs-trajs_hat)**2)  ## reconstruction
-    term2 = jnp.mean(ctx**2)             ## regularisation
+    term2 = jnp.mean(ctx**2)             ## TODO regularisation... Make this L1
 
-    # loss_val = term1 + 1e-3*term2
+    loss_val = term1 + 1e-3*term2
     # loss_val = jnp.nan_to_num(term1, nan=0.0, posinf=0.0, neginf=0.0)
-    loss_val = term1
+    # loss_val = term1
 
     return loss_val, (jnp.sum(nb_steps)/ctx_s.shape[0], term1, term2)
 
@@ -212,7 +224,7 @@ learner = Learner(vectorfield, contexts, loss_fn_ctx, integrator, ivp_args, key=
 
 ## Define optimiser and traine the model
 
-nb_total_epochs = nb_epochs * 1
+nb_total_epochs = nb_outer_steps * 1
 sched_node = optax.piecewise_constant_schedule(init_value=init_lr,
                         boundaries_and_scales={nb_total_epochs//3:sched_factor, 2*nb_total_epochs//3:sched_factor})
 

@@ -66,33 +66,71 @@ class ContextParams(eqx.Module):
 
 
 
+
+class MLP(eqx.Module):
+    """ An MLP """
+    layers: jnp.ndarray
+
+    def __init__(self, in_size, out_size, hidden_size, depth, activation, key=None):
+        keys = jax.random.split(key, num=depth+1)
+
+        self.layers = []
+
+        for i in range(depth):
+            if i==0:
+                layer = eqx.nn.Linear(in_size, hidden_size, use_bias=True, key=keys[i])
+            elif i==depth-1:
+                layer = eqx.nn.Linear(hidden_size, out_size, use_bias=True, key=keys[i])
+            else:
+                layer = eqx.nn.Linear(hidden_size, hidden_size, use_bias=True, key=keys[i])
+
+            self.layers.append(layer)
+
+            if i != depth-1:
+                self.layers.append(activation)
+
+    def __call__(self, x):
+        """ Returns y such that y = MLP(x) """
+        y = x
+        for layer in self.layers:
+            y = layer(y)
+        return y
+
+
 class IDContextParams(eqx.Module):
-    layers: list
+    params: list
+    ctx_utils: any
 
     def __init__(self, nb_envs, context_size, hidden_size, depth, key=None):
 
         ## TODO Vectorize this function along nb_envs (Copy from SINODE)
  
-        keys = generate_new_keys(key, num=12)
-        # self.activations = [Swish(key=key_i) for key_i in keys[:7]]
-        self.activations = [jax.nn.softplus for key_i in keys[:7]]
+        keys = generate_new_keys(key, num=nb_envs)
 
-        self.layers = [eqx.nn.Linear(1, hidden_size, key=keys[6]), self.activations[4], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
-                              eqx.nn.Linear(hidden_size, context_size, key=keys[9])]
+        # # self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+        # self.activations = [jax.nn.softplus for key_i in keys[:7]]
+
+        # self.layers = [eqx.nn.Linear(1, hidden_size, key=keys[6]), self.activations[4], 
+        #                       eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+        #                       eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+        #                       eqx.nn.Linear(hidden_size, context_size, key=keys[9])]
+
+        all_contexts = [MLP(1, context_size, hidden_size, depth, jax.nn.softplus, key=keys[i]) for i in range(nb_envs)]
+
+        ex_params, ex_static = eqx.partition(all_contexts[0], eqx.is_array)
+        ex_ravel, ex_shapes, ex_treedef = flatten_pytree(ex_params)
+        self.ctx_utils = (ex_shapes, ex_treedef, ex_static)
+
+        all_params_1D = [flatten_pytree(eqx.filter(context, eqx.is_array))[0] for context in all_contexts]
+        self.params = jnp.stack(all_params_1D, axis=0)
+
 
     def __call__(self, t):
-        ## TODO Vectorize this function along nb_envs
+        def unravel_and_call(ctx, t):
+            context = jax.flatten_util.unravel_pytree(ctx, self.treedef)
+            return context(t)
+        return jax.vmap(unravel_and_call)(self.params, t)
 
-        y = t
-        for layer in self.layers:
-            y = layer(y)
-
-        return y
-
-    def get_params_1D(self):
-        pass ## TODO: Implement this method to get the 1D parameters of the nb_envs context parameters (like in ContextParams)
 
 
 
@@ -134,13 +172,13 @@ class NeuralODE(eqx.Module):
     vectorfield: eqx.Module
     integrator: callable
     ivp_args: dict
+    # ctx_treedef:any
 
     def __init__(self, vectorfield, integrator, ivp_args, key=None):
         self.integrator = integrator
         self.ivp_args = ivp_args
         self.vectorfield = vectorfield
-        # # self.vectorfield = lambda t, x, ctxs: vectorfield(t, x, *ctxs)
-        # self.vectorfield = lambda t, x, ctxs: vectorfield(t, x, ctxs[0], ctxs[1])
+        # self.ctx_treedef = ctx_treedef
 
     def __call__(self, x0s, t_eval, ctx, ctx_):
 

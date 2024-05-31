@@ -7,14 +7,15 @@ from ._utils import *
 
 class Trainer:
     def __init__(self, dataloader, learner, optimisers, key=None):
-        self.key = get_new_key(key)
+        # self.key = get_new_key(key)
+        self.key = key
 
         self.dataloader = dataloader
         self.learner = learner
         self.opt_node, self.opt_ctx = optimisers
 
         self.opt_node_state = self.opt_node.init(eqx.filter(self.learner.neuralode, eqx.is_array))
-        self.opt_ctx_state = self.opt_ctx.init(self.learner.contexts)
+        self.opt_ctx_state = self.opt_ctx.init(eqx.filter(self.learner.contexts, eqx.is_array))
 
         self.losses_node = []
         self.losses_ctx = []
