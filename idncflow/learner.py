@@ -65,6 +65,42 @@ class ContextParams(eqx.Module):
             self.params = jax.random.normal(get_new_key(key), (nb_envs, context_size))
 
 
+
+class IDContextParams(eqx.Module):
+    layers: list
+
+    def __init__(self, nb_envs, context_size, hidden_size, depth, key=None):
+
+        ## TODO Vectorize this function along nb_envs (Copy from SINODE)
+ 
+        keys = generate_new_keys(key, num=12)
+        # self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+        self.activations = [jax.nn.softplus for key_i in keys[:7]]
+
+        self.layers = [eqx.nn.Linear(1, hidden_size, key=keys[6]), self.activations[4], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+                              eqx.nn.Linear(hidden_size, context_size, key=keys[9])]
+
+    def __call__(self, t):
+        ## TODO Vectorize this function along nb_envs
+
+        y = t
+        for layer in self.layers:
+            y = layer(y)
+
+        return y
+
+    def get_params_1D(self):
+        pass ## TODO: Implement this method to get the 1D parameters of the nb_envs context parameters (like in ContextParams)
+
+
+
+
+
+
+
+
 class NoPhysics(eqx.Module):
     def __init__(self):
         pass

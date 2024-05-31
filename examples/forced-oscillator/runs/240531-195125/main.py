@@ -38,8 +38,8 @@ print_error_every = 100
 
 
 train = True
-run_folder = "./runs/240531-195125/"
-# run_folder = None
+# run_folder = "./runs/240531-190937-Lotka/"
+run_folder = None
 generate_data = False if run_folder else True
 
 save_trainer = True

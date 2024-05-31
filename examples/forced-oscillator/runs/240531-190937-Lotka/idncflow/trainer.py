@@ -374,7 +374,7 @@ class Trainer:
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
         print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
-        # print("Environment weights at the end of the training:", weights)
+        print("Environment weights at the end of the training:", weights)
 
         self.losses_node.append(jnp.vstack(losses_node))
         self.losses_ctx.append(jnp.vstack(losses_ctx))

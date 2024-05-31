@@ -23,7 +23,7 @@ import argparse
 
 if _in_ipython_session:
 	# args = argparse.Namespace(split='train', savepath='tmp/', seed=42)
-	args = argparse.Namespace(split='adapt_test', savepath="./tmp/", seed=2026, verbose=1)
+	args = argparse.Namespace(split='train', savepath="./tmp/", seed=2026, verbose=1)
 else:
 	parser = argparse.ArgumentParser(description='Gray-Scott dataset generation script.')
 	parser.add_argument('--split', type=str, help='Generate "train", "test", "adapt", "adapt_test", or "adapt_huge" data', default='train', required=False)
@@ -125,13 +125,13 @@ if split == "train" or split=="test":
   environments = [sin, cos, periodic, expcos, sincos, sinperiodic, sinhperiodic, sinhsin]
 
 
-elif split == "adapt" or split=="adapt_test":
+elif split == "adapt":
   environments = [sinhcos]
 
 
 if split == "train":
   n_traj_per_env = 4     ## training
-elif split == "test" or split == "adapt_test":
+elif split == "test":
   n_traj_per_env = 32     ## testing
 elif split == "adapt":
   n_traj_per_env = 12     ## adaptation
@@ -191,9 +191,7 @@ if split == "train":
 elif split == "test":
   filename = savepath+'test_data.npz'
 elif split == "adapt":
-  filename = savepath+'adapt_train.npz'
-elif split == "adapt_test":
-  filename = savepath+'adapt_test.npz'
+  filename = savepath+'adapt_data.npz'
 
 ## Check if nan or inf in data
 if np.isnan(data).any() or np.isinf(data).any():

@@ -30,17 +30,14 @@ sched_factor = 0.2            ## Multiply the lr by this factor at each third of
 
 nb_outer_steps = 500
 nb_inner_steps_max = 10
-proximal_beta = 1e1
-inner_tol_node = 2e-10
-inner_tol_ctx = 1e-9
+proximal_beta = 1e1 ## See beta in https://proceedings.mlr.press/v97/li19n.html
+inner_tol_node = 2e-8
+inner_tol_ctx = 1e-7
 
-print_error_every = 100
-
+print_error_every = 10
 
 train = True
-run_folder = "./runs/240531-195125/"
-# run_folder = None
-generate_data = False if run_folder else True
+run_folder = "./runs/20240531-190440/"
 
 save_trainer = True
 
@@ -52,11 +49,12 @@ adapt_restore = False
 integrator = diffrax.Dopri5
 # integrator = RK4
 ivp_args = {"dt_init":1e-4, "rtol":1e-3, "atol":1e-6, "max_steps":40000, "subdivisions":2}
+## subdivision is used for non-adaptive integrators like RK4. It's the number of extra steps to take between each evaluation time point
 
 #%%
 
 
-if train == True and generate_data == True:
+if train == True:
 
     # check that 'tmp' folder exists. If not, create it
     if not os.path.exists('./runs'):
@@ -89,10 +87,11 @@ if not os.path.exists(adapt_folder):
 
 # %%
 
-if train == True and generate_data == True:
+if train == True:
     # Run the dataset script to generate the data
     os.system(f'python dataset.py --split=train --savepath="{run_folder}" --seed="{seed}"')
     os.system(f'python dataset.py --split=test --savepath="{run_folder}" --seed="{seed*2}"')
+
 
 
 
@@ -179,12 +178,14 @@ class ContextFlowVectorField(eqx.Module):
 
 augmentation = Augmentation(data_size=2, int_size=122, context_size=context_size, key=seed)
 
+# physics = Physics(key=seed)
+physics = None
 
-vectorfield = ContextFlowVectorField(augmentation, physics=None)
+vectorfield = ContextFlowVectorField(augmentation, physics=physics)
 
 print("\n\nTotal number of parameters in the model:", sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(vectorfield,eqx.is_array)) if x is not None), "\n\n")
 
-contexts = IDContextParams(nb_envs, context_size, key=None)
+contexts = ContextParams(nb_envs, context_size, key=None)
 
 ## Define a custom loss function here
 def loss_fn_ctx(model, trajs, t_eval, ctx, all_ctx_s, key):
@@ -204,6 +205,9 @@ def loss_fn_ctx(model, trajs, t_eval, ctx, all_ctx_s, key):
     loss_val = term1
 
     return loss_val, (jnp.sum(nb_steps)/ctx_s.shape[0], term1, term2)
+
+
+
 
 learner = Learner(vectorfield, contexts, loss_fn_ctx, integrator, ivp_args, key=seed)
 
@@ -232,7 +236,7 @@ if train == True:
     for i, prop in enumerate(np.linspace(1.0, 1.0, 1)):
         # trainer.dataloader.int_cutoff = int(prop*nb_steps_per_traj)
         # trainer.train(nb_epochs=nb_epochs*(2**0), print_error_every=print_error_every*(2**0), update_context_every=1, save_path=trainer_save_path, key=seed, val_dataloader=val_dataloader, int_prop=prop)
-        trainer.train_proximal(nb_outer_steps_max=nb_outer_steps, nb_inner_steps_max=nb_inner_steps_max, proximal_reg=proximal_beta, inner_tol_node=inner_tol_node, inner_tol_ctx=inner_tol_ctx,
+        trainer.train_proximal(nb_outer_steps=nb_outer_steps, nb_inner_steps_max=nb_inner_steps_max, proximal_reg=proximal_beta, inner_tol_node=inner_tol_node, inner_tol_ctx=inner_tol_ctx,
                                print_error_every=print_error_every*(2**0), save_path=trainer_save_path, key=seed, val_dataloader=val_dataloader, int_prop=prop)
 
 else:
@@ -244,6 +248,7 @@ else:
 
 
 
+#%%
 
 
 
@@ -255,6 +260,29 @@ else:
 
 
 
+
+
+
+
+
+if finetune:
+    # ## Finetune a trained model
+
+    finetunedir = run_folder+"finetune_"+trainer.dataloader.data_id+"/"
+    if not os.path.exists(finetunedir):
+        os.mkdir(finetunedir)
+    print("No training. Loading anctx_sd finetuning into:", finetunedir)
+
+    trainer.dataloader.int_cutoff = nb_steps_per_traj
+
+    opt_node = optax.adabelief(1e-7)
+    opt_ctx = optax.adabelief(1e-7)
+    trainer.opt_node, trainer.opt_ctx = opt_node, opt_ctx
+
+    # trainer.opt_node_state = trainer.opt_node.init(eqx.filter(trainer.learner.neuralode, eqx.is_array))
+    # trainer.opt_ctx_state = trainer.opt_ctx.init(trainer.learner.contexts)
+
+    trainer.train(nb_epochs=24000, print_error_every=1000, update_context_every=1, save_path=finetunedir, key=seed)
 
 
 
@@ -271,8 +299,12 @@ visualtester = VisualTester(trainer)
 
 ind_crit = visualtester.test(test_dataloader, int_cutoff=1.0)
 
-savefigdir = run_folder+"results_in_domain.png"
+if finetune:
+    savefigdir = finetunedir+"results_in_domain.png"
+else:
+    savefigdir = run_folder+"results_in_domain.png"
 visualtester.visualize(test_dataloader, int_cutoff=1.0, save_path=savefigdir);
+
 
 
 
@@ -308,7 +340,7 @@ if adapt_test and not adapt_restore:
     os.system(f'python dataset.py --split=adapt --savepath="{adapt_folder}" --seed="{seed*3}"');
 
 if adapt_test:
-    adapt_dataloader = DataLoader(adapt_folder+"adapt_train.npz", adaptation=True, data_id="170846", key=seed)
+    adapt_dataloader = DataLoader(adapt_folder+"adapt_data.npz", adaptation=True, data_id="170846", key=seed)
 
     # sched_ctx_new = optax.piecewise_constant_schedule(init_value=1e-5,
     #                         boundaries_and_scales={int(nb_epochs_adapt*0.25):1.,
@@ -341,8 +373,17 @@ try:
     __IPYTHON__ ## in a jupyter notebook
 except NameError:
     if os.path.exists("nohup.log"):
-        os.system(f"cp nohup.log {run_folder}")
+        if finetune == True:
+            os.system(f"cp nohup.log {finetunedir}")
+            ## Open the results_in_domain in the terminal
+            # os.system(f"open {finetunedir}results_in_domain.png")
+        else:
+            os.system(f"cp nohup.log {run_folder}")
+            # os.system(f"open {run_folder}results_in_domain.png")
 
 
 #%%
+
+
+
 
