@@ -271,7 +271,7 @@ vectorfield = ContextFlowVectorField(augmentation, physics=None)
 learner = Learner(vectorfield, contexts, loss_fn_ctx, integrator, ivp_args, key=seed)
 
 print("\n\nTotal number of parameters in the vector field:", sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(vectorfield,eqx.is_array)) if x is not None))
-print("Total number of parameters in the contexts:", contexts.params.shape[0]*contexts.params.shape[1], "\n")
+print("\n\nTotal number of parameters in the contexts:", contexts.params.shape[0]*contexts.params.shape[1], "\n")
 
 
 #%%
