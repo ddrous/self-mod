@@ -48,3 +48,8 @@ examples/runs/cprofile/*
 **/tmp/
 venv/*
 
+
+## Every experiment in runs
+examples/forced-oscillator/runs/*
+!examples/forced-oscillator/runs/240531-190937-Lotka
+!examples/forced-oscillator/runs/240601-080700-Great

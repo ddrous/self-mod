@@ -554,10 +554,3 @@ Saving adaptation parameters into ./runs/240601-080700/adapt/ folder with id 170
     Length of the testing trajectories: 189
 Test Score (OOD): 0.01033986
 
-==  Begining out-of-distribution visualisation ... ==
-    Environment id: 0
-    Trajectory id: 5
-    Visualized dimensions: (0, 1)
-    Final length of the training trajectories: 189
-    Length of the testing trajectories: 189
-Testing finished. Figure saved in: ./runs/240601-080700/adapt/results_ood.png

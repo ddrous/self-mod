@@ -24,7 +24,7 @@ seed = 2026
 context_pool_size = 4               ## Number of neighboring contexts j to use for a flow in env e
 context_size = 256
 # nb_epochs = 2400
-nb_epochs_adapt = 5000
+nb_epochs_adapt = 2000
 init_lr = 5e-4
 sched_factor = 0.5            ## Multiply the lr by this factor at each third of the training
 
