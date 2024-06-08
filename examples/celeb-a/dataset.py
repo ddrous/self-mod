@@ -1,8 +1,4 @@
 #%%
-
-import selfmod
-
-#%%
 import torch
 from torchvision.transforms import transforms
 import jax.numpy as jnp
@@ -90,8 +86,7 @@ elif split in ["adapt", "adapt_test"]:      ## meta-testing set (masked and full
 assert len(files) > 0, "No files found for the split"
 
 
-## Transformations of the images
-
+## Transformation of the images (see CAVIA code: https://github.com/lmzintgraf/cavia)
 imgs_root = './data/img_align_celeba'
 transform = transforms.Compose([lambda x: Image.open(x).convert('RGB'),
                                       transforms.Resize((img_size[0], img_size[1]), Image.LANCZOS),
