@@ -1,8 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-idncflow.egg-info/PKG-INFO
-idncflow.egg-info/SOURCES.txt
-idncflow.egg-info/dependency_links.txt
-idncflow.egg-info/requires.txt
-idncflow.egg-info/top_level.txt

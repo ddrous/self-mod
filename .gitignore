@@ -55,3 +55,8 @@ examples/forced-oscillator/runs/*
 !examples/forced-oscillator/runs/240601-080700-Great
 !examples/forced-oscillator/runs/240601-161402-Perfect
 !examples/forced-oscillator/runs/240601-235945-Awesome
+
+
+## The celebA dataset
+examples/celeb-a/data/*
+examples/celeb-a/data/img_align_celeba.zip
