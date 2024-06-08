@@ -1,4 +1,8 @@
 #%%
+
+import selfmod
+
+#%%
 import torch
 from torchvision.transforms import transforms
 import jax.numpy as jnp
@@ -14,7 +18,6 @@ try:
 except NameError:
     _in_ipython_session = False
 
-## Parse the three arguments from the command line: "train", the foldername, and the seed
 
 import argparse
 

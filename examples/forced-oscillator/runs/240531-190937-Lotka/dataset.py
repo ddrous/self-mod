@@ -7,7 +7,7 @@ from IPython.display import Image
 import math
 
 import diffrax
-from idncflow import RK4
+from selfmod import RK4
 import jax.numpy as jnp
 
 try:

@@ -6,7 +6,7 @@
 ## Do not preallocate GPU memory
 # os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = '\"platform\"'
 
-from idncflow import *
+from selfmod import *
 # jax.config.update("jax_debug_nans", True)
 
 ## Execute jax on CPU

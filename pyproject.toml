@@ -1,6 +1,6 @@
 [project]
-name = "idncflow"
-description = "Scaling differential equations via transferable dynamics"
+name = "selfmod"
+description = "Scalable meta-learning via contextual self-modulation"
 version = "0.0.1"
 authors = [
     { name = "Roussel Desmond Nzoyem", email = "desmond.ngueguin@gmail.com" }
@@ -22,4 +22,4 @@ dev = [
 ]
 
 [tool.setuptools]
-py-modules = ["idncflow"]
+py-modules = ["selfmod"]

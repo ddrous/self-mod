@@ -1,8 +1,8 @@
 import pickle
 
-from idncflow.dataloader import DataLoader
-from idncflow.learner import ContextParams
-from idncflow.visualtester import VisualTester
+from selfmod.dataloader import DataLoader
+from selfmod.learner import ContextParams
+from selfmod.visualtester import VisualTester
 from ._utils import *
 
 class Trainer:
