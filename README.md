@@ -1,6 +1,6 @@
 <!-- <div style="text-align:center"><img src="docs/assets/Tax.png" /></div> -->
 
-# Contexttual Self-Modulation
+# Contextual Self-Modulation
 
 The process behind Neural Context Flows and Infinite Dimensional Neural Context Flows. Install the library and run the scripts in the folder `examples/`. 
 
