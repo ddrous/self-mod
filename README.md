@@ -1,8 +1,8 @@
 <!-- <div style="text-align:center"><img src="docs/assets/Tax.png" /></div> -->
 
-# ID-NCF
+# Contexttual Self-Modulation
 
-Infinite Dimensional Neural Context Flows. Install the library and run the scripts in the folder `examples/`. 
+The process behind Neural Context Flows and Infinite Dimensional Neural Context Flows. Install the library and run the scripts in the folder `examples/`. 
 
 `pip install -e .`
 
