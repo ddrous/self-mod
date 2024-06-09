@@ -19,7 +19,7 @@ import argparse
 
 
 if _in_ipython_session:
-	args = argparse.Namespace(split='adapt', savepath="./data/", resolution=32, seed=2026, train_pixels=100, order_pixels=0, verbose=1)
+	args = argparse.Namespace(split='adapt_test', savepath="./data/", resolution=16, seed=2026, train_pixels=100, order_pixels=0, verbose=1)
 else:
 	parser = argparse.ArgumentParser(description='CelebA preprocessing script.')
 	parser.add_argument('--split', type=str, help='Generate "train", "test", "adapt", "adapt_test", or "adapt_huge" data', default='train', required=False)
@@ -44,17 +44,27 @@ train_pixels = args.train_pixels
 order_pixels = args.order_pixels
 verbose = args.verbose
 
+
+## A unique identifier for the dataset preprocessing. For instance, pix0100_res32_ord0
+preprocess_id = f"pix{train_pixels:04d}_res{resolution:02d}_ord{order_pixels}/"
+## Check for existence of the directory
+if not os.path.exists(savepath+preprocess_id):
+  os.makedirs(savepath+preprocess_id)
+  print(f"Created directory {savepath+preprocess_id}")
+
+
 if args.verbose != 0:
-  print("Running this script in ipython (Jupyter) session ?", _in_ipython_session)
-  print('=== Parsed arguments to generate data ===')
-  print(' Split:', split)
-  print(' Savepath:', savepath)
-  print(' Seed:', seed)
-  print(' Image size:', img_size)
-  print(' Train pixels:', train_pixels)
-  print(' Order pixels:', order_pixels)
-  print(' Verbose:', verbose)
-  print('=========================================')
+    print('CelebA Dataset Preprocessing')
+    print("Running this script in ipython (Jupyter) session ?", _in_ipython_session)
+    print('=== Parsed arguments to generate data ===')
+    print(' Split:', split)
+    print(' Seed:', seed)
+    print(' Save location:', savepath+preprocess_id)
+    print(' Image size:', img_size)
+    print(' Train pixels (user-specified):', train_pixels)
+    print(' Order pixels:', order_pixels)
+    print(' Verbose:', verbose)
+    print('=========================================')
 
 
 ## Set numpy seed for reproducibility
@@ -66,15 +76,6 @@ np.random.seed(seed)
 
 ## Read list_eval_partiions.txt to get the train(0), val(1), test(2) splits
 partitions = pd.read_csv(savepath+'/list_eval_partition.txt', header=None, sep=r'\s+', names=['filename', 'partition'])
-
-# if split == "train":    ## Train set
-#   files = partitions[partitions['partition'] == 0]['filename'].values
-# elif split == "test":   ## Test set
-#   files = partitions[partitions['partition'] == 2]['filename'].values
-# else:                   ## Validation set (Never used at this point)
-#   files = partitions[partitions['partition'] == 1]['filename'].values
-# assert len(files) > 0, "No files found for the split"
-
 
 if split in ["train", "test"]:              ## meta-training set (masked and full pixels)
   files = partitions[partitions['partition'] == 0]['filename'].values
@@ -118,20 +119,22 @@ def sample_pixels(img, nb_train_pixels, order_pixels):
     return coords, pixel_values
 
 
-
-## Create and fill the dataset tensor
+## Create the dateset tensor
 nb_envs = len(files)
 
 if split == "train" or split == "adapt":
   nb_points_per_env = train_pixels
 elif split == "test" or split == "adapt_test":
   nb_points_per_env = img_size[0] * img_size[1]
+  if verbose:
+    print(f"All pixels are automatically used for the test set")
 inputs_dim = 2
 outputs_dim = 3
 X = np.zeros((nb_envs, nb_points_per_env, inputs_dim))
 Y = np.zeros((nb_envs, nb_points_per_env, outputs_dim))
 
 
+## Fill the dataset tensor
 if verbose:
   print(f"Creating dataset with {nb_envs} images and {nb_points_per_env} pixels per image ...")
 
@@ -146,26 +149,25 @@ for env, imgname in enumerate(files):
       print(f"Processed {env+1}/{nb_envs} images", end='\r')
 
 
-
-
-
 # Save t_eval and the solution to a npz file
 if split == "train":
-  filename = savepath+'train_data.npz'
+  filename = savepath+preprocess_id+'train_data.npz'
 elif split == "test":
-  filename = savepath+'test_data.npz'
+  filename = savepath+preprocess_id+'test_data.npz'
 elif split == "adapt":
-  filename = savepath+'adapt_train.npz'
+  filename = savepath+preprocess_id+'adapt_train.npz'
 elif split == "adapt_test":
-  filename = savepath+'adapt_test.npz'
+  filename = savepath+preprocess_id+'adapt_test.npz'
 
 ## Check if nan or inf in data
 if np.isnan(X).any() or np.isinf(X).any() or np.isnan(Y).any() or np.isinf(Y).any():
   print("NaN or Inf in data. Exiting without saving...")
 else:
-  np.savez(filename, X=X, Y=Y)
-  print(f"Saved data to {filename}")
-
+  if not os.path.exists(filename):
+    np.savez(filename, X=X, Y=Y)
+    print(f"Saved data to {filename}")
+  else:
+    print(f"Data split already exists at {filename}. Nothing was saved. Exiting...")
 
 
 
