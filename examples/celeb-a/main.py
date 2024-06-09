@@ -27,7 +27,8 @@ print_error_every = 100
 nb_epochs_adapt = 1000
 
 meta_train = True
-run_folder = "./runs/240531-195125/" if not meta_train else None
+run_folder = "./runs/240609-215946/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -50,18 +51,21 @@ if meta_train == True:
     if not os.path.exists('./runs'):
         os.mkdir('./runs')
 
-    # Make a new folder inside 'tmp' whose name is the current time
-    run_folder = './runs/'+time.strftime("%y%m%d-%H%M%S")+'/'
-    os.mkdir(run_folder)
-    print("Run folder created successfuly:", run_folder)
+    # Run folder to store the result of this run
+    if run_folder == None:
+        run_folder = './runs/'+time.strftime("%y%m%d-%H%M%S")+'/'
+        os.mkdir(run_folder)
+        print("New run folder created successfuly:", run_folder)
+    else:
+        print("Using pre-existing run folder:", run_folder)
 
     # Save the run and dataset scripts in that folder
     script_name = os.path.basename(__file__)
     os.system(f"cp {script_name} {run_folder}")
     os.system(f"cp dataset.py {run_folder}")
 
-    # Save the nodax module files as well
-    os.system(f"cp -r ../../idncflow {run_folder}")
+    # Save the selfmod module files as well
+    os.system(f"cp -r ../../selfmod {run_folder}")
     print("Completed copied scripts ")
 else:
     print("No training. Loading model and results from:", run_folder)
@@ -79,14 +83,33 @@ if meta_test and not os.path.exists(run_folder+"adapt/"):
 
 #%%
 
-## Define dataloader for training and validation
-train_dataloader = RegDataLoader(data_folder+"train_data.npz", batch_size=-1, shuffle=True, key=seed)
-val_dataloader = RegDataLoader(data_folder+"test_data.npz", shuffle=False)
+## Define 4 keys for dataloader(s), learner(s), trainer(s) and visualtester(s)
+mother_key = jax.random.PRNGKey(seed)
+data_key, learner_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
+
+## Define dataloaders for training and validation
+train_dataloader = RegDataLoader(data_folder+"train_data.npz", batch_size=20, shuffle=True, key=data_key)
+# val_dataloader = RegDataLoader(data_folder+"test_data.npz", shuffle=False)
 
 nb_envs = train_dataloader.nb_envs
 nb_points_per_env = train_dataloader.nb_points_per_env
 input_dim = train_dataloader.input_dim
 output_dim = train_dataloader.output_dim
+
+print("Training dataloader properties: \n", 
+        "Number of environments:", nb_envs, "\n",
+        "Number of points per environment:", nb_points_per_env, "\n",
+        "Batch size:", train_dataloader.batch_size, "\n",
+        "Input dimension:", input_dim, "\n",
+        "Output dimension:", output_dim, "\n")
+
+
+
+
+
+
+
+
 
 
 #%%
@@ -250,7 +273,7 @@ visualtester.visualize(val_dataloader, save_path=run_folder+"results_in_domain.p
 
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = RegDataLoader(data_folder+"adapt_train.npz", adaptation=True, key=seed)
+    adapt_dataloader = RegDataLoader(data_folder+"adapt_train.npz", adaptation=True, key=data_key)
 
     sched_ctx_new = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
     opt_adapt = optax.adabelief(sched_ctx_new)
@@ -268,7 +291,7 @@ if meta_test:
 
 #%%
 if meta_test:
-    adapt_dataloader_test = RegDataLoader(data_folder+"adapt_test.npz", adaptation=True, key=seed)
+    adapt_dataloader_test = RegDataLoader(data_folder+"adapt_test.npz", adaptation=True)
     ood_crit = visualtester.test(adapt_dataloader_test)
     visualtester.visualize(adapt_dataloader, save_path=adapt_folder+"results_ood.png");
 

@@ -60,3 +60,4 @@ examples/forced-oscillator/runs/*
 ## The celebA dataset
 examples/celeb-a/data/*
 examples/celeb-a/data/img_align_celeba.zip
+examples/celeb-a/runs/*
