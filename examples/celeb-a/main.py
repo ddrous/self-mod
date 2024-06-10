@@ -15,19 +15,19 @@ from selfmod import *
 seed = 2024
 
 ## Train and adapt hps
-context_pool_size = 1
-context_size = 4
+context_pool_size = 2
+context_size = 8
 init_lr = 5e-4
 sched_factor = 0.5
 
-nb_outer_steps = 20
-nb_inner_steps_max = 5
+nb_outer_steps = 1000
+nb_inner_steps_max = 20
 proximal_beta = 1e1
 inner_tol_node = 2e-11
 inner_tol_ctx = 1e-10
 
-print_error_every = 10
-nb_epochs_adapt = 2
+print_error_every = 100
+nb_epochs_adapt = 1000
 
 meta_train = True
 run_folder = "./runs/240609-215946/"
@@ -183,7 +183,7 @@ def loss_fn_ctx(model, batch, ctx, ctxs, key):
     return loss_val, (term3, term1, term2)
 
 
-neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=32, context_size=context_size, key=model_key)
+neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=64, context_size=context_size, key=model_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
 contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)
