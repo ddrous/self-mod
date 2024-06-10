@@ -2,8 +2,11 @@
 # %load_ext autoreload
 # %autoreload 2
 
+import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
+
 from selfmod import *
+
 # jax.config.update("jax_debug_nans", True)
 
 
@@ -13,7 +16,7 @@ seed = 2024
 
 ## Train and adapt hps
 context_pool_size = 1
-context_size = 16
+context_size = 4
 init_lr = 5e-4
 sched_factor = 0.5
 
@@ -129,7 +132,7 @@ class MultiMLP(eqx.Module):
     activations: list
 
     def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
-        keys = generate_new_keys(key, num=12)
+        keys = jax.random.split(key, 10)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
         self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
@@ -184,7 +187,7 @@ neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=32, con
 model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
 contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)
 
-learner = RegLearner(neuralnet, contexts, loss_fn_ctx=loss_fn_ctx)
+learner = RegLearner(neuralnet, contexts, loss_fn_ctx=loss_fn_ctx, key=model_key)
 
 
 
@@ -211,12 +214,12 @@ nb_total_epochs = nb_outer_steps * 1
 bd_scales = {nb_total_epochs//3:sched_factor, 2*nb_total_epochs//3:sched_factor}
 
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
-sched_ctx = optax.piecewise_constant_schedule(init_value=init_lr,boundaries_and_scales=bd_scales)
+sched_ctx = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
 
 opt_model = optax.adam(sched_model)
 opt_ctx = optax.adam(sched_ctx)
 
-trainer = RegTrainer(train_dataloader, learner, (opt_model, opt_ctx), key=seed)
+trainer = RegTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 ## Meta-training
@@ -239,11 +242,18 @@ else:
 
 #%%
 ## Test and visualise the results on a test dataloader
-visualtester = RegVisualTester(trainer)
+visualtester = RegVisualTester(trainer, key=test_key)
 
-ind_crit = visualtester.test(val_dataloader)
-visualtester.visualize(val_dataloader, save_path=run_folder+"results_in_domain.png");
+ind_crit, _ = visualtester.test(train_dataloader)        ## TODO: Use val_dataloader
+print("In domain test error:", ind_crit)
 
+visualtester.visualizeCelebA(train_dataloader, 
+                             few_shot_loader=train_dataloader,
+                             resolution=32,
+                             save_path=run_folder+"results_in_domain.png",
+                            #  environment=0,
+                             key=jax.random.PRNGKey(time.time_ns())
+                             );
 
 #%%
 
@@ -264,11 +274,12 @@ if meta_test:
     opt_adapt = optax.adabelief(sched_ctx_new)
 
     if restore_adaptation == False:
-        trainer.adapt(adapt_dataloader, 
-                      nb_epochs=nb_epochs_adapt, 
-                      optimizer=opt_adapt, 
-                      print_error_every=print_error_every, 
-                      save_path=adapt_folder)
+        trainer.adapt_bulk(adapt_dataloader,
+                            nb_epochs=nb_epochs_adapt, 
+                            taylor_order=0,
+                            optimizer=opt_adapt, 
+                            print_error_every=print_error_every, 
+                            save_path=adapt_folder)
     else:
         trainer.restore_adapted_trainer(path=adapt_folder, data_loader=adapt_dataloader)
         print("Restored trained and adapated model from", adapt_folder)
@@ -277,8 +288,17 @@ if meta_test:
 #%%
 if meta_test:
     adapt_dataloader_test = RegDataLoader(data_folder+"adapt_test.npz", adaptation=True)
-    ood_crit = visualtester.test(adapt_dataloader_test)
-    visualtester.visualize(adapt_dataloader, save_path=adapt_folder+"results_ood.png");
+
+    ood_crit, _ = visualtester.test(adapt_dataloader_test)
+    print("Out of domain test error:", ood_crit)
+
+    visualtester.visualizeCelebA(adapt_dataloader_test,
+                                few_shot_loader=adapt_dataloader,
+                                resolution=32, 
+                                save_path=adapt_folder+"results_ood.png",
+                                # environment=0,
+                                key=jax.random.PRNGKey(time.time_ns())
+                                );
 
 
 

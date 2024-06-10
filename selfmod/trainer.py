@@ -726,6 +726,8 @@ class Trainer:
 #%%
 class RegTrainer:
     def __init__(self, learner:RegLearner, optimisers, key=None):
+        if key is None:
+            raise ValueError("You must provide a key for the trainer")
         self.key = key      ## Default training key
 
         if not isinstance(learner, RegLearner):

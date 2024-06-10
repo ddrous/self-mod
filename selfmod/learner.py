@@ -394,7 +394,7 @@ class NeuralContextFlow(eqx.Module):
         self.neuralnet = neuralnet
         self.taylor_order = order
 
-    def __call__(self, x, ctxs):
+    def taylor_expand(self, x, ctxs):
         ctx, ctx_ = ctxs
 
         vf = lambda xi: self.neuralnet(x, xi)
@@ -413,6 +413,9 @@ class NeuralContextFlow(eqx.Module):
         else:
             raise NotImplementedError("Higher order terms are not implemented yet.")
 
+    def __call__(self, xs, ctxs):
+        return jax.vmap(self.taylor_expand, in_axes=(0, None))(xs, ctxs)
+
 
 class ArrayContextParams(eqx.Module):
     params: jnp.ndarray
@@ -423,7 +426,10 @@ class ArrayContextParams(eqx.Module):
 
 
 class RegLearner:
-    def __init__(self, model, contexts, loss_fn_ctx):
+    def __init__(self, model, contexts, loss_fn_ctx, key=None):
+        if key is None:
+            raise ValueError("You must provide a key for the learner.")
+        self.key = key
 
         self.nb_envs, self.context_size = contexts().shape
         self.contexts = contexts
