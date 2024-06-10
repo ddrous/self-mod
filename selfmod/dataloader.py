@@ -110,6 +110,10 @@ class RegDataLoader:
         raw_dat = jnp.load(datapath)
         self.X, self.Y = jnp.asarray(raw_dat['X']), jnp.asarray(raw_dat['Y'])
 
+        max_nb_envs = 1000      ## TODO: remove this please !
+        self.X = self.X[:max_nb_envs, ...]
+        self.Y = self.Y[:max_nb_envs, ...]
+
         self.nb_envs = self.X.shape[0]
         self.nb_points_per_env = self.X.shape[1]
         self.input_dim = self.X.shape[2]

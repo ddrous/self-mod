@@ -382,6 +382,24 @@ def default_loss_fn_ctx(model, trajs, t_eval, ctx, alpha, beta, ctx_, key):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #%%
 
 
@@ -390,31 +408,35 @@ class NeuralContextFlow(eqx.Module):
     neuralnet: eqx.Module
     taylor_order: int
 
-    def __init__(self, neuralnet, order):
+    def __init__(self, neuralnet, taylor_order):
         self.neuralnet = neuralnet
-        self.taylor_order = order
+        self.taylor_order = taylor_order
 
-    def taylor_expand(self, x, ctxs):
-        ctx, ctx_ = ctxs
 
-        vf = lambda xi: self.neuralnet(x, xi)
-        gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-        scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+    def __call__(self, xs, ctx, ctx_):
 
-        if self.taylor_order==0:
-            return vf(ctx)
+        def point_predict(x):
 
-        elif self.taylor_order==1:
-            return vf(ctx_) + 1.0*gradvf(ctx_)
+            vf = lambda xi: self.neuralnet(x, xi)
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
 
-        elif self.taylor_order==2:
-            return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+            if self.taylor_order==0:
+                return vf(ctx)
 
-        else:
-            raise NotImplementedError("Higher order terms are not implemented yet.")
+            elif self.taylor_order==1:
+                return vf(ctx_) + 1.0*gradvf(ctx_)
 
-    def __call__(self, xs, ctxs):
-        return jax.vmap(self.taylor_expand, in_axes=(0, None))(xs, ctxs)
+            elif self.taylor_order==2:
+                return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+
+            else:
+                raise NotImplementedError("Higher order terms are not implemented yet.")
+
+        ys = eqx.filter_vmap(point_predict)(xs)
+
+        return ys, None
+
 
 
 class ArrayContextParams(eqx.Module):
@@ -436,24 +458,17 @@ class RegLearner:
         self.model = model
 
         def loss_fn(model, contexts, batch, weightings, key):
-            print('\nCompiling function "loss_fn" ...\n')
             losses, (_, terms1, terms2) = jax.vmap(loss_fn_ctx, in_axes=(None, 0, 0, None, None))(model, batch, contexts.params, contexts.params, key)
             return jnp.sum(losses*weightings), (None, terms1, terms2)
+
         self.loss_fn = loss_fn
 
     def save_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalid path provided. The path must end with /"
-
-        eqx.tree_serialise_leaves(path+"neuralode.eqx", self.neuralode)
+        eqx.tree_serialise_leaves(path+"model.eqx", self.model)
         eqx.tree_serialise_leaves(path+"contexts.eqx", self.contexts)
-
-        np.save(path+"contexts_init.npy", self.init_ctx_params)
 
     def load_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
-
-        self.neuralode = eqx.tree_deserialise_leaves(path+"neuralode.eqx", self.neuralode)
+        self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
         self.contexts = eqx.tree_deserialise_leaves(path+"contexts.eqx", self.contexts)
-
-        self.init_ctx_params = np.load(path+"contexts_init.npy")
-

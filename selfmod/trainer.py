@@ -2,7 +2,7 @@ import pickle
 
 from selfmod.dataloader import DataLoader, RegDataLoader
 from selfmod.learner import ContextParams, ArrayContextParams, NeuralContextFlow, RegLearner
-from selfmod.visualtester import VisualTester
+from selfmod.visualtester import VisualTester, RegVisualTester
 from ._utils import *
 
 #%%
@@ -742,7 +742,7 @@ class RegTrainer:
         self.losses_model = []
         self.losses_ctx = []
 
-        self.val_losses = []
+        # self.val_losses = []
 
 
 
@@ -808,7 +808,7 @@ class RegTrainer:
         if not isinstance(dataloader, RegDataLoader):
             raise ValueError("The dataloader must be an instance of RegDataLoader")
         if val_dataloader is not None:
-            tester = VisualTester(self)
+            tester = RegVisualTester(self, key=key)
 
         print(f"\n\n=== Beginning training with proximal alternating minimization ... ===")
         print(f"    Number of examples in a batch: {dataloader.batch_size}")
@@ -820,10 +820,11 @@ class RegTrainer:
 
         losses_model = []
         losses_ctx = []
-        val_losses = []
+        if val_dataloader is not None:
+            val_losses = []
 
         weightings = jnp.ones(self.learner.nb_envs) / self.learner.nb_envs
-        loss_key = jax.random.split(key, num=1)
+        loss_key, _ = jax.random.split(key)
         early_stopping_count = 0
 
         for out_step in range(nb_outer_steps_max):
@@ -838,8 +839,8 @@ class RegTrainer:
                 nb_batches_model = 0
                 loss_sum_model = 0.
 
-                for i, batch in enumerate(dataloader):
-                    loss_key = jax.random.split(loss_key, num=1)
+                for _, batch in enumerate(dataloader):
+                    loss_key, _ = jax.random.split(loss_key)
 
                     model, contexts, opt_state_model, loss_model, (_, term1, term2, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
 
@@ -861,7 +862,8 @@ class RegTrainer:
                 nb_batches_ctx = 0
                 loss_sum_ctx = 0.
 
-                for i, batch in enumerate(dataloader):
+                for _, batch in enumerate(dataloader):
+                    loss_key, _ = jax.random.split(loss_key)
 
                     model, contexts, opt_state_ctx, loss_ctx, (_, term1, term2, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
 
@@ -883,9 +885,9 @@ class RegTrainer:
                 if val_dataloader is not None:
                     self.learner.model = model
                     self.learner.contexts = contexts
-                    ind_crit,_ = tester.test(val_dataloader, int_cutoff=1.0, criterion=val_criterion, verbose=False)
+                    ind_crit,_ = tester.test(val_dataloader, criterion=val_criterion, verbose=False)
                     val_losses.append(np.array([out_step, ind_crit]))
-                    print(f"    Outer Step: {out_step:-5d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}     ValIndCrit: {ind_crit:-.8f}", flush=True)
+                    print(f"    Outer Step: {out_step:-5d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}     ValCrit: {ind_crit:-.8f}", flush=True)
                     ## Check if val loss is lowest to save the model
                     if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
                         print(f"        Saving best model so far ...")
@@ -897,10 +899,7 @@ class RegTrainer:
                 else:
                     print(f"    Epoch: {out_step:-5d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True)
 
-                print(f"        -NbInnerStepsModel: {in_step_model+1:4d}\n        
-                                -NbInnerStepsCxt: {in_step_ctx+1:4d}\n        
-                                -DiffModel: {diff_model:.2e}\n        
-                                -DiffCxt:  {diff_ctx:.2e}", flush=True)
+                print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod: {diff_model:.2e}\n \t-DiffCxt:  {diff_ctx:.2e}", flush=True)
 
             if in_step_model < 1 and in_step_ctx < 1:
                 early_stopping_count += 1
@@ -920,7 +919,9 @@ class RegTrainer:
         self.losses_ctx.append(jnp.vstack(losses_ctx))
 
         if val_dataloader is not None:
-            self.val_losses.append(np.vstack(val_losses))
+            if not hasattr(self, 'val_losses'):
+                self.val_losses = []
+            self.val_losses.append(jnp.vstack(val_losses))
 
         self.opt_model_state = opt_state_model
         self.opt_ctx_state = opt_state_ctx
@@ -944,7 +945,7 @@ class RegTrainer:
                  losses_ctx=jnp.vstack(self.losses_ctx))
 
         if hasattr(self, 'val_losses'):
-            np.save(path+"val_losses.npy", np.vstack(self.val_losses))
+            np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
 
         pickle.dump(self.opt_model_state, open(path+"opt_state_model.pkl", "wb"))
         pickle.dump(self.opt_ctx_state, open(path+"opt_state_ctx.pkl", "wb"))
@@ -989,7 +990,7 @@ class RegTrainer:
         loss_fn = self.learner.loss_fn
 
         ## This is useful if we want to disable the taylor expansion
-        if taylor_order==model.taylor_order:
+        if taylor_order==self.learner.model.taylor_order:
             model = self.learner.model
         else:
             print(f"Creating a new model with taylor order {taylor_order} ...")
@@ -1038,14 +1039,14 @@ class RegTrainer:
 
         losses = []
         weightings = jnp.ones(dataloader.nb_envs) / dataloader.nb_envs
-        loss_key = jax.random.split(key, num=1)
+        loss_key, _ = jax.random.split(key)
 
         for epoch in range(nb_epochs):
             nb_batches = 0
             loss_sum = 0
 
             for i, batch in enumerate(dataloader):
-                loss_key = jax.random.split(loss_key, num=1)
+                loss_key, _ = jax.random.split(loss_key)
 
                 model, contexts, opt_state, loss, (_, term1, term2) = train_step(model, contexts, batch, weightings, opt_state, loss_key)
 
@@ -1070,7 +1071,7 @@ class RegTrainer:
         self.learner.contexts_adapt = contexts
 
         if save_path:
-            self.save_adapted_trainer(save_path, dataloader.data_id)
+            self.save_adapted_trainer(save_path)
 
 
 
@@ -1095,5 +1096,5 @@ class RegTrainer:
 
         self.opt_state_adapt = pickle.load(open(path+"/opt_state_adapt.pkl", "rb"))
 
-        self.learner.contexts_adapt = ContextParams(dataloader.nb_envs, self.learner.context_size)
+        self.learner.contexts_adapt = ArrayContextParams(dataloader.nb_envs, self.learner.context_size)
         self.learner.contexts_adapt = eqx.tree_deserialise_leaves(path+"/adapted_contexts_.eqx", self.learner.contexts_adapt)
