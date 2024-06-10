@@ -85,7 +85,7 @@ if meta_test and not os.path.exists(run_folder+"adapt/"):
 
 ## Define 4 keys for dataloader(s), learner(s), trainer(s) and visualtester(s)
 mother_key = jax.random.PRNGKey(seed)
-data_key, learner_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
+data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 ## Define dataloaders for training and validation
 train_dataloader = RegDataLoader(data_folder+"train_data.npz", batch_size=20, shuffle=True, key=data_key)
@@ -160,22 +160,6 @@ class MultiMLP(eqx.Module):
 
         return y
 
-class ContextFlow(eqx.Module):
-    neuralnet: eqx.Module
-
-    def __init__(self, neuralnet):
-        self.neuralnet = neuralnet
-
-    def __call__(self, x, ctxs):
-        ctx, ctx_ = ctxs
-
-        vf = lambda xi: self.neuralnet(x, xi)
-        gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-        scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
-
-        return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
-
-
 
 def loss_fn_ctx(model, batch, ctx, ctxs, key):
     X, Y = batch
@@ -192,14 +176,15 @@ def loss_fn_ctx(model, batch, ctx, ctxs, key):
 
     loss_val = term1 + 1e-3*term2 + 1e-3*term3
 
-    return loss_val, (None, term1, term2)
+    return loss_val, (term3, term1, term2)
 
 
-contexts = ContextParams(nb_envs=nb_envs, context_size=context_size, key=seed)
-neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=32, context_size=context_size, key=seed)
-model = ContextFlow(neuralnet)
+neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=32, context_size=context_size, key=model_key)
 
-learner = RegLearner(model, contexts, loss_fn_ctx, key=seed)
+model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
+contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)
+
+learner = RegLearner(neuralnet, contexts, loss_fn_ctx=loss_fn_ctx)
 
 
 

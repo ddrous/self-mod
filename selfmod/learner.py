@@ -1,6 +1,7 @@
 from ._utils import *
 
 
+#%%
 class Learner:
     def __init__(self, vectorfield, contexts, loss_fn_ctx, integrator, ivp_args, key=None):
 
@@ -368,3 +369,85 @@ def default_loss_fn_ctx(model, trajs, t_eval, ctx, alpha, beta, ctx_, key):
 
     loss_val = term1 + beta*term2
     return loss_val, (jnp.sum(nb_steps), term1, term2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+#%%
+
+
+
+class NeuralContextFlow(eqx.Module):
+    neuralnet: eqx.Module
+    taylor_order: int
+
+    def __init__(self, neuralnet, order):
+        self.neuralnet = neuralnet
+        self.taylor_order = order
+
+    def __call__(self, x, ctxs):
+        ctx, ctx_ = ctxs
+
+        vf = lambda xi: self.neuralnet(x, xi)
+        gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+        scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+
+        if self.taylor_order==0:
+            return vf(ctx)
+
+        elif self.taylor_order==1:
+            return vf(ctx_) + 1.0*gradvf(ctx_)
+
+        elif self.taylor_order==2:
+            return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+
+        else:
+            raise NotImplementedError("Higher order terms are not implemented yet.")
+
+
+class ArrayContextParams(eqx.Module):
+    params: jnp.ndarray
+    def __init__(self, nb_envs, context_size):
+        self.params = jnp.zeros((nb_envs, context_size))
+    def __call__(self):
+        return self.params
+
+
+class RegLearner:
+    def __init__(self, model, contexts, loss_fn_ctx):
+
+        self.nb_envs, self.context_size = contexts().shape
+        self.contexts = contexts
+        self.model = model
+
+        def loss_fn(model, contexts, batch, weightings, key):
+            print('\nCompiling function "loss_fn" ...\n')
+            losses, (_, terms1, terms2) = jax.vmap(loss_fn_ctx, in_axes=(None, 0, 0, None, None))(model, batch, contexts.params, contexts.params, key)
+            return jnp.sum(losses*weightings), (None, terms1, terms2)
+        self.loss_fn = loss_fn
+
+    def save_learner(self, path):
+        assert path[-1] == "/", "ERROR: Invalid path provided. The path must end with /"
+
+        eqx.tree_serialise_leaves(path+"neuralode.eqx", self.neuralode)
+        eqx.tree_serialise_leaves(path+"contexts.eqx", self.contexts)
+
+        np.save(path+"contexts_init.npy", self.init_ctx_params)
+
+    def load_learner(self, path):
+        assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
+
+        self.neuralode = eqx.tree_deserialise_leaves(path+"neuralode.eqx", self.neuralode)
+        self.contexts = eqx.tree_deserialise_leaves(path+"contexts.eqx", self.contexts)
+
+        self.init_ctx_params = np.load(path+"contexts_init.npy")
+
