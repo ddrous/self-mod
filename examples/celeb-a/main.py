@@ -19,9 +19,10 @@ context_pool_size = 2
 context_size = 8
 init_lr = 5e-4
 sched_factor = 0.5
+envs_batch_size = 250
 
-nb_outer_steps = 1000
-nb_inner_steps_max = 20
+nb_outer_steps = 5
+nb_inner_steps_max = 5
 proximal_beta = 1e1
 inner_tol_node = 2e-11
 inner_tol_ctx = 1e-10
@@ -92,8 +93,10 @@ mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 ## Define dataloaders for training and validation
-train_dataloader = RegDataLoader(data_folder+"train_data.npz", batch_size=100, shuffle=False, key=data_key)
-val_dataloader = RegDataLoader(data_folder+"test_data.npz", batch_size=32*32, shuffle=False)
+train_dataloader = RegMetaDataLoader(data_folder+"train_data.npz", envs_batch_size=envs_batch_size, points_batch_size=100, envs_shuffle=True, points_shuffle=True, key=data_key)
+
+# val_dataloader = RegMetaDataLoader(data_folder+"test_data.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32)
+val_dataloader = RegDataLoader(data_folder+"test_data.npz", batch_size=32*32)
 
 nb_envs = train_dataloader.nb_envs
 nb_points_per_env = train_dataloader.nb_points_per_env
@@ -103,7 +106,8 @@ output_dim = train_dataloader.output_dim
 print("Training dataloader properties: \n", 
         "Number of environments:", nb_envs, "\n",
         "Number of points per environment:", nb_points_per_env, "\n",
-        "Batch size:", train_dataloader.batch_size, "\n",
+        "Batch size (envs):", train_dataloader.envs_batch_size, "\n",
+        "Batch size (datapoints):", train_dataloader.points_batch_size, "\n",
         "Input dimension:", input_dim, "\n",
         "Output dimension:", output_dim, "\n")
 
@@ -226,7 +230,7 @@ trainer = RegTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 ## Meta-training
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
-    trainer.train_proximal(dataloader=train_dataloader,
+    trainer.train_proximal(super_dataloader=train_dataloader,
                            nb_outer_steps_max=nb_outer_steps, 
                            nb_inner_steps_max=nb_inner_steps_max, 
                            proximal_reg=proximal_beta, 
@@ -234,12 +238,28 @@ if meta_train == True:
                            inner_tol_ctx=inner_tol_ctx,
                            print_error_every=print_error_every, 
                            save_path=trainer_save_path, 
-                           val_dataloader=val_dataloader, 
+                        #    val_dataloader=val_dataloader, 
                            key=trainer_key)
 else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)
     print("\nNo training, loaded model and results from "+ run_folder +" folder ...\n")
+
+
+
+
+#%%
+len(trainer.losses_model)
+sbplot(np.vstack(trainer.losses_model), label="Model loss")
+
+
+
+
+
+
+
+
+
 
 
 #%%
@@ -270,7 +290,7 @@ visualtester.visualizeCelebA(val_dataloader,
 
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = RegDataLoader(data_folder+"adapt_train.npz", batch_size=100, adaptation=True, key=data_key)
+    adapt_dataloader = RegMetaDataLoader(data_folder+"adapt_train.npz", envs_batch_size=envs_batch_size, point_batch_size=100, adaptation=True, key=data_key)
 
     sched_ctx_new = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
     opt_adapt = optax.adabelief(sched_ctx_new)
@@ -289,6 +309,7 @@ if meta_test:
 
 #%%
 if meta_test:
+    # adapt_dataloader_test = RegMetaDataLoader(data_folder+"adapt_test.npz", envs_batch_size=envs_batch_size, point_batch_size=32*32, adaptation=True, key=data_key)
     adapt_dataloader_test = RegDataLoader(data_folder+"adapt_test.npz", batch_size=32*32, adaptation=True, key=data_key)
 
     ood_crit, _ = visualtester.test(adapt_dataloader_test)

@@ -105,15 +105,14 @@ class RegDataLoader:
     """
     A simple dataloader for general-purpose meta-learning regression tasks.
     """
-    def __init__(self, datapath, batch_size, shuffle=True, adaptation=False, key=None):
+    # def __init__(self, datapath, batch_size, shuffle=True, adaptation=False, key=None):
+    def __init__(self, dataset, batch_size, shuffle=False, adaptation=False, envs_limit=False, key=None):
 
-        raw_dat = jnp.load(datapath)
-        self.X, self.Y = jnp.asarray(raw_dat['X']), jnp.asarray(raw_dat['Y'])
-
-        MAX_NB_ENVS = 250      ## TODO: remove this please !
-        print("Limiting the environment count to:", MAX_NB_ENVS)
-        self.X = self.X[:MAX_NB_ENVS, ...]
-        self.Y = self.Y[:MAX_NB_ENVS, ...]
+        if isinstance(dataset, str):
+            raw_dat = jnp.load(dataset)
+            self.X, self.Y = jnp.asarray(raw_dat['X']), jnp.asarray(raw_dat['Y'])
+        else:
+            self.X, self.Y = dataset
 
         self.nb_envs = self.X.shape[0]
         self.nb_points_per_env = self.X.shape[1]
@@ -128,10 +127,10 @@ class RegDataLoader:
         if 0 < batch_size and batch_size <= self.nb_points_per_env:
             self.batch_size = batch_size
         else:
-            raise ValueError("Invalid batch size provided.")
+            raise ValueError(f"Invalid batch size provided. Got {batch_size}")
 
         if self.nb_points_per_env % self.batch_size != 0:
-            raise ValueError("The batch size must evenly divide the number of datapoints per environment.")
+            raise ValueError(f"The batch size must evenly divide the number of datapoints per environment. Got {self.nb_points_per_env} / {self.batch_size}")
 
         self.adaptation = adaptation
 
@@ -165,3 +164,68 @@ class RegDataLoader:
 
     def __len__(self):
         return self.nb_envs * self.nb_points_per_env
+
+
+
+
+
+
+
+class RegMetaDataLoader:
+    """
+    A generator of generators for general-purpose meta-learning regression tasks.
+    """
+    def __init__(self, datapath, envs_batch_size=250, points_batch_size=1, envs_shuffle=True, points_shuffle=False, adaptation=False, key=None):
+
+        raw_dat = jnp.load(datapath)
+        self.X, self.Y = jnp.asarray(raw_dat['X']), jnp.asarray(raw_dat['Y'])
+
+        self.nb_envs = self.X.shape[0]
+        self.nb_points_per_env = self.X.shape[1]
+        self.input_dim = self.X.shape[2]
+        self.output_dim = self.Y.shape[2]
+
+        self.shuffle = envs_shuffle
+        self.key = key
+        if self.shuffle and self.key is None:
+            raise ValueError("Shuffling the dataset requires a key.")
+
+        if 0 < envs_batch_size and envs_batch_size <= self.nb_envs:     ## the envs_batch_size operates on the envs
+            self.envs_batch_size = envs_batch_size
+        else:
+            raise ValueError(f"Invalid batch size provided. Got {envs_batch_size}")
+
+        if self.nb_envs % self.envs_batch_size != 0:
+            if self.shuffle == False:
+                print("WARNING: The meta batch size does not evenly divide the total number of environments. Some environments will be left out.")
+
+        self.adaptation = adaptation
+
+        ## Will be checked in the RegDataLoader
+        self.points_batch_size = points_batch_size
+        self.points_shuffle = points_shuffle
+
+
+    def __iter__(self):
+
+        ## Iterate over the environments
+        nb_batches = self.nb_envs // self.envs_batch_size
+
+        for batch_id in range(nb_batches):
+            if self.shuffle:
+                _, self.key = jax.random.split(self.key)
+                env_ids = jax.random.permutation(self.key, jnp.arange(self.nb_envs))[:self.envs_batch_size]
+            else:
+                batch_start, batch_end = batch_id*self.envs_batch_size, (batch_id+1)*self.envs_batch_size
+                env_ids = jnp.arange(batch_start, batch_end)
+
+            mini_dataloader = RegDataLoader((self.X[env_ids, ...], self.Y[env_ids, ...]), 
+                                batch_size=self.points_batch_size, 
+                                shuffle=self.points_shuffle, 
+                                adaptation=self.adaptation, 
+                                key=self.key)
+ 
+            yield mini_dataloader, env_ids
+
+    def __len__(self):
+        return self.nb_envs
