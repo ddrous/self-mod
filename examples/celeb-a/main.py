@@ -15,20 +15,21 @@ from selfmod import *
 seed = 2024
 
 ## Train and adapt hps
-context_pool_size = 2
-context_size = 8
+context_pool_size = 4
+context_size = 64
 init_lr = 5e-4
 sched_factor = 0.5
 envs_batch_size = 250
 
-nb_outer_steps = 5
+nb_train_epochs = 1
+nb_outer_steps = 2
 nb_inner_steps_max = 5
 proximal_beta = 1e1
 inner_tol_node = 2e-11
 inner_tol_ctx = 1e-10
 
 print_error_every = 100
-nb_epochs_adapt = 1000
+nb_adapt_epochs = 1000
 
 meta_train = True
 run_folder = "./runs/240609-215946/"
@@ -95,8 +96,8 @@ data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 ## Define dataloaders for training and validation
 train_dataloader = RegMetaDataLoader(data_folder+"train_data.npz", envs_batch_size=envs_batch_size, points_batch_size=100, envs_shuffle=True, points_shuffle=True, key=data_key)
 
-# val_dataloader = RegMetaDataLoader(data_folder+"test_data.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32)
-val_dataloader = RegDataLoader(data_folder+"test_data.npz", batch_size=32*32)
+val_dataloader = RegMetaDataLoader(data_folder+"test_data.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32, key=data_key)
+# val_dataloader = RegDataLoader(data_folder+"test_data.npz", batch_size=32*32)
 
 nb_envs = train_dataloader.nb_envs
 nb_points_per_env = train_dataloader.nb_points_per_env
@@ -187,7 +188,7 @@ def loss_fn_ctx(model, batch, ctx, ctxs, key):
     return loss_val, (term3, term1, term2)
 
 
-neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=64, context_size=context_size, key=model_key)
+neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=128, context_size=context_size, key=model_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
 contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)
@@ -231,6 +232,7 @@ trainer = RegTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
     trainer.train_proximal(super_dataloader=train_dataloader,
+                           nb_epochs=nb_train_epochs,
                            nb_outer_steps_max=nb_outer_steps, 
                            nb_inner_steps_max=nb_inner_steps_max, 
                            proximal_reg=proximal_beta, 
@@ -249,9 +251,20 @@ else:
 
 
 #%%
-len(trainer.losses_model)
-sbplot(np.vstack(trainer.losses_model), label="Model loss")
+# len(np.vstack(trainer.losses_model))
+sbplot(np.vstack(trainer.losses_model), label="Model loss", y_scale="log")
 
+# import matplotlib.pyplot as plt
+# plt.plot(np.vstack(trainer.losses_ctx))
+
+# # Save the losses
+# np.save(run_folder+"losses_model.npy", np.vstack(trainer.losses_model))
+
+# ## Load the losses
+# losses = np.load(run_folder+"losses_model.npy")
+# # sbplot(losses, label="Model loss", y_scale="log")
+# import matplotlib.pyplot as plt
+# plt.plot(losses)
 
 
 
@@ -290,14 +303,15 @@ visualtester.visualizeCelebA(val_dataloader,
 
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = RegMetaDataLoader(data_folder+"adapt_train.npz", envs_batch_size=envs_batch_size, point_batch_size=100, adaptation=True, key=data_key)
+    adapt_dataloader = RegMetaDataLoader(data_folder+"adapt_train.npz", envs_batch_size=envs_batch_size, points_batch_size=100, adaptation=True, key=data_key)
+    # adapt_dataloader = RegDataLoader(data_folder+"adapt_train.npz", batch_size=100, adaptation=True, key=data_key)
 
     sched_ctx_new = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
     opt_adapt = optax.adabelief(sched_ctx_new)
 
     if restore_adaptation == False:
         trainer.adapt_bulk(adapt_dataloader,
-                            nb_epochs=nb_epochs_adapt, 
+                            nb_epochs=nb_adapt_epochs, 
                             taylor_order=0,
                             optimizer=opt_adapt, 
                             print_error_every=print_error_every, 
@@ -309,8 +323,8 @@ if meta_test:
 
 #%%
 if meta_test:
-    # adapt_dataloader_test = RegMetaDataLoader(data_folder+"adapt_test.npz", envs_batch_size=envs_batch_size, point_batch_size=32*32, adaptation=True, key=data_key)
-    adapt_dataloader_test = RegDataLoader(data_folder+"adapt_test.npz", batch_size=32*32, adaptation=True, key=data_key)
+    adapt_dataloader_test = RegMetaDataLoader(data_folder+"adapt_test.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32, adaptation=True, key=data_key)
+    # adapt_dataloader_test = RegDataLoader(data_folder+"adapt_test.npz", batch_size=32*32, adaptation=True, key=data_key)
 
     ood_crit, _ = visualtester.test(adapt_dataloader_test)
     # print("Out of domain test error:", ood_crit)

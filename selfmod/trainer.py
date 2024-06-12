@@ -750,6 +750,7 @@ class RegTrainer:
 
     def train_proximal(self, 
                        super_dataloader: RegMetaDataLoader, 
+                       nb_epochs,
                        nb_outer_steps_max, 
                        inner_tol_model=1e-2, 
                        inner_tol_ctx=1e-2, 
@@ -834,114 +835,119 @@ class RegTrainer:
         loss_key, _ = jax.random.split(key)
         early_stopping_count = 0
 
+        for epoch in range(nb_epochs):
 
-        for env_batch, (dataloader, env_ids) in enumerate(super_dataloader):
+            for env_batch, (dataloader, env_ids) in enumerate(super_dataloader):
 
-            super_loss_epoch_model = 0.
-            super_loss_epoch_ctx = 0.
-            super_nb_batches = 0
+                super_loss_epoch_model = 0.
+                super_loss_epoch_ctx = 0.
+                super_nb_batches = 0
 
-            ## Create a temporary context of size env_batch_size
-            super_ctx_values = super_contexts.params[env_ids]
-            contexts = eqx.tree_at(lambda c: c.params, blank_contexts, super_ctx_values)
+                ## Create a temporary context of size env_batch_size
+                super_ctx_values = super_contexts.params[env_ids]
+                contexts = eqx.tree_at(lambda c: c.params, blank_contexts, super_ctx_values)
 
-            weightings = jnp.ones(dataloader.nb_envs) / dataloader.nb_envs
+                weightings = jnp.ones(dataloader.nb_envs) / dataloader.nb_envs
 
-            for out_step in range(nb_outer_steps_max):
+                for out_step in range(nb_outer_steps_max):
 
-                model_old = jax.tree_util.tree_map(lambda x: x, model)
-                contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
+                    model_old = jax.tree_util.tree_map(lambda x: x, model)
+                    contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
 
-                ## Model proximal innner minimization
-                model_prev = jax.tree_util.tree_map(lambda x: x, model)
-                for in_step_model in range(nb_inner_steps_max):
+                    ## Model proximal innner minimization
+                    model_prev = jax.tree_util.tree_map(lambda x: x, model)
+                    for in_step_model in range(nb_inner_steps_max):
 
-                    nb_batches_model = 0
-                    loss_sum_model = 0.
+                        nb_batches_model = 0
+                        loss_sum_model = 0.
 
-                    for _, batch in enumerate(dataloader):
-                        loss_key, _ = jax.random.split(loss_key)
+                        for _, batch in enumerate(dataloader):
+                            loss_key, _ = jax.random.split(loss_key)
 
-                        model, contexts, opt_state_model, loss_model, (_, term1, term2, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
+                            model, contexts, opt_state_model, loss_model, (_, term1, term2, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
 
-                        loss_sum_model += loss_model
-                        nb_batches_model += 1
+                            loss_sum_model += loss_model
+                            nb_batches_model += 1
 
-                    diff_model = params_diff_norm_squared(model, model_prev) / params_norm_squared(model_prev)
-                    if diff_model < inner_tol_model or out_step==0:
-                        break
-                    model_prev = model
+                        diff_model = params_diff_norm_squared(model, model_prev) / params_norm_squared(model_prev)
+                        if diff_model < inner_tol_model or out_step==0:
+                            break
+                        model_prev = model
 
-                loss_epoch_model = loss_sum_model/nb_batches_model
-
-
-                ## Contexts proximal innner minimization
-                contexts_prev = jax.tree_util.tree_map(lambda x: x, contexts)
-                for in_step_ctx in range(nb_inner_steps_max):
-
-                    nb_batches_ctx = 0
-                    loss_sum_ctx = 0.
-
-                    for _, batch in enumerate(dataloader):
-                        loss_key, _ = jax.random.split(loss_key)
-
-                        model, contexts, opt_state_ctx, loss_ctx, (_, term1, term2, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
-
-                        loss_sum_ctx += loss_ctx
-                        nb_batches_ctx += 1
-
-                    diff_ctx = params_diff_norm_squared(contexts, contexts_prev) / params_norm_squared(contexts_prev)
-                    if diff_ctx < inner_tol_ctx or out_step==0:
-                        break
-                    contexts_prev = contexts
-
-                loss_epoch_ctx = loss_sum_ctx/nb_batches_ctx
-
-                super_loss_epoch_model += loss_epoch_model
-                super_loss_epoch_ctx += loss_epoch_ctx
-                super_nb_batches += 1
-
-            # ## Delete dataloader to free up memory
-            # del dataloader
-
-            if (env_batch%print_error_every==0) and (out_step%print_error_every==0 or out_step<=3 or out_step==nb_outer_steps_max-1):
-                # print(f"Meta Batch: {env_batch:-5d}     Outer Step: {out_step:-5d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}     ValCrit: {ind_crit:-.8f}", flush=True, end="\r")
-                print(f"Meta Batch: {env_batch:-5d}     Outer Step: {out_step:-5d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
-                print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod: {diff_model:.2e}\n\t-DiffCxt: {diff_ctx:.2e}", flush=True, end="\r")
-
-            if in_step_model < 1 and in_step_ctx < 1:
-                early_stopping_count += 1
-            else:
-                early_stopping_count = 0
-
-            if (patience is not None) and (early_stopping_count >= patience):
-                print(f"Stopping early after {patience} steps with no improvement in the loss. Consider increasing the tolerances for the inner minimizations.")
-                break
-
-            losses_model.append(super_loss_epoch_model/super_nb_batches)
-            losses_ctx.append(super_loss_epoch_ctx/super_nb_batches)
-
-            ## Reassemble the super_context
-            super_ctx_new_params = super_contexts.params.at[env_ids].set(contexts.params)
-            super_contexts = eqx.tree_at(lambda c: c.params, super_contexts, super_ctx_new_params)
+                    loss_epoch_model = loss_sum_model/nb_batches_model
 
 
-            if val_dataloader is not None:
-                self.learner.model = model
-                self.learner.contexts = super_contexts
-                ind_crit,_ = tester.test(val_dataloader, criterion=val_criterion, verbose=False)
-                print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
-                val_losses.append(np.array([out_step, ind_crit]))
-                ## Check if val loss is lowest to save the model
-                if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
-                    print(f"        Saving best model so far ...")
-                    self.learner.save_learner(save_path)
-                ## Restore the learner at the last evaluation step
-                if out_step == nb_outer_steps_max-1:
-                    self.learner.load_learner(save_path)
+                    ## Contexts proximal innner minimization
+                    contexts_prev = jax.tree_util.tree_map(lambda x: x, contexts)
+                    for in_step_ctx in range(nb_inner_steps_max):
 
-            # print("\n")
-            # gc.collect()
+                        nb_batches_ctx = 0
+                        loss_sum_ctx = 0.
+
+                        for _, batch in enumerate(dataloader):
+                            loss_key, _ = jax.random.split(loss_key)
+
+                            model, contexts, opt_state_ctx, loss_ctx, (_, term1, term2, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
+
+                            loss_sum_ctx += loss_ctx
+                            nb_batches_ctx += 1
+
+                        diff_ctx = params_diff_norm_squared(contexts, contexts_prev) / params_norm_squared(contexts_prev)
+                        if diff_ctx < inner_tol_ctx or out_step==0:
+                            break
+                        contexts_prev = contexts
+
+                    loss_epoch_ctx = loss_sum_ctx/nb_batches_ctx
+
+                    super_loss_epoch_model += loss_epoch_model
+                    super_loss_epoch_ctx += loss_epoch_ctx
+                    super_nb_batches += 1
+
+                    # ## TODO remove the following two lines
+                    # losses_model.append(loss_epoch_model)
+                    # losses_ctx.append(loss_epoch_ctx)
+
+                # ## Delete dataloader to free up memory
+                # del dataloader
+
+                if (env_batch%print_error_every==0) and (out_step%print_error_every==0 or out_step<=3 or out_step==nb_outer_steps_max-1):
+                    # print(f"Meta Batch: {env_batch:-5d}     Outer Step: {out_step:-5d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}     ValCrit: {ind_crit:-.8f}", flush=True, end="\r")
+                    print(f"Epoch: {epoch:-3d}     EnvBatchId: {env_batch:-3d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
+                    print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod: {diff_model:.2e}\n\t-DiffCxt: {diff_ctx:.2e}", flush=True, end="\r")
+
+                if in_step_model < 1 and in_step_ctx < 1:
+                    early_stopping_count += 1
+                else:
+                    early_stopping_count = 0
+
+                if (patience is not None) and (early_stopping_count >= patience):
+                    print(f"Stopping early after {patience} steps with no improvement in the loss. Consider increasing the tolerances for the inner minimizations.")
+                    break
+
+                losses_model.append(super_loss_epoch_model/super_nb_batches)
+                losses_ctx.append(super_loss_epoch_ctx/super_nb_batches)
+
+                ## Reassemble the super_context
+                super_ctx_new_params = super_contexts.params.at[env_ids].set(contexts.params)
+                super_contexts = eqx.tree_at(lambda c: c.params, super_contexts, super_ctx_new_params)
+
+
+                if val_dataloader is not None:
+                    self.learner.model = model
+                    self.learner.contexts = super_contexts
+                    ind_crit,_ = tester.test(val_dataloader, criterion=val_criterion, verbose=False)
+                    print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
+                    val_losses.append(np.array([out_step, ind_crit]))
+                    ## Check if val loss is lowest to save the model
+                    if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
+                        print(f"        Saving best model so far ...")
+                        self.learner.save_learner(save_path)
+                    ## Restore the learner at the last evaluation step
+                    if out_step == nb_outer_steps_max-1:
+                        self.learner.load_learner(save_path)
+
+                # print("\n")
+                # gc.collect()
 
 
 
@@ -1010,7 +1016,7 @@ class RegTrainer:
 
 
     def adapt_bulk(self, 
-                   dataloader: RegDataLoader, 
+                   super_dataloader: RegMetaDataLoader, 
                    nb_epochs, 
                    taylor_order=0,
                    optimizer=None, 
@@ -1030,18 +1036,20 @@ class RegTrainer:
             print(f"Creating a new model with taylor order {taylor_order} ...")
             model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
 
+        blank_contexts = ArrayContextParams(super_dataloader.envs_batch_size, self.learner.context_size)
+
         if optimizer is None:       ## To continue a previous adaptation
             if hasattr(self, 'opt_adapt'):
                 print("Using any previrouly defined optimizer for adapation")
                 opt = self.opt_adapt
-                contexts = self.learner.contexts_adapt
+                super_contexts = self.learner.contexts_adapt
                 opt_state = self.opt_state_adapt
             else:
                 raise ValueError("No optimizer provided for adaptation, and none previously defined")
         else:
             opt = optimizer
-            contexts = ArrayContextParams(self.learner.nb_envs, self.learner.context_size)
-            opt_state = opt.init(contexts)
+            super_contexts = ArrayContextParams(super_dataloader.nb_envs, self.learner.context_size)
+            opt_state = opt.init(blank_contexts)
             self.losses_adapt = []
 
         @eqx.filter_jit
@@ -1057,41 +1065,57 @@ class RegTrainer:
 
             return model, contexts, opt_state, loss, aux_data
 
-        if not isinstance(dataloader, RegDataLoader):
+        if not isinstance(super_dataloader, RegMetaDataLoader):
             raise ValueError("The dataloader must be an instance of RegDataLoader")
 
-        nb_train_steps_per_epoch = dataloader.nb_points_per_env // dataloader.batch_size
-        total_steps = nb_epochs * nb_train_steps_per_epoch
+        nb_env_train_steps_per_epoch = np.ceil(super_dataloader.nb_envs / super_dataloader.envs_batch_size).astype(int)
+        total_steps = nb_epochs * nb_env_train_steps_per_epoch
 
         print(f"\n\n=== Beginning adaptation ... ===")
-        print(f"    Number of examples in a batch: {dataloader.batch_size}")
-        print(f"    Number of train steps per epoch: {nb_train_steps_per_epoch}")
+        print(f"    Number of environments in a batch: {super_dataloader.envs_batch_size}")
+        print(f"    Number of envs train steps per epoch: {nb_env_train_steps_per_epoch}")
         print(f"    Number of training epochs: {nb_epochs}")
         print(f"    Total number of training steps: {total_steps}")
 
         start_time = time.time()
 
         losses = []
-        weightings = jnp.ones(dataloader.nb_envs) / dataloader.nb_envs
         loss_key, _ = jax.random.split(key)
 
         for epoch in range(nb_epochs):
-            nb_batches = 0
-            loss_sum = 0
 
-            for i, batch in enumerate(dataloader):
-                loss_key, _ = jax.random.split(loss_key)
+            super_loss_sum = 0.
+            super_nb_batches = 0
 
-                model, contexts, opt_state, loss, (_, term1, term2) = train_step(model, contexts, batch, weightings, opt_state, loss_key)
+            for env_batch, (dataloader, env_ids) in enumerate(super_dataloader):
 
-                loss_sum += loss
-                nb_batches += 1
+                weightings = jnp.ones(dataloader.nb_envs) / dataloader.nb_envs
 
-            loss_epoch = loss_sum/nb_batches
-            losses.append(loss_epoch)
+                contexts = eqx.tree_at(lambda c: c.params, blank_contexts, super_contexts.params[env_ids])
+
+                loss_sum = 0.
+                nb_batches = 0
+
+                for i, batch in enumerate(dataloader):
+                    loss_key, _ = jax.random.split(loss_key)
+
+                    model, contexts, opt_state, loss, (_, term1, term2) = train_step(model, contexts, batch, weightings, opt_state, loss_key)
+
+                    loss_sum += loss
+                    nb_batches += 1
+
+                loss_epoch = loss_sum/nb_batches
+
+                super_loss_sum += loss_epoch
+                super_nb_batches += 1
+
+            losses.append(super_loss_sum/super_nb_batches)
+
+            super_contexts_new_params = super_contexts.params.at[env_ids].set(contexts.params)
+            super_contexts = eqx.tree_at(lambda c: c.params, super_contexts, super_contexts_new_params)
 
             if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
-                print(f"    Epoch: {epoch:-5d}     Loss: {loss_epoch:-.8f}        ModelNorm: {jnp.mean(term1):-.8f}        ContextsNorm: {jnp.mean(term2):-.8f}", flush=True)
+                print(f"    Epoch: {epoch:-3d}     Loss: {losses[-1]:-.8f}        ModelNorm: {jnp.mean(term1):-.8f}        ContextsNorm: {jnp.mean(term2):-.8f}", flush=True)
 
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
@@ -1102,7 +1126,7 @@ class RegTrainer:
         self.opt_adapt = opt
         self.opt_state_adapt = opt_state
 
-        self.learner.contexts_adapt = contexts
+        self.learner.contexts_adapt = super_contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)

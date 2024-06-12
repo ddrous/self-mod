@@ -1,5 +1,6 @@
 
 from selfmod.dataloader import RegDataLoader
+from selfmod.learner import ArrayContextParams
 from ._utils import *
 
 #%%
@@ -562,30 +563,51 @@ class RegVisualTester:
         self.trainer = trainer
 
 
-    def test(self, dataloader, criterion=None, verbose=True):
+    def test(self, super_dataloader, criterion=None, verbose=True):
         """ Compute test metrics on the adaptation dataloader  """ ## TODO non-UQ aware testing
 
         criterion = criterion if criterion else lambda x, x_hat: jnp.mean((x-x_hat)**2)
 
-        X = dataloader.X
-        Y = dataloader.Y
-
         if verbose == True:
-            if dataloader.adaptation == False:
+            if super_dataloader.adaptation == False:
                 print("==  Begining in-domain testing ... ==")
             else:
                 print("==  Begining out-of-distribution testing ... ==")
 
-        if dataloader.adaptation == False:
-            contexts = self.trainer.learner.contexts.params
+        if super_dataloader.adaptation == False:
+            super_contexts = self.trainer.learner.contexts
         else:
-            contexts = self.trainer.learner.contexts_adapt.params
+            super_contexts = self.trainer.learner.contexts_adapt
 
-        Y_hat, _ = jax.vmap(self.trainer.learner.model, in_axes=(0, 0, 0))(X, contexts, contexts)
+        # Y_hat, _ = jax.vmap(self.trainer.learner.model, in_axes=(0, 0, 0))(X, contexts, contexts)
+        # batched_criterion = jax.vmap(jax.vmap(criterion, in_axes=(0, 0)), in_axes=(0, 0))
+
+        batched_vmap = jax.vmap(self.trainer.learner.model, in_axes=(0, 0, 0))
         batched_criterion = jax.vmap(jax.vmap(criterion, in_axes=(0, 0)), in_axes=(0, 0))
 
-        crit_all = batched_criterion(Y, Y_hat).mean(axis=1)
-        crit = crit_all.mean(axis=0)
+        blank_contexts = ArrayContextParams(super_dataloader.envs_batch_size, self.trainer.learner.context_size)
+
+        super_loss = 0.
+        super_nb_batches = 0
+        for env_batch, (dataloader, env_ids) in enumerate(super_dataloader):
+
+            ## Create a temporary context of size env_batch_size
+            super_ctx_values = super_contexts.params[env_ids]
+            contexts = eqx.tree_at(lambda c: c.params, blank_contexts, super_ctx_values)
+
+            X, Y = dataloader.X, dataloader.Y
+
+            Y_hat, _ = batched_vmap(X, contexts.params, contexts.params)
+            crit = jnp.mean(batched_criterion(Y, Y_hat))
+
+            super_loss += crit
+            super_nb_batches += 1
+
+        crit = super_loss / super_nb_batches
+
+
+        # crit_all = batched_criterion(Y, Y_hat).mean(axis=1)
+        # crit = crit_all.mean(axis=0)
 
         if verbose == True:
             if dataloader.adaptation == False:
@@ -594,7 +616,7 @@ class RegVisualTester:
                 print("Test Score (OOD):", crit)
             print(flush=True)
 
-        return crit, crit_all
+        return crit, None
 
 
 
@@ -678,7 +700,7 @@ class RegVisualTester:
             val_losses = np.vstack(self.trainer.val_losses)
             ax['D'].plot(val_losses[:,0], val_losses[:,1], "y.", label="Validation Loss", linewidth=3, alpha=0.5)
 
-        ax['D'].set_xlabel("Epochs")
+        ax['D'].set_xlabel("Step")
         ax['D'].set_title("Loss Terms")
         ax['D'].set_yscale('log')
         ax['D'].legend()
