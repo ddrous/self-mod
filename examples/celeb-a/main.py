@@ -12,20 +12,21 @@ from selfmod import *
 
 #%%
 
-seed = 2024
+seed = 2026
 
 ## Train and adapt hps
-context_pool_size = 4
-context_size = 64
+context_pool_size = 2
+context_size = 128
 init_lr = 5e-4
 sched_factor = 0.5
-envs_batch_size = 250
+envs_batch_size = 64
 
 nb_train_epochs = 1
-nb_outer_steps = 2
-nb_inner_steps_max = 5
+nb_outer_steps = 5
+nb_inner_steps_model = 1
+nb_inner_steps_ctx = 5
 proximal_beta = 1e1
-inner_tol_node = 2e-11
+inner_tol_model = 2e-11
 inner_tol_ctx = 1e-10
 
 print_error_every = 100
@@ -132,8 +133,8 @@ class Swish(eqx.Module):
         return x * jax.nn.sigmoid(self.beta * x)
 
 class MultiMLP(eqx.Module):
-    layers_data: list
-    layers_context: list
+    # layers_data: list
+    # layers_context: list
     layers_shared: list
     activations: list
 
@@ -141,29 +142,32 @@ class MultiMLP(eqx.Module):
         keys = jax.random.split(key, 10)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
-        self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
-                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
-                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
+        # self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
+        #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
+        #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
 
-        self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[5])]
+        # self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
+        #                     eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
+        #                     eqx.nn.Linear(hidden_size, hidden_size, key=keys[5])]
 
-        self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
+        # self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
+        self.layers_shared = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[0], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
 
     def __call__(self, x, ctx):
-        ctx = ctx
-        for layer in self.layers_context:
-            ctx = layer(ctx)
+        # ctx = ctx
+        # for layer in self.layers_context:
+        #     ctx = layer(ctx)
 
-        y = x
-        for layer in self.layers_data:
-            y = layer(y)
+        # y = x
+        # for layer in self.layers_data:
+        #     y = layer(y)
 
-        y = jnp.concatenate([y, ctx], axis=0)
+        # y = jnp.concatenate([y, ctx], axis=0)
+        y = jnp.concatenate([x, ctx], axis=0)
         for layer in self.layers_shared:
             y = layer(y)
 
@@ -191,7 +195,7 @@ def loss_fn_ctx(model, batch, ctx, ctxs, key):
 neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=128, context_size=context_size, key=model_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
-contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)
+contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)   ## TODO: just to limit the number of contexts
 
 learner = RegLearner(model=model, contexts=contexts, loss_fn_ctx=loss_fn_ctx, key=model_key)
 
@@ -233,10 +237,11 @@ if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
     trainer.train_proximal(super_dataloader=train_dataloader,
                            nb_epochs=nb_train_epochs,
-                           nb_outer_steps_max=nb_outer_steps, 
-                           nb_inner_steps_max=nb_inner_steps_max, 
-                           proximal_reg=proximal_beta, 
-                           inner_tol_model=inner_tol_node, 
+                           nb_outer_steps=nb_outer_steps, 
+                           nb_inner_steps_model=nb_inner_steps_model, 
+                           nb_inner_steps_ctx=nb_inner_steps_ctx, 
+                           proximal_reg=proximal_beta,
+                           inner_tol_model=inner_tol_model, 
                            inner_tol_ctx=inner_tol_ctx,
                            print_error_every=print_error_every, 
                            save_path=trainer_save_path, 
@@ -254,17 +259,6 @@ else:
 # len(np.vstack(trainer.losses_model))
 sbplot(np.vstack(trainer.losses_model), label="Model loss", y_scale="log")
 
-# import matplotlib.pyplot as plt
-# plt.plot(np.vstack(trainer.losses_ctx))
-
-# # Save the losses
-# np.save(run_folder+"losses_model.npy", np.vstack(trainer.losses_model))
-
-# ## Load the losses
-# losses = np.load(run_folder+"losses_model.npy")
-# # sbplot(losses, label="Model loss", y_scale="log")
-# import matplotlib.pyplot as plt
-# plt.plot(losses)
 
 
 

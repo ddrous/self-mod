@@ -751,10 +751,11 @@ class RegTrainer:
     def train_proximal(self, 
                        super_dataloader: RegMetaDataLoader, 
                        nb_epochs,
-                       nb_outer_steps_max, 
+                       nb_outer_steps, 
+                       nb_inner_steps_model=1, 
+                       nb_inner_steps_ctx=10, 
                        inner_tol_model=1e-2, 
                        inner_tol_ctx=1e-2, 
-                       nb_inner_steps_max=10, 
                        proximal_reg=100., 
                        patience=None, 
                        print_error_every=1, 
@@ -821,9 +822,8 @@ class RegTrainer:
         print(f"\n\n=== Beginning training with proximal alternating minimization ... ===")
         print(f"    Number of examples in a batch along envs: {super_dataloader.envs_batch_size}")
         print(f"    Number of examples in a batch along datapoints: {super_dataloader.points_batch_size}")
-        print(f"    Maximum number of steps per inner minimization: {nb_inner_steps_max}")
-        print(f"    Maximum number of outer minimizations: {nb_outer_steps_max}")
-        print(f"    Maximum total number of training steps: {nb_outer_steps_max*nb_inner_steps_max}")
+        print(f"    Maximum number of steps per inner minimizations: {nb_inner_steps_model, nb_inner_steps_ctx}")
+        print(f"    Maximum number of outer minimizations: {nb_outer_steps}")
 
         start_time = time.time()
 
@@ -846,17 +846,18 @@ class RegTrainer:
                 ## Create a temporary context of size env_batch_size
                 super_ctx_values = super_contexts.params[env_ids]
                 contexts = eqx.tree_at(lambda c: c.params, blank_contexts, super_ctx_values)
+                contexts = blank_contexts
 
                 weightings = jnp.ones(dataloader.nb_envs) / dataloader.nb_envs
 
-                for out_step in range(nb_outer_steps_max):
+                for out_step in range(nb_outer_steps):
 
                     model_old = jax.tree_util.tree_map(lambda x: x, model)
                     contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
 
                     ## Model proximal innner minimization
                     model_prev = jax.tree_util.tree_map(lambda x: x, model)
-                    for in_step_model in range(nb_inner_steps_max):
+                    for in_step_model in range(nb_inner_steps_model):
 
                         nb_batches_model = 0
                         loss_sum_model = 0.
@@ -876,10 +877,11 @@ class RegTrainer:
 
                     loss_epoch_model = loss_sum_model/nb_batches_model
 
+                    ## TODO: To imitate CAVIA, we should set the ctx to zero here !
 
                     ## Contexts proximal innner minimization
                     contexts_prev = jax.tree_util.tree_map(lambda x: x, contexts)
-                    for in_step_ctx in range(nb_inner_steps_max):
+                    for in_step_ctx in range(nb_inner_steps_ctx):
 
                         nb_batches_ctx = 0
                         loss_sum_ctx = 0.
@@ -910,10 +912,10 @@ class RegTrainer:
                 # ## Delete dataloader to free up memory
                 # del dataloader
 
-                if (env_batch%print_error_every==0) and (out_step%print_error_every==0 or out_step<=3 or out_step==nb_outer_steps_max-1):
+                if (env_batch%print_error_every==0) and (out_step%print_error_every==0 or out_step<=3 or out_step==nb_outer_steps-1):
                     # print(f"Meta Batch: {env_batch:-5d}     Outer Step: {out_step:-5d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}     ValCrit: {ind_crit:-.8f}", flush=True, end="\r")
                     print(f"Epoch: {epoch:-3d}     EnvBatchId: {env_batch:-3d}      LossModel: {loss_epoch_model:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
-                    print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod: {diff_model:.2e}\n\t-DiffCxt: {diff_ctx:.2e}", flush=True, end="\r")
+                    print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                 if in_step_model < 1 and in_step_ctx < 1:
                     early_stopping_count += 1
@@ -943,7 +945,7 @@ class RegTrainer:
                         print(f"        Saving best model so far ...")
                         self.learner.save_learner(save_path)
                     ## Restore the learner at the last evaluation step
-                    if out_step == nb_outer_steps_max-1:
+                    if out_step == nb_outer_steps-1:
                         self.learner.load_learner(save_path)
 
                 # print("\n")
