@@ -6,6 +6,7 @@ import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 
 from selfmod import *
+# from selfmod.dataloader import CelebADataLoader
 
 # jax.config.update("jax_debug_nans", True)
 
@@ -44,6 +45,41 @@ data_folder="./data/pix0100_res32_ord0/"
 
 
 
+#%%
+
+
+train_data_loader = CelebADataLoader(data_folder+"train_data.npz", envs_batch_size=envs_batch_size, shots_batch_size=100, envs_shuffle=True, shots_shuffle=True, key=jax.random.PRNGKey(seed))
+val_data_loader = CelebADataLoader(data_folder+"train_data.npz", envs_batch_size=envs_batch_size, shots_batch_size=32*32, envs_shuffle=True, shots_shuffle=True, key=jax.random.PRNGKey(seed))
+
+X, Y = next(train_data_loader)
+print("X shape:", X.shape)
+print("Y shape:", Y.shape)
+X_val, Y_val = next(val_data_loader)
+
+import seaborn as sns
+sns.set_theme(style='ticks', palette='muted', font_scale=1.5, context='paper')
+
+
+idx = np.random.randint(0, envs_batch_size)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+img_size = (32, 32, 3)
+
+## Display the few shot pixels in a blank image
+blank_img = np.zeros(img_size)
+x_coords = (X[idx, :, 0] * img_size[0]).astype(int)
+y_coords = (X[idx, :, 1] * img_size[1]).astype(int)
+blank_img[x_coords, y_coords, :] = Y[idx, :, :]
+ax1.imshow(blank_img, extent=[0, img_size[1], img_size[0], 0])
+ax1.set_title('Few-shot pixels', fontsize=20)
+
+## Display the full image
+full_img = Y_val
+ax2.imshow(full_img, extent=[0, img_size[1], img_size[0]+1, 0])
+ax2.set_title('All pixels', fontsize=20)
+
+plt.tight_layout()
+plt.show()
 
 
 

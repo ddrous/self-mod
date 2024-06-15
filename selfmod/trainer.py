@@ -1,8 +1,8 @@
 import pickle
 
-from selfmod.dataloader import DataLoader, DataLoader, CelebADataLoader
-from selfmod.learner import ContextParams, ArrayContextParams, NeuralContextFlow, Learner
-from selfmod.visualtester import VisualTester, VisualTester
+from selfmod.dataloader import DataLoader
+from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner
+from selfmod.visualtester import VisualTester
 from ._utils import *
 
 # import gc
@@ -48,7 +48,7 @@ class Trainer:
 
 
     def train_proximal(self, 
-                       super_dataloader: CelebADataLoader, 
+                       super_dataloader: DataLoader, 
                        nb_epochs,
                        nb_outer_steps, 
                        nb_inner_steps_model=1, 
@@ -113,7 +113,7 @@ class Trainer:
             return model, contexts, opt_state, loss, aux_data
 
 
-        if not isinstance(super_dataloader, CelebADataLoader):
+        if not isinstance(super_dataloader, DataLoader):
             raise ValueError("The dataloader must be an instance of DataLoader")
         if val_dataloader is not None:
             tester = VisualTester(self, key=key)
@@ -317,7 +317,7 @@ class Trainer:
 
 
     def adapt_bulk(self, 
-                   super_dataloader: CelebADataLoader, 
+                   super_dataloader: DataLoader, 
                    nb_epochs, 
                    taylor_order=0,
                    optimizer=None, 
@@ -366,7 +366,7 @@ class Trainer:
 
             return model, contexts, opt_state, loss, aux_data
 
-        if not isinstance(super_dataloader, CelebADataLoader):
+        if not isinstance(super_dataloader, DataLoader):
             raise ValueError("The dataloader must be an instance of DataLoader")
 
         nb_env_train_steps_per_epoch = np.ceil(super_dataloader.nb_envs / super_dataloader.envs_batch_size).astype(int)

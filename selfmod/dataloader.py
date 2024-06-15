@@ -30,7 +30,7 @@ class DataLoader:
         self.shots_batch_size = shots_batch_size
         self.shots_shuffle = shots_shuffle
 
-        if shots_batch_size <= 0 or shots_batch_size:
+        if shots_batch_size <= 0 or shots_batch_size <=0 :
             raise ValueError("A batch size must be greater than 0.")
 
         self.key = key
@@ -38,7 +38,7 @@ class DataLoader:
             raise ValueError("Shuffling the dataset requires a key.")
 
     @abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """ Loads, transforms and yields a batch of environments """
         pass
 
@@ -68,20 +68,20 @@ class CelebADataLoader(DataLoader):
                  order_pixels=False,
                  key=None):
 
-        super(CelebADataLoader, self).__init__(data_path, 
-                                               envs_batch_size, 
-                                               envs_shuffle, 
-                                               shots_batch_size, 
-                                               shots_shuffle, 
-                                               data_split, 
-                                               key)
+        super().__init__(data_path, 
+                        envs_batch_size, 
+                        envs_shuffle, 
+                        shots_batch_size, 
+                        shots_shuffle, 
+                        data_split, 
+                        key)
 
         self.input_dim = 2
         self.output_dim = 3
         self.img_size = (*resolution, self.output_dim)
         self.order_pixels = order_pixels
-
         ## Read the partitioning file: train(0), val(1), test(2)
+
         partitions = pd.read_csv(self.data_path+'/list_eval_partition.txt', 
                                  header=None, 
                                  sep=r'\s+', 
@@ -110,7 +110,6 @@ class CelebADataLoader(DataLoader):
                                             transforms.Resize((self.img_size[0], self.img_size[1]), Image.LANCZOS),
                                             transforms.ToTensor(),
                                             ])
-
 
     def get_image(self, filename) -> torch.Tensor:
         img_path = os.path.join(self.data_path, filename)
@@ -150,8 +149,8 @@ class CelebADataLoader(DataLoader):
             f_end = min([(batch_id+1)*self.envs_batch_size, self.total_envs])
             sampled_files = self.files[f_start:f_end]
 
-        for env, imgname in enumerate(sampled_files):
-            img = self.get_image(imgname)
+        for env, img_name in enumerate(sampled_files):
+            img = self.get_image(img_name)
             normed_coords, pixel_values = self.sample_pixels(img)
             X[env, :, :] = normed_coords
             Y[env, :, :] = pixel_values
