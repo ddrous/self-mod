@@ -1,169 +1,51 @@
+from typing import Tuple
 from ._utils import *
-import warnings
+from abc import abstractmethod
+
+import pandas as pd
+import torch
+from torchvision.transforms import transforms
+from PIL import Image
+
+
 
 class DataLoader:
-    def __init__(self, dataset, t_eval=None, batch_size=-1, int_cutoff=1.0, shuffle=True, adaptation=False, data_id=None, key=None):
-
-        self.data_id = data_id if data_id else get_id_current_time()
-        # if data_id is None:
-        #     print("WARNING: You did not provide a dataloader id. A new one has been generated:", self.data_id)
-        #     print("WARNING: Note that this id used to distuinguish between adaptations to different environments.")
-
-        if isinstance(dataset, str):
-            raw_dat = jnp.load(dataset)
-            self.dataset, self.t_eval = jnp.asarray(raw_dat['X']), jnp.asarray(raw_dat['t'])
-        else:
-            self.dataset = dataset
-            self.t_eval = t_eval
-
-        self.shuffle = shuffle
-        if self.shuffle:
-            if key is None:
-                print("WARNING: You are demanding a shuffled dataset but did not provide any keys for that.")
-                self.key = get_new_key()
-            else:
-                self.key = key
-
-        assert jnp.ndim(self.dataset) == 4, "Dataset must be of shape (nb_envs, nb_trajs_per_env, nb_steps_per_traj, data_size)"
-        assert self.t_eval.shape[0] == self.dataset.shape[2], "t_eval must have the same length as the number of steps in the dataset"
-
-        datashape = self.dataset.shape
-        self.nb_envs = datashape[0]
-        self.nb_trajs_per_env = datashape[1]
-        self.nb_steps_per_traj = datashape[2]
-        self.data_size = datashape[3]
-
-        # print("Dataset shape:", datashape)
-
-        self.int_cutoff = int(int_cutoff*self.nb_steps_per_traj)    ## integration cutoff
-
-        if batch_size < 0 or batch_size > self.nb_trajs_per_env:
-            # print("WARNING: batch_size must be between 0 and nb_trajs_per_env. Setting batch_size to maximum.")
-            self.batch_size = self.nb_trajs_per_env
-        else:
-            self.batch_size = batch_size
-
-        self.adaptation = adaptation    ## Is this a dataset for adaptation ?
-
-    # def __iter__(self):     ## TODO! Randomise this function
-    #     nb_batches = self.nb_trajs_per_env // self.batch_size
-    #     for batch_id in range(nb_batches):
-    #         traj_start, traj_end = batch_id*self.batch_size, (batch_id+1)*self.batch_size
-    #         yield self.dataset[:, traj_start:traj_end, :self.int_cutoff, :], self.t_eval[:self.int_cutoff]
-
-    def __iter__(self):
-        nb_batches = self.nb_trajs_per_env // self.batch_size
-
-        if self.shuffle:
-            key = get_new_key(self.key)
-
-            ## The strategy below eleviates encountering the same (env1, traj1) - (env2, traj2) pair across all batches
-
-            ## 1) Extract a subset of environments
-            e_start = jax.random.randint(key, shape=(1,), minval=0, maxval=self.nb_envs)[0]
-            length = jax.random.randint(key, shape=(1,), minval=e_start+1, maxval=self.nb_envs+1)[0] - e_start
-            ## 2) Shuffle that subset accross dimension 1 (trajs), then put them back at the same place
-            perm_env = jax.random.permutation(key, self.dataset[e_start:e_start+length, ...], axis=1)
-            perm_dataset = self.dataset.at[e_start:e_start+length, ...].set(perm_env)
-            ## 3) Shuffle the resulting dataset again accross dimension 1 (for extra randomness)
-            perm_dataset = jax.random.permutation(key, perm_dataset, axis=1)
-
-            # ## 1) Extract a subset of environments
-            # e_start = jax.random.randint(key, shape=(1,), minval=0, maxval=self.nb_envs)[0]
-            # length = jax.random.randint(key, shape=(1,), minval=e_start+1, maxval=self.nb_envs+1)[0] - e_start
-            # ## 2) Shuffle that subset accross dimension 1 (trajs), then put them back at the same place
-            # perm_env = jax.random.permutation(key, perm_dataset[e_start:e_start+length, ...], axis=1)
-            # perm_dataset = self.dataset.at[e_start:e_start+length, ...].set(perm_env)
-            # ## 3) Shuffle the resulting dataset again accross dimension 1 (for extra randomness)
-            # perm_dataset = jax.random.permutation(key, perm_dataset, axis=1)
-
-        else:
-            perm_dataset = self.dataset
-
-        ## We are now ready to iterate over the dataset
-        for batch_id in range(nb_batches):
-            traj_start, traj_end = batch_id*self.batch_size, (batch_id+1)*self.batch_size
-            yield perm_dataset[:, traj_start:traj_end, :self.int_cutoff, :], self.t_eval[:self.int_cutoff]
-
-        if self.shuffle:
-            self.key = key
-
-    def __len__(self):
-        return self.nb_envs * self.nb_trajs_per_env
-
-
-
-
-
-
-
-
-
-
-
-class RegDataLoader:
     """
-    A simple dataloader for general-purpose meta-learning regression tasks.
+    A bas class generator of generators for general-purpose meta-learning regression tasks.
     """
-    # def __init__(self, datapath, batch_size, shuffle=True, adaptation=False, key=None):
-    def __init__(self, dataset, batch_size, shuffle=False, adaptation=False, envs_limit=False, key=None):
+    def __init__(self, 
+                 data_path, 
+                 envs_batch_size=250, 
+                 envs_shuffle=True, 
+                 shots_batch_size=1,
+                 shots_shuffle=False, 
+                 data_split="train", 
+                 key=None):
 
-        if isinstance(dataset, str):
-            raw_dat = jnp.load(dataset)
-            self.X, self.Y = jnp.asarray(raw_dat['X']), jnp.asarray(raw_dat['Y'])
-        else:
-            self.X, self.Y = dataset
+        self.data_path = data_path
+        self.envs_batch_size = envs_batch_size
+        self.envs_shuffle = envs_shuffle
 
-        self.nb_envs = self.X.shape[0]
-        self.nb_points_per_env = self.X.shape[1]
-        self.input_dim = self.X.shape[2]
-        self.output_dim = self.Y.shape[2]
+        self.adaptation = data_split in ["adapt", "test"]
+        self.shots_batch_size = shots_batch_size
+        self.shots_shuffle = shots_shuffle
 
-        self.shuffle = shuffle
+        if shots_batch_size <= 0 or shots_batch_size:
+            raise ValueError("A batch size must be greater than 0.")
+
         self.key = key
-        if self.shuffle and self.key is None:
+        if (self.envs_shuffle or self.shots_shuffle) and self.key is None:
             raise ValueError("Shuffling the dataset requires a key.")
 
-        if 0 < batch_size and batch_size <= self.nb_points_per_env:
-            self.batch_size = batch_size
-        else:
-            raise ValueError(f"Invalid batch size provided. Got {batch_size}")
-
-        if self.nb_points_per_env % self.batch_size != 0:
-            raise ValueError(f"The batch size must evenly divide the number of datapoints per environment. Got {self.nb_points_per_env} / {self.batch_size}")
-
-        self.adaptation = adaptation
-
-
+    @abstractmethod
     def __iter__(self):
-        ## To reduce the chance of seeing the same (env1, point1) - (env2, point2) across epochs
-        if self.shuffle:
-            _, self.key = jax.random.split(self.key)
-            # 1) Extract a subset of environments
-            e_start = jax.random.randint(self.key, shape=(1,), minval=0, maxval=self.nb_envs)[0]
-            length = jax.random.randint(self.key, shape=(1,), minval=e_start+1, maxval=self.nb_envs+1)[0] - e_start
-            # 2) Shuffle that subset accross dimension 1 (data points), then put them back at the same place
-            X_small = jax.random.permutation(self.key, self.X[e_start:e_start+length, ...], axis=1)
-            Y_small = jax.random.permutation(self.key, self.Y[e_start:e_start+length, ...], axis=1)
-            X_perm = self.X.at[e_start:e_start+length, ...].set(X_small)
-            Y_perm = self.Y.at[e_start:e_start+length, ...].set(Y_small)
-            # 3) Shuffle the resulting dataset again accross dimension 1 (for extra randomness)
-            X_perm = jax.random.permutation(self.key, X_perm, axis=1)
-            Y_perm = jax.random.permutation(self.key, Y_perm, axis=1)
-            del X_small, Y_small
-        else:
-            X_perm = self.X
-            Y_perm = self.Y
+        """ Loads, transforms and yields a batch of environments """
+        pass
 
-
-        ## Iterate over the dataset
-        nb_batches = self.nb_points_per_env // self.batch_size
-        for batch_id in range(nb_batches):
-            batch_start, batch_end = batch_id*self.batch_size, (batch_id+1)*self.batch_size
-            yield X_perm[:, batch_start:batch_end, :], Y_perm[:, batch_start:batch_end, :]
-
+    @abstractmethod
     def __len__(self):
-        return self.nb_envs * self.nb_points_per_env
+        """ Total number of environments / envs_batch size. """
+        pass
 
 
 
@@ -171,61 +53,132 @@ class RegDataLoader:
 
 
 
-class RegMetaDataLoader:
+class CelebADataLoader(DataLoader):
     """
-    A generator of generators for general-purpose meta-learning regression tasks.
+    A celeb a dataloader for meta-learning.
     """
-    def __init__(self, datapath, envs_batch_size=250, points_batch_size=1, envs_shuffle=True, points_shuffle=False, adaptation=False, key=None):
+    def __init__(self, 
+                 data_path="./data/img_align_celeba", 
+                 envs_batch_size=250, 
+                 envs_shuffle=True, 
+                 shots_batch_size=100,
+                 shots_shuffle=False, 
+                 data_split="train",
+                 resolution=(32, 32),
+                 order_pixels=False,
+                 key=None):
 
-        raw_dat = jnp.load(datapath)
-        self.X, self.Y = jnp.asarray(raw_dat['X']), jnp.asarray(raw_dat['Y'])
+        super(CelebADataLoader, self).__init__(data_path, 
+                                               envs_batch_size, 
+                                               envs_shuffle, 
+                                               shots_batch_size, 
+                                               shots_shuffle, 
+                                               data_split, 
+                                               key)
 
-        self.nb_envs = self.X.shape[0]
-        self.nb_points_per_env = self.X.shape[1]
-        self.input_dim = self.X.shape[2]
-        self.output_dim = self.Y.shape[2]
+        self.input_dim = 2
+        self.output_dim = 3
+        self.img_size = (*resolution, self.output_dim)
+        self.order_pixels = order_pixels
 
-        self.shuffle = envs_shuffle
-        self.key = key
-        if self.shuffle and self.key is None:
-            raise ValueError("Shuffling the dataset requires a key.")
-
-        if 0 < envs_batch_size and envs_batch_size <= self.nb_envs:     ## the envs_batch_size operates on the envs
-            self.envs_batch_size = envs_batch_size
+        ## Read the partitioning file: train(0), val(1), test(2)
+        partitions = pd.read_csv(self.data_path+'/list_eval_partition.txt', 
+                                 header=None, 
+                                 sep=r'\s+', 
+                                 names=['filename', 'partition'])
+        if data_split in ["train"]:
+            self.files = partitions[partitions['partition'] == 0]['filename'].values
+        elif data_split in ["val"]:
+            self.files = partitions[partitions['partition'] == 1]['filename'].values
+        elif data_split in ["test"]:
+            self.files = partitions[partitions['partition'] == 2]['filename'].values
         else:
-            raise ValueError(f"Invalid batch size provided. Got {envs_batch_size}")
+            raise ValueError(f"Invalid data split provided. Got {data_split}")
 
-        if self.nb_envs % self.envs_batch_size != 0:
-            if self.shuffle == False:
-                print("WARNING: The meta batch size does not evenly divide the total number of environments. Some environments will be left out.")
+        self.total_envs = len(self.files)
+        if self.total_envs == 0:
+            raise ValueError("No files found for the split.")
+        if envs_batch_size > self.total_envs:
+            raise ValueError(f"Envs batch size must be less than the total number of environments")
 
-        self.adaptation = adaptation
+        self.total_pixels = self.img_size[0] * self.img_size[1]
+        if shots_batch_size > self.total_pixels:
+            raise ValueError(f"Few shots batch size must be less than the total number of pixels")
 
-        ## Will be checked in the RegDataLoader
-        self.points_batch_size = points_batch_size
-        self.points_shuffle = points_shuffle
+        ## Ssee CAVIA code: https://github.com/lmzintgraf/cavia)
+        self.transform = transforms.Compose([lambda x: Image.open(x).convert('RGB'),
+                                            transforms.Resize((self.img_size[0], self.img_size[1]), Image.LANCZOS),
+                                            transforms.ToTensor(),
+                                            ])
+
+
+    def get_image(self, filename) -> torch.Tensor:
+        img_path = os.path.join(self.data_path, filename)
+        img = self.transform(img_path).float()
+        img = img.permute(1, 2, 0)
+        return img
+
+    def sample_pixels(self, key, img) -> Tuple[np.ndarray, jnp.ndarray]:
+        total_pixels = self.img_size[0] * self.img_size[1]
+
+        if self.order_pixels:
+            flattened_indices = jnp.arange(self.shots_batch_size)
+        else:
+            flattened_indices = jax.random.choice(key=key, a=total_pixels, shape=(self.shots_batch_size,), replace=False)
+
+        x, y = jnp.unravel_index(flattened_indices, (self.img_size[0], self.img_size[1]))
+        coordinates = jnp.vstack((x, y)).T
+        coords = torch.from_numpy(coordinates).float()
+        normed_coords = (coords / torch.Tensor(self.img_size[:2])).numpy()
+
+        pixel_values = img[coords[:, 0].long(), coords[:, 1].long(), :].numpy()
+
+        return normed_coords, pixel_values
+
+
+    def sample_environments(self, key, batch_id, nb_envs) -> Tuple[jnp.ndarray, jnp.ndarray]:
+        """ Sample a batch of environments """
+
+        X = np.zeros((nb_envs, self.shots_batch_size, self.inputs_dim))
+        Y = np.zeros((nb_envs, self.shots_batch_size, self.outputs_dim))
+
+        if self.envs_shuffle:
+            sample_idx = jax.random.permutation(key=key, a=self.total_envs, shape=(nb_envs,))
+            sampled_files = self.files[sample_idx]
+        else:
+            f_start = batch_id*self.envs_batch_size
+            f_end = min([(batch_id+1)*self.envs_batch_size, self.total_envs])
+            sampled_files = self.files[f_start:f_end]
+
+        for env, imgname in enumerate(sampled_files):
+            img = self.get_image(imgname)
+            normed_coords, pixel_values = self.sample_pixels(img)
+            X[env, :, :] = normed_coords
+            Y[env, :, :] = pixel_values
+
+        return jnp.array(X), jnp.array(Y)
 
 
     def __iter__(self):
 
-        ## Iterate over the environments
-        nb_batches = self.nb_envs // self.envs_batch_size
+        nb_batches = np.ceil(self.total_envs / self.envs_batch_size).astype(int)
+        remainder = self.total_envs % self.envs_batch_size
 
         for batch_id in range(nb_batches):
-            if self.shuffle:
-                _, self.key = jax.random.split(self.key)
-                env_ids = jax.random.permutation(self.key, jnp.arange(self.nb_envs))[:self.envs_batch_size]
+            self.key, _ = jax.random.split(self.key)
+
+            if batch_id == nb_batches-1 and remainder != 0:
+                X, Y = self.sample_environments(self.key, batch_id, remainder)
             else:
-                batch_start, batch_end = batch_id*self.envs_batch_size, (batch_id+1)*self.envs_batch_size
-                env_ids = jnp.arange(batch_start, batch_end)
+                X, Y = self.sample_environments(self.key, batch_id, self.envs_batch_size)
 
-            mini_dataloader = RegDataLoader((self.X[env_ids, ...], self.Y[env_ids, ...]), 
-                                batch_size=self.points_batch_size, 
-                                shuffle=self.points_shuffle, 
-                                adaptation=self.adaptation, 
-                                key=self.key)
- 
-            yield mini_dataloader, env_ids
+            ##  Usefull when pixels are ordered
+            if self.shots_shuffle:
+                X = jax.random.permutation(self.key, X, axis=1)
+                Y = jax.random.permutation(self.key, Y, axis=1)
+
+            yield X, Y
+
 
     def __len__(self):
-        return self.nb_envs
+        return self.total_envs

@@ -12,22 +12,21 @@ from selfmod import *
 
 #%%
 
+## For reproducibility
 seed = 2026
 
 ## Train and adapt hps
 context_pool_size = 2
 context_size = 128
-init_lr = 5e-4
-sched_factor = 0.5
+init_lrs = (5e-4, 1.)
+sched_factors = (1., 1.)
 envs_batch_size = 64
 
 nb_train_epochs = 1
 nb_outer_steps = 5
-nb_inner_steps_model = 1
-nb_inner_steps_ctx = 5
-proximal_beta = 1e1
-inner_tol_model = 2e-11
-inner_tol_ctx = 1e-10
+nb_inner_steps = (1, 5)
+proximal_betas = (0., 0.)
+inner_tols = (2e-11, 1e-10)
 
 print_error_every = 100
 nb_adapt_epochs = 1000
@@ -95,10 +94,10 @@ mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 ## Define dataloaders for training and validation
-train_dataloader = RegMetaDataLoader(data_folder+"train_data.npz", envs_batch_size=envs_batch_size, points_batch_size=100, envs_shuffle=True, points_shuffle=True, key=data_key)
+train_dataloader = CelebADataLoader(data_folder+"train_data.npz", envs_batch_size=envs_batch_size, points_batch_size=100, envs_shuffle=True, points_shuffle=True, key=data_key)
 
-val_dataloader = RegMetaDataLoader(data_folder+"test_data.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32, key=data_key)
-# val_dataloader = RegDataLoader(data_folder+"test_data.npz", batch_size=32*32)
+val_dataloader = CelebADataLoader(data_folder+"test_data.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32, key=data_key)
+# val_dataloader = DataLoader(data_folder+"test_data.npz", batch_size=32*32)
 
 nb_envs = train_dataloader.nb_envs
 nb_points_per_env = train_dataloader.nb_points_per_env
@@ -174,7 +173,7 @@ class MultiMLP(eqx.Module):
         return y
 
 
-def loss_fn_ctx(model, batch, ctx, ctxs, key):
+def loss_fn_per_env(model, batch, ctx, ctxs, key):
     X, Y = batch
 
     ind = jax.random.permutation(key, ctxs.shape[0])[:context_pool_size]
@@ -197,7 +196,7 @@ neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=128, co
 model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
 contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)   ## TODO: just to limit the number of contexts
 
-learner = RegLearner(model=model, contexts=contexts, loss_fn_ctx=loss_fn_ctx, key=model_key)
+learner = Learner(model=model, contexts=contexts, loss_fn_ctx=loss_fn_ctx, key=model_key)
 
 
 
@@ -229,7 +228,7 @@ sched_ctx = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and
 opt_model = optax.adam(sched_model)
 opt_ctx = optax.adam(sched_ctx)
 
-trainer = RegTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+trainer = Trainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 ## Meta-training
@@ -271,7 +270,7 @@ sbplot(np.vstack(trainer.losses_model), label="Model loss", y_scale="log")
 
 #%%
 ## Test and visualise the results on a test dataloader
-visualtester = RegVisualTester(trainer, key=test_key)
+visualtester = VisualTester(trainer, key=test_key)
 
 ind_crit, _ = visualtester.test(val_dataloader)        ## TODO: Use val_dataloader
 # print("In domain test error:", ind_crit)
@@ -297,8 +296,8 @@ visualtester.visualizeCelebA(val_dataloader,
 
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = RegMetaDataLoader(data_folder+"adapt_train.npz", envs_batch_size=envs_batch_size, points_batch_size=100, adaptation=True, key=data_key)
-    # adapt_dataloader = RegDataLoader(data_folder+"adapt_train.npz", batch_size=100, adaptation=True, key=data_key)
+    adapt_dataloader = CelebADataLoader(data_folder+"adapt_train.npz", envs_batch_size=envs_batch_size, points_batch_size=100, adaptation=True, key=data_key)
+    # adapt_dataloader = DataLoader(data_folder+"adapt_train.npz", batch_size=100, adaptation=True, key=data_key)
 
     sched_ctx_new = optax.piecewise_constant_schedule(init_value=init_lr, boundaries_and_scales=bd_scales)
     opt_adapt = optax.adabelief(sched_ctx_new)
@@ -317,8 +316,8 @@ if meta_test:
 
 #%%
 if meta_test:
-    adapt_dataloader_test = RegMetaDataLoader(data_folder+"adapt_test.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32, adaptation=True, key=data_key)
-    # adapt_dataloader_test = RegDataLoader(data_folder+"adapt_test.npz", batch_size=32*32, adaptation=True, key=data_key)
+    adapt_dataloader_test = CelebADataLoader(data_folder+"adapt_test.npz", envs_batch_size=envs_batch_size, points_batch_size=32*32, adaptation=True, key=data_key)
+    # adapt_dataloader_test = DataLoader(data_folder+"adapt_test.npz", batch_size=32*32, adaptation=True, key=data_key)
 
     ood_crit, _ = visualtester.test(adapt_dataloader_test)
     # print("Out of domain test error:", ood_crit)
