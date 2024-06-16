@@ -2,6 +2,51 @@ from ._utils import *
 
 
 
+class Learner:
+    def __init__(self, model, env_loss_fn, context_size, context_pool_size, key=None):
+        if key is None:
+            raise ValueError("You must provide a key for the learner.")
+        self.key = key
+
+        self.model = model
+        self.context_size = context_size
+        self.context_pool_size = context_pool_size
+
+        def env_loss_fn_(model, batch, ctx, ctxs, key):
+            """ Wrapping the loss function before vectorizing it below """
+            X, Y = batch
+
+            ind = jax.random.permutation(key, ctxs.shape[0])[:self.context_pool_size]
+            ctx_pool = ctxs[ind, :]
+
+            Y_hat, _ = jax.vmap(model, in_axes=(None, None, 0))(X, ctx, ctx_pool)
+            Y_new = jnp.broadcast_to(Y, Y_hat.shape)
+
+            return env_loss_fn(model, ctx, Y_new, Y_hat)
+
+        def loss_fn(model, contexts, batch, weightings, key):
+            losses, (_, terms1, terms2) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, None))(model, batch, contexts.params, contexts.params, key)
+            return jnp.sum(losses*weightings), (None, terms1, terms2)
+
+        self.loss_fn = loss_fn
+
+    def save_learner(self, path):
+        assert path[-1] == "/", "ERROR: Invalid path provided. The path must end with /"
+        eqx.tree_serialise_leaves(path+"model.eqx", self.model)
+        if hasattr(self, "contexts"):
+            eqx.tree_serialise_leaves(path+"contexts.eqx", self.contexts)
+
+    def load_learner(self, path):
+        assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
+        self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+        if hasattr(self, "contexts"):
+            self.contexts = eqx.tree_deserialise_leaves(path+"contexts.eqx", self.contexts)
+
+
+
+
+
+
 
 class MLP(eqx.Module):
     """ An MLP """
@@ -36,9 +81,13 @@ class MLP(eqx.Module):
 
 
 
+class ArrayContextParams(eqx.Module):
+    params: jnp.ndarray
+    def __init__(self, nb_envs, context_size):
+        self.params = jnp.zeros((nb_envs, context_size))
+    def __call__(self):
+        return self.params
 
-
-#%%
 
 
 
@@ -74,39 +123,3 @@ class NeuralContextFlow(eqx.Module):
         ys = eqx.filter_vmap(point_predict)(xs)
 
         return ys, None
-
-
-
-class ArrayContextParams(eqx.Module):
-    params: jnp.ndarray
-    def __init__(self, nb_envs, context_size):
-        self.params = jnp.zeros((nb_envs, context_size))
-    def __call__(self):
-        return self.params
-
-
-class Learner:
-    def __init__(self, model, contexts, loss_fn_ctx, key=None):
-        if key is None:
-            raise ValueError("You must provide a key for the learner.")
-        self.key = key
-
-        self.nb_envs, self.context_size = contexts().shape
-        self.contexts = contexts
-        self.model = model
-
-        def loss_fn(model, contexts, batch, weightings, key):
-            losses, (_, terms1, terms2) = jax.vmap(loss_fn_ctx, in_axes=(None, 0, 0, None, None))(model, batch, contexts.params, contexts.params, key)
-            return jnp.sum(losses*weightings), (None, terms1, terms2)
-
-        self.loss_fn = loss_fn
-
-    def save_learner(self, path):
-        assert path[-1] == "/", "ERROR: Invalid path provided. The path must end with /"
-        eqx.tree_serialise_leaves(path+"model.eqx", self.model)
-        eqx.tree_serialise_leaves(path+"contexts.eqx", self.contexts)
-
-    def load_learner(self, path):
-        assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
-        self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
-        self.contexts = eqx.tree_deserialise_leaves(path+"contexts.eqx", self.contexts)

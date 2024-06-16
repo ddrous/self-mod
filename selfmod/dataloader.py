@@ -37,6 +37,12 @@ class DataLoader:
         if (self.envs_shuffle or self.shots_shuffle) and self.key is None:
             raise ValueError("Shuffling the dataset requires a key.")
 
+
+    @abstractmethod
+    def sample_environments(self, key, batch_id, nb_envs):
+        """ Provides a stateless way to sample a batch of environments """
+        pass
+
     @abstractmethod
     def __iter__(self) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """ Loads, transforms and yields a batch of environments """
@@ -94,6 +100,9 @@ class CelebADataLoader(DataLoader):
             self.files = partitions[partitions['partition'] == 2]['filename'].values
         else:
             raise ValueError(f"Invalid data split provided. Got {data_split}")
+
+        ## A list of MVPs images (or the worst during self-modulation) - Useful for active learning
+        # self.mvp_files = self.files
 
         self.total_envs = len(self.files)
         if self.total_envs == 0:

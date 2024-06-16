@@ -219,18 +219,17 @@ class MultiMLP(eqx.Module):
             y = layer(y)
 
         return y
+    
 
 
-def loss_fn_per_env(model, batch, ctx, ctxs, key):
-    X, Y = batch
 
-    ind = jax.random.permutation(key, ctxs.shape[0])[:context_pool_size]
-    ctx_pool = ctxs[ind, :]
 
-    Y_hat, _ = jax.vmap(model, in_axes=(None, None, 0))(X, ctx, ctx_pool)
-    Y_new = jnp.broadcast_to(Y, Y_hat.shape)
+def env_loss_fn(model, ctx, y_hat, y):
+    """
+    Loss function for one environment. Leading dimension of y_hat corresponds to the pool size !
+    """
 
-    term1 = jnp.mean((Y_hat-Y_new)**2)
+    term1 = jnp.mean((y_hat-y)**2)
     term2 = jnp.mean(jnp.abs(ctx))
     term3 = params_norm_squared(model)
 
@@ -242,9 +241,12 @@ def loss_fn_per_env(model, batch, ctx, ctxs, key):
 neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=128, context_size=context_size, key=model_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
-contexts = ArrayContextParams(nb_envs=nb_envs, context_size=context_size)   ## TODO: just to limit the number of contexts
 
-learner = Learner(model=model, contexts=contexts, loss_fn_ctx=loss_fn_ctx, key=model_key)
+learner = Learner(model=model, 
+                context_size=context_size, 
+                context_pool_size=context_pool_size,
+                env_loss_fn=env_loss_fn, 
+                key=model_key)
 
 
 
@@ -318,7 +320,7 @@ sbplot(np.vstack(trainer.losses_model), label="Model loss", y_scale="log")
 
 #%%
 ## Test and visualise the results on a test dataloader
-visualtester = VisualTester(trainer, key=test_key)
+visualtester = CelebAVisualTester(trainer, key=test_key)
 
 ind_crit, _ = visualtester.test(val_dataloader)        ## TODO: Use val_dataloader
 # print("In domain test error:", ind_crit)

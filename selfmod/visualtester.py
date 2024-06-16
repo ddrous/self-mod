@@ -1,27 +1,10 @@
 
+from abc import abstractmethod
 from selfmod.dataloader import DataLoader
 from selfmod.learner import ArrayContextParams
 from ._utils import *
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#%%
 
 class VisualTester:
     def __init__(self, trainer, key=None):
@@ -31,9 +14,9 @@ class VisualTester:
 
         self.trainer = trainer
 
-
+    @abstractmethod
     def test(self, super_dataloader, criterion=None, verbose=True):
-        """ Compute test metrics on the adaptation dataloader  """ ## TODO non-UQ aware testing
+        """ Adapt and compute test metrics on the adaptation dataloader  """ ## TODO non-UQ aware testing
 
         criterion = criterion if criterion else lambda x, x_hat: jnp.mean((x-x_hat)**2)
 
@@ -88,6 +71,37 @@ class VisualTester:
         return crit, None
 
 
+    @abstractmethod
+    def visualizeTrainVal(self, dataloader, few_shot_loader, save_path=False, environment=None, key=None):
+        """ Visualize two samples and their predictions: one from training and the other from validation """
+
+        ## The dataloader muct be a generator of length 2. One containing training data and the second validation data.
+
+        pass
+
+    @abstractmethod
+    def visualizeArtefacts(self, dataloader):
+        """ Visualize the artefacts of the model : loss, and context dimensions """
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+#%%
+
+class CelebAVisualTester(VisualTester):
+    def __init__(self, trainer, key=None):
+        super().__init__(trainer, key)
+
 
     def visualizeCelebA(self, 
                         dataloader:DataLoader, 
@@ -116,6 +130,11 @@ class VisualTester:
             contexts = self.trainer.learner.contexts.params
         else:
             contexts = self.trainer.learner.contexts_adapt.params
+
+
+        ## The contexts are not obtained from a quick adaptation process, and Y_hat as well.
+        X, Y = next(dataloader)
+        contexts, losses = self.trainer.adapt_bulk((X, Y), contexts, verbose=False)
 
         X_hat = dataloader.X[e]
         Y_hat, _ = self.trainer.learner.model(dataloader.X[e], contexts[e], contexts[e])
