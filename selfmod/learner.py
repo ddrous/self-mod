@@ -19,7 +19,7 @@ class Learner:
             ind = jax.random.permutation(key, ctxs.shape[0])[:self.context_pool_size]
             ctx_pool = ctxs[ind, :]
 
-            Y_hat, _ = jax.vmap(model, in_axes=(None, None, 0))(X, ctx, ctx_pool)
+            Y_hat = jax.vmap(model, in_axes=(None, None, 0))(X, ctx, ctx_pool)
             Y_new = jnp.broadcast_to(Y, Y_hat.shape)
 
             return env_loss_fn(model, ctx, Y_new, Y_hat)
@@ -122,4 +122,4 @@ class NeuralContextFlow(eqx.Module):
 
         ys = eqx.filter_vmap(point_predict)(xs)
 
-        return ys, None
+        return ys
