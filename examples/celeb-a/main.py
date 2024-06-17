@@ -21,9 +21,9 @@ k_shots = 100
 resolution = (32, 32)
 
 ## Train and adapt hps
-context_pool_size = 3
+context_pool_size = 2
 context_size = 8
-taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
+taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-3, 1.)
 sched_factor = 1.
 envs_batch_size = 1024
@@ -349,7 +349,7 @@ if meta_test:
 
     visualtester.visualizeFewShots(few_shots_loader=adapt_dataloader,
                                 all_shots_loader=all_shots_loader,
-                                nb_inner_steps=nb_inner_steps[1],
+                                nb_inner_steps=nb_inner_steps[1]*1,
                                 save_path=adapt_folder+"few_shots_ood.png",
                                 key=jax.random.PRNGKey(time.time_ns())
                                 );
