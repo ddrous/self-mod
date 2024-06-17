@@ -39,7 +39,7 @@ class VisualTester:
         pass
 
     @abstractmethod
-    def visualizeArtefacts(self, dataloader, save_path=False, key=None):
+    def visualizeArtefacts(self, adaptation=False, save_path=False, key=None):
         """ Visualize the artefacts of the model : loss, and context dimensions """
         key = key if key != None else self.key
 
@@ -57,22 +57,31 @@ class VisualTester:
 
         losses_model = np.vstack(self.trainer.losses_model)
         losses_ctx = np.vstack(self.trainer.losses_ctx)
-        xis = self.trainer.learner.contexts.params
 
-        if dataloader.adaptation == True:  ## Overwrite the above if adaptation
+        if hasattr(self.learner, 'contexts'):
+            xis = self.trainer.learner.contexts.params
+        else:
+            print("No contexts found. Using zeros.")
+            xis = jnp.zeros((10, self.learner.context_size))
+
+        if adaptation == True:  ## Overwrite the above if adaptation
             losses_model = np.vstack(self.trainer.losses_adapt)
             losses_ctx = np.vstack(self.trainer.losses_adapt)
-            xis = self.trainer.learner.contexts_adapt.params
+            if hasattr(self.learner, 'contexts_adapt'):
+                xis = self.trainer.learner.contexts_adapt.params
+            else:
+                print("No contexts found. Using zeros.")
+                xis = jnp.zeros((10, self.learner.context_size))
 
         mke = np.ceil(losses_model.shape[0]/100).astype(int)
         mks = 2
 
-        label_model = "Model Loss" if dataloader.adaptation == False else "Model Loss Adapt"
+        label_model = "Model Loss" if adaptation == False else "Model Loss Adapt"
         ax['D'].plot(losses_model[:,0], label=label_model, color="grey", linewidth=3, alpha=1.0)
-        label_ctx = "Context Loss" if dataloader.adaptation == False else "Context Loss Adapt"
+        label_ctx = "Context Loss" if adaptation == False else "Context Loss Adapt"
         ax['D'].plot(losses_ctx[:,0], "x-", markevery=mke, markersize=mks, label=label_ctx, color="grey", linewidth=1, alpha=0.5)
 
-        if dataloader.adaptation==False and hasattr(self.trainer, 'val_losses') and len(self.trainer.val_losses)>0:
+        if adaptation==False and hasattr(self.trainer, 'val_losses') and len(self.trainer.val_losses)>0:
             val_losses = np.vstack(self.trainer.val_losses)
             ax['D'].plot(val_losses[:,0], val_losses[:,1], "y.", label="Validation Loss", linewidth=3, alpha=0.5)
 
@@ -130,7 +139,6 @@ class CelebAVisualTester(VisualTester):
     def visualizeFewShots(self, 
                         few_shots_loader:DataLoader, 
                         all_shots_loader:DataLoader, 
-                        resolution=32, 
                         save_path=False, 
                         environment=None, 
                         key=None):
@@ -152,7 +160,7 @@ class CelebAVisualTester(VisualTester):
         X_few_shots, Y_few_shots = X_few_shots[0], Y_few_shots[0]
 
         fig, ax = plt.subplot_mosaic('ABC', figsize=(4*3, 3.7*1))
-        img_size = (resolution, resolution, 3)
+        img_size = self.img_size
 
         def make_image(xy_coords, rgb_pixels):
             img = np.zeros(img_size)

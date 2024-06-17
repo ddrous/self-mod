@@ -48,7 +48,7 @@ class Trainer:
                     print_error_every=1, 
                     save_path=False, 
                     val_dataloader=None, 
-                    val_criterion=None, 
+                    val_criterion_id=None, 
                     key=None):
         """ Train the model using the proximal gradient descent algorithm """
 
@@ -60,7 +60,7 @@ class Trainer:
 
         loss_fn = self.learner.loss_fn
         model = self.learner.model
-        opt_state_model = self.opt_model_state
+        opt_state_model = self.opt_state_model
 
         # contexts = ArrayContextParams(dataloader.envs_batch_size, self.learner.context_size)
         # if hasattr(self, 'opt_state_ctx'):
@@ -193,9 +193,9 @@ class Trainer:
 
             if val_dataloader is not None:
                 self.learner.model = model
-                ind_crit,_ = tester.test(val_dataloader, criterion_id=0, verbose=False)
+                ind_crit,_ = tester.evaluate(val_dataloader, criterion_id=criterion_id, verbose=False)
                 print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
-                val_losses.append(np.array([out_step, ind_crit]))
+                val_losses.append(np.array([epoch, ind_crit]))
 
                 # ## TODO Make a visualisation and save (like Zintgraff)
                 # train_XY = dataloader.sample_environments(key, 0, 1)
@@ -224,7 +224,7 @@ class Trainer:
                 self.val_losses = []
             self.val_losses.append(jnp.vstack(val_losses))
 
-        self.opt_model_state = opt_state_model
+        self.opt_state_model = opt_state_model
         if val_dataloader is None:
             self.learner.model = model
 
@@ -249,8 +249,8 @@ class Trainer:
         if hasattr(self, 'val_losses'):
             np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
 
-        pickle.dump(self.opt_model_state, open(path+"opt_state_model.pkl", "wb"))
-        pickle.dump(self.opt_ctx_state, open(path+"opt_state_ctx.pkl", "wb"))
+        pickle.dump(self.opt_state_model, open(path+"opt_state_model.pkl", "wb"))
+        pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
 
         if not hasattr(self, 'val_losses'):
             self.learner.save_learner(path)
@@ -393,11 +393,11 @@ class Trainer:
 
 
 
-    def restore_adapted_trainer(self, path):
+    # def restore_adapted_trainer(self, path):
 
-        print(f"\nNo adaptation, loading adaptation parameters from {path} folder ...\n")
+    #     print(f"\nNo adaptation, loading adaptation parameters from {path} folder ...\n")
 
-        histories = np.load(path+"adapt_histories_.npz")
-        self.losses_adapt = [histories['losses_adapt']]
+    #     histories = np.load(path+"adapt_histories_.npz")
+    #     self.losses_adapt = [histories['losses_adapt']]
 
-        self.opt_state_adapt = pickle.load(open(path+"/opt_state_adapt.pkl", "rb"))
+    #     self.opt_state_adapt = pickle.load(open(path+"/opt_state_adapt.pkl", "rb"))

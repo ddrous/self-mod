@@ -53,7 +53,13 @@ class DataLoader:
         """ Total number of environments / envs_batch size. """
         pass
 
-
+    def __str__(self) -> str:
+        return f"Dataloader properties: \n" + \
+                f"Total number of environments: {len(self)} \n" + \
+                f"Batch size (envs): {self.envs_batch_size} \n" + \
+                f"Number of points per environment = batch size (datapoints): {self.shots_batch_size} \n" + \
+                f"Input dimension: {self.input_dim} \n" + \
+                f"Output dimension: {self.output_dim} \n"
 
 
 
@@ -196,9 +202,9 @@ class CelebADataLoader(DataLoader):
 
     def __iter__(self):
         self.curr_batch_id = 0
-        return self
-        # while self.curr_batch_id < self.nb_batches:
-        #     yield self.make_batch()
+        # return self
+        while self.curr_batch_id < self.nb_batches:
+            yield self.make_batch()
 
     def __next__(self):
         if self.curr_batch_id < self.nb_batches:
