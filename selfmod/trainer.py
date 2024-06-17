@@ -44,6 +44,7 @@ class Trainer:
                     nb_inner_steps=(1, 10),
                     inner_tols=(1e-12, 1e-12), 
                     proximal_betas=(100., 100.), 
+                    max_train_batches=None,
                     patience=None, 
                     print_error_every=1, 
                     save_path=False, 
@@ -62,15 +63,9 @@ class Trainer:
         model = self.learner.model
         opt_state_model = self.opt_state_model
 
-        # contexts = ArrayContextParams(dataloader.envs_batch_size, self.learner.context_size)
-        # if hasattr(self, 'opt_state_ctx'):
-        #     opt_state_ctx = self.opt_state_ctx
-        # else:
-        #     opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
-
         @eqx.filter_jit
         def train_step_model(model, model_old, contexts, batch, weightings, opt_state, key):
-            print('\nCompiling function "train_step" for the model ...')
+            print('     ### Compiling function "train_step" for the model ...  ')
 
             def prox_loss_fn(model, contexts, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
@@ -87,7 +82,7 @@ class Trainer:
 
         @eqx.filter_jit
         def train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state, key):
-            print('Compiling function "train_step" for the contexts ...')
+            print('     ### Compiling function "train_step" for the contexts ...  ')
 
             def prox_loss_fn(contexts, model, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
@@ -107,11 +102,17 @@ class Trainer:
         if val_dataloader is not None:
             tester = VisualTester(self, key=key)
 
-        print(f"\n\n=== Beginning training with proximal alternating minimization ... ===")
+        print(f"\n\n=== Beginning meta training ... ===")
         print(f"    Number of examples in a batch along envs: {dataloader.envs_batch_size}")
-        print(f"    Number of examples in a batch along datapoints: {dataloader.shots_batch_size}")
-        print(f"    Maximum number of steps per inner minimizations: {nb_inner_steps_model, nb_inner_steps_ctx}")
+        print(f"    Maximum number of batches (along envs): {dataloader.nb_batches}")
+        print(f"    Number of examples in a batch: {dataloader.shots_batch_size}")
         print(f"    Maximum number of outer minimizations: {nb_outer_steps}")
+        print(f"    Maximum numbers of inner steps per outer minimizations: {nb_inner_steps_model, nb_inner_steps_ctx}")
+
+        if max_train_batches<1 or max_train_batches>dataloader.nb_batches or max_train_batches is None:
+            max_train_batches = dataloader.nb_batches
+        else:
+            print(f"    Training on {max_train_batches} batches")
 
         start_time = time.time()
 
@@ -124,8 +125,13 @@ class Trainer:
         early_stopping_count = 0
 
         for epoch in range(nb_epochs):
+            # print(f"\nEPOCH {epoch} ... ")
 
             for env_batch, batch in enumerate(dataloader):
+                if env_batch >= max_train_batches:
+                    break
+                # if env_batch%10==0:
+                #     print(f"  Learning on batch {env_batch} ...")
 
                 loss_epochs_model = 0.
                 loss_epochs_ctx = 0.
@@ -138,6 +144,7 @@ class Trainer:
                 opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
 
                 for out_step in range(nb_outer_steps):
+                    # print(f"    Staring outer step {out_step} ...")
 
                     model_old = jax.tree_util.tree_map(lambda x: x, model)
                     contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
@@ -184,16 +191,25 @@ class Trainer:
                 loss_epochs_ctx += loss_ctx
                 nb_batches += 1
 
-            losses_model.append(loss_epochs_model/nb_batches)
-            losses_ctx.append(loss_epochs_ctx/nb_batches)
+                losses_model.append(loss_model)
+                losses_ctx.append(loss_ctx)
+
+            # losses_model.append(loss_epochs_model/nb_batches)
+            # losses_ctx.append(loss_epochs_ctx/nb_batches)
 
             if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
-                print(f"Epoch: {epoch:-3d}  LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
+                print(f"Epoch: {epoch:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
                 print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
             if val_dataloader is not None:
                 self.learner.model = model
-                ind_crit,_ = tester.evaluate(val_dataloader, criterion_id=criterion_id, verbose=False)
+
+                ind_crit,_ = tester.evaluate(val_dataloader,
+                                             criterion_id=val_criterion_id,
+                                             max_eval_batches=5,
+                                             nb_inner_steps=nb_inner_steps_ctx,
+                                             taylor_order=0, 
+                                             verbose=False)
                 print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
                 val_losses.append(np.array([epoch, ind_crit]))
 
@@ -250,7 +266,7 @@ class Trainer:
             np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
 
         pickle.dump(self.opt_state_model, open(path+"opt_state_model.pkl", "wb"))
-        pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
+        # pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
 
         if not hasattr(self, 'val_losses'):
             self.learner.save_learner(path)
@@ -268,7 +284,7 @@ class Trainer:
             self.val_losses = [np.load(path+"val_losses.npy")]
 
         self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
-        self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
+        # self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
 
         self.learner.load_learner(path)
 
@@ -290,6 +306,8 @@ class Trainer:
                    taylor_order=0,
                    optimizer=None, 
                    print_error_every=100, 
+                   max_adapt_batches=None,
+                   verbose=True,
                    save_path=False, 
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
         """Adapt the model to new environments (in bulk) using the provided dataset. """
@@ -302,38 +320,36 @@ class Trainer:
         if taylor_order==self.learner.model.taylor_order:
             model = self.learner.model
         else:
-            print(f"Creating a new model with taylor order {taylor_order} ...")
+            if verbose:
+                print(f"Creating a new model with taylor order {taylor_order} ...")
             model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
 
         if optimizer is None:       ## To continue a previous adaptation
-            if hasattr(self, 'opt_adapt'):
-                print("Using any previrouly defined optimizer for adapation")
-                opt = self.opt_adapt
+            if hasattr(self, 'opt_ctx'):
+                if verbose:
+                    print("Using any previrouly defined optimizer for adapation")
+                opt = self.opt_ctx
             else:
                 raise ValueError("No optimizer provided for adaptation, and none previously defined")
         else:
             opt = optimizer
             self.losses_adapt = []
 
-        @eqx.filter_jit
-        def train_step(model, contexts, batch, weightings, opt_state, key):
-            # print('\nCompiling function "train_step" for context ...')
-            print('\nAm I being recompiled ?')
+        if isinstance(dataloader, DataLoader):
+            nb_batches = dataloader.nb_batches
+        else:
+            nb_batches = len(dataloader)    ## A tuple of batches
 
-            loss_fn_ = lambda contexts, model, batch, weightings, key: loss_fn(model, contexts, batch, weightings, key)
-
-            (loss, aux_data), grads = eqx.filter_value_and_grad(loss_fn_, has_aux=True)(contexts, model, batch, weightings, key)
-
-            updates, opt_state = opt.update(grads, opt_state)
-            contexts = eqx.apply_updates(contexts, updates)
-
-            return model, contexts, opt_state, loss, aux_data
-
-        nb_batches = len(dataloader)
-        print(f"\n\n=== Beginning adaptation ... ===")
-        print(f"    Number of environments batches: {nb_batches}")
-        print(f"    Number of envs train steps per batch: {nb_inner_steps}")
-        print(f"    Total number of training steps: {nb_batches*nb_inner_steps}")
+        if verbose:
+            print(f"\n\n=== Beginning adaptation ... ===")
+            print(f"    Number of environment batches: {nb_batches}")
+            print(f"    Number of envs train steps per batch: {nb_inner_steps}")
+            print(f"    Total number of training steps: {nb_batches*nb_inner_steps}")
+        if max_adapt_batches is None or max_adapt_batches<1 or max_adapt_batches>nb_batches:
+            max_adapt_batches = nb_batches
+        else:
+            if verbose:
+                print(f"    Adapting on {max_adapt_batches} batches")
 
 
         start_time = time.time()
@@ -342,43 +358,46 @@ class Trainer:
         loss_key, _ = jax.random.split(key)
 
         for env_batch, batch in enumerate(dataloader):
+            if env_batch >= max_adapt_batches:
+                break
 
-            weightings = jnp.ones(dataloader.nb_envs) / dataloader.nb_envs
+            nb_envs_in_batch = batch[0].shape[0]
+            weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
-            contexts = ArrayContextParams(dataloader.nb_envs, self.learner.context_size)
+            contexts = ArrayContextParams(nb_envs_in_batch, self.learner.context_size)
             opt_state = opt.init(contexts)
 
-            for inner_step in enumerate(nb_inner_steps):
+            for inner_step in range(nb_inner_steps):
                 loss_key, _ = jax.random.split(loss_key)
 
-                model, contexts, opt_state, loss, aux_losses = train_step(model, contexts, batch, weightings, opt_state, loss_key)
+                model, contexts, opt_state, loss, aux_losses = adapt_step(model, contexts, batch, weightings, opt_state, opt, loss_fn, loss_key)
 
-            mean_loss_terms = [jnp.mean(term) for term in aux_losses]
-            losses.append(jnp.array([loss]+mean_loss_terms))
+                mean_loss_terms = [jnp.mean(term) for term in aux_losses]
+                losses.append(jnp.stack([loss]+mean_loss_terms))
 
-            if env_batch%print_error_every==0 or env_batch<=3 or env_batch==nb_batches-1:
-                print(f"    Batch ID: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {mean_loss_terms}", flush=True)
+            if verbose and (env_batch%print_error_every==0 or env_batch<=3 or env_batch==nb_batches-1):
+                print(f"    Batch ID: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True)
 
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
-        print("\nTotal gradient descent adaptation time: %d hours %d mins %d secs" %time_in_hmsecs)
+        if verbose:
+            print("\nTotal gradient descent adaptation time: %d hours %d mins %d secs" %time_in_hmsecs)
 
-        losses = jnp.stack(losses, axis=1)
+        losses = jnp.vstack(losses)
+        if not hasattr(self, 'losses_adapt'):
+            self.losses_adapt = []
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        self.opt_adapt = opt
-        self.opt_state_adapt = opt_state
+        # self.opt_adapt = opt
+        # self.opt_state_adapt = opt_state
         self.learner.contexts_adapt = contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)
 
         ## Use the contexts and the batch to predict Y_hat
-        batched_vmap = jax.vmap(self.learner.model, in_axes=(0, 0, None))
-        X, Y = batch
-        Y_hat = batched_vmap(X, contexts.params, contexts.params)
-        aux_data = (X, Y, Y_hat)
+        aux_data = predict_step(model, contexts, batch, key)
 
         return losses, contexts, aux_data
 
@@ -401,3 +420,26 @@ class Trainer:
     #     self.losses_adapt = [histories['losses_adapt']]
 
     #     self.opt_state_adapt = pickle.load(open(path+"/opt_state_adapt.pkl", "rb"))
+
+
+
+@eqx.filter_jit
+def predict_step(model, contexts, batch, key):
+    ## Use the contexts and the batch to predict Y_hat
+    X, Y = batch
+    Y_hat = jax.vmap(model, in_axes=(0, 0, None))(X, contexts.params, contexts.params)
+    return X, Y, Y_hat
+
+
+@eqx.filter_jit
+def adapt_step(model, contexts, batch, weightings, opt_state, opt, loss_fn, key):
+    print('     ### (Re)Compiling function "adapt_step" for context ... ')
+
+    loss_fn_ = lambda contexts, model, batch, weightings, key: loss_fn(model, contexts, batch, weightings, key)
+
+    (loss, aux_data), grads = eqx.filter_value_and_grad(loss_fn_, has_aux=True)(contexts, model, batch, weightings, key)
+
+    updates, opt_state = opt.update(grads, opt_state)
+    contexts = eqx.apply_updates(contexts, updates)
+
+    return model, contexts, opt_state, loss, aux_data

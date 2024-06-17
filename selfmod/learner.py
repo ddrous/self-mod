@@ -25,8 +25,8 @@ class Learner:
             return env_loss_fn(model, ctx, Y_new, Y_hat)
 
         def loss_fn(model, contexts, batch, weightings, key):
-            losses, (_, terms1, terms2) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, None))(model, batch, contexts.params, contexts.params, key)
-            return jnp.sum(losses*weightings), (None, terms1, terms2)
+            losses, (term3, terms1, terms2) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, None))(model, batch, contexts.params, contexts.params, key)
+            return jnp.sum(losses*weightings), (term3, terms1, terms2)
 
         self.loss_fn = loss_fn
 
@@ -105,16 +105,17 @@ class NeuralContextFlow(eqx.Module):
         def point_predict(x):
 
             vf = lambda xi: self.neuralnet(x, xi)
-            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-            scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
 
             if self.taylor_order==0:
                 return vf(ctx)
 
             elif self.taylor_order==1:
+                gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
                 return vf(ctx_) + 1.0*gradvf(ctx_)
 
             elif self.taylor_order==2:
+                gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+                scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
                 return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
 
             else:

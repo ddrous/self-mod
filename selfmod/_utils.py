@@ -10,7 +10,7 @@ np.set_printoptions(suppress=True)
 import equinox as eqx
 import diffrax
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import optax
 from functools import partial
@@ -19,7 +19,11 @@ import os
 import time
 # import cProfile
 
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(context='notebook', style='ticks',
+        font='sans-serif', font_scale=1, color_codes=True, rc={"lines.linewidth": 2})
+plt.style.use("dark_background")
 
 
 
@@ -57,12 +61,6 @@ def generate_new_keys(key=None, num=1):
 
 ## Wrapper function for matplotlib and seaborn
 def sbplot(*args, ax=None, figsize=(6,3.5), x_label=None, y_label=None, title=None, x_scale='linear', y_scale='linear', xlim=None, ylim=None, **kwargs):
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    sns.set(context='notebook', style='ticks',
-            font='sans-serif', font_scale=1, color_codes=True, rc={"lines.linewidth": 2})
-    plt.style.use("dark_background")
-
     if ax==None:
         _, ax = plt.subplots(1, 1, figsize=figsize)
     # sns.despine(ax=ax)

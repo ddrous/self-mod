@@ -14,7 +14,14 @@ class VisualTester:
         self.trainer = trainer
 
     @abstractmethod
-    def evaluate(self, super_dataloader, loss_criterion=None, criterion_id=0):
+    def evaluate(self, 
+                 super_dataloader, 
+                 nb_inner_steps=100,
+                 loss_criterion=None, 
+                 criterion_id=0, 
+                 max_eval_batches=-1, 
+                 taylor_order=0, 
+                 verbose=True):
         """
         Adapt and compute test metrics on the adaptation dataloader.
          - loss_criterion if the one used for training is not satisfactory.
@@ -22,14 +29,21 @@ class VisualTester:
         """
 
         ## Adapt and extract the losses for each batch of environment
-        losses, _, _ = self.trainer.meta_test(super_dataloader, nb_inner_steps=5, verbose=False)
+        losses, _, _ = self.trainer.meta_test(super_dataloader, 
+                                              nb_inner_steps=nb_inner_steps, max_adapt_batches=max_eval_batches,taylor_order=taylor_order, 
+                                              verbose=False)
         losses_means = jnp.mean(losses, axis=0)
 
         ## TODO Compute the confidence intervals on the losses
 
         ## TODO Add the environment-wide UQ from NCF aware testing
 
-        return losses_means[criterion_id], None
+        mean_loss = losses_means[criterion_id]
+        if verbose:
+            print("==  Testing finished ... ==")
+            print("    Criterion loss value:", mean_loss)
+
+        return mean_loss, None
 
 
     @abstractmethod
@@ -58,7 +72,7 @@ class VisualTester:
         losses_model = np.vstack(self.trainer.losses_model)
         losses_ctx = np.vstack(self.trainer.losses_ctx)
 
-        if hasattr(self.learner, 'contexts'):
+        if hasattr(self.trainer.learner, 'contexts'):
             xis = self.trainer.learner.contexts.params
         else:
             print("No contexts found. Using zeros.")
@@ -67,7 +81,7 @@ class VisualTester:
         if adaptation == True:  ## Overwrite the above if adaptation
             losses_model = np.vstack(self.trainer.losses_adapt)
             losses_ctx = np.vstack(self.trainer.losses_adapt)
-            if hasattr(self.learner, 'contexts_adapt'):
+            if hasattr(self.trainer.learner, 'contexts_adapt'):
                 xis = self.trainer.learner.contexts_adapt.params
             else:
                 print("No contexts found. Using zeros.")
@@ -85,7 +99,7 @@ class VisualTester:
             val_losses = np.vstack(self.trainer.val_losses)
             ax['D'].plot(val_losses[:,0], val_losses[:,1], "y.", label="Validation Loss", linewidth=3, alpha=0.5)
 
-        ax['D'].set_xlabel("Step")
+        ax['D'].set_xlabel("Iterations")
         ax['D'].set_title("Loss Terms")
         ax['D'].set_yscale('log')
         ax['D'].legend()
@@ -107,7 +121,7 @@ class VisualTester:
         ax['G'].set_xlabel(f'dim {ctx_dims_x[2]}')
         ax['G'].set_ylabel(f'dim {ctx_dims_y[2]}')
 
-        plt.suptitle(f"Losses and Letent Contexts", fontsize=20)
+        plt.suptitle(f"Losses and Context Vectors", fontsize=20)
 
         plt.tight_layout()
         # plt.show();
@@ -115,7 +129,7 @@ class VisualTester:
 
         if save_path:
             plt.savefig(save_path, dpi=100, bbox_inches='tight')
-            print("Testing finished. Figure saved in:", save_path);
+            print("Saving artefacts in:", save_path, flush=True);
 
 
 
@@ -139,28 +153,27 @@ class CelebAVisualTester(VisualTester):
     def visualizeFewShots(self, 
                         few_shots_loader:DataLoader, 
                         all_shots_loader:DataLoader, 
+                        nb_inner_steps=100,
                         save_path=False, 
-                        environment=None, 
                         key=None):
         key = key if key != None else self.key
-        e = environment if environment is not None else jax.random.randint(key, (1,), 0, few_shots_loader.envs_batch_size)[0]
+        e = jax.random.randint(key, (1,), 0, few_shots_loader.nb_batches)[0]
 
         print("==  Begining in-domain CelebA visualisation ... ==")
-        print("    Environment id:", e)
+        print("    Environment batch id:", e)
 
         ## The contexts are not obtained from a quick adaptation process (hidden in meta-test)
         X, Y = all_shots_loader.sample_environments(key, e, 1)
-        mini_dataloader = (batch for batch in [(X, Y)])
-        _, _, (X, Y, Y_hat) = self.trainer.meta_test(mini_dataloader, nb_inner_steps=5, verbose=False)
+        _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
+                                                     nb_inner_steps=nb_inner_steps, 
+                                                     verbose=False)
         X_hat, Y_true, Y_hat = X[0], Y[0], Y_hat[0]
 
         X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, 1)
-        mini_dataloader = (batch for batch in [(X_few_shots, Y_few_shots)])
-        _, _, (X_few_shots, _, Y_few_shots) = self.trainer.meta_test(mini_dataloader, nb_inner_steps=5, verbose=False)
         X_few_shots, Y_few_shots = X_few_shots[0], Y_few_shots[0]
 
         fig, ax = plt.subplot_mosaic('ABC', figsize=(4*3, 3.7*1))
-        img_size = self.img_size
+        img_size = few_shots_loader.img_size
 
         def make_image(xy_coords, rgb_pixels):
             img = np.zeros(img_size)
@@ -182,7 +195,7 @@ class CelebAVisualTester(VisualTester):
         ax['C'].set_title('Predicted', fontsize=14)
 
 
-        plt.suptitle(f"Results for environment {e}", fontsize=20)
+        plt.suptitle(f"Sample Predictions", fontsize=20)
 
         plt.tight_layout()
         # plt.show();
@@ -190,4 +203,4 @@ class CelebAVisualTester(VisualTester):
 
         if save_path:
             plt.savefig(save_path, dpi=100, bbox_inches='tight')
-            print("Testing finished. Figure saved in:", save_path);
+            print("Saving visualization in:", save_path, flush=True);

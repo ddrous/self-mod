@@ -17,28 +17,30 @@ from selfmod import *
 seed = 2026
 
 ## Dataloader hps
-k_shots = 10
+k_shots = 100
 resolution = (32, 32)
 
 ## Train and adapt hps
-context_pool_size = 2
-context_size = 128
-init_lrs = (5e-4, 1.)
+context_pool_size = 3
+context_size = 8
+taylor_orders = (0, 1)      ## Expansion orders for meta-training and meta-testing
+init_lrs = (5e-4, 0.1)
 sched_factor = 1.
-envs_batch_size = 64
+envs_batch_size = 1024
+max_train_batches = 64      ## TODO: should be -1
 
-nb_train_epochs = 4
-nb_outer_steps = 5
-nb_inner_steps = (1, 5)
+nb_train_epochs = 5
+nb_outer_steps = 5      ## Increase this to scale well with GPU !
+nb_inner_steps = (1, 100)
 proximal_betas = (0., 0.)
 inner_tols = (2e-11, 1e-10)
 
 print_error_every = 1
-nb_adapt_epochs = 1000
+nb_adapt_epochs = 10
 
 meta_train = True
-run_folder = "./runs/240609-215946/"
-# run_folder = None
+# run_folder = "./runs/240609-215946/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -199,9 +201,14 @@ def env_loss_fn(model, ctx, y_hat, y):
 input_dim = train_dataloader.input_dim
 output_dim = train_dataloader.output_dim
 
-neuralnet = MultiMLP(in_size=input_dim, out_size=output_dim, hidden_size=128, context_size=context_size, key=model_key)
+neuralnet = MultiMLP(in_size=input_dim, 
+                     out_size=output_dim, 
+                     hidden_size=128, 
+                     context_size=context_size, 
+                     key=model_key)
 
-model = NeuralContextFlow(neuralnet=neuralnet, taylor_order=2)
+model = NeuralContextFlow(neuralnet=neuralnet, 
+                          taylor_order=taylor_orders[0])      ## TODO : taylor order=2
 
 learner = Learner(model=model, 
                     context_size=context_size, 
@@ -245,10 +252,11 @@ if meta_train == True:
                         nb_inner_steps=nb_inner_steps, 
                         proximal_betas=proximal_betas,
                         inner_tols=inner_tols, 
+                        max_train_batches=max_train_batches,
                         print_error_every=print_error_every, 
                         save_path=trainer_save_path, 
-                        val_dataloader=val_dataloader, 
-                        val_criterion_id = 0,
+                        # val_dataloader=val_dataloader, 
+                        val_criterion_id=0,
                         key=trainer_key)
 else:
     restore_folder = run_folder
@@ -257,10 +265,6 @@ else:
 
 
 
-
-#%%
-# len(np.vstack(trainer.losses_model))
-sbplot(np.vstack(trainer.losses_model), label="Model loss", y_scale="log")
 
 
 
@@ -317,37 +321,72 @@ if meta_test:
 
     opt_adapt = optax.adabelief(init_lr_ctx)
 
-    trainer.meta_test(adapt_dataloader,
-                        nb_epochs=nb_adapt_epochs, 
-                        nb_inner_steps=nb_inner_steps[1],
-                        taylor_order=0,
-                        optimizer=opt_adapt, 
-                        print_error_every=print_error_every, 
-                        save_path=adapt_folder)
+    _, contexts, aux_data = trainer.meta_test(adapt_dataloader,
+                                            nb_inner_steps=nb_inner_steps[1],
+                                            taylor_order=taylor_orders[1],
+                                            optimizer=opt_adapt, 
+                                            max_adapt_batches=max_train_batches,     ## JUST to set up adaptation for future tasks
+                                            print_error_every=print_error_every, 
+                                            save_path=adapt_folder)
 
-    ood_crit, _ = visualtester.evaluate(adapt_dataloader)
-    print("Out of domain test error:", ood_crit)
+    ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
+                                        taylor_order=taylor_orders[1], 
+                                        nb_inner_steps=nb_inner_steps[1])
 
+
+#%%
+
+## Visualise the adaptation results
+
+if meta_test:
     all_shots_loader = CelebADataLoader(data_folder, 
                                         envs_batch_size=envs_batch_size, 
                                         shots_batch_size=np.prod(resolution), 
                                         data_split="test",
                                         key=data_key)
 
-    visualtester.visualizeArtefacts(save_path=adapt_folder+"artefacts.png")
+    visualtester.visualizeArtefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
-    visualtester.visualizeFewShots(all_shots_loader=adapt_dataloader,
-                                few_shot_loader=all_shots_loader,
+    visualtester.visualizeFewShots(few_shots_loader=adapt_dataloader,
+                                all_shots_loader=all_shots_loader,
+                                nb_inner_steps=nb_inner_steps[1],
                                 save_path=adapt_folder+"few_shots_ood.png",
                                 key=jax.random.PRNGKey(time.time_ns())
                                 );
 
 
 
+#%%
+
+# ## Let's investigate the model
+
+# model = trainer.learner.model
+
+# print(model)
+
+# losses, contexts, aux_data
+
+# X, Y, Y_hat = aux_data
+
+# print(Y_hat[5])
 
 
 
 
+# fig, ax = plt.subplot_mosaic('A', figsize=(4*1, 3.7*1))
+# img_size = (32, 32, 3)
+
+# def make_image(xy_coords, rgb_pixels):
+#     img = np.zeros(img_size)
+#     x_coords = (xy_coords[:, 0] * img_size[0]).astype(int)
+#     y_coords = (xy_coords[:, 1] * img_size[1]).astype(int)
+#     img[x_coords, y_coords, :] = np.clip(rgb_pixels, 0., 1.)
+#     return img
+
+# X_plot, Y_plot, Y_hat_plot = X[0], Y[0], Y_hat[0]
+# true_img = make_image(X_plot, Y_hat_plot)
+# ax['A'].imshow(true_img)
+# ax['A'].set_title('Test', fontsize=14)
 
 
 

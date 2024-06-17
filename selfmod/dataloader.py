@@ -30,6 +30,9 @@ class DataLoader:
         self.shots_batch_size = shots_batch_size
         self.shots_shuffle = shots_shuffle
 
+        ## Define in the child class
+        self.nb_batches = None
+
         if shots_batch_size <= 0 or shots_batch_size <=0 :
             raise ValueError("A batch size must be greater than 0.")
 
@@ -202,13 +205,13 @@ class CelebADataLoader(DataLoader):
 
     def __iter__(self):
         self.curr_batch_id = 0
-        # return self
-        while self.curr_batch_id < self.nb_batches:
-            yield self.make_batch()
+        return self
+        # while self.curr_batch_id < self.nb_batches:
+        #     yield self.make_batch()
 
     def __next__(self):
         if self.curr_batch_id < self.nb_batches:
-            yield self.make_batch()
+            return self.make_batch()
         else:
             raise StopIteration
 
