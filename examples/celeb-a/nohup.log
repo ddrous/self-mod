@@ -1,0 +1,106 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+New run folder created successfuly: ./runs/240617-225144/
+Completed copied scripts 
+Dataloader properties: 
+Total number of environments: 162770 
+Batch size (envs): 1024 
+Number of points per environment = batch size (datapoints): 100 
+Input dimension: 2 
+Output dimension: 3 
+
+
+
+Total number of parameters in the model: 54414
+
+
+=== Beginning meta training ... ===
+    Number of examples in a batch along envs: 1024
+    Maximum number of batches (along envs): 159
+    Number of examples in a batch: 100
+    Maximum number of outer minimizations: 5
+    Maximum numbers of inner steps per outer minimizations: (1, 50)
+    Training on 64 batches
+     ### Compiling function "train_step" for the contexts ...  
+     ### Compiling function "train_step" for the model ...  
+Epoch:   0      LossModel: 0.06220612     ContextsNorm: 0.63845325
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:   50
+	-DiffMod:   5.45e-06
+	-DiffCxt:   4.99e-04Epoch:   1      LossModel: 0.06379133     ContextsNorm: 0.70408887
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:   50
+	-DiffMod:   1.38e-06
+	-DiffCxt:   2.00e-03Epoch:   2      LossModel: 0.06320612     ContextsNorm: 0.62199116
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:   50
+	-DiffMod:   4.89e-07
+	-DiffCxt:   1.26e-03Epoch:   3      LossModel: 0.06569619     ContextsNorm: 1.32169962
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:   50
+	-DiffMod:   1.22e-05
+	-DiffCxt:   1.45e-03Epoch:   4      LossModel: 0.06482835     ContextsNorm: 2.80714583
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:   50
+	-DiffMod:   7.10e-05
+	-DiffCxt:   6.02e-04
+Total gradient descent training time: 0 hours 30 mins 34 secs
+     ### (Re)Compiling function "adapt_step" for context ... 
+     ### (Re)Compiling function "adapt_step" for context ... 
+==  Testing finished ... ==
+    Criterion loss value: 0.061475992
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [14 28 11]
+    Visualized context dimensions along y: [ 2  7 23]
+Saving artefacts in: ./runs/240617-225144/artefacts.png
+==  Begining in-domain CelebA visualisation ... ==
+    Environment batch id: 54
+     ### (Re)Compiling function "adapt_step" for context ... 
+Saving visualization in: ./runs/240617-225144/few_shots_ind.png
+Creating a new model with taylor order 0 ...
+
+
+=== Beginning adaptation ... ===
+    Number of environment batches: 20
+    Number of envs train steps per batch: 50
+    Total number of training steps: 1000
+     ### (Re)Compiling function "adapt_step" for context ... 
+    Batch ID:   0     Loss: 0.06122167        OtherNorms: [0.00397741 0.05933687 1.8808134 ]
+    Batch ID:   1     Loss: 0.06223602        OtherNorms: [0.00397741 0.06027873 1.9533141 ]
+    Batch ID:   2     Loss: 0.06095844        OtherNorms: [0.00397741 0.05911057 1.8438926 ]
+    Batch ID:   3     Loss: 0.06101079        OtherNorms: [0.00397741 0.05901148 1.9953227 ]
+    Batch ID:   4     Loss: 0.06308590        OtherNorms: [0.00397741 0.06120688 1.8750281 ]
+    Batch ID:   5     Loss: 0.06104626        OtherNorms: [0.00397741 0.05915133 1.8909487 ]
+    Batch ID:   6     Loss: 0.06068392        OtherNorms: [0.00397741 0.0588316  1.8483403 ]
+    Batch ID:   7     Loss: 0.05951311        OtherNorms: [0.00397741 0.05761366 1.8954624 ]
+    Batch ID:   8     Loss: 0.06257940        OtherNorms: [0.00397741 0.06062867 1.9467542 ]
+    Batch ID:   9     Loss: 0.06088180        OtherNorms: [0.00397741 0.05891695 1.9608802 ]
+    Batch ID:  10     Loss: 0.06196788        OtherNorms: [0.00397741 0.06005767 1.9062312 ]
+    Batch ID:  11     Loss: 0.06203928        OtherNorms: [0.00397741 0.06012366 1.911644  ]
+    Batch ID:  12     Loss: 0.06019079        OtherNorms: [0.00397741 0.05828676 1.9000556 ]
+    Batch ID:  13     Loss: 0.06223352        OtherNorms: [0.00397741 0.06031777 1.9117684 ]
+    Batch ID:  14     Loss: 0.06283169        OtherNorms: [0.00397741 0.06093723 1.8904879 ]
+    Batch ID:  15     Loss: 0.06162118        OtherNorms: [0.00397741 0.05973036 1.8868475 ]
+    Batch ID:  16     Loss: 0.06203993        OtherNorms: [0.00397741 0.06015909 1.8768574 ]
+    Batch ID:  17     Loss: 0.06121559        OtherNorms: [0.00397741 0.05924506 1.9665581 ]
+    Batch ID:  18     Loss: 0.06161302        OtherNorms: [0.00397741 0.05962749 1.9815503 ]
+     ### (Re)Compiling function "adapt_step" for context ... 
+    Batch ID:  19     Loss: 0.06106369        OtherNorms: [0.00397741 0.05900393 2.0557752 ]
+
+Total gradient descent adaptation time: 0 hours 0 mins 23 secs
+
+Saving adaptation parameters into ./runs/240617-225144/adapt/ folder ...
+
+     ### (Re)Compiling function "adapt_step" for context ... 
+==  Testing finished ... ==
+    Criterion loss value: 0.06374355
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [14 28 11]
+    Visualized context dimensions along y: [ 2  7 23]
+Saving artefacts in: ./runs/240617-225144/adapt/artefacts.png
+==  Begining in-domain CelebA visualisation ... ==
+    Environment batch id: 14
+Saving visualization in: ./runs/240617-225144/adapt/few_shots_ood.png

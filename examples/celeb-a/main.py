@@ -1,6 +1,6 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
@@ -22,8 +22,8 @@ resolution = (32, 32)
 
 ## Train and adapt hps
 context_pool_size = 2
-context_size = 8
-taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
+context_size = 32
+taylor_orders = (1, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-3, 1.)
 sched_factor = 1.
 envs_batch_size = 1024
