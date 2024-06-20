@@ -14,29 +14,30 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2026
+seed = 2024
 
 ## Dataloader hps
 k_shots = 100
 resolution = (32, 32)
+data_folder="./data/"
 
 ## Train and adapt hps
 context_pool_size = 2
-context_size = 32
-taylor_orders = (1, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
+context_size = 8
+taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-3, 1.)
 sched_factor = 1.
-envs_batch_size = 1024
-max_train_batches = 64      ## TODO: should be -1
+envs_batch_size = 256
+max_train_batches = 4      ## TODO: should be -1
 
-nb_train_epochs = 5
-nb_outer_steps = 5      ## Increase this to scale well with GPU !
-nb_inner_steps = (1, 50)
+nb_train_epochs = 1000
+nb_outer_steps = 1      ## Increase this to scale well with GPU !
+nb_inner_steps = (1, 5)
 proximal_betas = (0., 0.)
 inner_tols = (2e-11, 1e-10)
 
 print_error_every = 1
-nb_adapt_epochs = 10
+nb_adapt_epochs = 1
 
 meta_train = True
 # run_folder = "./runs/240609-215946/"
@@ -44,9 +45,6 @@ run_folder = None
 save_trainer = True
 
 meta_test = True
-
-## Dataset hps
-data_folder="./data/"
 
 
 
