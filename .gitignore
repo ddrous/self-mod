@@ -65,3 +65,5 @@ examples/celeb-a/runs/*
 
 ## Exception runs
 !examples/celeb-a/runs/240617-190219
+!examples/celeb-a/runs/250609-112233-VAE
+!examples/celeb-a/runs/250624-193230-VAE/
