@@ -32,7 +32,7 @@ print("Using run folder:", RUN_FOLDDER)
 
 DATA_FOLDER="./data/"
 BATCH_SIZE = 1024*4
-EPOCHS = 25*10*5
+EPOCHS = 60
 LR=1e-2
 IMG_SIZE = [32, 32, 3]
 
@@ -144,16 +144,16 @@ class Encoder(eqx.Module):
         H, W, C = self.img_size
 
         self.layers = [
-            eqx.nn.Conv2d(C, 4, kernel_size, padding="SAME", key=layer_keys[0]),
+            eqx.nn.Conv2d(C, 8, kernel_size, padding="SAME", key=layer_keys[0]),
             Downsample2D(factor=2),
             eqx.nn.PReLU(init_alpha=0.),
-            eqx.nn.Conv2d(4, 8, kernel_size, padding="SAME", key=layer_keys[1]),
+            eqx.nn.Conv2d(8, 12, kernel_size, padding="SAME", key=layer_keys[1]),
             Downsample2D(factor=2),
             eqx.nn.PReLU(init_alpha=0.),
             lambda x: x.flatten(),
-            eqx.nn.Linear(8*H*W//(4*4), 32, key=layer_keys[2]),
+            eqx.nn.Linear(12*H*W//(4*4), 48, key=layer_keys[2]),
             eqx.nn.PReLU(init_alpha=0.),
-            eqx.nn.Linear(32, 2*latent_dim, key=layer_keys[3])
+            eqx.nn.Linear(48, 2*latent_dim, key=layer_keys[3])
         ]
 
     def __call__(self, x):
@@ -180,16 +180,16 @@ class Decoder(eqx.Module):
         H, W, C = self.img_size
 
         self.layers = [
-            eqx.nn.Linear(latent_dim, 32, key=layer_keys[0]),
+            eqx.nn.Linear(latent_dim, 48, key=layer_keys[0]),
             eqx.nn.PReLU(init_alpha=0.),
-            eqx.nn.Linear(32, 8*H*W//(4*4), key=layer_keys[1]),
+            eqx.nn.Linear(48, 12*H*W//(4*4), key=layer_keys[1]),
             eqx.nn.PReLU(init_alpha=0.),
-            lambda x: x.reshape((8, H//4, W//4)),
+            lambda x: x.reshape((12, H//4, W//4)),
             Upsample2D(factor=2),
-            eqx.nn.ConvTranspose2d(8, 4, kernel_size, padding="SAME", key=layer_keys[2]),
+            eqx.nn.ConvTranspose2d(12, 8, kernel_size, padding="SAME", key=layer_keys[2]),
             eqx.nn.PReLU(init_alpha=0.),
             Upsample2D(factor=2),
-            eqx.nn.ConvTranspose2d(4, C, kernel_size, padding="SAME", key=layer_keys[3]),
+            eqx.nn.ConvTranspose2d(8, C, kernel_size, padding="SAME", key=layer_keys[3]),
             jax.nn.sigmoid
         ]
 
@@ -226,7 +226,7 @@ class VAE(eqx.Module):
         z = mu + eps*jnp.exp(0.5*logvar)
         return self.decoder(z), mu, logvar
 
-model = VAE(img_size=IMG_SIZE, kernel_size=[3, 3], latent_dim=12, key=model_key)
+model = VAE(img_size=IMG_SIZE, kernel_size=[3, 3], latent_dim=18, key=model_key)
 
 ## Count the number of parameters
 count_enc = np.sum([p.size for p in jax.tree.leaves(model.encoder) if isinstance(p, jnp.ndarray)])
@@ -291,8 +291,8 @@ for epoch in range(EPOCHS):
         nb_batches += 1
 
         # if batch_id < 10:
-        # if batch_id % 100 == 0:
-        print(f"Epoch {epoch}   Batch {batch_id}    Loss: {loss}", end="\r")
+        if batch_id % 10 == 0:
+            print(f"Epoch {epoch:-5d}   Batch {batch_id:-5d}    Loss: {loss}", end="\r")
 
         # if batch_id>10:     ## Just for now !
         #     break
@@ -316,7 +316,7 @@ plt.savefig(RUN_FOLDDER+"elbo_loss.png")
 #%%
 
 ## Test and plot the decoder
-zs = jax.random.normal(test_key, (64, 12))
+zs = jax.random.normal(test_key, (64, 18))
 samples = jax.vmap(model.decoder)(zs).reshape((64, 1, 32, 32, 3))
 
 plt.figure(figsize=(8, 8))
