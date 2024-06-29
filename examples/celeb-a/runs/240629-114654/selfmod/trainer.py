@@ -275,73 +275,22 @@ class Trainer:
         model = self.learner.model
         opt_state_model = self.opt_state_model
 
-        # # @eqx.filter_jit
-        # def inner_train_step(model, contexts, batch, weightings, opt_state, key):
-        #     print(f'     ### (Re)Compiling function: {inner_train_step.__name__} ...  ')
-
-        #     def prox_loss_fn(contexts, model, batch, weightings, key):                  ## TODO this loss function is already defined as a mean across envs. MAML is environment specific !
-        #         loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-        #         return loss, aux_data
-
-        #     for _ in range(nb_inner_steps):
-        #         (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
-        #         updates, opt_state = self.opt_ctx.update(grads, opt_state)
-        #         contexts = eqx.apply_updates(contexts, updates)
-
-        #     meta_loss = loss_fn(model, contexts, batch, weightings, key)[0]
-
-        #     return meta_loss, (contexts, opt_state, loss, aux_data)
-
-
+        # @eqx.filter_jit
         def inner_train_step(model, contexts, batch, weightings, opt_state, key):
             print(f'     ### (Re)Compiling function: {inner_train_step.__name__} ...  ')
 
-            nb_envs = contexts.params.shape[0]
+            def prox_loss_fn(contexts, model, batch, weightings, key):                  ## TODO this loss function is already defined as a mean across envs. MAML is environment specific !
+                loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                return loss, aux_data
 
-            env_loss_fn_ = lambda ctx, model, batch, ctxs, key: self.learner.env_loss_fn(model, batch, ctx, ctxs, key)
-
-            ctx_grad_fn = eqx.filter_value_and_grad(env_loss_fn_, has_aux=True)
-
-            # @eqx.filter_jit
-            def step(contexts, model, batch, opt_state, key):
-
-                keys = jax.random.split(key, num=nb_envs)
-
-                (loss, aux_data), grads = eqx.filter_vmap(ctx_grad_fn, in_axes=(0, None, 0, None, 0))(contexts.params, model, batch, contexts.params, keys)
-
-                ### ===== Optimizer approach
-                grads_pytree = ArrayContextParams(nb_envs, self.learner.context_size)
-                grads_pytree = eqx.tree_at(lambda ptree: ptree.params, grads_pytree, grads)
-                updates, opt_state = self.opt_ctx.update(grads_pytree, opt_state)
+            for _ in range(nb_inner_steps):
+                (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
+                updates, opt_state = self.opt_ctx.update(grads, opt_state)
                 contexts = eqx.apply_updates(contexts, updates)
-                ### =====
 
-                # #### ===== Simple update rule approach
-                # new_params = contexts.params - 0.1*grads
-                # contexts = eqx.tree_at(lambda ptree: ptree.params, contexts, new_params)
-                # #### =====
+            meta_loss = loss_fn(model, contexts, batch, weightings, key)[0]
 
-                return contexts, opt_state, loss, aux_data
-
-            keys = jax.random.split(key, num=nb_inner_steps)
-
-            # for i in range(nb_inner_steps): ## TODO : use scan for longer inner step counts
-            #     contexts, opt_state, loss, aux_data = step(contexts, model, batch, opt_state, keys[i])
-
-            ## Use the scan algorithm
-            def body_func(carry, key):
-                contexts, opt_state = carry
-                contexts, opt_state, _, aux_data = step(contexts, model, batch, opt_state, key)
-                return (contexts, opt_state), aux_data
-
-            init_carry = (contexts, opt_state)
-            (contexts, opt_state), aux_datas = jax.lax.scan(body_func, init_carry, keys)
-            aux_data = [jnp.mean(term) for term in aux_datas]
-
-            meta_loss = self.learner.loss_fn(model, contexts, batch, weightings, key)[0]
-
-            return meta_loss, (contexts, opt_state, None, aux_data)
-
+            return meta_loss, (contexts, opt_state, loss, aux_data)
 
 
         @eqx.filter_jit
@@ -592,9 +541,7 @@ class Trainer:
             for inner_step in range(nb_inner_steps):
                 loss_key, _ = jax.random.split(loss_key)
 
-                # model, contexts, opt_state, loss, aux_losses = adapt_step_proxi(model, contexts, batch, weightings, opt_state, opt, self.learner.loss_fn, loss_key)
-
-                model, contexts, opt_state, loss, aux_losses = adapt_step_cavia(model, contexts, batch, weightings, opt_state, opt, self.learner.env_loss_fn, loss_key)
+                model, contexts, opt_state, loss, aux_losses = adapt_step(model, contexts, batch, weightings, opt_state, opt, loss_fn, loss_key)
 
                 mean_loss_terms = [jnp.mean(term) for term in aux_losses]
                 losses.append(jnp.stack([loss]+mean_loss_terms))
@@ -656,7 +603,7 @@ def predict_step(model, contexts, batch, key):
 
 
 @eqx.filter_jit
-def adapt_step_proxi(model, contexts, batch, weightings, opt_state, opt, loss_fn, key):
+def adapt_step(model, contexts, batch, weightings, opt_state, opt, loss_fn, key):
     print('     ### (Re)Compiling function "adapt_step" for context ... ')
 
     loss_fn_ = lambda contexts, model, batch, weightings, key: loss_fn(model, contexts, batch, weightings, key)
@@ -667,32 +614,3 @@ def adapt_step_proxi(model, contexts, batch, weightings, opt_state, opt, loss_fn
     contexts = eqx.apply_updates(contexts, updates)
 
     return model, contexts, opt_state, loss, aux_data
-
-
-
-
-@eqx.filter_jit
-def adapt_step_cavia(model, contexts, batch, weightings, opt_state, opt, env_loss_fn, key):
-    print(f'     ### (Re)Compiling function: {adapt_step_cavia.__name__} ...  ')
-
-    nb_envs, context_size = contexts.params.shape
-
-    env_loss_fn_ = lambda ctx, model, batch, ctxs, key: env_loss_fn(model, batch, ctx, ctxs, key)
-
-    ctx_grad_fn = eqx.filter_value_and_grad(env_loss_fn_, has_aux=True)
-    keys = jax.random.split(key, num=nb_envs)
-    (loss, aux_data), grads = eqx.filter_vmap(ctx_grad_fn, in_axes=(0, None, 0, None, 0))(contexts.params, model, batch, contexts.params, keys)
-
-    #### ===== Optimizer approach
-    grads_pytree = ArrayContextParams(nb_envs, context_size)
-    grads_pytree = eqx.tree_at(lambda ptree: ptree.params, grads_pytree, grads)
-    updates, opt_state = opt.update(grads_pytree, opt_state)
-    contexts = eqx.apply_updates(contexts, updates)
-    #### =====
-
-    # #### ===== Simple update rule approach
-    # new_params = contexts.params - 0.1*grads
-    # contexts = eqx.tree_at(lambda ptree: ptree.params, contexts, new_params)
-    # #### =====
-
-    return model, contexts, opt_state, jnp.mean(loss), aux_data

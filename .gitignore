@@ -68,3 +68,5 @@ examples/celeb-a/runs/*
 !examples/celeb-a/runs/250609-112233-VAE
 examples/celeb-a/runs/250624-193230-VAE/*.eqx
 !examples/celeb-a/runs/250624-193230-VAE/
+!examples/celeb-a/runs/240629-114654/
+!examples/celeb-a/runs/240629-192445/

@@ -25,14 +25,10 @@ class Learner:
             return env_loss_fn(model, ctx, Y_new, Y_hat)
 
         def loss_fn(model, contexts, batch, weightings, key):
-            keys = jax.random.split(key, num=contexts.params.shape[0])
+            losses, (term3, terms1, terms2) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, None))(model, batch, contexts.params, contexts.params, key)
+            return jnp.sum(losses*weightings), (term3, terms1, terms2)
 
-            losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, batch, contexts.params, contexts.params, keys)
-
-            return jnp.sum(losses*weightings), (term1, terms2, terms3)
-
-        self.loss_fn = loss_fn              ## Meta loss function
-        self.env_loss_fn = env_loss_fn_      ## Base loss function
+        self.loss_fn = loss_fn
 
     def save_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalid path provided. The path must end with /"
