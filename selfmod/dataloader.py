@@ -5,7 +5,7 @@ from abc import abstractmethod
 import pandas as pd
 import torch
 from torchvision.transforms import transforms
-from torch.utils.data import Dataset
+from torch.utils import data
 from PIL import Image
 
 
@@ -69,7 +69,7 @@ class DataLoader:
 
 
 
-class CelebADataLoader(DataLoader):
+class CelebADataLoader(data.DataLoader):
     """
     A celeb a dataloader for meta-learning.
     """
@@ -253,8 +253,7 @@ class CelebADataLoader(DataLoader):
 
 
 
-
-## Todo. It might be better to write a new DataLoader from the Torch class altogether
+## Todo. It might be better to write a new DataLoader from the Torch class altogether (See NumpyLoader)
 def collate_to_jax(batch):
     xs, ys = zip(*batch)
     return jnp.array(xs), jnp.array(ys)
@@ -339,6 +338,11 @@ class CelebADataset(DataLoader):
 
         return normed_coords, pixel_values
 
+    def set_seed_sample_pixels(self, seed, idx):
+        np.random.seed(seed)
+        img = self.get_image(self.files[idx])
+        return self.sample_pixels(img)
+
 
     def __getitem__(self, idx):
         img = self.get_image(self.files[idx])
@@ -348,3 +352,40 @@ class CelebADataset(DataLoader):
 
     def __len__(self):
         return self.total_envs
+
+
+
+
+
+
+
+
+
+
+
+def numpy_collate(batch):
+  return jax.tree.map(np.asarray, data.default_collate(batch))
+
+class NumpyLoader(data.DataLoader):
+  def __init__(self, dataset, batch_size=1,
+                shuffle=False, sampler=None,
+                batch_sampler=None, num_workers=0,
+                pin_memory=False, drop_last=False,
+                timeout=0, worker_init_fn=None):
+    super(self.__class__, self).__init__(dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        sampler=sampler,
+        batch_sampler=batch_sampler,
+        num_workers=num_workers,
+        collate_fn=numpy_collate,
+        pin_memory=pin_memory,
+        drop_last=drop_last,
+        timeout=timeout,
+        worker_init_fn=worker_init_fn)
+    
+    self.num_batches = np.ceil(len(dataset) / batch_size).astype(int)
+
+class FlattenAndCast(object):
+  def __call__(self, pic):
+    return np.ravel(np.array(pic, dtype=jnp.float32))

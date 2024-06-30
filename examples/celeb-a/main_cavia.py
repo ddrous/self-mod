@@ -15,9 +15,6 @@ from selfmod import *
 # sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-from torch.utils.data import DataLoader
-# from jax_dataloader import DataLoader
-
 
 #%%
 
@@ -35,18 +32,20 @@ context_size = 128
 taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 16
-max_train_batches = 500      ## TODO: should be -1
+envs_batch_size = 16*16
+max_train_batches = -1      ## TODO: should be -1
 
-nb_train_epochs = 5
-nb_inner_steps = (1, 5)
+nb_train_epochs = 50
+nb_inner_steps = 5
 
-print_error_every = 1
+print_error_every = 10
+
 nb_adapt_epochs = 10
+nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/240609-215946-Test/"
-# run_folder = None
+# run_folder = "./runs/240609-215946-Test/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -103,31 +102,31 @@ mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 ## Define dataloaders for training and validation
-train_dataloader = CelebADataLoader(data_folder, 
-                                    envs_batch_size=envs_batch_size, 
-                                    shots_batch_size=k_shots, 
-                                    data_split="train",
-                                    envs_shuffle=True, 
-                                    shots_shuffle=True, 
-                                    order_pixels=False, 
-                                    key=data_key)
-val_dataloader = CelebADataLoader(data_folder, 
-                                  envs_batch_size=envs_batch_size, 
-                                  shots_batch_size=k_shots, 
-                                  data_split="val",
-                                  envs_shuffle=True, 
-                                  shots_shuffle=True, 
-                                  order_pixels=False, 
-                                  key=data_key)
+# train_dataloader = CelebADataLoader(data_folder, 
+#                                     envs_batch_size=envs_batch_size, 
+#                                     shots_batch_size=k_shots, 
+#                                     data_split="train",
+#                                     envs_shuffle=True, 
+#                                     shots_shuffle=True, 
+#                                     order_pixels=False, 
+#                                     key=data_key)
+# val_dataloader = CelebADataLoader(data_folder, 
+#                                   envs_batch_size=envs_batch_size, 
+#                                   shots_batch_size=k_shots, 
+#                                   data_split="val",
+#                                   envs_shuffle=True, 
+#                                   shots_shuffle=True, 
+#                                   order_pixels=False, 
+#                                   key=data_key)
 
 
 
 # ##### Pytorch dataloading #####
-# train_dataset = CelebADataset(data_folder, 
-#                             data_split="train",
-#                             num_shots=k_shots, 
-#                             order_pixels=False, 
-#                             seed=seed)
+train_dataset = CelebADataset(data_folder, 
+                            data_split="train",
+                            num_shots=k_shots, 
+                            order_pixels=False, 
+                            seed=seed)
 # train_dataloader = DataLoader(train_dataset, 
 #                               batch_size=envs_batch_size, 
 #                               shuffle=True,
@@ -136,9 +135,27 @@ val_dataloader = CelebADataLoader(data_folder,
 #                             #   num_workers=24,
 #                               drop_last=False)
 
+##### Numpy Loader
+train_dataloader = NumpyLoader(train_dataset, 
+                              batch_size=envs_batch_size, 
+                              shuffle=True,
+                              num_workers=24,
+                              drop_last=False)
 
 
+val_dataloader = NumpyLoader(CelebADataset(data_folder, 
+                                            data_split="val",
+                                            num_shots=k_shots, 
+                                            order_pixels=False, 
+                                            seed=seed), 
+                              batch_size=envs_batch_size, 
+                              shuffle=True,
+                              num_workers=24,
+                              drop_last=False)
 
+
+## Print all attributes of the dataloader
+print(train_dataloader.__dict__)
 
 ## Check data properties
 # print(next(train_dataloader))
@@ -278,7 +295,7 @@ if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
     trainer.meta_train_cavia(dataloader=train_dataloader,
                             nb_epochs=nb_train_epochs,
-                            nb_inner_steps=nb_inner_steps[1], 
+                            nb_inner_steps=nb_inner_steps, 
                             max_train_batches=max_train_batches,
                             print_error_every=print_error_every, 
                             save_path=trainer_save_path, 
@@ -308,22 +325,35 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = CelebAVisualTester(trainer, key=test_key)
 
-ind_crit, _ = visualtester.evaluate(val_dataloader)        ## TODO: Use val_dataloader
+ind_crit, _ = visualtester.evaluate(val_dataloader, 
+                                    nb_inner_steps=nb_inner_steps,
+                                    max_eval_batches=10)
 # print("In domain test error:", ind_crit)
 
-all_shots_dataloader = CelebADataLoader(data_folder, 
-                                        envs_batch_size=envs_batch_size, 
-                                        shots_batch_size=np.prod(resolution), 
-                                        data_split="train",
-                                        envs_shuffle=True, 
-                                        shots_shuffle=True, 
-                                        order_pixels=False, 
-                                        key=data_key)
+# all_shots_dataloader = CelebADataLoader(data_folder, 
+#                                         envs_batch_size=envs_batch_size, 
+#                                         shots_batch_size=np.prod(resolution), 
+#                                         data_split="train",
+#                                         envs_shuffle=True, 
+#                                         shots_shuffle=True, 
+#                                         order_pixels=False, 
+#                                         key=data_key)
+all_shots_dataloader = NumpyLoader(CelebADataset(data_folder, 
+                                            data_split="train",
+                                            num_shots=np.prod(resolution), 
+                                            order_pixels=False, 
+                                            seed=seed), 
+                              batch_size=envs_batch_size, 
+                              shuffle=True,
+                              num_workers=24,
+                              drop_last=False)
+
 
 visualtester.visualizeArtefacts(save_path=run_folder+"artefacts.png")
 
 visualtester.visualizeFewShots(few_shots_loader=train_dataloader,
                                 all_shots_loader=all_shots_dataloader,
+                                nb_inner_steps=nb_inner_steps_eval,
                                 save_path=run_folder+"few_shots_ind.png",
                                 key=jax.random.PRNGKey(time.time_ns())
                              );
@@ -339,27 +369,47 @@ visualtester.visualizeFewShots(few_shots_loader=train_dataloader,
 
 
 
+
+
+
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = CelebADataLoader(data_folder, 
-                                        envs_batch_size=envs_batch_size, 
-                                        shots_batch_size=k_shots, 
-                                        data_split="test",
-                                        key=data_key)
+    # adapt_dataloader = CelebADataLoader(data_folder, 
+    #                                     envs_batch_size=envs_batch_size, 
+    #                                     shots_batch_size=k_shots, 
+    #                                     data_split="test",
+    #                                     key=data_key)
+    adapt_dataloader = NumpyLoader(CelebADataset(data_folder, 
+                                                data_split="test",
+                                                num_shots=k_shots, 
+                                                order_pixels=False, 
+                                                seed=seed), 
+                                batch_size=envs_batch_size, 
+                                shuffle=True,
+                                num_workers=24,
+                                drop_last=False)
 
-    opt_adapt = optax.adabelief(init_lr_ctx)
+
+
+    # visualtester.visualizeArtefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
+
+
+
+    opt_adapt = optax.sgd(init_lr_ctx)
 
     _, contexts, aux_data = trainer.meta_test(adapt_dataloader,
-                                            nb_inner_steps=nb_inner_steps[1]**2,
+                                            nb_inner_steps=nb_inner_steps,
                                             taylor_order=taylor_orders[1],
-                                            optimizer=opt_adapt, 
+                                            optimizer=opt_adapt,
                                             max_adapt_batches=max_train_batches,     ## JUST to set up adaptation for future tasks
                                             print_error_every=print_error_every, 
                                             save_path=adapt_folder)
 
+    # visualtester.visualizeArtefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
+
     ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
                                         taylor_order=taylor_orders[1], 
-                                        nb_inner_steps=nb_inner_steps[1]**2)
+                                        nb_inner_steps=nb_inner_steps_eval)
 
 
 #%%
@@ -367,17 +417,26 @@ if meta_test:
 ## Visualise the adaptation results
 
 if meta_test:
-    all_shots_loader = CelebADataLoader(data_folder, 
-                                        envs_batch_size=envs_batch_size, 
-                                        shots_batch_size=np.prod(resolution), 
-                                        data_split="test",
-                                        key=data_key)
+    # all_shots_loader = CelebADataLoader(data_folder, 
+    #                                     envs_batch_size=envs_batch_size, 
+    #                                     shots_batch_size=np.prod(resolution), 
+    #                                     data_split="test",
+    #                                     key=data_key)
+    all_shots_loader = NumpyLoader(CelebADataset(data_folder, 
+                                                data_split="test",
+                                                num_shots=np.prod(resolution), 
+                                                order_pixels=False, 
+                                                seed=seed), 
+                                batch_size=envs_batch_size, 
+                                shuffle=True,
+                                num_workers=24,
+                                drop_last=False)
 
     visualtester.visualizeArtefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
     visualtester.visualizeFewShots(few_shots_loader=adapt_dataloader,
                                 all_shots_loader=all_shots_loader,
-                                nb_inner_steps=nb_inner_steps[1]**2,
+                                nb_inner_steps=nb_inner_steps_eval,
                                 save_path=adapt_folder+"few_shots_ood.png",
                                 key=jax.random.PRNGKey(time.time_ns())
                                 );

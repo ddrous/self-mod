@@ -1,6 +1,6 @@
 
 from abc import abstractmethod
-from selfmod.dataloader import DataLoader
+from selfmod.dataloader import DataLoader, CelebADataLoader, NumpyLoader
 from ._utils import *
 
 
@@ -16,7 +16,7 @@ class VisualTester:
     @abstractmethod
     def evaluate(self, 
                  super_dataloader, 
-                 nb_inner_steps=100,
+                 nb_inner_steps=10,
                  loss_criterion=None, 
                  criterion_id=0, 
                  max_eval_batches=-1, 
@@ -153,27 +153,44 @@ class CelebAVisualTester(VisualTester):
     def visualizeFewShots(self, 
                         few_shots_loader:DataLoader, 
                         all_shots_loader:DataLoader, 
-                        nb_inner_steps=100,
+                        nb_inner_steps=10,
                         save_path=False, 
                         key=None):
         key = key if key != None else self.key
-        e = jax.random.randint(key, (1,), 0, few_shots_loader.nb_batches)[0]
 
         print("==  Begining in-domain CelebA visualisation ... ==")
-        print("    Environment batch id:", e)
 
         ## The contexts are not obtained from a quick adaptation process (hidden in meta-test)
-        X, Y = all_shots_loader.sample_environments(key, e, 1)
+        if isinstance(all_shots_loader, CelebADataLoader):
+            e = jax.random.randint(key, (1,), 0, few_shots_loader.nb_batches)[0]
+            X, Y = all_shots_loader.sample_environments(key, e, 1)
+        elif isinstance(all_shots_loader, NumpyLoader):
+            e = jax.random.randint(key, (1,), 0, len(few_shots_loader.dataset))[0]
+            X, Y = all_shots_loader.dataset.set_seed_sample_pixels(key[0], e)
+            X, Y = X[None, ...], Y[None, ...]
+        else:
+            raise ValueError("Invalid dataloader class instance provided.")
+
+        print("    Environment (batch) id:", e)
+
         _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
                                                      nb_inner_steps=nb_inner_steps, 
                                                      verbose=False)
         X_hat, Y_true, Y_hat = X[0], Y[0], Y_hat[0]
 
-        X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, 1)
+        if isinstance(few_shots_loader, CelebADataLoader):
+            img_size = few_shots_loader.img_size
+            X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, 1)
+        elif isinstance(few_shots_loader, NumpyLoader):
+            img_size = few_shots_loader.dataset.img_size
+            X_few_shots, Y_few_shots = few_shots_loader.dataset.set_seed_sample_pixels(key[0], e)
+            X_few_shots, Y_few_shots = X_few_shots[None, ...], Y_few_shots[None, ...]
+        else:
+            raise ValueError("Invalid dataloader class instance provided.")
+
         X_few_shots, Y_few_shots = X_few_shots[0], Y_few_shots[0]
 
         fig, ax = plt.subplot_mosaic('ABC', figsize=(4*3, 3.7*1))
-        img_size = few_shots_loader.img_size
 
         def make_image(xy_coords, rgb_pixels):
             img = np.zeros(img_size)

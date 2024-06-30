@@ -368,15 +368,14 @@ class Trainer:
             tester = VisualTester(self, key=key)
 
         print(f"\n\n=== Beginning meta training ... ===")
-        # print(f"    Number of examples in a batch along envs: {dataloader.envs_batch_size}")
-        # print(f"    Maximum number of batches (along envs): {dataloader.nb_batches}")
-        # print(f"    Number of examples in a batch: {dataloader.shots_batch_size}")
-        # print(f"    Maximum numbers of inner steps : {nb_inner_steps}")
+        print(f"    Number of examples in a batch: {dataloader.batch_size}")
+        print(f"    Total number of batches : {dataloader.num_batches}")
+        print(f"    Numbers of inner steps : {nb_inner_steps}")
 
-        # if max_train_batches<1 or max_train_batches>dataloader.nb_batches or max_train_batches is None:
-        #     max_train_batches = dataloader.nb_batches
-        # else:
-        #     print(f"    Training on {max_train_batches} batches")
+        if max_train_batches<1 or max_train_batches>dataloader.num_batches or max_train_batches is None:
+            max_train_batches = dataloader.num_batches
+        else:
+            print(f"    Training on {max_train_batches} batches")
 
         start_time = time.time()
 
@@ -414,8 +413,12 @@ class Trainer:
 
                 losses.append(loss)
 
-                if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
-                    print(f"Epoch: {epoch:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                # if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
+                #     print(f"Epoch: {epoch:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+
+                if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.nb_batches-1:
+                    print(f"Epoch: {epoch:-3d}      BatchID: {env_batch:-3d}    LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+
 
             if val_dataloader is not None:
                 self.learner.model = model
@@ -600,7 +603,7 @@ class Trainer:
                 losses.append(jnp.stack([loss]+mean_loss_terms))
 
             if verbose and (env_batch%print_error_every==0 or env_batch<=3 or env_batch==nb_batches-1):
-                print(f"    Batch ID: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True)
+                print(f"    Batch ID: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True, end="\r")
 
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
