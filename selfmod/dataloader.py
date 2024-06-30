@@ -5,6 +5,7 @@ from abc import abstractmethod
 import pandas as pd
 import torch
 from torchvision.transforms import transforms
+from torch.utils.data import Dataset
 from PIL import Image
 
 
@@ -214,6 +215,136 @@ class CelebADataLoader(DataLoader):
             return self.make_batch()
         else:
             raise StopIteration
+
+    def __len__(self):
+        return self.total_envs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Todo. It might be better to write a new DataLoader from the Torch class altogether
+def collate_to_jax(batch):
+    xs, ys = zip(*batch)
+    return jnp.array(xs), jnp.array(ys)
+
+
+class CelebADataset(DataLoader):
+    """
+    A celeb a dataloader for meta-learning.
+    """
+    def __init__(self, 
+                 data_path="./data/", 
+                 data_split="train",
+                 num_shots=100,
+                 resolution=(32, 32),
+                 order_pixels=False,
+                 seed=None):
+
+        ## Set seed
+        if seed is not None:
+            np.random.seed(seed)
+
+        if num_shots <= 0:
+            raise ValueError("Number of shots must be greater than 0.")
+        elif num_shots > resolution[0]*resolution[1]:
+            raise ValueError("Number of shots must be less than the total number of pixels.")
+        self.nb_shots = num_shots
+
+        self.input_dim = 2
+        self.output_dim = 3
+        self.img_size = (*resolution, self.output_dim)
+        self.order_pixels = order_pixels
+        ## Read the partitioning file: train(0), val(1), test(2)
+
+        self.data_path = data_path
+        partitions = pd.read_csv(self.data_path+'list_eval_partition.txt', 
+                                 header=None, 
+                                 sep=r'\s+', 
+                                 names=['filename', 'partition'])
+        if data_split in ["train"]:
+            self.files = partitions[partitions['partition'] == 0]['filename'].values
+        elif data_split in ["val"]:
+            self.files = partitions[partitions['partition'] == 1]['filename'].values
+        elif data_split in ["test"]:
+            self.files = partitions[partitions['partition'] == 2]['filename'].values
+        else:
+            raise ValueError(f"Invalid data split provided. Got {data_split}")
+
+        ## A list of MVPs images (or the worst during self-modulation) - Useful for active learning
+        # self.mvp_files = self.files
+
+        self.total_envs = len(self.files)
+        if self.total_envs == 0:
+            raise ValueError("No files found for the split.")
+
+        self.total_pixels = self.img_size[0] * self.img_size[1]
+
+        ## Ssee CAVIA code: https://github.com/lmzintgraf/cavia)
+        self.transform = transforms.Compose([lambda x: Image.open(x).convert('RGB'),
+                                            transforms.Resize((self.img_size[0], self.img_size[1]), Image.LANCZOS),
+                                            transforms.ToTensor(),
+                                            ])
+
+    def get_image(self, filename) -> torch.Tensor:
+        img_path = os.path.join(self.data_path+"img_align_celeba/", filename)
+        img = self.transform(img_path).float()
+        img = img.permute(1, 2, 0)
+        return np.array(img)
+
+    def sample_pixels(self, img) -> Tuple[np.ndarray, jnp.ndarray]:        ## TODO: Stay in torch throughout this function!
+        total_pixels = self.img_size[0] * self.img_size[1]
+
+        if self.order_pixels:
+            flattened_indices = np.arange(self.nb_shots)
+        else:
+            flattened_indices = np.random.choice(total_pixels, size=self.nb_shots, replace=False)
+
+        x, y = np.unravel_index(flattened_indices, (self.img_size[0], self.img_size[1]))
+        coords = np.vstack((x, y)).T
+        normed_coords = (coords / np.array(self.img_size[:2]))
+
+        pixel_values = img[coords[:, 0], coords[:, 1], :]
+
+        return normed_coords, pixel_values
+
+
+    def __getitem__(self, idx):
+        img = self.get_image(self.files[idx])
+        normed_coords, pixel_values = self.sample_pixels(img)
+        return normed_coords, pixel_values
+
 
     def __len__(self):
         return self.total_envs

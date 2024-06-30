@@ -1,6 +1,6 @@
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
@@ -9,6 +9,14 @@ from selfmod import *
 # from selfmod.dataloader import CelebADataLoader
 
 # jax.config.update("jax_debug_nans", True)
+
+# ## To avoid perfetto profiler bug
+# import socket
+# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+from torch.utils.data import DataLoader
+# from jax_dataloader import DataLoader
 
 
 #%%
@@ -27,18 +35,18 @@ context_size = 128
 taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 256*1
-max_train_batches = -1      ## TODO: should be -1
+envs_batch_size = 16
+max_train_batches = 500      ## TODO: should be -1
 
-nb_train_epochs = 20
+nb_train_epochs = 5
 nb_inner_steps = (1, 5)
 
 print_error_every = 1
 nb_adapt_epochs = 10
 
 meta_train = True
-# run_folder = "./runs/240609-215946-Test/"
-run_folder = None
+run_folder = "./runs/240609-215946-Test/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -112,8 +120,32 @@ val_dataloader = CelebADataLoader(data_folder,
                                   order_pixels=False, 
                                   key=data_key)
 
+
+
+# ##### Pytorch dataloading #####
+# train_dataset = CelebADataset(data_folder, 
+#                             data_split="train",
+#                             num_shots=k_shots, 
+#                             order_pixels=False, 
+#                             seed=seed)
+# train_dataloader = DataLoader(train_dataset, 
+#                               batch_size=envs_batch_size, 
+#                               shuffle=True,
+#                             #   backend="jax",
+#                               collate_fn=collate_to_jax,
+#                             #   num_workers=24,
+#                               drop_last=False)
+
+
+
+
+
 ## Check data properties
-print(train_dataloader)
+# print(next(train_dataloader))
+
+# for x, y in train_dataloader:
+#     print(x.shape, y.shape)
+#     break
 
 
 
@@ -193,8 +225,8 @@ def env_loss_fn(model, ctx, y_hat, y):
     return loss_val, (term1, term2, term3)
 
 
-input_dim = train_dataloader.input_dim
-output_dim = train_dataloader.output_dim
+input_dim = 2
+output_dim = 3
 
 neuralnet = MultiMLP(in_size=input_dim, 
                      out_size=output_dim, 
@@ -238,7 +270,10 @@ opt_ctx = optax.sgd(init_lr_ctx)
 trainer = Trainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
-## Meta-training
+
+# with jax.profiler.trace("data/jax-trace", create_perfetto_link=True, create_perfetto_trace=True):
+    ## Meta-training
+
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
     trainer.meta_train_cavia(dataloader=train_dataloader,

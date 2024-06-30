@@ -362,21 +362,21 @@ class Trainer:
             return model, new_contexts, opt_states, loss, other_loss_terms
 
 
-        if not isinstance(dataloader, DataLoader):
-            raise ValueError("The dataloader must be an instance of DataLoader")
+        # if not isinstance(dataloader, DataLoader):
+        #     raise ValueError("The dataloader must be an instance of DataLoader")
         if val_dataloader is not None:
             tester = VisualTester(self, key=key)
 
         print(f"\n\n=== Beginning meta training ... ===")
-        print(f"    Number of examples in a batch along envs: {dataloader.envs_batch_size}")
-        print(f"    Maximum number of batches (along envs): {dataloader.nb_batches}")
-        print(f"    Number of examples in a batch: {dataloader.shots_batch_size}")
-        print(f"    Maximum numbers of inner steps : {nb_inner_steps}")
+        # print(f"    Number of examples in a batch along envs: {dataloader.envs_batch_size}")
+        # print(f"    Maximum number of batches (along envs): {dataloader.nb_batches}")
+        # print(f"    Number of examples in a batch: {dataloader.shots_batch_size}")
+        # print(f"    Maximum numbers of inner steps : {nb_inner_steps}")
 
-        if max_train_batches<1 or max_train_batches>dataloader.nb_batches or max_train_batches is None:
-            max_train_batches = dataloader.nb_batches
-        else:
-            print(f"    Training on {max_train_batches} batches")
+        # if max_train_batches<1 or max_train_batches>dataloader.nb_batches or max_train_batches is None:
+        #     max_train_batches = dataloader.nb_batches
+        # else:
+        #     print(f"    Training on {max_train_batches} batches")
 
         start_time = time.time()
 
