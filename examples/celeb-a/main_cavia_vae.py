@@ -1,6 +1,6 @@
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
@@ -27,15 +27,15 @@ resolution = (32, 32)
 data_folder="./data/" 
 
 ## Train and adapt hps
-context_pool_size = 6
-context_size = 128
-taylor_orders = (1, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
+context_pool_size = 2
+# context_size = 128
+taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-4, 1e-1)
 sched_factor = 1.
 envs_batch_size = 24*1
 max_train_batches = -1      ## TODO: should be -1
 
-nb_train_epochs = 10
+nb_train_epochs = 30
 nb_inner_steps = 5
 
 print_error_every = 100
@@ -44,7 +44,7 @@ nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/240609-215946-Test/"
+run_folder = "./runs/240609-215946-VAE-Test/"
 # run_folder = None
 save_trainer = True
 
@@ -183,55 +183,50 @@ class Swish(eqx.Module):
     def __call__(self, x):
         return x * jax.nn.sigmoid(self.beta * x)
 
-# class MultiMLP(eqx.Module):     ## TODO CAVIA
-#     layers_shared: list
-#     activations: list
-
-#     def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
-#         keys = jax.random.split(key, 10)
-#         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
-
-#         self.layers_shared = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
-#                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
-
-#     def __call__(self, x, ctx):
-#         y = jnp.concatenate([x, ctx], axis=0)
-#         for layer in self.layers_shared:
-#             y = layer(y)
-
-#         return y
-
 class MultiMLP(eqx.Module):
     layers_data: list
-    layers_context: list
+    # layers_context: list
     layers_shared: list
     activations: list
+    ctx_utils: tuple
 
-    def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
+    def __init__(self, in_size, out_size, hidden_size, context_size, ctx_utils, key=None):
         keys = jax.random.split(key, 10)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+        self.ctx_utils = ctx_utils
 
-        self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
-                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
-                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
+        # self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
+        #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
+        #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
 
         self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
                             eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[5])]
+                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
+                            eqx.nn.Linear(hidden_size, out_size, key=keys[5])]
 
-        self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+        # self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
+        self.layers_shared = [eqx.nn.Linear(out_size+out_size, hidden_size, key=keys[6]), self.activations[4], 
+                            #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+                            #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
 
-    def __call__(self, x, ctx):
-        ctx = ctx
-        for layer in self.layers_context:
-            ctx = layer(ctx)
+    def __call__(self, x, ctx_arr):
+        # ctx = ctx
+        # for layer in self.layers_context:
+        #     ctx = layer(ctx)
+
+        ctx_shapes, ctx_treedef, ctx_static = self.ctx_utils
+        ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
+        ctx_fun = eqx.combine(ctx_params, ctx_static)
+
+        noise = jax.random.normal(model_key, shape=(ctx_fun.latent_dim,))       ## Here !
+        img = ctx_fun(noise)
+
+        img_size = ctx_fun.img_size
+        # ctx = img[int(x[0]*img_size[0]), int(x[1]*img_size[1]), :]
+        i = (x[0]*img_size[0]).astype(int)
+        j = (x[1]*img_size[1]).astype(int)
+        ctx = img[:, i, j]
 
         y = x
         for layer in self.layers_data:
@@ -257,7 +252,8 @@ def env_loss_fn(model, ctx, y_hat, y):
     term2 = jnp.mean(jnp.abs(ctx))
     term3 = params_norm_squared(model)
 
-    loss_val = term1 + 1e-3*term2 + 1e-3*term3
+    # loss_val = term1 + 1e-3*term2 + 1e-3*term3
+    loss_val = term1
 
     return loss_val, (term1, term2, term3)
 
@@ -265,17 +261,23 @@ def env_loss_fn(model, ctx, y_hat, y):
 input_dim = 2
 output_dim = 3
 
+ex_context = FuncContextParams(nb_envs=1, key=model_key)
+
+print("\n\nContext parameters:", ex_context.ctx_utils[0])
+
+
 neuralnet = MultiMLP(in_size=input_dim, 
                      out_size=output_dim, 
                      hidden_size=128, 
-                     context_size=context_size, 
+                     context_size=ex_context.context_size, 
+                     ctx_utils=ex_context.ctx_utils,
                      key=model_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, 
                           taylor_order=taylor_orders[0])      ## TODO : taylor order=2
 
 learner = Learner(model=model, 
-                    context_size=context_size, 
+                    context_size=ex_context.context_size, 
                     context_pool_size=context_pool_size,
                     env_loss_fn=env_loss_fn, 
                     key=model_key)
@@ -285,9 +287,6 @@ learner = Learner(model=model,
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
-
-
-
 
 
 

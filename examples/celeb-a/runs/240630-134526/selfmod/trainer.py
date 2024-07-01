@@ -413,19 +413,15 @@ class Trainer:
 
                 losses.append(loss)
 
-
-                if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
-                    print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
-
-            # if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
-            #     print(f"Epoch: {epoch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
+                    print(f"Epoch: {epoch:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
 
             if val_dataloader is not None:
                 self.learner.model = model
 
                 ind_crit,_ = tester.evaluate(val_dataloader,
                                             criterion_id=val_criterion_id,
-                                            max_eval_batches=10,
+                                            max_eval_batches=5,
                                             nb_inner_steps=nb_inner_steps,
                                             taylor_order=0, 
                                             verbose=False)
@@ -603,7 +599,7 @@ class Trainer:
                 losses.append(jnp.stack([loss]+mean_loss_terms))
 
             if verbose and (env_batch%print_error_every==0 or env_batch<=3 or env_batch==nb_batches-1):
-                print(f"    Batch: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True, end="\r")
+                print(f"    Batch ID: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True, end="\r")
 
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
