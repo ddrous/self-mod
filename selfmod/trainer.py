@@ -386,6 +386,8 @@ class Trainer:
 
         loss_key, _ = jax.random.split(key)
 
+        step = 0
+
         for epoch in range(nb_epochs):
 
             loss_epoch = 0.
@@ -410,6 +412,7 @@ class Trainer:
 
                 loss_epoch += loss
                 nb_batches += 1
+                step += 1
 
                 losses.append(loss)
 
@@ -430,7 +433,7 @@ class Trainer:
                                             taylor_order=0, 
                                             verbose=False)
                 print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
-                val_losses.append(np.array([epoch, ind_crit]))
+                val_losses.append(np.array([step, ind_crit]))
 
                 # ## TODO Make a visualisation and save (like Zintgraff)
                 # train_XY = dataloader.sample_environments(key, 0, 1)

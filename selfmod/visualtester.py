@@ -221,3 +221,84 @@ class CelebAVisualTester(VisualTester):
         if save_path:
             plt.savefig(save_path, dpi=100, bbox_inches='tight')
             print("Saving visualization in:", save_path, flush=True);
+
+
+
+
+    def visualizeFewShotsMulti(self, 
+                                few_shots_loader:DataLoader, 
+                                all_shots_loader:DataLoader, 
+                                nb_inner_steps=10,
+                                num_envs=6,
+                                save_path=False, 
+                                key=None):
+        key = key if key != None else self.key
+
+        print("==  Begining in-domain CelebA visualisation ... ==")
+
+        ## The contexts are not obtained from a quick adaptation process (hidden in meta-test)
+        if isinstance(all_shots_loader, CelebADataLoader):
+            e = jax.random.randint(key, (1,), 0, few_shots_loader.nb_batches)[0]
+            X, Y = all_shots_loader.sample_environments(key, e, num_envs)
+            print("    Environment (batch) id:", e)
+        elif isinstance(all_shots_loader, NumpyLoader):
+            keys = jax.random.split(key, num=num_envs)
+            batches = [all_shots_loader.dataset.set_seed_sample_pixels(key[e], e) for e in range(num_envs)]
+            X = jnp.stack([b[0] for b in batches])
+            Y = jnp.stack([b[1] for b in batches])
+            print("    Environment ids:", range(num_envs))
+        else:
+            raise ValueError("Invalid dataloader class instance provided.")
+
+
+        _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
+                                                     nb_inner_steps=nb_inner_steps, 
+                                                     verbose=False)
+        X_hat, Y_true, Y_hat = X, Y, Y_hat
+
+        if isinstance(few_shots_loader, CelebADataLoader):
+            img_size = few_shots_loader.img_size
+            X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, num_envs)
+        elif isinstance(few_shots_loader, NumpyLoader):
+            img_size = few_shots_loader.dataset.img_size
+            batches = [few_shots_loader.dataset.set_seed_sample_pixels(key[e], e) for e in range(num_envs)]
+            X_few_shots = jnp.stack([b[0] for b in batches])
+            Y_few_shots = jnp.stack([b[1] for b in batches])
+        else:
+            raise ValueError("Invalid dataloader class instance provided.")
+
+        fig, ax = plt.subplots(num_envs, 3, figsize=(4*3, 3.7*num_envs))
+
+        def make_image(xy_coords, rgb_pixels):
+            img = np.zeros(img_size)
+            x_coords = (xy_coords[:, 0] * img_size[0]).astype(int)
+            y_coords = (xy_coords[:, 1] * img_size[1]).astype(int)
+            img[x_coords, y_coords, :] = np.clip(rgb_pixels, 0., 1.)
+            return img
+
+        for e in range(num_envs):
+            true_img = make_image(X_hat[e], Y_true[e])
+            ax[e, 0].imshow(true_img)
+
+            few_shoot_img = make_image(X_few_shots[e], Y_few_shots[e])
+            ax[e, 1].imshow(few_shoot_img)
+
+            pred_img = make_image(X_hat[e], Y_hat[e])
+            ax[e, 2].imshow(pred_img)
+
+            # if e==0:
+            #     ax[e, 0].set_title('True', fontsize=16)
+            #     ax[e, 1].set_title('Few-shots', fontsize=16)
+            #     ax[e, 2].set_title('Predicted', fontsize=16)
+
+        plt.suptitle(f"Sample Predictions", fontsize=20)
+
+        plt.tight_layout()
+        # plt.show();
+        plt.draw();
+
+        if save_path:
+            plt.savefig(save_path, dpi=100, bbox_inches='tight')
+            print("Saving visualization in:", save_path, flush=True);
+
+
