@@ -97,8 +97,6 @@ class ArrayContextParams(eqx.Module):
 
 
 
-
-
 class NeuralContextFlow(eqx.Module):
     neuralnet: eqx.Module
     taylor_order: int
@@ -106,7 +104,6 @@ class NeuralContextFlow(eqx.Module):
     def __init__(self, neuralnet, taylor_order):
         self.neuralnet = neuralnet
         self.taylor_order = taylor_order
-
 
     def __call__(self, xs, ctx, ctx_):
 
@@ -133,6 +130,70 @@ class NeuralContextFlow(eqx.Module):
 
         return ys
 
+
+
+
+
+class SelfModVectorField(eqx.Module):
+    neuralnet: eqx.Module
+    taylor_order: int
+
+    def __init__(self, neuralnet, taylor_order):
+        self.neuralnet = neuralnet
+        self.taylor_order = taylor_order
+
+    def __call__(self, t, x, args):
+        ctx, ctx_ = args
+
+        vf = lambda xi: self.neuralnet(x, xi)
+
+        if self.taylor_order==0:
+            return vf(ctx)
+
+        elif self.taylor_order==1:
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            return vf(ctx_) + 1.0*gradvf(ctx_)
+
+        elif self.taylor_order==2:
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+            return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+
+        else:
+            raise NotImplementedError("Higher order terms are not implemented yet.")
+
+
+
+class NeuralODE(eqx.Module):
+    vectorfield: eqx.Module
+    ivp_args: dict
+    taylor_order: int
+
+    def __init__(self, neuralnet, taylor_order, ivp_args=None):
+        self.ivp_args = ivp_args if ivp_args is not None else {}
+        self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order)
+        self.taylor_order = taylor_order
+
+    def __call__(self, xs, ctx, ctx_):
+
+        def integrate(y0):
+            sol = diffrax.diffeqsolve(
+                    diffrax.ODETerm(self.vectorfield),
+                    self.ivp_args.get("integrator", diffrax.Dopri5()),
+                    args=(ctx, ctx_.squeeze()),
+                    t0=0.,
+                    t1=self.ivp_args.get("T", 1.),
+                    dt0=self.ivp_args.get("dt_init", 1e-2),
+                    y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 1),))], axis=0),
+                    stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
+                                                                atol=self.ivp_args.get("atol", 1e-6)),
+                    # saveat=diffrax.SaveAt(ts=t_eval),
+                    adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
+                    max_steps=self.ivp_args.get("max_steps", 4096*1)
+                )
+            return sol.ys[-1]
+
+        return jax.vmap(integrate)(xs)
 
 
 

@@ -2,7 +2,7 @@ import pickle
 from typing import Any, Tuple
 
 from selfmod.dataloader import DataLoader
-from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner
+from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE
 from selfmod.visualtester import VisualTester
 from ._utils import *
 
@@ -550,7 +550,12 @@ class Trainer:
         else:
             if verbose:
                 print(f"Creating a new model with taylor order {taylor_order} ...")
-            model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
+            if isinstance(self.learner.model, NeuralContextFlow):
+                model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
+            elif isinstance(self.learner.model, NeuralODE):
+                model = NeuralODE(self.learner.model.vectorfield.neuralnet, taylor_order, ivp_args=self.learner.model.ivp_args)
+            else:
+                raise ValueError("The model type is not supported")
 
         if optimizer is None:       ## To continue a previous adaptation
             if hasattr(self, 'opt_ctx'):
