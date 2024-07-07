@@ -131,6 +131,34 @@ class NeuralContextFlow(eqx.Module):
         return ys
 
 
+class NonBatchedNeuralContextFlow(eqx.Module):
+    neuralnet: eqx.Module
+    taylor_order: int
+
+    def __init__(self, neuralnet, taylor_order):
+        self.neuralnet = neuralnet
+        self.taylor_order = taylor_order
+
+    def __call__(self, xs, ctx, ctx_):
+
+        vf = lambda xi: self.neuralnet(xs, xi)
+
+        if self.taylor_order==0:
+            return vf(ctx)
+
+        elif self.taylor_order==1:
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            return vf(ctx_) + 1.0*gradvf(ctx_)
+
+        elif self.taylor_order==2:
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+            return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+
+        else:
+            raise NotImplementedError("Higher order terms are not implemented yet.")
+
+
 
 
 

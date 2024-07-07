@@ -22,7 +22,7 @@ from selfmod import *
 seed = 2026
 
 ## Dataloader hps
-k_shots = 10
+k_shots = 100
 resolution = (32, 32)
 data_folder="./data/" 
 
@@ -40,21 +40,21 @@ ivp_args = {"T":1.0, "y0_pad_size":1, "adjoint":diffrax.DirectAdjoint()}
 ## Train and adapt hps
 init_lrs = (1e-4, 1e-1)
 sched_factor = 1.
-envs_batch_size = 40
+envs_batch_size = 40*1
 max_train_batches = -1      ## TODO: should be -1
 max_eval_batches = -1
 
-nb_train_epochs = 1
+nb_train_epochs = 2
 nb_inner_steps = 5
 
-print_error_every = 10
+print_error_every = 100
 
 nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/220707-025946-NODE-Test/"
-# run_folder = None
+# run_folder = "./runs/220707-025946-NODE-Test/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -257,7 +257,18 @@ if meta_train == True:
                             val_dataloader=val_dataloader, 
                             val_criterion_id=0,
                             key=trainer_key)
-
+    # trainer.meta_train_proximal(dataloader=train_dataloader,
+    #                             nb_epochs=nb_train_epochs,
+    #                             nb_outer_steps=1,
+    #                             nb_inner_steps=(1,5), 
+    #                             inner_tols=(1e-12, 1e-12), 
+    #                             proximal_betas=(10., 10.), 
+    #                             max_train_batches=max_train_batches,
+    #                             print_error_every=print_error_every, 
+    #                             save_path=trainer_save_path, 
+    #                             val_dataloader=val_dataloader, 
+    #                             val_criterion_id=0,
+    #                             key=trainer_key)
 else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)

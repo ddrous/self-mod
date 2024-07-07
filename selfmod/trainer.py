@@ -2,7 +2,7 @@ import pickle
 from typing import Any, Tuple
 
 from selfmod.dataloader import DataLoader
-from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE
+from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE, NonBatchedNeuralContextFlow
 from selfmod.visualtester import VisualTester
 from ._utils import *
 
@@ -97,20 +97,19 @@ class Trainer:
             return model, contexts, opt_state, loss, aux_data
 
 
-        if not isinstance(dataloader, DataLoader):
-            raise ValueError("The dataloader must be an instance of DataLoader")
+        # if not isinstance(dataloader, DataLoader):
+        #     raise ValueError("The dataloader must be an instance of DataLoader")
         if val_dataloader is not None:
             tester = VisualTester(self, key=key)
 
         print(f"\n\n=== Beginning meta training ... ===")
-        print(f"    Number of examples in a batch along envs: {dataloader.envs_batch_size}")
-        print(f"    Maximum number of batches (along envs): {dataloader.nb_batches}")
-        print(f"    Number of examples in a batch: {dataloader.shots_batch_size}")
+        print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
+        print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
         print(f"    Maximum number of outer minimizations: {nb_outer_steps}")
         print(f"    Maximum numbers of inner steps per outer minimizations: {nb_inner_steps_model, nb_inner_steps_ctx}")
 
-        if max_train_batches<1 or max_train_batches>dataloader.nb_batches or max_train_batches is None:
-            max_train_batches = dataloader.nb_batches
+        if max_train_batches<1 or max_train_batches>dataloader.num_batches or max_train_batches is None:
+            max_train_batches = dataloader.num_batches
         else:
             print(f"    Training on {max_train_batches} batches")
 
@@ -194,12 +193,12 @@ class Trainer:
                 losses_model.append(loss_model)
                 losses_ctx.append(loss_ctx)
 
+                if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
+                    print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                    # print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
+
             # losses_model.append(loss_epochs_model/nb_batches)
             # losses_ctx.append(loss_epochs_ctx/nb_batches)
-
-            if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
-                print(f"Epoch: {epoch:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
-                print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
             if val_dataloader is not None:
                 self.learner.model = model
@@ -554,6 +553,8 @@ class Trainer:
                 model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
             elif isinstance(self.learner.model, NeuralODE):
                 model = NeuralODE(self.learner.model.vectorfield.neuralnet, taylor_order, ivp_args=self.learner.model.ivp_args)
+            elif isinstance(self.learner.model, NonBatchedNeuralContextFlow):
+                model = NonBatchedNeuralContextFlow(self.learner.model.neuralnet, taylor_order)
             else:
                 raise ValueError("The model type is not supported")
 
