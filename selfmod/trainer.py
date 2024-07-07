@@ -428,7 +428,7 @@ class Trainer:
 
                 ind_crit,_ = tester.evaluate(val_dataloader,
                                             criterion_id=val_criterion_id,
-                                            max_eval_batches=10,
+                                            max_eval_batches=100,
                                             nb_inner_steps=nb_inner_steps,
                                             taylor_order=0, 
                                             verbose=False)

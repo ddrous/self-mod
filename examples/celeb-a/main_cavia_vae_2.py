@@ -19,17 +19,17 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2024
+seed = 2026
 
 ## Dataloader hps
-k_shots = 100
+k_shots = 10
 resolution = (32, 32)
 data_folder="./data/" 
 
 ## Train and adapt hps
-context_pool_size = 8
+context_pool_size = 2
 context_size = 128
-taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
+taylor_orders = (1, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-4, 1e-1)
 sched_factor = 1.
 envs_batch_size = 64*1
@@ -184,31 +184,31 @@ class Swish(eqx.Module):
         return x * jax.nn.sigmoid(self.beta * x)
 
 class MultiMLP(eqx.Module):
-    layers_data: list
-    # layers_context: list
-    layers_shared: list
-    activations: list
+    # layers_data: list
+    # # layers_context: list
+    # layers_shared: list
+    # activations: list
 
     decoder: eqx.Module         ## The Decoder is finetuned as we GO !
 
     def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
         keys = jax.random.split(key, 10)
-        self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+        # self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
-        # self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
-        #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
-        #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
+        # # self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
+        # #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
+        # #                        eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
 
-        self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
-                            eqx.nn.Linear(hidden_size, out_size, key=keys[5])]
+        # self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
+        #                     eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
+        #                     eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
+        #                     eqx.nn.Linear(hidden_size, out_size, key=keys[5])]
 
-        # self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
-        self.layers_shared = [eqx.nn.Linear(out_size+out_size, hidden_size, key=keys[6]), self.activations[4], 
-                            #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-                            #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
-                              eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
+        # # self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
+        # self.layers_shared = [eqx.nn.Linear(out_size+out_size, hidden_size, key=keys[6]), self.activations[4], 
+        #                     #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+        #                     #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+        #                       eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
 
 
         decoder = Decoder(img_size=[32, 32, 3], kernel_size=[3, 3], latent_dim=context_size, key=keys[7])
@@ -227,16 +227,18 @@ class MultiMLP(eqx.Module):
         j = (x[1]*resolution[1]).astype(int)
         ctx = img[:, i, j]
 
-        y = x
-        for layer in self.layers_data:
-            y = layer(y)
+        return ctx
 
-        y = jnp.concatenate([y, ctx], axis=0)       ## TODO a linear combination instead ?
-        # y = jnp.concatenate([x, ctx], axis=0)
-        for layer in self.layers_shared:
-            y = layer(y)
+        # y = x
+        # for layer in self.layers_data:
+        #     y = layer(y)
 
-        return y
+        # y = jnp.concatenate([y, ctx], axis=0)       ## TODO a linear combination instead ?
+        # # y = jnp.concatenate([x, ctx], axis=0)
+        # for layer in self.layers_shared:
+        #     y = layer(y)
+
+        # return y
 
 
 
@@ -342,7 +344,7 @@ visualtester = CelebAVisualTester(trainer, key=test_key)
 
 ind_crit, _ = visualtester.evaluate(val_dataloader, 
                                     nb_inner_steps=nb_inner_steps,
-                                    max_eval_batches=10)
+                                    max_eval_batches=-1)
 # print("In domain test error:", ind_crit)
 
 # all_shots_dataloader = CelebADataLoader(data_folder, 
