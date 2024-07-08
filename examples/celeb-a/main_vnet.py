@@ -22,7 +22,7 @@ from selfmod import *
 seed = 2028
 
 ## Dataloader hps
-k_shots = 100
+k_shots = 1000
 resolution = (32, 32)
 img_size = (3, resolution[0], resolution[1])
 data_folder="./data/" 
@@ -30,9 +30,9 @@ data_folder="./data/"
 ## Learner/model hps
 context_pool_size = 1
 context_size = 128
-taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing.
+taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing.
 # ivp_args = {"T":1.0, "y0_pad_size":1, "adjoint":diffrax.DirectAdjoint()} 
-## TODO Try 
+## TODO Try
 #   - diffrax.RecursiveCheckpointAdjoint(),         Autodiff though the internals
 #   - diffrax.DirectAdjoint(),                      Autodiff though the internals, but forward-mode OK !
 #   - diffrax.BacksolveAdjoint()                    The actual adjoint
@@ -45,17 +45,17 @@ envs_batch_size = 32*2
 max_train_batches = -1      ## TODO: should be -1
 max_eval_batches = -1
 
-nb_train_epochs = 10
+nb_train_epochs = 6
 nb_inner_steps = 5
 
-print_error_every = 10
+print_error_every = 100
 
 nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-# run_folder = "./runs/220707-025946-VNET-Test/"
-run_folder = None
+run_folder = "./runs/220707-025946-VNET-Test/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -186,6 +186,7 @@ class MultiCNN(eqx.Module):
                                   kernel_size=3,
                                   activation=eqx.nn.PReLU(init_alpha=0.),
                                   final_activation=jax.nn.sigmoid,
+                                #   final_activation=lambda x:x,
                                   batch_norm=False,
                                   dropout_rate=0.,
                                   key=keys[3]
@@ -230,8 +231,8 @@ def env_loss_fn(model, ctx, y_hat, y):
 
 
 neuralnet = MultiCNN(kernel_size=(3,3),
-                     hidden_chans=4,
-                     vnet_base_chans=8, 
+                     hidden_chans=6,
+                     vnet_base_chans=16, 
                      context_size=context_size, 
                      key=model_key)
 

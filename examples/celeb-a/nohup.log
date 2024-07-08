@@ -3,125 +3,125 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240708-011653/
+Created a new run folder at: ./runs/240708-195532/
 Completed copied scripts 
 
 
-Total number of parameters in the model: 167587
+Total number of parameters in the model: 795547
 
 
 === Beginning meta training ... ===
-    Number of examples in a batch: 64
-    Total number of batches : 2544
+    Number of examples in a batch: 12
+    Total number of batches : 13565
     Numbers of inner steps : 5
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-2024-07-08 01:17:11.018710: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 476.48MiB (rounded to 499630080)requested by op 
-2024-07-08 01:17:11.019326: W external/tsl/tsl/framework/bfc_allocator.cc:494] _________________________________________________________________________________________________***
-E0708 01:17:11.021279 3173235 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 499630080 bytes.
+2024-07-08 19:56:02.721782: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 10.09GiB (rounded to 10831198208)requested by op 
+2024-07-08 19:56:02.722306: W external/tsl/tsl/framework/bfc_allocator.cc:494] _____________________________________________________________________________________**__________***
+E0708 19:56:02.729636 3636785 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 10831198048 bytes.
 BufferAssignment OOM Debugging.
 BufferAssignment stats:
-             parameter allocation:    2.07MiB
+             parameter allocation:    9.34MiB
               constant allocation:        12B
-        maybe_live_out allocation:    1.95MiB
-     preallocated temp allocation:  476.48MiB
-                 total allocation:  480.51MiB
+        maybe_live_out allocation:    9.12MiB
+     preallocated temp allocation:   10.09GiB
+                 total allocation:   10.10GiB
 Peak buffers:
 	Buffer 1:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 2:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 3:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 4:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 5:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 6:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 7:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 8:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 9:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 10:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 11:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 12:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 13:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 14:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 15:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 
      ### (Re)Compiling function: outer_train_step ...  
      ### (Re)Compiling function: inner_train_step ...  
 Traceback (most recent call last):
-  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/main_vnet.py", line 277, in <module>
+  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/main_vnet_2.py", line 271, in <module>
     trainer.meta_train_cavia(dataloader=train_dataloader,
   File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 408, in meta_train_cavia
     model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
@@ -135,103 +135,103 @@ Traceback (most recent call last):
   File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
     out = self._cached(dynamic_donate, dynamic_nodonate, static)
           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 499630080 bytes.
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 10831198048 bytes.
 BufferAssignment OOM Debugging.
 BufferAssignment stats:
-             parameter allocation:    2.07MiB
+             parameter allocation:    9.34MiB
               constant allocation:        12B
-        maybe_live_out allocation:    1.95MiB
-     preallocated temp allocation:  476.48MiB
-                 total allocation:  480.51MiB
+        maybe_live_out allocation:    9.12MiB
+     preallocated temp allocation:   10.09GiB
+                 total allocation:   10.10GiB
 Peak buffers:
 	Buffer 1:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 2:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 3:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 4:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 5:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 6:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 7:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 8:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 9:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 10:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 11:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 12:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 13:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 14:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 	Buffer 15:
-		Size: 10.00MiB
+		Size: 45.00MiB
 		XLA Label: fusion
-		Shape: f32[5,64,8,32,32]
+		Shape: f32[5,144,16,32,32]
 		==========================
 
 

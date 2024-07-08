@@ -227,7 +227,6 @@ class NeuralODE(eqx.Module):
 
 
 
-
 class Upsample2D(eqx.Module):
     """ Upsample 2D image by a factor: https://docs.kidger.site/equinox/examples/unet/ """
     factor: int

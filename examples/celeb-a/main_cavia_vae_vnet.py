@@ -189,7 +189,8 @@ class MultiMLP(eqx.Module):
     # layers_shared: list
     # activations: list
 
-    decoder: eqx.Module         ## The Decoder is finetuned as we GO !
+    
+    vnet: eqx.Module         ## The Decoder is finetuned as we GO !
 
     def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
         keys = jax.random.split(key, 10)
