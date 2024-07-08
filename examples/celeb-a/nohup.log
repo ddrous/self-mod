@@ -3,88 +3,237 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240707-143719/
+Created a new run folder at: ./runs/240708-011653/
 Completed copied scripts 
 
 
-Total number of parameters in the model: 135486
+Total number of parameters in the model: 167587
 
 
 === Beginning meta training ... ===
-    Number of examples in a batch: 128
-    Total number of batches : 1272
+    Number of examples in a batch: 64
+    Total number of batches : 2544
     Numbers of inner steps : 5
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
+2024-07-08 01:17:11.018710: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 476.48MiB (rounded to 499630080)requested by op 
+2024-07-08 01:17:11.019326: W external/tsl/tsl/framework/bfc_allocator.cc:494] _________________________________________________________________________________________________***
+E0708 01:17:11.021279 3173235 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 499630080 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:    2.07MiB
+              constant allocation:        12B
+        maybe_live_out allocation:    1.95MiB
+     preallocated temp allocation:  476.48MiB
+                 total allocation:  480.51MiB
+Peak buffers:
+	Buffer 1:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 2:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 3:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 4:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 5:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 6:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 7:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 8:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 9:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 10:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 11:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 12:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 13:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 14:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 15:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+
      ### (Re)Compiling function: outer_train_step ...  
      ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   0    Loss: 0.29489762     ContextsNorm: 0.00002033     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   1    Loss: 0.27885467     ContextsNorm: 0.00001987     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   2    Loss: 0.28607750     ContextsNorm: 0.00002041Epoch:   0      Batch:   3    Loss: 0.25607705     ContextsNorm: 0.00001935Epoch:   0      Batch: 100    Loss: 0.08265065     ContextsNorm: 0.00002541Epoch:   0      Batch: 200    Loss: 0.08313669     ContextsNorm: 0.00003076Epoch:   0      Batch: 300    Loss: 0.07803190     ContextsNorm: 0.00005415Epoch:   0      Batch: 400    Loss: 0.08445010     ContextsNorm: 0.00016913Epoch:   0      Batch: 500    Loss: 0.07569169     ContextsNorm: 0.00127078Epoch:   0      Batch: 600    Loss: 0.06373956     ContextsNorm: 0.00391330Epoch:   0      Batch: 700    Loss: 0.05540501     ContextsNorm: 0.00422935Epoch:   0      Batch: 800    Loss: 0.05166999     ContextsNorm: 0.00616175Epoch:   0      Batch: 900    Loss: 0.04528037     ContextsNorm: 0.00624384Epoch:   0      Batch: 1000    Loss: 0.04208060     ContextsNorm: 0.00705806Epoch:   0      Batch: 1100    Loss: 0.04086827     ContextsNorm: 0.00743696Epoch:   0      Batch: 1200    Loss: 0.03830424     ContextsNorm: 0.00683004     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch: 1271    Loss: 0.03768888     ContextsNorm: 0.00697889/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-     ### (Re)Compiling function: adapt_step_cavia ...  
-     Validation Criterion: 0.05867746
-        Saving best model so far ...
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-Epoch:   1      Batch:   0    Loss: 0.03839184     ContextsNorm: 0.00693851Epoch:   1      Batch:   1    Loss: 0.03774302     ContextsNorm: 0.00747210Epoch:   1      Batch:   2    Loss: 0.04013473     ContextsNorm: 0.00661555Epoch:   1      Batch:   3    Loss: 0.03965276     ContextsNorm: 0.00753858Epoch:   1      Batch: 100    Loss: 0.03566841     ContextsNorm: 0.00578295Epoch:   1      Batch: 200    Loss: 0.03350686     ContextsNorm: 0.00553985Epoch:   1      Batch: 300    Loss: 0.03493010     ContextsNorm: 0.00566485Epoch:   1      Batch: 400    Loss: 0.03480010     ContextsNorm: 0.00563754Epoch:   1      Batch: 500    Loss: 0.03047106     ContextsNorm: 0.00578415Epoch:   1      Batch: 600    Loss: 0.03203560     ContextsNorm: 0.00604497Epoch:   1      Batch: 700    Loss: 0.03168210     ContextsNorm: 0.00594965Epoch:   1      Batch: 800    Loss: 0.03289721     ContextsNorm: 0.00579561Epoch:   1      Batch: 900    Loss: 0.03297298     ContextsNorm: 0.00602276Epoch:   1      Batch: 1000    Loss: 0.03240949     ContextsNorm: 0.00565001Epoch:   1      Batch: 1100    Loss: 0.03083491     ContextsNorm: 0.00591003Epoch:   1      Batch: 1200    Loss: 0.03154943     ContextsNorm: 0.00612321Epoch:   1      Batch: 1271    Loss: 0.02783368     ContextsNorm: 0.00616992     Validation Criterion: 0.04625522
-        Saving best model so far ...
-Epoch:   2      Batch:   0    Loss: 0.03141469     ContextsNorm: 0.00581808Epoch:   2      Batch:   1    Loss: 0.02792807     ContextsNorm: 0.00565300Epoch:   2      Batch:   2    Loss: 0.02990898     ContextsNorm: 0.00634531Epoch:   2      Batch:   3    Loss: 0.03103131     ContextsNorm: 0.00590544Epoch:   2      Batch: 100    Loss: 0.02949919     ContextsNorm: 0.00568755Epoch:   2      Batch: 200    Loss: 0.03140795     ContextsNorm: 0.00568803Epoch:   2      Batch: 300    Loss: 0.03103390     ContextsNorm: 0.00606680Epoch:   2      Batch: 400    Loss: 0.02955773     ContextsNorm: 0.00574167Epoch:   2      Batch: 500    Loss: 0.03168434     ContextsNorm: 0.00549210Epoch:   2      Batch: 600    Loss: 0.03187588     ContextsNorm: 0.00573694Epoch:   2      Batch: 700    Loss: 0.02969361     ContextsNorm: 0.00558525Epoch:   2      Batch: 800    Loss: 0.02969946     ContextsNorm: 0.00578714Epoch:   2      Batch: 900    Loss: 0.02757909     ContextsNorm: 0.00547447Epoch:   2      Batch: 1000    Loss: 0.03038480     ContextsNorm: 0.00554217Epoch:   2      Batch: 1100    Loss: 0.03062246     ContextsNorm: 0.00545579Epoch:   2      Batch: 1200    Loss: 0.03221362     ContextsNorm: 0.00571449Epoch:   2      Batch: 1271    Loss: 0.03014596     ContextsNorm: 0.00509465     Validation Criterion: 0.04285268
-        Saving best model so far ...
-Epoch:   3      Batch:   0    Loss: 0.03091652     ContextsNorm: 0.00537628Epoch:   3      Batch:   1    Loss: 0.03002046     ContextsNorm: 0.00551379Epoch:   3      Batch:   2    Loss: 0.03172564     ContextsNorm: 0.00554282Epoch:   3      Batch:   3    Loss: 0.03083814     ContextsNorm: 0.00554847Epoch:   3      Batch: 100    Loss: 0.02822635     ContextsNorm: 0.00548279Epoch:   3      Batch: 200    Loss: 0.02879281     ContextsNorm: 0.00556741Epoch:   3      Batch: 300    Loss: 0.02945749     ContextsNorm: 0.00557535Epoch:   3      Batch: 400    Loss: 0.02985254     ContextsNorm: 0.00551696Epoch:   3      Batch: 500    Loss: 0.02729685     ContextsNorm: 0.00555322Epoch:   3      Batch: 600    Loss: 0.02935188     ContextsNorm: 0.00533302Epoch:   3      Batch: 700    Loss: 0.02893507     ContextsNorm: 0.00551468Epoch:   3      Batch: 800    Loss: 0.03088124     ContextsNorm: 0.00523908Epoch:   3      Batch: 900    Loss: 0.02817247     ContextsNorm: 0.00538902Epoch:   3      Batch: 1000    Loss: 0.02736232     ContextsNorm: 0.00519813Epoch:   3      Batch: 1100    Loss: 0.02983212     ContextsNorm: 0.00532952Epoch:   3      Batch: 1200    Loss: 0.02935071     ContextsNorm: 0.00532248Epoch:   3      Batch: 1271    Loss: 0.02964502     ContextsNorm: 0.00523274     Validation Criterion: 0.04121246
-        Saving best model so far ...
-Epoch:   4      Batch:   0    Loss: 0.03006533     ContextsNorm: 0.00527618Epoch:   4      Batch:   1    Loss: 0.02945184     ContextsNorm: 0.00549422Epoch:   4      Batch:   2    Loss: 0.02995695     ContextsNorm: 0.00527127Epoch:   4      Batch:   3    Loss: 0.02658788     ContextsNorm: 0.00547702Epoch:   4      Batch: 100    Loss: 0.02682268     ContextsNorm: 0.00545026Epoch:   4      Batch: 200    Loss: 0.02917187     ContextsNorm: 0.00529615Epoch:   4      Batch: 300    Loss: 0.02858808     ContextsNorm: 0.00539418Epoch:   4      Batch: 400    Loss: 0.02966351     ContextsNorm: 0.00533156Epoch:   4      Batch: 500    Loss: 0.02757611     ContextsNorm: 0.00531924Epoch:   4      Batch: 600    Loss: 0.02823977     ContextsNorm: 0.00527975Epoch:   4      Batch: 700    Loss: 0.02816496     ContextsNorm: 0.00528665Epoch:   4      Batch: 800    Loss: 0.03097606     ContextsNorm: 0.00535207Epoch:   4      Batch: 900    Loss: 0.02698485     ContextsNorm: 0.00537300Epoch:   4      Batch: 1000    Loss: 0.03008729     ContextsNorm: 0.00529975Epoch:   4      Batch: 1100    Loss: 0.02799645     ContextsNorm: 0.00515557Epoch:   4      Batch: 1200    Loss: 0.02465302     ContextsNorm: 0.00526209Epoch:   4      Batch: 1271    Loss: 0.02797877     ContextsNorm: 0.00526508     Validation Criterion: 0.04023778
-        Saving best model so far ...
-Epoch:   5      Batch:   0    Loss: 0.02729692     ContextsNorm: 0.00537172Epoch:   5      Batch:   1    Loss: 0.02877390     ContextsNorm: 0.00517611Epoch:   5      Batch:   2    Loss: 0.02958829     ContextsNorm: 0.00513001Epoch:   5      Batch:   3    Loss: 0.03117041     ContextsNorm: 0.00526420Epoch:   5      Batch: 100    Loss: 0.02775299     ContextsNorm: 0.00534629Epoch:   5      Batch: 200    Loss: 0.03100316     ContextsNorm: 0.00526167Epoch:   5      Batch: 300    Loss: 0.02766687     ContextsNorm: 0.00521580Epoch:   5      Batch: 400    Loss: 0.02712773     ContextsNorm: 0.00530035Epoch:   5      Batch: 500    Loss: 0.02707752     ContextsNorm: 0.00522140Epoch:   5      Batch: 600    Loss: 0.02855564     ContextsNorm: 0.00533817Epoch:   5      Batch: 700    Loss: 0.02924095     ContextsNorm: 0.00531191Epoch:   5      Batch: 800    Loss: 0.03071653     ContextsNorm: 0.00542354Epoch:   5      Batch: 900    Loss: 0.02598594     ContextsNorm: 0.00530329Epoch:   5      Batch: 1000    Loss: 0.02877249     ContextsNorm: 0.00553749Epoch:   5      Batch: 1100    Loss: 0.02849789     ContextsNorm: 0.00549566Epoch:   5      Batch: 1200    Loss: 0.02750687     ContextsNorm: 0.00523678Epoch:   5      Batch: 1271    Loss: 0.02724679     ContextsNorm: 0.00536031     Validation Criterion: 0.03949524
-        Saving best model so far ...
-Epoch:   6      Batch:   0    Loss: 0.02773222     ContextsNorm: 0.00544424Epoch:   6      Batch:   1    Loss: 0.02974688     ContextsNorm: 0.00508283Epoch:   6      Batch:   2    Loss: 0.02821696     ContextsNorm: 0.00512117Epoch:   6      Batch:   3    Loss: 0.02793276     ContextsNorm: 0.00528462Epoch:   6      Batch: 100    Loss: 0.02685444     ContextsNorm: 0.00519500Epoch:   6      Batch: 200    Loss: 0.02549243     ContextsNorm: 0.00507398Epoch:   6      Batch: 300    Loss: 0.02591551     ContextsNorm: 0.00529923Epoch:   6      Batch: 400    Loss: 0.02561336     ContextsNorm: 0.00529377Epoch:   6      Batch: 500    Loss: 0.02949250     ContextsNorm: 0.00540283Epoch:   6      Batch: 600    Loss: 0.02809518     ContextsNorm: 0.00532180Epoch:   6      Batch: 700    Loss: 0.02582053     ContextsNorm: 0.00518943Epoch:   6      Batch: 800    Loss: 0.02911855     ContextsNorm: 0.00531152Epoch:   6      Batch: 900    Loss: 0.02808540     ContextsNorm: 0.00530152Epoch:   6      Batch: 1000    Loss: 0.03056673     ContextsNorm: 0.00542098Epoch:   6      Batch: 1100    Loss: 0.02727205     ContextsNorm: 0.00509285Epoch:   6      Batch: 1200    Loss: 0.02930562     ContextsNorm: 0.00533820Epoch:   6      Batch: 1271    Loss: 0.02566986     ContextsNorm: 0.00543329     Validation Criterion: 0.03935249
-        Saving best model so far ...
-Epoch:   7      Batch:   0    Loss: 0.02957124     ContextsNorm: 0.00529701Epoch:   7      Batch:   1    Loss: 0.02666553     ContextsNorm: 0.00514651Epoch:   7      Batch:   2    Loss: 0.02732684     ContextsNorm: 0.00536143Epoch:   7      Batch:   3    Loss: 0.02807434     ContextsNorm: 0.00535228Epoch:   7      Batch: 100    Loss: 0.02750120     ContextsNorm: 0.00531833Epoch:   7      Batch: 200    Loss: 0.02817339     ContextsNorm: 0.00546781Epoch:   7      Batch: 300    Loss: 0.03043105     ContextsNorm: 0.00523845Epoch:   7      Batch: 400    Loss: 0.02552221     ContextsNorm: 0.00508144Epoch:   7      Batch: 500    Loss: 0.02962409     ContextsNorm: 0.00526494Epoch:   7      Batch: 600    Loss: 0.02728943     ContextsNorm: 0.00520315Epoch:   7      Batch: 700    Loss: 0.02976152     ContextsNorm: 0.00537007Epoch:   7      Batch: 800    Loss: 0.02708832     ContextsNorm: 0.00541108Epoch:   7      Batch: 900    Loss: 0.02826958     ContextsNorm: 0.00532018Epoch:   7      Batch: 1000    Loss: 0.02716415     ContextsNorm: 0.00530858Epoch:   7      Batch: 1100    Loss: 0.03094634     ContextsNorm: 0.00514142Epoch:   7      Batch: 1200    Loss: 0.02806670     ContextsNorm: 0.00525565Epoch:   7      Batch: 1271    Loss: 0.02807823     ContextsNorm: 0.00541586     Validation Criterion: 0.04018140
-Epoch:   8      Batch:   0    Loss: 0.02865492     ContextsNorm: 0.00524715Epoch:   8      Batch:   1    Loss: 0.02758161     ContextsNorm: 0.00552133Epoch:   8      Batch:   2    Loss: 0.02799363     ContextsNorm: 0.00547580Epoch:   8      Batch:   3    Loss: 0.02718703     ContextsNorm: 0.00545020Epoch:   8      Batch: 100    Loss: 0.02721979     ContextsNorm: 0.00543504Epoch:   8      Batch: 200    Loss: 0.02474990     ContextsNorm: 0.00527969Epoch:   8      Batch: 300    Loss: 0.02884033     ContextsNorm: 0.00551131Epoch:   8      Batch: 400    Loss: 0.02761846     ContextsNorm: 0.00542280Epoch:   8      Batch: 500    Loss: 0.02985658     ContextsNorm: 0.00525854Epoch:   8      Batch: 600    Loss: 0.02614813     ContextsNorm: 0.00520266Epoch:   8      Batch: 700    Loss: 0.02733856     ContextsNorm: 0.00532737Epoch:   8      Batch: 800    Loss: 0.02869537     ContextsNorm: 0.00540088Epoch:   8      Batch: 900    Loss: 0.02646505     ContextsNorm: 0.00536308Epoch:   8      Batch: 1000    Loss: 0.02677571     ContextsNorm: 0.00535300Epoch:   8      Batch: 1100    Loss: 0.02472106     ContextsNorm: 0.00534980Epoch:   8      Batch: 1200    Loss: 0.02693262     ContextsNorm: 0.00541043Epoch:   8      Batch: 1271    Loss: 0.02715539     ContextsNorm: 0.00511913     Validation Criterion: 0.03937520
-Epoch:   9      Batch:   0    Loss: 0.03103253     ContextsNorm: 0.00551290Epoch:   9      Batch:   1    Loss: 0.02745396     ContextsNorm: 0.00510316Epoch:   9      Batch:   2    Loss: 0.02759208     ContextsNorm: 0.00522747Epoch:   9      Batch:   3    Loss: 0.02694606     ContextsNorm: 0.00527751Epoch:   9      Batch: 100    Loss: 0.02383705     ContextsNorm: 0.00534736Epoch:   9      Batch: 200    Loss: 0.02729885     ContextsNorm: 0.00513476Epoch:   9      Batch: 300    Loss: 0.02812851     ContextsNorm: 0.00550124Epoch:   9      Batch: 400    Loss: 0.02811714     ContextsNorm: 0.00531375Epoch:   9      Batch: 500    Loss: 0.02753512     ContextsNorm: 0.00546421Epoch:   9      Batch: 600    Loss: 0.02818473     ContextsNorm: 0.00530572Epoch:   9      Batch: 700    Loss: 0.02628873     ContextsNorm: 0.00520957Epoch:   9      Batch: 800    Loss: 0.02881988     ContextsNorm: 0.00542835Epoch:   9      Batch: 900    Loss: 0.02974819     ContextsNorm: 0.00536302Epoch:   9      Batch: 1000    Loss: 0.02776146     ContextsNorm: 0.00525095Epoch:   9      Batch: 1100    Loss: 0.02777210     ContextsNorm: 0.00517931Epoch:   9      Batch: 1200    Loss: 0.02693957     ContextsNorm: 0.00547937Epoch:   9      Batch: 1271    Loss: 0.02598968     ContextsNorm: 0.00521098     Validation Criterion: 0.03921193
-        Saving best model so far ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/main_vnet.py", line 277, in <module>
+    trainer.meta_train_cavia(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 408, in meta_train_cavia
+    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+    return self._call(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+    return self.__func__(self.__self__, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+    out = self._cached(dynamic_donate, dynamic_nodonate, static)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 499630080 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:    2.07MiB
+              constant allocation:        12B
+        maybe_live_out allocation:    1.95MiB
+     preallocated temp allocation:  476.48MiB
+                 total allocation:  480.51MiB
+Peak buffers:
+	Buffer 1:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
 
-Total gradient descent training time: 0 hours 32 mins 19 secs
-     ### (Re)Compiling function: adapt_step_cavia ...  
-==  Testing finished ... ==
-    Criterion loss value: 0.03943516
-==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [ 43  42 106]
-    Visualized context dimensions along y: [114  79 103]
-Saving artefacts in: ./runs/240707-143719/artefacts.png
-==  Begining in-domain CelebA visualisation ... ==
-    Environment ids: range(0, 6)
-     ### (Re)Compiling function: adapt_step_cavia ...  
-Saving visualization in: ./runs/240707-143719/few_shots_multi_ind.png
-Creating a new model with taylor order 0 ...
+	Buffer 2:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 3:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 4:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 5:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 6:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 7:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 8:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 9:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 10:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 11:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 12:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 13:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 14:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
+
+	Buffer 15:
+		Size: 10.00MiB
+		XLA Label: fusion
+		Shape: f32[5,64,8,32,32]
+		==========================
 
 
-=== Beginning adaptation ... ===
-    Number of environment batches: 156
-    Number of envs train steps per batch: 5
-    Total number of training steps: 780
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-     ### (Re)Compiling function: adapt_step_cavia ...  
-    Batch:   0     Loss: 0.03059126        OtherNorms: [0.03059126 0.00697476 0.02059489]    Batch:   1     Loss: 0.02816776        OtherNorms: [0.02816776 0.00701498 0.02059489]    Batch:   2     Loss: 0.02951504        OtherNorms: [0.02951504 0.00733047 0.02059489]    Batch:   3     Loss: 0.02598199        OtherNorms: [0.02598199 0.00713717 0.02059489]    Batch: 100     Loss: 0.02577323        OtherNorms: [0.02577323 0.00706239 0.02059489]     ### (Re)Compiling function: adapt_step_cavia ...  
-    Batch: 155     Loss: 0.02870294        OtherNorms: [0.02870294 0.00688293 0.02059489]
-Total gradient descent adaptation time: 0 hours 0 mins 2 secs
-
-Saving adaptation parameters into ./runs/240707-143719/adapt/ folder ...
-
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-     ### (Re)Compiling function: adapt_step_cavia ...  
-==  Testing finished ... ==
-    Criterion loss value: 0.039404243
-==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [ 43  42 106]
-    Visualized context dimensions along y: [114  79 103]
-Saving artefacts in: ./runs/240707-143719/adapt/artefacts.png
-==  Begining in-domain CelebA visualisation ... ==
-    Environment ids: range(0, 6)
-Saving visualization in: ./runs/240707-143719/adapt/few_shots_multi_ood.png
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.

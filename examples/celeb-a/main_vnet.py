@@ -19,7 +19,7 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2026
+seed = 2028
 
 ## Dataloader hps
 k_shots = 100
@@ -28,9 +28,9 @@ img_size = (3, resolution[0], resolution[1])
 data_folder="./data/" 
 
 ## Learner/model hps
-context_pool_size = 8
+context_pool_size = 1
 context_size = 128
-taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing.
+taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing.
 # ivp_args = {"T":1.0, "y0_pad_size":1, "adjoint":diffrax.DirectAdjoint()} 
 ## TODO Try 
 #   - diffrax.RecursiveCheckpointAdjoint(),         Autodiff though the internals
@@ -41,21 +41,21 @@ taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testi
 ## Train and adapt hps
 init_lrs = (1e-4, 1e-1)
 sched_factor = 1.
-envs_batch_size = 32*4
+envs_batch_size = 32*2
 max_train_batches = -1      ## TODO: should be -1
 max_eval_batches = -1
 
 nb_train_epochs = 10
 nb_inner_steps = 5
 
-print_error_every = 100
+print_error_every = 10
 
 nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/220707-025946-CONV-Test/"
-# run_folder = None
+# run_folder = "./runs/220707-025946-VNET-Test/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -165,24 +165,31 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
 class MultiCNN(eqx.Module):
     layers_data: list
     layers_context: list
-    layers_shared: list
+    vnet: eqx.Module
 
-    def __init__(self, kernel_size, hidden_chans, context_size, key=None):
-        keys = generate_new_keys(key, num=12)
+    def __init__(self, kernel_size, hidden_chans, vnet_base_chans, context_size, key=None):
+        keys = jax.random.split(key, num=4)
 
-        self.layers_context = [eqx.nn.Linear(context_size, np.prod(resolution), key=keys[3]),
+        self.layers_context = [eqx.nn.Linear(context_size, np.prod(resolution), key=keys[0]),
                                 eqx.nn.PReLU(init_alpha=0.),
                                 lambda x: x.reshape((1, resolution[0], resolution[1])),
-                                eqx.nn.Conv2d(1, hidden_chans, kernel_size, key=keys[0])]
+                                eqx.nn.Conv2d(1, hidden_chans, kernel_size, padding="SAME", key=keys[1])]
 
         self.layers_data = [eqx.nn.PReLU(init_alpha=0.),
-                            eqx.nn.Conv2d(3, hidden_chans, kernel_size, key=keys[0])]
+                            eqx.nn.Conv2d(3, hidden_chans, kernel_size, padding="SAME", key=keys[2])]
 
         ## TODO This should be a proper UNET with downsampling and upsampling
-        self.layers_shared = [eqx.nn.Conv2d(hidden_chans*2, hidden_chans, kernel_size, key=keys[6]),
-                              eqx.nn.PReLU(init_alpha=0.),
-                              eqx.nn.Conv2d(hidden_chans, 3, kernel_size, key=keys[7]),
-                              ]
+        self.vnet = VNet(input_shape=(2*hidden_chans, *resolution),
+                                  output_shape=(3, *resolution),
+                                  levels=3,
+                                  depth=vnet_base_chans,
+                                  kernel_size=3,
+                                  activation=eqx.nn.PReLU(init_alpha=0.),
+                                  final_activation=jax.nn.sigmoid,
+                                  batch_norm=False,
+                                  dropout_rate=0.,
+                                  key=keys[3]
+                                )
 
     def __call__(self, x, ctx):
 
@@ -198,8 +205,7 @@ class MultiCNN(eqx.Module):
             y = layer(y)
 
         y = jnp.concatenate([y, ctx], axis=0)
-        for layer in self.layers_shared:
-            y = layer(y)
+        y = self.vnet(y)
 
         rgbs = jnp.transpose(y, axes=(1,2,0))[x_coords, y_coords, :]
 
@@ -224,7 +230,8 @@ def env_loss_fn(model, ctx, y_hat, y):
 
 
 neuralnet = MultiCNN(kernel_size=(3,3),
-                     hidden_chans=12, 
+                     hidden_chans=4,
+                     vnet_base_chans=8, 
                      context_size=context_size, 
                      key=model_key)
 
