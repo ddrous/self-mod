@@ -3,7 +3,7 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240708-195532/
+Created a new run folder at: ./runs/240708-195859/
 Completed copied scripts 
 
 
@@ -16,224 +16,59 @@ Total number of parameters in the model: 795547
     Numbers of inner steps : 5
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-2024-07-08 19:56:02.721782: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 10.09GiB (rounded to 10831198208)requested by op 
-2024-07-08 19:56:02.722306: W external/tsl/tsl/framework/bfc_allocator.cc:494] _____________________________________________________________________________________**__________***
-E0708 19:56:02.729636 3636785 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 10831198048 bytes.
-BufferAssignment OOM Debugging.
-BufferAssignment stats:
-             parameter allocation:    9.34MiB
-              constant allocation:        12B
-        maybe_live_out allocation:    9.12MiB
-     preallocated temp allocation:   10.09GiB
-                 total allocation:   10.10GiB
-Peak buffers:
-	Buffer 1:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 2:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 3:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 4:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 5:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 6:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 7:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 8:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 9:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 10:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 11:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 12:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 13:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 14:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 15:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-
      ### (Re)Compiling function: outer_train_step ...  
      ### (Re)Compiling function: inner_train_step ...  
-Traceback (most recent call last):
-  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/main_vnet_2.py", line 271, in <module>
-    trainer.meta_train_cavia(dataloader=train_dataloader,
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 408, in meta_train_cavia
-    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
-                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
-    return self._call(False, args, kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
-    return self.__func__(self.__self__, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
-    out = self._cached(dynamic_donate, dynamic_nodonate, static)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 10831198048 bytes.
-BufferAssignment OOM Debugging.
-BufferAssignment stats:
-             parameter allocation:    9.34MiB
-              constant allocation:        12B
-        maybe_live_out allocation:    9.12MiB
-     preallocated temp allocation:   10.09GiB
-                 total allocation:   10.10GiB
-Peak buffers:
-	Buffer 1:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
+Epoch:   0      Batch:   0    Loss: 0.08708622     ContextsNorm: 0.00000010     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   1    Loss: 0.09134514     ContextsNorm: 0.00000010     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   2    Loss: 0.08024150     ContextsNorm: 0.00000010Epoch:   0      Batch:   3    Loss: 0.09129968     ContextsNorm: 0.00000010Epoch:   0      Batch: 100    Loss: 0.06498461     ContextsNorm: 0.00000021Epoch:   0      Batch: 200    Loss: 0.07776578     ContextsNorm: 0.00000036Epoch:   0      Batch: 300    Loss: 0.08704874     ContextsNorm: 0.00000332Epoch:   0      Batch: 400    Loss: 0.07506790     ContextsNorm: 0.00005443Epoch:   0      Batch: 500    Loss: 0.07124431     ContextsNorm: 0.00020480Epoch:   0      Batch: 600    Loss: 0.07737527     ContextsNorm: 0.00309178Epoch:   0      Batch: 700    Loss: 0.05742761     ContextsNorm: 0.00322542Epoch:   0      Batch: 800    Loss: 0.06560738     ContextsNorm: 0.00464897Epoch:   0      Batch: 900    Loss: 0.05959697     ContextsNorm: 0.00409947Epoch:   0      Batch: 1000    Loss: 0.04990305     ContextsNorm: 0.00340841Epoch:   0      Batch: 1100    Loss: 0.05964895     ContextsNorm: 0.00379293Epoch:   0      Batch: 1200    Loss: 0.05007811     ContextsNorm: 0.00366118Epoch:   0      Batch: 1300    Loss: 0.05172250     ContextsNorm: 0.00321382Epoch:   0      Batch: 1400    Loss: 0.04349546     ContextsNorm: 0.00447831Epoch:   0      Batch: 1500    Loss: 0.03991362     ContextsNorm: 0.00359910Epoch:   0      Batch: 1600    Loss: 0.05325562     ContextsNorm: 0.00394452Epoch:   0      Batch: 1700    Loss: 0.05341250     ContextsNorm: 0.00292681Epoch:   0      Batch: 1800    Loss: 0.04715858     ContextsNorm: 0.00409615Epoch:   0      Batch: 1900    Loss: 0.06831153     ContextsNorm: 0.00267633Epoch:   0      Batch: 2000    Loss: 0.07323044     ContextsNorm: 0.00309552Epoch:   0      Batch: 2100    Loss: 0.06411182     ContextsNorm: 0.00223793Epoch:   0      Batch: 2200    Loss: 0.06643165     ContextsNorm: 0.00324040Epoch:   0      Batch: 2300    Loss: 0.06384462     ContextsNorm: 0.00314252Epoch:   0      Batch: 2400    Loss: 0.07961273     ContextsNorm: 0.00352757Epoch:   0      Batch: 2500    Loss: 0.06577948     ContextsNorm: 0.00238748Epoch:   0      Batch: 2600    Loss: 0.06457751     ContextsNorm: 0.00241008Epoch:   0      Batch: 2700    Loss: 0.06806950     ContextsNorm: 0.00292686Epoch:   0      Batch: 2800    Loss: 0.06467222     ContextsNorm: 0.00232330Epoch:   0      Batch: 2900    Loss: 0.06537177     ContextsNorm: 0.00224834Epoch:   0      Batch: 3000    Loss: 0.06855861     ContextsNorm: 0.00211063Epoch:   0      Batch: 3100    Loss: 0.05946019     ContextsNorm: 0.00262179Epoch:   0      Batch: 3200    Loss: 0.07425256     ContextsNorm: 0.00293157Epoch:   0      Batch: 3300    Loss: 0.07444371     ContextsNorm: 0.00353305Epoch:   0      Batch: 3400    Loss: 0.06131442     ContextsNorm: 0.00290162Epoch:   0      Batch: 3500    Loss: 0.06520604     ContextsNorm: 0.00276117Epoch:   0      Batch: 3600    Loss: 0.06656470     ContextsNorm: 0.00256248Epoch:   0      Batch: 3700    Loss: 0.07312453     ContextsNorm: 0.00375528Epoch:   0      Batch: 3800    Loss: 0.07406671     ContextsNorm: 0.00329629Epoch:   0      Batch: 3900    Loss: 0.05985837     ContextsNorm: 0.00316935Epoch:   0      Batch: 4000    Loss: 0.05699407     ContextsNorm: 0.00227753Epoch:   0      Batch: 4100    Loss: 0.06992860     ContextsNorm: 0.00284898Epoch:   0      Batch: 4200    Loss: 0.07453977     ContextsNorm: 0.00263981Epoch:   0      Batch: 4300    Loss: 0.06514677     ContextsNorm: 0.00302855Epoch:   0      Batch: 4400    Loss: 0.07137407     ContextsNorm: 0.00355077Epoch:   0      Batch: 4500    Loss: 0.05780385     ContextsNorm: 0.00271041Epoch:   0      Batch: 4600    Loss: 0.06761590     ContextsNorm: 0.00335361Epoch:   0      Batch: 4700    Loss: 0.07188786     ContextsNorm: 0.00307187Epoch:   0      Batch: 4800    Loss: 0.06288065     ContextsNorm: 0.00266145Epoch:   0      Batch: 4900    Loss: 0.06922662     ContextsNorm: 0.00333203Epoch:   0      Batch: 5000    Loss: 0.06609251     ContextsNorm: 0.00320575Epoch:   0      Batch: 5100    Loss: 0.06423496     ContextsNorm: 0.00291091Epoch:   0      Batch: 5200    Loss: 0.07009267     ContextsNorm: 0.00323634Epoch:   0      Batch: 5300    Loss: 0.06183565     ContextsNorm: 0.00294694Epoch:   0      Batch: 5400    Loss: 0.06241142     ContextsNorm: 0.00328354Epoch:   0      Batch: 5500    Loss: 0.06501129     ContextsNorm: 0.00306547Epoch:   0      Batch: 5600    Loss: 0.06417228     ContextsNorm: 0.00326994Epoch:   0      Batch: 5700    Loss: 0.06234124     ContextsNorm: 0.00291155Epoch:   0      Batch: 5800    Loss: 0.05907299     ContextsNorm: 0.00280718Epoch:   0      Batch: 5900    Loss: 0.06782089     ContextsNorm: 0.00384490Epoch:   0      Batch: 6000    Loss: 0.06214552     ContextsNorm: 0.00372090Epoch:   0      Batch: 6100    Loss: 0.07286361     ContextsNorm: 0.00363257Epoch:   0      Batch: 6200    Loss: 0.06154384     ContextsNorm: 0.00348226Epoch:   0      Batch: 6300    Loss: 0.06686931     ContextsNorm: 0.00385647Epoch:   0      Batch: 6400    Loss: 0.07012904     ContextsNorm: 0.00346718Epoch:   0      Batch: 6500    Loss: 0.04943084     ContextsNorm: 0.00251004Epoch:   0      Batch: 6600    Loss: 0.06736635     ContextsNorm: 0.00271649Epoch:   0      Batch: 6700    Loss: 0.07287334     ContextsNorm: 0.00397949Epoch:   0      Batch: 6800    Loss: 0.06553786     ContextsNorm: 0.00286506Epoch:   0      Batch: 6900    Loss: 0.06692651     ContextsNorm: 0.00347298Epoch:   0      Batch: 7000    Loss: 0.07077667     ContextsNorm: 0.00303411Epoch:   0      Batch: 7100    Loss: 0.06891195     ContextsNorm: 0.00352437Epoch:   0      Batch: 7200    Loss: 0.05818869     ContextsNorm: 0.00276499Epoch:   0      Batch: 7300    Loss: 0.05675943     ContextsNorm: 0.00288620Epoch:   0      Batch: 7400    Loss: 0.06540696     ContextsNorm: 0.00352339Epoch:   0      Batch: 7500    Loss: 0.05311325     ContextsNorm: 0.00314863Epoch:   0      Batch: 7600    Loss: 0.05704908     ContextsNorm: 0.00286624Epoch:   0      Batch: 7700    Loss: 0.06397809     ContextsNorm: 0.00312221Epoch:   0      Batch: 7800    Loss: 0.06073005     ContextsNorm: 0.00341040Epoch:   0      Batch: 7900    Loss: 0.05625442     ContextsNorm: 0.00303899Epoch:   0      Batch: 8000    Loss: 0.07714523     ContextsNorm: 0.00347040Epoch:   0      Batch: 8100    Loss: 0.06812749     ContextsNorm: 0.00266586Epoch:   0      Batch: 8200    Loss: 0.05882916     ContextsNorm: 0.00346777Epoch:   0      Batch: 8300    Loss: 0.05644974     ContextsNorm: 0.00353684Epoch:   0      Batch: 8400    Loss: 0.06718942     ContextsNorm: 0.00345629Epoch:   0      Batch: 8500    Loss: 0.05721212     ContextsNorm: 0.00234563Epoch:   0      Batch: 8600    Loss: 0.05330090     ContextsNorm: 0.00241597Epoch:   0      Batch: 8700    Loss: 0.05354686     ContextsNorm: 0.00280439Epoch:   0      Batch: 8800    Loss: 0.05204494     ContextsNorm: 0.00295531Epoch:   0      Batch: 8900    Loss: 0.04790873     ContextsNorm: 0.00272343Epoch:   0      Batch: 9000    Loss: 0.05612557     ContextsNorm: 0.00305606Epoch:   0      Batch: 9100    Loss: 0.06467489     ContextsNorm: 0.00320262Epoch:   0      Batch: 9200    Loss: 0.05679343     ContextsNorm: 0.00235488Epoch:   0      Batch: 9300    Loss: 0.05528621     ContextsNorm: 0.00319457Epoch:   0      Batch: 9400    Loss: 0.05556679     ContextsNorm: 0.00336612Epoch:   0      Batch: 9500    Loss: 0.06432036     ContextsNorm: 0.00314446Epoch:   0      Batch: 9600    Loss: 0.06884615     ContextsNorm: 0.00324321Epoch:   0      Batch: 9700    Loss: 0.05750851     ContextsNorm: 0.00336801Epoch:   0      Batch: 9800    Loss: 0.05940007     ContextsNorm: 0.00303487Epoch:   0      Batch: 9900    Loss: 0.04696100     ContextsNorm: 0.00275661Epoch:   0      Batch: 10000    Loss: 0.05219810     ContextsNorm: 0.00365726Epoch:   0      Batch: 10100    Loss: 0.06183676     ContextsNorm: 0.00347606Epoch:   0      Batch: 10200    Loss: 0.05428398     ContextsNorm: 0.00318569Epoch:   0      Batch: 10300    Loss: 0.05980428     ContextsNorm: 0.00418648Epoch:   0      Batch: 10400    Loss: 0.06313371     ContextsNorm: 0.00425347Epoch:   0      Batch: 10500    Loss: 0.05267516     ContextsNorm: 0.00324942Epoch:   0      Batch: 10600    Loss: 0.06043376     ContextsNorm: 0.00382150Epoch:   0      Batch: 10700    Loss: 0.06735464     ContextsNorm: 0.00479234Epoch:   0      Batch: 10800    Loss: 0.06687276     ContextsNorm: 0.00484806Epoch:   0      Batch: 10900    Loss: 0.04720190     ContextsNorm: 0.00382125Epoch:   0      Batch: 11000    Loss: 0.05379070     ContextsNorm: 0.00417407Epoch:   0      Batch: 11100    Loss: 0.05600899     ContextsNorm: 0.00354865Epoch:   0      Batch: 11200    Loss: 0.07183831     ContextsNorm: 0.00463672Epoch:   0      Batch: 11300    Loss: 0.05241556     ContextsNorm: 0.00370305Epoch:   0      Batch: 11400    Loss: 0.05542803     ContextsNorm: 0.00367314Epoch:   0      Batch: 11500    Loss: 0.04931168     ContextsNorm: 0.00464208Epoch:   0      Batch: 11600    Loss: 0.05964444     ContextsNorm: 0.00481195Epoch:   0      Batch: 11700    Loss: 0.06579669     ContextsNorm: 0.00441333Epoch:   0      Batch: 11800    Loss: 0.05379333     ContextsNorm: 0.00305933Epoch:   0      Batch: 11900    Loss: 0.06632873     ContextsNorm: 0.00551672Epoch:   0      Batch: 12000    Loss: 0.05385270     ContextsNorm: 0.00388347Epoch:   0      Batch: 12100    Loss: 0.05642609     ContextsNorm: 0.00338875Epoch:   0      Batch: 12200    Loss: 0.05936542     ContextsNorm: 0.00455759Epoch:   0      Batch: 12300    Loss: 0.06695515     ContextsNorm: 0.00387622Epoch:   0      Batch: 12400    Loss: 0.06768646     ContextsNorm: 0.00411620Epoch:   0      Batch: 12500    Loss: 0.05923710     ContextsNorm: 0.00400816Epoch:   0      Batch: 12600    Loss: 0.06120743     ContextsNorm: 0.00404449Epoch:   0      Batch: 12700    Loss: 0.05718420     ContextsNorm: 0.00426756Epoch:   0      Batch: 12800    Loss: 0.05486738     ContextsNorm: 0.00366597Epoch:   0      Batch: 12900    Loss: 0.05680892     ContextsNorm: 0.00304027Epoch:   0      Batch: 13000    Loss: 0.05399887     ContextsNorm: 0.00383398Epoch:   0      Batch: 13100    Loss: 0.05710864     ContextsNorm: 0.00458768Epoch:   0      Batch: 13200    Loss: 0.05288922     ContextsNorm: 0.00304667Epoch:   0      Batch: 13300    Loss: 0.06022422     ContextsNorm: 0.00432554Epoch:   0      Batch: 13400    Loss: 0.05407288     ContextsNorm: 0.00349603Epoch:   0      Batch: 13500    Loss: 0.05438022     ContextsNorm: 0.00440924     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch: 13564    Loss: 0.05534925     ContextsNorm: 0.00580752/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.06408525
+        Saving best model so far ...
 
-	Buffer 2:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 3:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 4:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 5:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 6:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 7:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 8:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 9:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 10:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 11:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 12:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 13:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 14:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
-
-	Buffer 15:
-		Size: 45.00MiB
-		XLA Label: fusion
-		Shape: f32[5,144,16,32,32]
-		==========================
+Total gradient descent training time: 1 hours 23 mins 4 secs
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### (Re)Compiling function: adapt_step_cavia ...  
+==  Testing finished ... ==
+    Criterion loss value: 0.06502427
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [188  98 189]
+    Visualized context dimensions along y: [107 146 158]
+Saving artefacts in: ./runs/240708-195859/artefacts.png
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+     ### (Re)Compiling function: adapt_step_cavia ...  
+Saving visualization in: ./runs/240708-195859/few_shots_multi_ind.png
+Creating a new model with taylor order 0 ...
 
 
---------------------
-For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+=== Beginning adaptation ... ===
+    Number of environment batches: 1664
+    Number of envs train steps per batch: 5
+    Total number of training steps: 8320
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.04653530        OtherNorms: [0.0465353  0.0048715  0.00132759]    Batch:   1     Loss: 0.05676971        OtherNorms: [0.05676971 0.00392463 0.00132759]    Batch:   2     Loss: 0.04675729        OtherNorms: [0.04675729 0.00681399 0.00132759]    Batch:   3     Loss: 0.05091317        OtherNorms: [0.05091317 0.0057146  0.00132759]    Batch: 100     Loss: 0.04934502        OtherNorms: [0.04934502 0.00483167 0.00132759]    Batch: 200     Loss: 0.05820566        OtherNorms: [0.05820566 0.00686437 0.00132759]    Batch: 300     Loss: 0.04129285        OtherNorms: [0.04129285 0.00550138 0.00132759]    Batch: 400     Loss: 0.04438488        OtherNorms: [0.04438488 0.00640933 0.00132759]    Batch: 500     Loss: 0.04791393        OtherNorms: [0.04791393 0.00442699 0.00132759]    Batch: 600     Loss: 0.05735927        OtherNorms: [0.05735927 0.00539697 0.00132759]    Batch: 700     Loss: 0.04528269        OtherNorms: [0.04528269 0.00530559 0.00132759]    Batch: 800     Loss: 0.04880854        OtherNorms: [0.04880854 0.00598147 0.00132759]    Batch: 900     Loss: 0.05801310        OtherNorms: [0.0580131  0.00561647 0.00132759]    Batch: 1000     Loss: 0.07151446        OtherNorms: [0.07151446 0.00683307 0.00132759]    Batch: 1100     Loss: 0.05665440        OtherNorms: [0.0566544  0.00607681 0.00132759]    Batch: 1200     Loss: 0.05393518        OtherNorms: [0.05393518 0.0055907  0.00132759]    Batch: 1300     Loss: 0.04288998        OtherNorms: [0.04288998 0.00413801 0.00132759]    Batch: 1400     Loss: 0.05126812        OtherNorms: [0.05126812 0.00682478 0.00132759]    Batch: 1500     Loss: 0.05246508        OtherNorms: [0.05246508 0.00531161 0.00132759]    Batch: 1600     Loss: 0.04661012        OtherNorms: [0.04661012 0.00565564 0.00132759]     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch: 1663     Loss: 0.03798985        OtherNorms: [0.03798985 0.00321448 0.00132759]
+Total gradient descent adaptation time: 0 hours 0 mins 12 secs
+
+Saving adaptation parameters into ./runs/240708-195859/adapt/ folder ...
+
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### (Re)Compiling function: adapt_step_cavia ...  
+==  Testing finished ... ==
+    Criterion loss value: 0.064504266
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [188  98 189]
+    Visualized context dimensions along y: [107 146 158]
+Saving artefacts in: ./runs/240708-195859/adapt/artefacts.png
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+Saving visualization in: ./runs/240708-195859/adapt/few_shots_multi_ood.png
