@@ -1,6 +1,4 @@
 from ._utils import *
-from math import factorial
-from jax.experimental.jet import jet
 
 
 
@@ -101,80 +99,32 @@ class ArrayContextParams(eqx.Module):
 
 class NeuralContextFlow(eqx.Module):
     neuralnet: eqx.Module
-
     taylor_order: int
-    taylor_scale: int
-    taylor_weight: jnp.ndarray
 
-    def __init__(self, neuralnet, taylor_order, taylor_weight_init=0., taylor_scale=100):
+    def __init__(self, neuralnet, taylor_order):
         self.neuralnet = neuralnet
-
         self.taylor_order = taylor_order
-        self.taylor_weight = jnp.array([taylor_weight_init])
-        self.taylor_scale = taylor_scale
-
 
     def __call__(self, xs, ctx, ctx_):
 
         def point_predict(x):
 
-            ############# Without possibility to ignore Taylor expansion #############
-            # vf = lambda xi: self.neuralnet(x, xi)
-
-            # if self.taylor_order==0:
-            #     return vf(ctx)
-
-            # elif self.taylor_order==1:
-            #     gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-            #     return vf(ctx_) + 1.0*gradvf(ctx_)
-
-            # elif self.taylor_order==2:
-            #     gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-            #     scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
-            #     return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
-
-            # else:
-            #     raise NotImplementedError("Higher order terms are not implemented yet.")
-
-
-            ############# With possibility to ignore Taylor expansion #############
             vf = lambda xi: self.neuralnet(x, xi)
-            alpha = jax.nn.sigmoid(self.taylor_scale*self.taylor_weight[0])
 
             if self.taylor_order==0:
-                return (1.-alpha)*vf(ctx)
+                return vf(ctx)
 
             elif self.taylor_order==1:
                 gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-                taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
-
-                return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
+                return vf(ctx_) + 1.0*gradvf(ctx_)
 
             elif self.taylor_order==2:
                 gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
                 scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
-                taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
-
-                return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
+                return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
 
             else:
-                # raise NotImplementedError("Higher order terms are not implemented yet.")
-
-                h0 = ctx_
-                h1 = ctx-ctx_
-                h2 = jnp.zeros_like(h0)
-
-                hs = [h1, h2]
-                coeffs = [1, 0.5]
-                for order in range(2+1, self.taylor_order+1):
-                    hs.append(jnp.zeros_like(h0))
-                    coeffs.append(1 / factorial(order))
-
-                f0, fs = jet(vf, (h0,), (hs,))
-                taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
-
-                return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
-
+                raise NotImplementedError("Higher order terms are not implemented yet.")
 
         ys = eqx.filter_vmap(point_predict)(xs)
 
@@ -183,25 +133,20 @@ class NeuralContextFlow(eqx.Module):
 
 class NonBatchedNeuralContextFlow(eqx.Module):
     neuralnet: eqx.Module
-
     taylor_order: int
-    taylor_scale: int
-    taylor_weight: jnp.ndarray
 
-    def __init__(self, neuralnet, taylor_order, taylor_weight_init=0., taylor_scale=100):
+    def __init__(self, neuralnet, taylor_order):
         self.neuralnet = neuralnet
-
         self.taylor_order = taylor_order
-        self.taylor_weight = jnp.array([taylor_weight_init])        ## We start with 50-50
-        self.taylor_scale = taylor_scale                     ## Multiply by this before sigmoid
 
     def __call__(self, xs, ctx, ctx_):
 
         vf = lambda xi: self.neuralnet(xs, xi)
-        alpha = jax.nn.sigmoid(self.taylor_scale*self.taylor_weight[0])
+        # alpha = jnp.clip(self.neuralnet.taylor_weight[0], 0., 1.)
+        alpha = jax.nn.sigmoid(100*self.neuralnet.taylor_weight[0])
 
         if self.taylor_order==0:
-            return (1.-alpha)*vf(ctx)
+            return vf(ctx)
 
         elif self.taylor_order==1:
             gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
@@ -217,22 +162,8 @@ class NonBatchedNeuralContextFlow(eqx.Module):
             return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
 
         else:
-            # raise NotImplementedError("Higher order terms are not implemented yet.")
-            h0 = ctx_
-            h1 = ctx-ctx_
-            h2 = jnp.zeros_like(h0)
-
-            hs = [h1, h2]
-            coeffs = [1, 0.5]
-            for order in range(2+1, self.taylor_order+1):
-                hs.append(jnp.zeros_like(h0))
-                coeffs.append(1 / factorial(order))
-
-            f0, fs = jet(vf, (h0,), (hs,))
-            taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
-
-            return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
-
+            raise NotImplementedError("Higher order terms are not implemented yet.")
+            ## Use JET here !
 
 
 

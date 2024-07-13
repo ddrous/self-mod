@@ -19,7 +19,7 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2026
+seed = 2028
 
 ## Dataloader hps
 k_shots = 100
@@ -28,21 +28,27 @@ img_size = (3, resolution[0], resolution[1])
 data_folder="./data/" 
 
 ## Learner/model hps
-context_pool_size = 1
+context_pool_size = 4
 context_size = 256
-taylor_orders = (1, 0)
+taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing.
+# ivp_args = {"T":1.0, "y0_pad_size":1, "adjoint":diffrax.DirectAdjoint()} 
+## TODO Try
+#   - diffrax.RecursiveCheckpointAdjoint(),         Autodiff though the internals
+#   - diffrax.DirectAdjoint(),                      Autodiff though the internals, but forward-mode OK !
+#   - diffrax.BacksolveAdjoint()                    The actual adjoint
+#   - diffrax.ImplicitAdjoint()                     The implicit function theorem
 
 ## Train and adapt hps
-init_lrs = (1e-3, 1e-1)
+init_lrs = (1e-4, 1e-1)
 sched_factor = 1.
-envs_batch_size = 12*4
+envs_batch_size = 12
 max_train_batches = -1      ## TODO: should be -1
 max_eval_batches = -1
 
 nb_train_epochs = 1
 nb_inner_steps = 5
 
-print_error_every = 100
+print_error_every = 10
 
 nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
@@ -149,6 +155,7 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
 class MultiCNN(eqx.Module):
     layers_context: list
     vnet: eqx.Module
+    taylor_weight: jnp.ndarray
 
     def __init__(self, kernel_size, hidden_chans, vnet_base_chans, context_size, key=None):
         keys = jax.random.split(key, num=4)
@@ -163,7 +170,7 @@ class MultiCNN(eqx.Module):
         ## The VNet to process the context
         self.vnet = VNet(input_shape=(1, *resolution),
                         output_shape=(3, *resolution),
-                        levels=4,
+                        levels=3,
                         depth=vnet_base_chans,
                         kernel_size=3,
                         activation=eqx.nn.PReLU(init_alpha=0.),
@@ -173,6 +180,8 @@ class MultiCNN(eqx.Module):
                         dropout_rate=0.,
                         key=keys[3]
                     )
+
+        self.taylor_weight = jnp.array([0.])        ## We start with full power to the Taylor expansion !
 
     def __call__(self, x, ctx):
 
@@ -209,15 +218,12 @@ def env_loss_fn(model, ctx, y_hat, y):
 
 neuralnet = MultiCNN(kernel_size=(3,3),
                      hidden_chans=6,
-                     vnet_base_chans=16,
+                     vnet_base_chans=16, 
                      context_size=context_size, 
                      key=model_key)
 
 # model = NeuralODE(neuralnet=neuralnet, taylor_order=taylor_orders[0], ivp_args=ivp_args)
-model = NonBatchedNeuralContextFlow(neuralnet=neuralnet, 
-                                    taylor_order=taylor_orders[0],
-                                    taylor_scale=100,
-                                    taylor_weight_init=0.)  ## equal chances for taylor or not
+model = NonBatchedNeuralContextFlow(neuralnet=neuralnet, taylor_order=taylor_orders[0])
 
 learner = Learner(model=model, 
                     context_size=context_size, 
@@ -263,7 +269,6 @@ if meta_train == True:
                             save_path=trainer_save_path, 
                             val_dataloader=val_dataloader, 
                             val_criterion_id=0,
-                            backup_contexts=True,
                             key=trainer_key)
     # trainer.meta_train_proximal(dataloader=train_dataloader,
     #                             nb_epochs=nb_train_epochs,

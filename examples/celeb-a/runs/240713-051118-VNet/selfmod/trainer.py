@@ -262,7 +262,6 @@ class Trainer:
                         nb_inner_steps=10,
                         print_error_every=1, 
                         save_path=False, 
-                        backup_contexts=False,
                         max_train_batches=None,
                         val_dataloader=None, 
                         val_criterion_id=None, 
@@ -274,12 +273,6 @@ class Trainer:
         loss_fn = self.learner.loss_fn
         model = self.learner.model
         opt_state_model = self.opt_state_model
-
-        ## 
-        if backup_contexts:
-            backup_ctx_folder = save_path+"contexts/"
-            if not os.path.exists(backup_ctx_folder):
-                os.makedirs(backup_ctx_folder)
 
         # # @eqx.filter_jit
         # def inner_train_step(model, contexts, batch, weightings, opt_state, key):
@@ -426,17 +419,11 @@ class Trainer:
                 if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
                     print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
 
-                    alpha = model.taylor_weight[0]
-                    print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
-                    print()
+                    alpha = model.neuralnet.taylor_weight[0]
+                    print(f"        Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(100*alpha):-.8f}", flush=True, end="\r")
 
-                    if backup_contexts:
-                        ## Save the context's numpy array with the suffix of the current batch*epoch
-                        context_save_path = backup_ctx_folder+f"contexts_epoch{epoch:04d}_batch{env_batch:06d}.npy"
-                        np.save(context_save_path, contexts.params)
-
-                        ## Save the model as well
-                        eqx.tree_serialise_leaves(backup_ctx_folder+"model.eqx", model)
+            # if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
+            #     print(f"Epoch: {epoch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
 
             if val_dataloader is not None:
                 self.learner.model = model

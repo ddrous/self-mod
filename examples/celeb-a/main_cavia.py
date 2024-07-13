@@ -27,25 +27,25 @@ resolution = (32, 32)
 data_folder="./data/" 
 
 ## Train and adapt hps
-context_pool_size = 6
+context_pool_size = 2
 context_size = 128
-taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
-init_lrs = (1e-4, 1e-1)
+taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
+init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 24*1
+envs_batch_size = 16*4
 max_train_batches = -1      ## TODO: should be -1
 
-nb_train_epochs = 10
+nb_train_epochs = 20
 nb_inner_steps = 5
 
 print_error_every = 100
 
-nb_adapt_epochs = 1
+nb_adapt_epochs = 10
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/240609-215946-Test/"
-# run_folder = None
+# run_folder = "./runs/240609-215946-Test/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -183,30 +183,7 @@ class Swish(eqx.Module):
     def __call__(self, x):
         return x * jax.nn.sigmoid(self.beta * x)
 
-# class MultiMLP(eqx.Module):     ## TODO CAVIA
-#     layers_shared: list
-#     activations: list
-
-#     def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
-#         keys = jax.random.split(key, 10)
-#         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
-
-#         self.layers_shared = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
-#                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
-
-#     def __call__(self, x, ctx):
-#         y = jnp.concatenate([x, ctx], axis=0)
-#         for layer in self.layers_shared:
-#             y = layer(y)
-
-#         return y
-
-class MultiMLP(eqx.Module):
-    layers_data: list
-    layers_context: list
+class MultiMLP(eqx.Module):     ## TODO CAVIA
     layers_shared: list
     activations: list
 
@@ -214,35 +191,58 @@ class MultiMLP(eqx.Module):
         keys = jax.random.split(key, 10)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
-        self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
-                            #    eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
-                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
-
-        self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
-                            # eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[5])]
-
-        self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
+        self.layers_shared = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
 
     def __call__(self, x, ctx):
-        ctx = ctx
-        for layer in self.layers_context:
-            ctx = layer(ctx)
-
-        y = x
-        for layer in self.layers_data:
-            y = layer(y)
-
-        y = jnp.concatenate([y, ctx], axis=0)
-        # y = jnp.concatenate([x, ctx], axis=0)
+        y = jnp.concatenate([x, ctx], axis=0)
         for layer in self.layers_shared:
             y = layer(y)
 
         return y
+
+# class MultiMLP(eqx.Module):
+#     layers_data: list
+#     layers_context: list
+#     layers_shared: list
+#     activations: list
+
+#     def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
+#         keys = jax.random.split(key, 10)
+#         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+
+#         self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
+#                             #    eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
+#                                eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
+
+#         self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
+#                             # eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
+#                             eqx.nn.Linear(hidden_size, hidden_size, key=keys[5])]
+
+#         self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
+#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
+#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+#                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
+
+#     def __call__(self, x, ctx):
+#         ctx = ctx
+#         for layer in self.layers_context:
+#             ctx = layer(ctx)
+
+#         y = x
+#         for layer in self.layers_data:
+#             y = layer(y)
+
+#         y = jnp.concatenate([y, ctx], axis=0)
+#         # y = jnp.concatenate([x, ctx], axis=0)
+#         for layer in self.layers_shared:
+#             y = layer(y)
+
+#         return y
 
 
 
@@ -272,7 +272,9 @@ neuralnet = MultiMLP(in_size=input_dim,
                      key=model_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, 
-                          taylor_order=taylor_orders[0])      ## TODO : taylor order=2
+                          taylor_order=taylor_orders[0],
+                          taylor_scale=100,
+                          taylor_weight_init=0.)      ## TODO : taylor order=2
 
 learner = Learner(model=model, 
                     context_size=context_size, 
