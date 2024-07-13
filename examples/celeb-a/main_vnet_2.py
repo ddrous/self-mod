@@ -22,13 +22,13 @@ from selfmod import *
 seed = 2028
 
 ## Dataloader hps
-k_shots = 1000
+k_shots = 100
 resolution = (32, 32)
 img_size = (3, resolution[0], resolution[1])
 data_folder="./data/" 
 
 ## Learner/model hps
-context_pool_size = 12
+context_pool_size = 4
 context_size = 256
 taylor_orders = (2, 0)      ## Expansion orders for meta-training and meta-testing.
 # ivp_args = {"T":1.0, "y0_pad_size":1, "adjoint":diffrax.DirectAdjoint()} 
@@ -48,7 +48,7 @@ max_eval_batches = -1
 nb_train_epochs = 1
 nb_inner_steps = 5
 
-print_error_every = 100
+print_error_every = 10
 
 nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
@@ -151,16 +151,6 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
 
 
 
-
-
-
-
-
-
-
-
-
-
 ## Define model and loss function for the learner
 class MultiCNN(eqx.Module):
     layers_context: list
@@ -176,7 +166,7 @@ class MultiCNN(eqx.Module):
                                 lambda x: x.reshape((1, resolution[0], resolution[1])),
                                 ]
 
-        ## TODO This should be a proper UNET with downsampling and upsampling
+        ## The VNet to process the context
         self.vnet = VNet(input_shape=(1, *resolution),
                         output_shape=(3, *resolution),
                         levels=3,
@@ -230,7 +220,10 @@ neuralnet = MultiCNN(kernel_size=(3,3),
                      key=model_key)
 
 # model = NeuralODE(neuralnet=neuralnet, taylor_order=taylor_orders[0], ivp_args=ivp_args)
-model = NonBatchedNeuralContextFlow(neuralnet=neuralnet, taylor_order=taylor_orders[0])
+model = NonBatchedNeuralContextFlow(neuralnet=neuralnet, 
+                                    taylor_order=taylor_orders[0],
+                                    taylor_scale=100,
+                                    taylor_weight_init=0.)  ## equal chances for taylor or not
 
 learner = Learner(model=model, 
                     context_size=context_size, 

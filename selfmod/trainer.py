@@ -419,6 +419,10 @@ class Trainer:
                 if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
                     print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
 
+                    alpha = model.taylor_weight[0]
+                    print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
+                    print()
+
             # if epoch%print_error_every==0 or epoch<=3 or epoch==nb_epochs-1:
             #     print(f"Epoch: {epoch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
 

@@ -29,7 +29,7 @@ data_folder="./data/"
 ## Train and adapt hps
 context_pool_size = 6
 context_size = 128
-taylor_orders = (1, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
+taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-4, 1e-1)
 sched_factor = 1.
 envs_batch_size = 24*1
@@ -215,11 +215,11 @@ class MultiMLP(eqx.Module):
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
         self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0],
-                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
+                            #    eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]), self.activations[1], 
                                eqx.nn.Linear(hidden_size, hidden_size, key=keys[2])]
 
         self.layers_data = [eqx.nn.Linear(in_size, hidden_size, key=keys[3]), self.activations[2], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
+                            # eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
                             eqx.nn.Linear(hidden_size, hidden_size, key=keys[5])]
 
         self.layers_shared = [eqx.nn.Linear(2*hidden_size, hidden_size, key=keys[6]), self.activations[4], 
