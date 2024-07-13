@@ -430,7 +430,7 @@ class Trainer:
                     print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
                     print()
 
-                    if backup_contexts and epoch==nb_epochs-1:
+                    if backup_contexts:
                         ## Save the context's numpy array with the suffix of the current batch*epoch
                         context_save_path = backup_ctx_folder+f"contexts_epoch{epoch:04d}_batch{env_batch:06d}.npy"
                         np.save(context_save_path, contexts.params)

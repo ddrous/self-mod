@@ -3,7 +3,7 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240713-132645/
+Created a new run folder at: ./runs/240713-164313/
 Completed copied scripts 
 
 
@@ -11,14 +11,130 @@ Total number of parameters in the model: 1230302
 
 
 === Beginning meta training ... ===
-    Number of examples in a batch: 48
-    Total number of batches : 3392
+    Number of examples in a batch: 60
+    Total number of batches : 2713
     Numbers of inner steps : 5
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
      ### (Re)Compiling function: outer_train_step ...  
      ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   0    Loss: 0.09048785     ContextsNorm: 0.00000017Current unnormalised weight of the taylor expansion: -0.00000000       NormalisedWeight: 0.50000000
+Epoch:   0      Batch:   0    Loss: 0.09233953     ContextsNorm: 0.00000017Current unnormalised weight of the taylor expansion: -0.00028251       NormalisedWeight: 0.49293765
      ### (Re)Compiling function: outer_train_step ...  
      ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   1    Loss: 0.09331828     ContextsNorm: 0.00000017Current unnormalised weight of the taylor expansion: -0.00000000       NormalisedWeight: 0.50000000
+Epoch:   0      Batch:   1    Loss: 0.09361474     ContextsNorm: 0.00000017Current unnormalised weight of the taylor expansion: -0.00041906       NormalisedWeight: 0.48952511
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   2    Loss: 0.09578893     ContextsNorm: 0.00000018Current unnormalised weight of the taylor expansion: -0.00050582       NormalisedWeight: 0.48735729
+Epoch:   0      Batch:   3    Loss: 0.09172066     ContextsNorm: 0.00000020Current unnormalised weight of the taylor expansion: -0.00056757       NormalisedWeight: 0.48581463
+Epoch:   0      Batch: 100    Loss: 0.07756535     ContextsNorm: 0.00030266Current unnormalised weight of the taylor expansion: -0.01200545       NormalisedWeight: 0.23137832
+Epoch:   0      Batch: 200    Loss: 0.04769264     ContextsNorm: 0.00410809Current unnormalised weight of the taylor expansion: -0.02672139       NormalisedWeight: 0.06463750
+Epoch:   0      Batch: 300    Loss: 0.04296464     ContextsNorm: 0.00350167Current unnormalised weight of the taylor expansion: -0.03489372       NormalisedWeight: 0.02961614
+Epoch:   0      Batch: 400    Loss: 0.03572312     ContextsNorm: 0.00508885Current unnormalised weight of the taylor expansion: -0.03947715       NormalisedWeight: 0.01893335
+Epoch:   0      Batch: 500    Loss: 0.03303063     ContextsNorm: 0.00487629Current unnormalised weight of the taylor expansion: -0.04447518       NormalisedWeight: 0.01157210
+Epoch:   0      Batch: 600    Loss: 0.02776092     ContextsNorm: 0.00477928Current unnormalised weight of the taylor expansion: -0.04894304       NormalisedWeight: 0.00743345
+Epoch:   0      Batch: 700    Loss: 0.02643937     ContextsNorm: 0.00480587Current unnormalised weight of the taylor expansion: -0.05359019       NormalisedWeight: 0.00468348
+Epoch:   0      Batch: 800    Loss: 0.02559732     ContextsNorm: 0.00439483Current unnormalised weight of the taylor expansion: -0.05738726       NormalisedWeight: 0.00320854
+Epoch:   0      Batch: 900    Loss: 0.02225006     ContextsNorm: 0.00469279Current unnormalised weight of the taylor expansion: -0.06057653       NormalisedWeight: 0.00233442
+Epoch:   0      Batch: 1000    Loss: 0.02125762     ContextsNorm: 0.00447476Current unnormalised weight of the taylor expansion: -0.06363059       NormalisedWeight: 0.00172112
+Epoch:   0      Batch: 1100    Loss: 0.02178109     ContextsNorm: 0.00454474Current unnormalised weight of the taylor expansion: -0.06543757       NormalisedWeight: 0.00143700
+Epoch:   0      Batch: 1200    Loss: 0.01831956     ContextsNorm: 0.00479979Current unnormalised weight of the taylor expansion: -0.06710460       NormalisedWeight: 0.00121662
+Epoch:   0      Batch: 1300    Loss: 0.01772760     ContextsNorm: 0.00474030Current unnormalised weight of the taylor expansion: -0.06889922       NormalisedWeight: 0.00101696
+Epoch:   0      Batch: 1400    Loss: 0.01705842     ContextsNorm: 0.00450848Current unnormalised weight of the taylor expansion: -0.07030556       NormalisedWeight: 0.00088366
+Epoch:   0      Batch: 1500    Loss: 0.01702543     ContextsNorm: 0.00420802Current unnormalised weight of the taylor expansion: -0.07165681       NormalisedWeight: 0.00077206
+Epoch:   0      Batch: 1600    Loss: 0.01680535     ContextsNorm: 0.00469675Current unnormalised weight of the taylor expansion: -0.07300169       NormalisedWeight: 0.00067497
+Epoch:   0      Batch: 1700    Loss: 0.01660512     ContextsNorm: 0.00474050Current unnormalised weight of the taylor expansion: -0.07381061       NormalisedWeight: 0.00062255
+Epoch:   0      Batch: 1800    Loss: 0.01728841     ContextsNorm: 0.00437102Current unnormalised weight of the taylor expansion: -0.07475901       NormalisedWeight: 0.00056625
+Epoch:   0      Batch: 1900    Loss: 0.01525826     ContextsNorm: 0.00474853Current unnormalised weight of the taylor expansion: -0.07542872       NormalisedWeight: 0.00052959
+Epoch:   0      Batch: 2000    Loss: 0.01498135     ContextsNorm: 0.00476963Current unnormalised weight of the taylor expansion: -0.07552391       NormalisedWeight: 0.00052458
+Epoch:   0      Batch: 2100    Loss: 0.01426062     ContextsNorm: 0.00461753Current unnormalised weight of the taylor expansion: -0.07540862       NormalisedWeight: 0.00053066
+Epoch:   0      Batch: 2200    Loss: 0.01397956     ContextsNorm: 0.00426897Current unnormalised weight of the taylor expansion: -0.07610939       NormalisedWeight: 0.00049476
+Epoch:   0      Batch: 2300    Loss: 0.01248011     ContextsNorm: 0.00482192Current unnormalised weight of the taylor expansion: -0.07664339       NormalisedWeight: 0.00046905
+Epoch:   0      Batch: 2400    Loss: 0.01323099     ContextsNorm: 0.00475755Current unnormalised weight of the taylor expansion: -0.07717876       NormalisedWeight: 0.00044461
+Epoch:   0      Batch: 2500    Loss: 0.01438392     ContextsNorm: 0.00495496Current unnormalised weight of the taylor expansion: -0.07742404       NormalisedWeight: 0.00043384
+Epoch:   0      Batch: 2600    Loss: 0.01388793     ContextsNorm: 0.00455808Current unnormalised weight of the taylor expansion: -0.07799707       NormalisedWeight: 0.00040969
+Epoch:   0      Batch: 2700    Loss: 0.01235116     ContextsNorm: 0.00514359Current unnormalised weight of the taylor expansion: -0.07834017       NormalisedWeight: 0.00039587
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch: 2712    Loss: 0.01433144     ContextsNorm: 0.00422231Current unnormalised weight of the taylor expansion: -0.07832611       NormalisedWeight: 0.00039643
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.07863154
+        Saving best model so far ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Epoch:   1      Batch:   0    Loss: 0.01314654     ContextsNorm: 0.00477865Current unnormalised weight of the taylor expansion: -0.07832555       NormalisedWeight: 0.00039645
+Epoch:   1      Batch:   1    Loss: 0.01342395     ContextsNorm: 0.00475794Current unnormalised weight of the taylor expansion: -0.07832554       NormalisedWeight: 0.00039645
+Epoch:   1      Batch:   2    Loss: 0.01175026     ContextsNorm: 0.00459646Current unnormalised weight of the taylor expansion: -0.07832699       NormalisedWeight: 0.00039640
+Epoch:   1      Batch:   3    Loss: 0.01309589     ContextsNorm: 0.00471495Current unnormalised weight of the taylor expansion: -0.07832875       NormalisedWeight: 0.00039633
+Epoch:   1      Batch: 100    Loss: 0.01436776     ContextsNorm: 0.00474396Current unnormalised weight of the taylor expansion: -0.07877146       NormalisedWeight: 0.00037917
+Epoch:   1      Batch: 200    Loss: 0.01301642     ContextsNorm: 0.00473751Current unnormalised weight of the taylor expansion: -0.07947300       NormalisedWeight: 0.00035349
+Epoch:   1      Batch: 300    Loss: 0.01275569     ContextsNorm: 0.00443652Current unnormalised weight of the taylor expansion: -0.08020970       NormalisedWeight: 0.00032839
+Epoch:   1      Batch: 400    Loss: 0.01219836     ContextsNorm: 0.00459446Current unnormalised weight of the taylor expansion: -0.08057155       NormalisedWeight: 0.00031673
+Epoch:   1      Batch: 500    Loss: 0.01135267     ContextsNorm: 0.00491583Current unnormalised weight of the taylor expansion: -0.08047925       NormalisedWeight: 0.00031966
+Epoch:   1      Batch: 600    Loss: 0.01307836     ContextsNorm: 0.00501511Current unnormalised weight of the taylor expansion: -0.08072602       NormalisedWeight: 0.00031187
+Epoch:   1      Batch: 700    Loss: 0.01260703     ContextsNorm: 0.00494271Current unnormalised weight of the taylor expansion: -0.08061681       NormalisedWeight: 0.00031530
+Epoch:   1      Batch: 800    Loss: 0.01175067     ContextsNorm: 0.00453329Current unnormalised weight of the taylor expansion: -0.08046070       NormalisedWeight: 0.00032026
+Epoch:   1      Batch: 900    Loss: 0.01205513     ContextsNorm: 0.00481493Current unnormalised weight of the taylor expansion: -0.08092263       NormalisedWeight: 0.00030580
+Epoch:   1      Batch: 1000    Loss: 0.01248189     ContextsNorm: 0.00490664Current unnormalised weight of the taylor expansion: -0.08093253       NormalisedWeight: 0.00030550
+Epoch:   1      Batch: 1100    Loss: 0.01272861     ContextsNorm: 0.00466027Current unnormalised weight of the taylor expansion: -0.08165388       NormalisedWeight: 0.00028425
+Epoch:   1      Batch: 1200    Loss: 0.01375625     ContextsNorm: 0.00485853Current unnormalised weight of the taylor expansion: -0.08205542       NormalisedWeight: 0.00027306
+Epoch:   1      Batch: 1300    Loss: 0.01051660     ContextsNorm: 0.00474643Current unnormalised weight of the taylor expansion: -0.08229250       NormalisedWeight: 0.00026666
+Epoch:   1      Batch: 1400    Loss: 0.01186315     ContextsNorm: 0.00470784Current unnormalised weight of the taylor expansion: -0.08290663       NormalisedWeight: 0.00025079
+Epoch:   1      Batch: 1500    Loss: 0.01052579     ContextsNorm: 0.00497567Current unnormalised weight of the taylor expansion: -0.08320402       NormalisedWeight: 0.00024344
+Epoch:   1      Batch: 1600    Loss: 0.01090117     ContextsNorm: 0.00500838Current unnormalised weight of the taylor expansion: -0.08377030       NormalisedWeight: 0.00023004
+Epoch:   1      Batch: 1700    Loss: 0.01150265     ContextsNorm: 0.00470764Current unnormalised weight of the taylor expansion: -0.08405418       NormalisedWeight: 0.00022360
+Epoch:   1      Batch: 1800    Loss: 0.01101348     ContextsNorm: 0.00466609Current unnormalised weight of the taylor expansion: -0.08424947       NormalisedWeight: 0.00021928
+Epoch:   1      Batch: 1900    Loss: 0.01166257     ContextsNorm: 0.00490205Current unnormalised weight of the taylor expansion: -0.08437493       NormalisedWeight: 0.00021655
+Epoch:   1      Batch: 2000    Loss: 0.01239091     ContextsNorm: 0.00467622Current unnormalised weight of the taylor expansion: -0.08439442       NormalisedWeight: 0.00021612
+Epoch:   1      Batch: 2100    Loss: 0.01116260     ContextsNorm: 0.00466854Current unnormalised weight of the taylor expansion: -0.08446918       NormalisedWeight: 0.00021451
+Epoch:   1      Batch: 2200    Loss: 0.01038736     ContextsNorm: 0.00472718Current unnormalised weight of the taylor expansion: -0.08477871       NormalisedWeight: 0.00020798
+Epoch:   1      Batch: 2300    Loss: 0.01028059     ContextsNorm: 0.00449459Current unnormalised weight of the taylor expansion: -0.08556049       NormalisedWeight: 0.00019234
+Epoch:   1      Batch: 2400    Loss: 0.01196154     ContextsNorm: 0.00489379Current unnormalised weight of the taylor expansion: -0.08555174       NormalisedWeight: 0.00019251
+Epoch:   1      Batch: 2500    Loss: 0.01097350     ContextsNorm: 0.00447115Current unnormalised weight of the taylor expansion: -0.08552361       NormalisedWeight: 0.00019305
+Epoch:   1      Batch: 2600    Loss: 0.01016005     ContextsNorm: 0.00472397Current unnormalised weight of the taylor expansion: -0.08543422       NormalisedWeight: 0.00019478
+Epoch:   1      Batch: 2700    Loss: 0.01054257     ContextsNorm: 0.00470234Current unnormalised weight of the taylor expansion: -0.08590795       NormalisedWeight: 0.00018577
+Epoch:   1      Batch: 2712    Loss: 0.01244511     ContextsNorm: 0.00560655Current unnormalised weight of the taylor expansion: -0.08608648       NormalisedWeight: 0.00018249
+     Validation Criterion: 0.07594670
+        Saving best model so far ...
+
+Total gradient descent training time: 0 hours 30 mins 43 secs
+     ### (Re)Compiling function: adapt_step_cavia ...  
+==  Testing finished ... ==
+    Criterion loss value: 0.07582427
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [ 83  93 197]
+    Visualized context dimensions along y: [ 77 214 128]
+Saving artefacts in: ./runs/240713-164313/artefacts.png
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+     ### (Re)Compiling function: adapt_step_cavia ...  
+Saving visualization in: ./runs/240713-164313/few_shots_multi_ind.png
+Creating a new model with taylor order 0 ...
+
+
+=== Beginning adaptation ... ===
+    Number of environment batches: 333
+    Number of envs train steps per batch: 5
+    Total number of training steps: 1665
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.04726658        OtherNorms: [0.04726658 0.00781692 0.00555727]    Batch:   1     Loss: 0.04640787        OtherNorms: [0.04640787 0.00763315 0.00555727]    Batch:   2     Loss: 0.05062492        OtherNorms: [0.05062492 0.00806319 0.00555727]    Batch:   3     Loss: 0.04714547        OtherNorms: [0.04714547 0.00788313 0.00555727]    Batch: 100     Loss: 0.05738928        OtherNorms: [0.05738928 0.00850976 0.00555727]    Batch: 200     Loss: 0.04416846        OtherNorms: [0.04416846 0.00757218 0.00555727]    Batch: 300     Loss: 0.04797763        OtherNorms: [0.04797763 0.0079177  0.00555727]     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch: 332     Loss: 0.05363073        OtherNorms: [0.05363073 0.00820598 0.00555727]
+Total gradient descent adaptation time: 0 hours 0 mins 5 secs
+
+Saving adaptation parameters into ./runs/240713-164313/adapt/ folder ...
+
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### (Re)Compiling function: adapt_step_cavia ...  
+==  Testing finished ... ==
+    Criterion loss value: 0.07388357
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [ 83  93 197]
+    Visualized context dimensions along y: [ 77 214 128]
+Saving artefacts in: ./runs/240713-164313/adapt/artefacts.png
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+Saving visualization in: ./runs/240713-164313/adapt/few_shots_multi_ood.png

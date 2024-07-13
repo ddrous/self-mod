@@ -87,27 +87,13 @@ class MLP(eqx.Module):
 
 
 
-# class ArrayContextParams(eqx.Module):
-#     params: jnp.ndarray
-#     def __init__(self, nb_envs, context_size):
-#         self.params = jnp.zeros((nb_envs, context_size))
-#     def __call__(self):
-#         return self.params
-
-
 class ArrayContextParams(eqx.Module):
-    """ A context initialised with gaussian """
     params: jnp.ndarray
-
-
-    def __init__(self, nb_envs, context_size, key=None):
-        if key is None:
-            self.params = jnp.zeros((nb_envs, context_size))
-        else:
-            self.params = jax.random.normal(key, (nb_envs, context_size))
-
+    def __init__(self, nb_envs, context_size):
+        self.params = jnp.zeros((nb_envs, context_size))
     def __call__(self):
         return self.params
+
 
 
 

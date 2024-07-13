@@ -28,18 +28,18 @@ img_size = (3, resolution[0], resolution[1])
 data_folder="./data/" 
 
 ## Learner/model hps
-context_pool_size = 2
+context_pool_size = 1
 context_size = 256
-taylor_orders = (3, 0)
+taylor_orders = (0, 0)
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 12*5
+envs_batch_size = 12*40
 max_train_batches = -1      ## TODO: should be -1
 max_eval_batches = -1
 
-nb_train_epochs = 2
+nb_train_epochs = 10
 nb_inner_steps = 5
 
 print_error_every = 100

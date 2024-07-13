@@ -4,6 +4,10 @@
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import plotly.express as px
 
 from selfmod import *
 
@@ -19,10 +23,11 @@ img_size = (3, resolution[0], resolution[1])
 
 ## Learner/model hps
 context_size = 256
-nb_images = 8*8
+nb_images = 6*6
 
-run_folder = "./runs/240713-130822/"
-
+# run_folder = "./runs/240713-130822/"
+# run_folder = "./runs/240713-134917-GoldenT0/"
+run_folder = "./runs/240713-143455/"
 
 
 #%%
@@ -46,7 +51,7 @@ class MultiCNN(eqx.Module):
         ## The VNet to process the context
         self.vnet = VNet(input_shape=(1, *resolution),
                         output_shape=(3, *resolution),
-                        levels=3,
+                        levels=4,
                         depth=vnet_base_chans,
                         kernel_size=3,
                         activation=eqx.nn.PReLU(init_alpha=0.),
@@ -99,17 +104,20 @@ model = eqx.tree_deserialise_leaves(run_folder+"model.eqx", model)
 class Generator(eqx.Module):
     contextnet: eqx.Module
     vnet: eqx.Module
+    alpha:float
 
     def __init__(self, model):
         self.contextnet = model.neuralnet.layers_context
         self.vnet = model.neuralnet.vnet
+
+        self.alpha = jax.nn.sigmoid(model.taylor_scale*model.taylor_weight[0])
 
     def __call__(self, noise):
         ctx = noise
         for layer in self.contextnet:
             ctx = layer(ctx)
 
-        return self.vnet(ctx)
+        return (1-self.alpha)*self.vnet(ctx)
 
 generator = Generator(model)
 
@@ -118,10 +126,93 @@ generator = Generator(model)
 
 ## Generate random context of size context_size
 mother_key, _ = jax.random.split(mother_key)
-context = jax.random.normal(mother_key, (nb_images, context_size))
+# contexts = jax.random.normal(mother_key, (nb_images, context_size))
 
-images = eqx.filter_vmap(generator)(context)
+
+## Load contexts from run_folder/contexts/file.npy
+context_folder = run_folder+"contexts/"
+context_files = os.listdir(context_folder)
+context_files = [context_folder+file for file in context_files]
+
+# context = np.load(context_files[0])
+# context
+
+contexts = []
+for file in context_files:
+    context = np.load(file)
+    contexts.append(context)
+
+# print("Number of batched contexts loaded:", len(contexts))
+
+contexts = np.concatenate(contexts, axis=0)
+print("Total number of contexts loaded, and dimension:", contexts.shape)
+
+##### Randomly pick nb_images contexts  #####
+# contexts = contexts[:nb_images]
+# contexts = jax.random.permutation(mother_key, contexts)[:nb_images]
+
+##### Perform a linear combination of all existing contexts #####
+# weights = jax.random.normal(mother_key, (nb_images, contexts.shape[0]))
+# contexts = weights @ contexts
+
+##### Transform the contexts in a 2D plot using t-SNE   #####
+# tsne = TSNE(n_components=3, random_state=seed)
+# contexts_plot = tsne.fit_transform(contexts)
+# title_plot = "t-SNE plot of the contexts"
+
+##### Transform the contexts in a 2D plot using PCA   #####
+pca = PCA(n_components=3)
+contexts_plot = pca.fit_transform(contexts)
+title_plot = "PCA plot of the contexts"
+
+#%%
+
+## 2D plot of the contexts
+# fig, ax = plt.subplots(1,1, figsize=(8,8))
+# ax.scatter(contexts_plot[:,0], contexts_plot[:,1], s=1)
+# ax.set_title(title_plot)
+
+
+## 3D plot of the contexts
+# fig = plt.figure(figsize=(8,8))
+# ax = fig.add_subplot(111, projection='3d')
+# ax.scatter(contexts_plot[:,0], contexts_plot[:,1], contexts_plot[:,2], s=1)
+# ax.set_title(title_plot)
+
+## 3D interactive plot of the contexts
+fig = px.scatter_3d(x=contexts_plot[:,0], y=contexts_plot[:,1], z=contexts_plot[:,2], title=title_plot)
+fig.update_layout(width=400, height=400)
+fig.update_traces(marker=dict(size=1))
+
+fig.show()
+
+
+#%%
+
+## Normalise the contexts into a standard normal distribution
+scaler = StandardScaler()
+contexts = scaler.fit_transform(contexts)
+
+print("Mean of the contexts:", contexts.mean())
+print("Standard deviation of the contexts:", contexts.std())
+
+
+## Generate new gaussian samples and rescale them
+# mother_key, _ = jax.random.split(mother_key)
+contexts = jax.random.normal(mother_key, (nb_images, context_size))
+contexts = scaler.inverse_transform(contexts)
+
+
+#%%
+
+# contexts = contexts.at[0, :200].set(0.)
+# print(contexts[1])
+
+images = eqx.filter_vmap(generator)(contexts)
 images = jnp.transpose(images, axes=(0,2,3,1))
+
+# print(images[0].max())
+
 
 ## Remove the blue channel
 # images = images.at[:,:,:,2].set(0.)
@@ -130,9 +221,9 @@ images = jnp.transpose(images, axes=(0,2,3,1))
 
 ## Visualise the generated images
 sq_nb_images = int(np.sqrt(nb_images))
-plt.style.use("ggplot")
+# plt.style.use("ggplot")
 
-fig, ax = plt.subplots(sq_nb_images, sq_nb_images, figsize=(3*sq_nb_images, 3*sq_nb_images))
+fig, ax = plt.subplots(sq_nb_images, sq_nb_images, figsize=(2*sq_nb_images, 2*sq_nb_images))
 
 # images = jnp.ones_like(images)
 for i in range(sq_nb_images):
@@ -142,6 +233,8 @@ for i in range(sq_nb_images):
 
         ## Put boundary between axis
         ax[i,j].spines['left'].set_color('white')
+plt.tight_layout()
+
 
 ## Save the figure
 # save_path = run_folder+"generated_faces.png"
