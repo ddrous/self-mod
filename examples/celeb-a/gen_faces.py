@@ -26,8 +26,8 @@ context_size = 256
 nb_images = 6*6
 
 # run_folder = "./runs/240713-130822/"
-# run_folder = "./runs/240713-134917-GoldenT0/"
-run_folder = "./runs/240713-143455/"
+run_folder = "./runs/240713-134917-GoldenT0/"
+# run_folder = "./runs/240713-143455/"
 
 
 #%%
@@ -124,15 +124,15 @@ generator = Generator(model)
 
 #%%
 
-## Generate random context of size context_size
+#################### Generate random context of size context_size   ####################
 mother_key, _ = jax.random.split(mother_key)
-# contexts = jax.random.normal(mother_key, (nb_images, context_size))
+# # contexts = jax.random.normal(mother_key, (nb_images, context_size))
 
 
-## Load contexts from run_folder/contexts/file.npy
+# ## Load contexts from run_folder/contexts/file.npy
 context_folder = run_folder+"contexts/"
 context_files = os.listdir(context_folder)
-context_files = [context_folder+file for file in context_files]
+context_files = [context_folder+file for file in context_files if file[:4]=="cont"]
 
 # context = np.load(context_files[0])
 # context
@@ -146,14 +146,20 @@ for file in context_files:
 
 contexts = np.concatenate(contexts, axis=0)
 print("Total number of contexts loaded, and dimension:", contexts.shape)
+####################################################################################################
+
+## Load contexts from run_folder/contexts.npy
+new_samples = np.load(run_folder+"contexts/generated_samples.npy")
+
+
 
 ##### Randomly pick nb_images contexts  #####
 # contexts = contexts[:nb_images]
-# contexts = jax.random.permutation(mother_key, contexts)[:nb_images]
+new_samples = jax.random.permutation(mother_key, new_samples)[:nb_images]
 
 ##### Perform a linear combination of all existing contexts #####
 # weights = jax.random.normal(mother_key, (nb_images, contexts.shape[0]))
-# contexts = weights @ contexts
+# new_samples = weights @ new_samples
 
 ##### Transform the contexts in a 2D plot using t-SNE   #####
 # tsne = TSNE(n_components=3, random_state=seed)
@@ -164,6 +170,7 @@ print("Total number of contexts loaded, and dimension:", contexts.shape)
 pca = PCA(n_components=3)
 contexts_plot = pca.fit_transform(contexts)
 title_plot = "PCA plot of the contexts"
+samples_plot = pca.transform(new_samples)
 
 #%%
 
@@ -180,27 +187,28 @@ title_plot = "PCA plot of the contexts"
 # ax.set_title(title_plot)
 
 ## 3D interactive plot of the contexts
-fig = px.scatter_3d(x=contexts_plot[:,0], y=contexts_plot[:,1], z=contexts_plot[:,2], title=title_plot)
-fig.update_layout(width=400, height=400)
-fig.update_traces(marker=dict(size=1))
+fig = px.scatter_3d(x=contexts_plot[:,0], y=contexts_plot[:,1], z=contexts_plot[:,2], title=title_plot, marker=dict(size=1, color='blue'))
+
+fig.add_scatter3d(x=samples_plot[:,0], y=samples_plot[:,1], z=samples_plot[:,2], mode='markers', marker=dict(size=1, color='orange'))
+
+
 
 fig.show()
 
 
 #%%
 
-## Normalise the contexts into a standard normal distribution
-scaler = StandardScaler()
-contexts = scaler.fit_transform(contexts)
+# ## Normalise the contexts into a standard normal distribution
+# scaler = StandardScaler()
+# contexts = scaler.fit_transform(contexts)
 
-print("Mean of the contexts:", contexts.mean())
-print("Standard deviation of the contexts:", contexts.std())
+# print("Mean of the contexts:", contexts.mean())
+# print("Standard deviation of the contexts:", contexts.std())
 
-
-## Generate new gaussian samples and rescale them
-# mother_key, _ = jax.random.split(mother_key)
-contexts = jax.random.normal(mother_key, (nb_images, context_size))
-contexts = scaler.inverse_transform(contexts)
+# ## Generate new gaussian samples and rescale them
+# # mother_key, _ = jax.random.split(mother_key)
+# contexts = jax.random.normal(mother_key, (nb_images, context_size))
+# contexts = scaler.inverse_transform(contexts)
 
 
 #%%
@@ -208,11 +216,10 @@ contexts = scaler.inverse_transform(contexts)
 # contexts = contexts.at[0, :200].set(0.)
 # print(contexts[1])
 
-images = eqx.filter_vmap(generator)(contexts)
+images = eqx.filter_vmap(generator)(new_samples)
 images = jnp.transpose(images, axes=(0,2,3,1))
 
 # print(images[0].max())
-
 
 ## Remove the blue channel
 # images = images.at[:,:,:,2].set(0.)
@@ -235,13 +242,12 @@ for i in range(sq_nb_images):
         ax[i,j].spines['left'].set_color('white')
 plt.tight_layout()
 
-
 ## Save the figure
 # save_path = run_folder+"generated_faces.png"
 # if not os.path.exists(save_path):
 #     os.makedirs(save_path)
 
-plt.savefig(run_folder+"generated_faces.png", bbox_inches='tight')
+plt.savefig(run_folder+"contexts/generated_faces.png", bbox_inches='tight')
 
 
 #%%

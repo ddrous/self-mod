@@ -22,7 +22,7 @@ from selfmod import *
 seed = 2026
 
 ## Dataloader hps
-k_shots = 100
+k_shots = 1000
 resolution = (32, 32)
 img_size = (3, resolution[0], resolution[1])
 data_folder="./data/" 
@@ -30,12 +30,12 @@ data_folder="./data/"
 ## Learner/model hps
 context_pool_size = 2
 context_size = 256
-taylor_orders = (3, 0)
+taylor_orders = (0, 0)
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 12*5
+envs_batch_size = 12*48
 max_train_batches = -1      ## TODO: should be -1
 max_eval_batches = -1
 
@@ -48,8 +48,8 @@ nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-# run_folder = "./runs/220707-025946-VNET-Test/"
-run_folder = None
+run_folder = "./runs/220707-025946-VNET-Test/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True

@@ -1,4 +1,5 @@
-"""## Train a VAE and generate diverse CelebA samples """
+#%%
+# """## Train a VAE and generate diverse CelebA samples """
 
 # %load_ext autoreload
 # %autoreload 2
@@ -20,23 +21,24 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, KernelPCA
 from sklearn.preprocessing import StandardScaler
 
 #%%
 MOTHER_KEY = jax.random.PRNGKey(2026)
 
-RUN_FOLDDER = './runs/240713-143455/'
+# RUN_FOLDDER = './runs/240713-143455/'
+RUN_FOLDDER = './runs/240713-134917-GoldenT0/'
 print("Using run folder:", RUN_FOLDDER)
 
 DATA_FOLDER=RUN_FOLDDER+"contexts/"
 BATCH_SIZE = 64*4
-EPOCHS = 600
-LR = 1e-4
+EPOCHS = 200
+LR = 1e-5
 
-NB_TEST_SAMPLES = 64
+NB_TEST_SAMPLES = 128*16
 CONTEXT_DIM = 256
-NOISE_DIM = 18
+NOISE_DIM = 64
 
 
 
@@ -221,7 +223,7 @@ print("Time taken: ", time.strftime("%H:%M:%S", time.gmtime(end-start)))
 #%%
 
 sbplot(losses, title="ELBO Loss", x_label="Iterations", y_scale="log");
-# plt.savefig(RUN_FOLDDER+"elbo_loss.png")
+plt.savefig(DATA_FOLDER+"elbo_loss.png")
 
 
 
@@ -230,19 +232,25 @@ sbplot(losses, title="ELBO Loss", x_label="Iterations", y_scale="log");
 
 #%%
 
-## Use PCA to transform the samples before plotting
-visualiser = PCA(n_components=2)
-train_data_plot = visualiser.fit_transform(train_dataset.contexts)
-
-# ## Use TSNE to transform the samples before plotting
-# visualiser = TSNE(n_components=2, random_state=2026)
-# train_data_plot = visualiser.fit_transform(train_dataset.contexts)
-
-
-## Test and plot the decoder
+## Generate test data
 zs = jax.random.normal(test_key, (NB_TEST_SAMPLES, NOISE_DIM))
 samples = jax.vmap(model.decoder)(zs)
-sample_plot = visualiser.transform(samples)
+
+
+
+## Use PCA to transform the samples before plotting
+# visualiser = PCA(n_components=2)
+# reducer = KernelPCA(n_components=2)
+# train_data_plot = reducer.fit_transform(train_dataset.contexts)
+# sample_plot = reducer.transform(samples)
+
+# ## Use TSNE to transform the samples before plotting
+reducer = TSNE(n_components=2, random_state=2026)
+all_data = jnp.concat([train_dataset.contexts, samples])
+all_data_plot = reducer.fit_transform(all_data)
+
+train_data_plot = all_data_plot[:len(train_dataset.contexts)]
+sample_plot = all_data_plot[len(train_dataset.contexts):]
 
 
 plt.figure(figsize=(6, 6))
@@ -253,7 +261,12 @@ plt.legend()
 plt.draw()
 
 ## Save the figure in the run folder
-# plt.savefig(RUN_FOLDDER+"samples.png");
+plt.savefig(DATA_FOLDER+"t-SNE_visualisation.png");
+
+
+## Save the samples into a file
+np.save(DATA_FOLDER+"generated_samples.npy", samples)
+
 
 #%%
 # ## Save the model in the run folder
