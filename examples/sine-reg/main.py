@@ -39,10 +39,10 @@ sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
-nb_train_epochs = 100
+nb_train_epochs = 10000
 nb_inner_steps = 5
 
-print_error_every = 10
+print_error_every = (1000, 1)   ## every 1000 epochs, every 1 batch
 
 nb_adapt_epochs = 1
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
@@ -179,7 +179,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 neuralnet = MultiMLP(in_size=1,
                      out_size=1,
                      context_size=context_size,
-                     hidden_size=4, 
+                     hidden_size=40, 
                      key=model_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, 
@@ -214,7 +214,7 @@ opt_model = optax.adabelief(sched_model)
 
 opt_ctx = optax.sgd(init_lr_ctx)
 
-trainer = Trainer(learner, (opt_model, opt_ctx), key=trainer_key)
+trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 
@@ -223,17 +223,17 @@ trainer = Trainer(learner, (opt_model, opt_ctx), key=trainer_key)
 ## Meta-training
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
-    trainer.meta_train_cavia(dataloader=train_dataloader,
-                            nb_epochs=nb_train_epochs,
-                            nb_inner_steps=nb_inner_steps, 
-                            max_train_batches=max_train_batches,
-                            print_error_every=print_error_every, 
-                            save_path=trainer_save_path, 
-                            val_dataloader=val_dataloader, 
-                            val_criterion_id=0,
-                            validate_every=nb_train_epochs//10,
-                            backup_contexts=True,
-                            key=trainer_key)
+    trainer.meta_train(dataloader=train_dataloader,
+                        nb_epochs=nb_train_epochs,
+                        nb_inner_steps=nb_inner_steps, 
+                        max_train_batches=max_train_batches,
+                        print_error_every=print_error_every, 
+                        save_path=trainer_save_path, 
+                        val_dataloader=val_dataloader, 
+                        val_criterion_id=0,
+                        validate_every=nb_train_epochs//10,
+                        backup_contexts=True,
+                        key=trainer_key)
     # trainer.meta_train_proximal(dataloader=train_dataloader,
     #                             nb_epochs=nb_train_epochs,
     #                             nb_outer_steps=1,
@@ -266,7 +266,7 @@ else:
 
 #%%
 ## Test and visualise the results on a test dataloader
-visualtester = CelebAVisualTester(trainer, key=test_key)
+visualtester = SineVisualTester(trainer, key=test_key)
 
 ind_crit, _ = visualtester.evaluate(val_dataloader, 
                                     nb_inner_steps=nb_inner_steps,

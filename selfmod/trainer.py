@@ -13,6 +13,8 @@ from ._utils import *
 #%%
 class Trainer:
     def __init__(self, learner:Learner, optimisers, key=None):
+        """ Base class for training the models"""
+
         if key is None:
             raise ValueError("You must provide a key for the trainer")
         self.key = key      ## Default training key
@@ -28,29 +30,80 @@ class Trainer:
         self.losses_model = []
         self.losses_ctx = []
  
+    def save_trainer(self, path):
+        assert path[-1] == "/", "ERROR: The path must end with /"
+        # print(f"\nSaving model and results into {path} folder ...\n")
+
+        np.savez(path+"train_histories.npz",
+                 losses_model=jnp.vstack(self.losses_model), 
+                 losses_ctx=jnp.vstack(self.losses_ctx))
+
+        if hasattr(self, 'val_losses'):
+            np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
+
+        pickle.dump(self.opt_state_model, open(path+"opt_state_model.pkl", "wb"))
+        # pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
+
+        if not hasattr(self, 'val_losses'):
+            self.learner.save_learner(path)
+
+    def restore_trainer(self, path):
+        assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
+        print(f"\nNo training, loading model and results from {path} folder ...\n")
+
+        histories = np.load(path+"train_histories.npz")
+        self.losses_model = [histories['losses_model']]
+        self.losses_ctx = [histories['losses_ctx']]
+
+        if os.path.exists(path+"val_losses.npy"):
+            self.val_losses = [np.load(path+"val_losses.npy")]
+
+        self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
+        # self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
+
+        self.learner.load_learner(path)
+
+
+    def save_adapted_trainer(self, path):
+        print(f"\nSaving adaptation parameters into {path} folder ...\n")
+
+        np.savez(path+"adapt_histories_.npz", losses_adapt=jnp.vstack(self.losses_adapt))
+        # pickle.dump(self.opt_state_adapt, open(path+"/opt_state_adapt.pkl", "wb"))
+        eqx.tree_serialise_leaves(path+"/adapted_contexts_.eqx", self.learner.contexts_adapt)
+
+
+    # def restore_adapted_trainer(self, path):
+
+    #     print(f"\nNo adaptation, loading adaptation parameters from {path} folder ...\n")
+
+    #     histories = np.load(path+"adapt_histories_.npz")
+    #     self.losses_adapt = [histories['losses_adapt']]
+
+    #     self.opt_state_adapt = pickle.load(open(path+"/opt_state_adapt.pkl", "rb"))
 
 
 
 
 
+class NCFTrainer(Trainer):
+    def __init__(self, learner:Learner, optimisers, key=None):
+        """ Trainer class for the proximal gradient descent algorithms (NCF) """
+        super().__init__(learner, optimisers, key)
 
-
-
-
-    def meta_train_proximal(self,
-                            dataloader: DataLoader, 
-                            nb_epochs,
-                            nb_outer_steps,
-                            nb_inner_steps=(1, 10),
-                            inner_tols=(1e-12, 1e-12), 
-                            proximal_betas=(100., 100.), 
-                            max_train_batches=None,
-                            patience=None, 
-                            print_error_every=1, 
-                            save_path=False, 
-                            val_dataloader=None, 
-                            val_criterion_id=None, 
-                            key=None):
+    def meta_train(self,
+                    dataloader: DataLoader, 
+                    nb_epochs,
+                    nb_outer_steps,
+                    nb_inner_steps=(1, 10),
+                    inner_tols=(1e-12, 1e-12), 
+                    proximal_betas=(100., 100.), 
+                    max_train_batches=None,
+                    patience=None, 
+                    print_error_every=1, 
+                    save_path=False, 
+                    val_dataloader=None, 
+                    val_criterion_id=None, 
+                    key=None):
         """ Train the model using the proximal gradient descent algorithm """
 
         key = key if key is not None else self.key
@@ -255,20 +308,25 @@ class Trainer:
 
 
 
+class CAVIATrainer(Trainer):
+    def __init__(self, learner:Learner, optimisers, key=None):
+        """ Trainer class for the CAVIA algorithm """
+        super().__init__(learner, optimisers, key)
 
-    def meta_train_cavia(self,
-                        dataloader: DataLoader, 
-                        nb_epochs,
-                        nb_inner_steps=10,
-                        print_error_every=1, 
-                        save_path=False, 
-                        backup_contexts=False,
-                        max_train_batches=None,
-                        val_dataloader=None, 
-                        val_criterion_id=None, 
-                        max_val_batches=None,
-                        validate_every=1,
-                        key=None):
+
+    def meta_train(self,
+                    dataloader: DataLoader, 
+                    nb_epochs,
+                    nb_inner_steps=10,
+                    print_error_every=(1, 1), 
+                    save_path=False, 
+                    backup_contexts=False,
+                    max_train_batches=None,
+                    val_dataloader=None, 
+                    val_criterion_id=None, 
+                    max_val_batches=None,
+                    validate_every=1,
+                    key=None):
         """ Train the model using the MAML/CAVIA gradient descent algorithm """
 
         key = key if key is not None else self.key
@@ -387,6 +445,8 @@ class Trainer:
             max_val_batches = val_dataloader.num_batches
         print(f"    Validating on {max_val_batches} batches")
 
+        print_every_epoch, print_every_batch = print_error_every
+
 
         start_time = time.time()
 
@@ -427,20 +487,22 @@ class Trainer:
 
                 losses.append(loss)
 
-                if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
-                    print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
 
-                    # alpha = model.taylor_weight[0]
-                    # print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
-                    # print()
+                if epoch%print_every_epoch==0 or epoch==nb_epochs-1:
+                    if env_batch%print_every_batch==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
+                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
 
-                    if backup_contexts and epoch==nb_epochs-1:
-                        ## Save the context's numpy array with the suffix of the current batch*epoch
-                        context_save_path = backup_ctx_folder+f"contexts_epoch{epoch:04d}_batch{env_batch:06d}.npy"
-                        np.save(context_save_path, contexts.params)
+                        # alpha = model.taylor_weight[0]
+                        # print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
+                        # print()
 
-                        ## Save the model as well
-                        eqx.tree_serialise_leaves(backup_ctx_folder+"model.eqx", model)
+                        if backup_contexts and epoch==nb_epochs-1:
+                            ## Save the context's numpy array with the suffix of the current batch*epoch
+                            context_save_path = backup_ctx_folder+f"contexts_epoch{epoch:04d}_batch{env_batch:06d}.npy"
+                            np.save(context_save_path, contexts.params)
+
+                            ## Save the model as well
+                            eqx.tree_serialise_leaves(backup_ctx_folder+"model.eqx", model)
 
             if epoch==nb_epochs-1:
                 alpha = model.taylor_weight[0]
@@ -502,63 +564,12 @@ class Trainer:
             self.save_trainer(save_path)
 
 
-
-
-
-
-
-    def save_trainer(self, path):
-        assert path[-1] == "/", "ERROR: The path must end with /"
-        # print(f"\nSaving model and results into {path} folder ...\n")
-
-        np.savez(path+"train_histories.npz",
-                 losses_model=jnp.vstack(self.losses_model), 
-                 losses_ctx=jnp.vstack(self.losses_ctx))
-
-        if hasattr(self, 'val_losses'):
-            np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
-
-        pickle.dump(self.opt_state_model, open(path+"opt_state_model.pkl", "wb"))
-        # pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
-
-        if not hasattr(self, 'val_losses'):
-            self.learner.save_learner(path)
-
-
-    def restore_trainer(self, path):
-        assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
-        print(f"\nNo training, loading model and results from {path} folder ...\n")
-
-        histories = np.load(path+"train_histories.npz")
-        self.losses_model = [histories['losses_model']]
-        self.losses_ctx = [histories['losses_ctx']]
-
-        if os.path.exists(path+"val_losses.npy"):
-            self.val_losses = [np.load(path+"val_losses.npy")]
-
-        self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
-        # self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
-
-        self.learner.load_learner(path)
-
-
-
-
-
-
-
-
-
-
-
-
-
     def meta_test(self, 
                    dataloader: DataLoader, ## Either a full dataloader or a tuple of batches
                    nb_inner_steps=10, 
                    taylor_order=0,
                    optimizer=None, 
-                   print_error_every=100, 
+                   print_error_every=(1, 1), 
                    max_adapt_batches=None,
                    verbose=True,
                    save_path=False, 
@@ -611,6 +622,7 @@ class Trainer:
             if verbose:
                 print(f"    Adapting on {max_adapt_batches} batches")
 
+        print_every_epoch, print_every_batch = print_error_every
 
         start_time = time.time()
 
@@ -637,7 +649,7 @@ class Trainer:
                 mean_loss_terms = [jnp.mean(term) for term in aux_losses]
                 losses.append(jnp.stack([loss]+mean_loss_terms))
 
-            if verbose and (env_batch%print_error_every==0 or env_batch<=3 or env_batch==nb_batches-1):
+            if verbose and (env_batch%print_every_batch==0 or env_batch<=3 or env_batch==nb_batches-1):
                 print(f"    Batch: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True, end="\r")
 
         wall_time = time.time() - start_time
@@ -664,24 +676,6 @@ class Trainer:
         return losses, contexts, aux_data
 
 
-
-    def save_adapted_trainer(self, path):
-        print(f"\nSaving adaptation parameters into {path} folder ...\n")
-
-        np.savez(path+"adapt_histories_.npz", losses_adapt=jnp.vstack(self.losses_adapt))
-        # pickle.dump(self.opt_state_adapt, open(path+"/opt_state_adapt.pkl", "wb"))
-        eqx.tree_serialise_leaves(path+"/adapted_contexts_.eqx", self.learner.contexts_adapt)
-
-
-
-    # def restore_adapted_trainer(self, path):
-
-    #     print(f"\nNo adaptation, loading adaptation parameters from {path} folder ...\n")
-
-    #     histories = np.load(path+"adapt_histories_.npz")
-    #     self.losses_adapt = [histories['losses_adapt']]
-
-    #     self.opt_state_adapt = pickle.load(open(path+"/opt_state_adapt.pkl", "rb"))
 
 
 

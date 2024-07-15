@@ -105,7 +105,7 @@ class VisualTester:
         ax['D'].legend()
 
         colors = ['dodgerblue', 'crimson', 'darkgreen', 'purple', 'brown']
-        ax['E'].scatter(xis[:,ctx_dims_x[0]], xis[:,ctx_dims_y[1]], s=30, c=colors[0], marker='X')
+        ax['E'].scatter(xis[:,ctx_dims_x[0]], xis[:,ctx_dims_y[0]], s=30, c=colors[0], marker='X')
         ax['F'].scatter(xis[:,ctx_dims_x[1]], xis[:,ctx_dims_y[1]], s=50, c=colors[1], marker='o')
         ax['G'].scatter(xis[:,ctx_dims_x[2]], xis[:,ctx_dims_y[2]], s=60, c=colors[2], marker='+')
 
@@ -301,4 +301,18 @@ class CelebAVisualTester(VisualTester):
             plt.savefig(save_path, dpi=100, bbox_inches='tight')
             print("Saving visualization in:", save_path, flush=True);
 
+
+
+
+
+
+
+
+
+
+
+
+class SineVisualTester(VisualTester):
+    def __init__(self, trainer, key=None):
+        super().__init__(trainer, key)
 
