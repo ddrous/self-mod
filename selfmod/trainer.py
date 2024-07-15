@@ -266,6 +266,8 @@ class Trainer:
                         max_train_batches=None,
                         val_dataloader=None, 
                         val_criterion_id=None, 
+                        max_val_batches=None,
+                        validate_every=1,
                         key=None):
         """ Train the model using the MAML/CAVIA gradient descent algorithm """
 
@@ -378,10 +380,13 @@ class Trainer:
         print(f"    Total number of batches : {dataloader.num_batches}")
         print(f"    Numbers of inner steps : {nb_inner_steps}")
 
-        if max_train_batches<1 or max_train_batches>dataloader.num_batches or max_train_batches is None:
+        if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:
             max_train_batches = dataloader.num_batches
-        else:
-            print(f"    Training on {max_train_batches} batches")
+        print(f"    Training on {max_train_batches} batches")
+        if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
+            max_val_batches = val_dataloader.num_batches
+        print(f"    Validating on {max_val_batches} batches")
+
 
         start_time = time.time()
 
@@ -422,13 +427,12 @@ class Trainer:
 
                 losses.append(loss)
 
-
                 if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
-                    print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                    print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
 
-                    alpha = model.taylor_weight[0]
-                    print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
-                    print()
+                    # alpha = model.taylor_weight[0]
+                    # print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
+                    # print()
 
                     if backup_contexts and epoch==nb_epochs-1:
                         ## Save the context's numpy array with the suffix of the current batch*epoch
@@ -438,16 +442,22 @@ class Trainer:
                         ## Save the model as well
                         eqx.tree_serialise_leaves(backup_ctx_folder+"model.eqx", model)
 
-            if val_dataloader is not None:
+            if epoch==nb_epochs-1:
+                alpha = model.taylor_weight[0]
+                print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\n")
+                print()
+
+
+            if val_dataloader is not None and epoch%validate_every==0:
                 self.learner.model = model
 
                 ind_crit,_ = tester.evaluate(val_dataloader,
                                             criterion_id=val_criterion_id,
-                                            max_eval_batches=100,
+                                            max_eval_batches=max_val_batches,
                                             nb_inner_steps=nb_inner_steps,
                                             taylor_order=0, 
                                             verbose=False)
-                print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
+                print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True, end="\n")
                 val_losses.append(np.array([step, ind_crit]))
 
                 # ## TODO Make a visualisation and save (like Zintgraff)
@@ -458,7 +468,7 @@ class Trainer:
 
                 ## Check if val loss is lowest to save the model
                 if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
-                    print(f"        Saving best model so far ...")
+                    print(f"        Saving best model so far ...", end="\n")
                     self.learner.save_learner(save_path)
                 ## Restore the learner at the last evaluation step
                 if epoch == nb_epochs-1:

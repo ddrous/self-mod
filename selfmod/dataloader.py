@@ -389,3 +389,90 @@ class NumpyLoader(data.DataLoader):
 class FlattenAndCast(object):
   def __call__(self, pic):
     return np.ravel(np.array(pic, dtype=jnp.float32))
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class SinusoidDataset:
+    """
+    Same regression task as in Finn et al. 2017 (MAML)
+    """
+
+    # def __init__(self, meta_tain=True, support_set=True):
+    def __init__(self, num_envs, num_shots):
+
+        self.num_inputs = 1
+        self.num_outputs = 1
+
+        self.amplitude_range = [0.1, 5.0]
+        self.phase_range = [0, np.pi]
+
+        self.input_range = [-5, 5]
+
+        # if meta_tain:
+        #     self.total_envs = 16
+        # else:   ## Meta-test
+        #     self.total_envs = 32
+
+        # if support_set:
+        #     self.num_shots = 4
+        # else:   ## Query set
+        #     self.num_shots = 1
+
+        self.num_shots = num_shots
+        self.total_envs = num_envs
+
+    def sample_inputs(self, batch_size, *args, **kwargs):
+        inputs = torch.rand((batch_size, self.num_inputs))
+        inputs = inputs * (self.input_range[1] - self.input_range[0]) + self.input_range[0]
+        return inputs
+
+    def sample_task(self):
+        amplitude = np.random.uniform(self.amplitude_range[0], self.amplitude_range[1])
+        phase = np.random.uniform(self.phase_range[0], self.phase_range[1])
+        return self.get_target_function(amplitude, phase)
+
+    @staticmethod
+    def get_target_function(amplitude, phase):
+        def target_function(x):
+            if isinstance(x, torch.Tensor):
+                return torch.sin(x - phase) * amplitude
+            else:
+                return np.sin(x - phase) * amplitude
+
+        return target_function
+
+    def sample_tasks(self, num_tasks, return_specs=False):
+
+        amplitude = np.random.uniform(self.amplitude_range[0], self.amplitude_range[1], num_tasks)
+        phase = np.random.uniform(self.phase_range[0], self.phase_range[1], num_tasks)
+
+        target_functions = []
+        for i in range(num_tasks):
+            target_functions.append(self.get_target_function(amplitude[i], phase[i]))
+
+        if return_specs:
+            return target_functions, amplitude, phase
+        else:
+            return target_functions
+
+    def __getitem__(self, idx):     ## Idx doesn't matter here
+        target_func = self.sample_tasks(1, return_specs=False)[0]
+        inputs = self.sample_inputs(self.num_shots)
+        return inputs, target_func(inputs)
+
+    def __len__(self):
+        return self.total_envs
