@@ -32,6 +32,7 @@ num_workers = 0
 context_pool_size = 1
 context_size = 4
 taylor_orders = (0, 0)
+taylor_weight_init = -10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-1)
@@ -185,7 +186,7 @@ neuralnet = MultiMLP(in_size=1,
 model = NeuralContextFlow(neuralnet=neuralnet, 
                             taylor_order=taylor_orders[0],
                             taylor_scale=100,
-                            taylor_weight_init=-10.)  ## equal chances for taylor or not
+                            taylor_weight_init=taylor_weight_init)  ## equal chances for taylor or not
 
 learner = Learner(model=model,
                 context_size=context_size, 
