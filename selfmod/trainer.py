@@ -305,6 +305,19 @@ class NCFTrainer(Trainer):
             self.save_trainer(save_path)
 
 
+    def meta_test(self, 
+                   dataloader: DataLoader, ## Either a full dataloader or a tuple of batches
+                   nb_inner_steps=10, 
+                   taylor_order=0,
+                   optimizer=None, 
+                   print_error_every=(1, 1), 
+                   max_adapt_batches=None,
+                   verbose=True,
+                   save_path=False, 
+                   key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
+        """Adapt the model to new environments (in bulk) using the provided dataset. """
+
+        return NotImplementedError("The meta_test method is not yet implemented for the NCFTrainer class")
 
 
 

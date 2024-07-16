@@ -29,10 +29,10 @@ num_shots = (10, 1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 1
+context_pool_size = 4
 context_size = 4
-taylor_orders = (0, 0)
-taylor_weight_init = -10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
+taylor_orders = (2, 0)
+taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-1)
@@ -215,7 +215,8 @@ opt_model = optax.adabelief(sched_model)
 
 opt_ctx = optax.sgd(init_lr_ctx)
 
-trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+# trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 
@@ -224,29 +225,29 @@ trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 ## Meta-training
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
+    # trainer.meta_train(dataloader=train_dataloader,
+    #                     nb_epochs=nb_train_epochs,
+    #                     nb_inner_steps=nb_inner_steps, 
+    #                     max_train_batches=max_train_batches,
+    #                     print_error_every=print_error_every, 
+    #                     save_path=trainer_save_path, 
+    #                     val_dataloader=val_dataloader, 
+    #                     val_criterion_id=0,
+    #                     validate_every=nb_train_epochs//10,
+    #                     backup_contexts=True,
+    #                     key=trainer_key)
     trainer.meta_train(dataloader=train_dataloader,
                         nb_epochs=nb_train_epochs,
-                        nb_inner_steps=nb_inner_steps, 
+                        nb_outer_steps=1,
+                        nb_inner_steps=(1,5), 
+                        inner_tols=(1e-12, 1e-12), 
+                        proximal_betas=(10., 10.), 
                         max_train_batches=max_train_batches,
-                        print_error_every=print_error_every, 
+                        print_error_every=print_error_every[0], 
                         save_path=trainer_save_path, 
-                        val_dataloader=val_dataloader, 
+                        # val_dataloader=val_dataloader, 
                         val_criterion_id=0,
-                        validate_every=nb_train_epochs//10,
-                        backup_contexts=True,
                         key=trainer_key)
-    # trainer.meta_train_proximal(dataloader=train_dataloader,
-    #                             nb_epochs=nb_train_epochs,
-    #                             nb_outer_steps=1,
-    #                             nb_inner_steps=(1,5), 
-    #                             inner_tols=(1e-12, 1e-12), 
-    #                             proximal_betas=(10., 10.), 
-    #                             max_train_batches=max_train_batches,
-    #                             print_error_every=print_error_every, 
-    #                             save_path=trainer_save_path, 
-    #                             val_dataloader=val_dataloader, 
-    #                             val_criterion_id=0,
-    #                             key=trainer_key)
 else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)
@@ -269,9 +270,9 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = SineVisualTester(trainer, key=test_key)
 
-ind_crit, _ = visualtester.evaluate(val_dataloader, 
-                                    nb_inner_steps=nb_inner_steps,
-                                    max_eval_batches=max_eval_batches)
+# ind_crit, _ = visualtester.evaluate(val_dataloader, 
+#                                     nb_inner_steps=nb_inner_steps,
+#                                     max_eval_batches=max_eval_batches)
 
 # all_shots_dataloader = NumpyLoader(CelebADataset(data_folder, 
 #                                             data_split="train",
