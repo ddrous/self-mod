@@ -305,9 +305,16 @@ class NCFTrainer(Trainer):
             self.save_trainer(save_path)
 
 
+
+
+
+
+
+
     def meta_test(self, 
                    dataloader: DataLoader, ## Either a full dataloader or a tuple of batches
-                   nb_inner_steps=10, 
+                   nb_epochs=10, 
+                   nb_inner_steps=None,   ## TODO: There for consistnecy with CAVIA
                    taylor_order=0,
                    optimizer=None, 
                    print_error_every=(1, 1), 
@@ -317,7 +324,133 @@ class NCFTrainer(Trainer):
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
         """Adapt the model to new environments (in bulk) using the provided dataset. """
 
-        return NotImplementedError("The meta_test method is not yet implemented for the NCFTrainer class")
+        key = key if key is not None else self.key
+
+        loss_fn = self.learner.loss_fn
+        model = self.learner.model
+
+        print_every_epoch, print_every_batch = print_error_every
+        if nb_inner_steps is not None:
+            nb_epochs = nb_inner_steps
+
+        ## This is useful if we want to disable the taylor expansion
+        if taylor_order==self.learner.model.taylor_order:
+            model = self.learner.model
+        else:
+            if verbose:
+                print(f"Creating a new model with taylor order {taylor_order} ...")
+            if isinstance(self.learner.model, NeuralContextFlow):
+                model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
+            elif isinstance(self.learner.model, NeuralODE):
+                model = NeuralODE(self.learner.model.vectorfield.neuralnet, taylor_order, ivp_args=self.learner.model.ivp_args)
+            elif isinstance(self.learner.model, NonBatchedNeuralContextFlow):
+                model = NonBatchedNeuralContextFlow(self.learner.model.neuralnet, taylor_order)
+            else:
+                raise ValueError("The model type is not supported")
+
+
+        if optimizer is None:       ## To continue a previous adaptation
+            if hasattr(self, 'opt_ctx'):
+                if verbose:
+                    print("Using any previrouly defined optimizer for adapation")
+                opt = self.opt_ctx
+            else:
+                raise ValueError("No optimizer provided for adaptation, and none previously defined")
+        else:
+            opt = optimizer
+            self.losses_adapt = []
+
+
+        @eqx.filter_jit
+        def adapt_step(model, contexts, batch, weightings, opt_state, key):
+            print('     ### Compiling function "adapt_step" for the contexts ...  ')
+
+            def prox_loss_fn(contexts, model, batch, weightings, key):
+                loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                return loss, aux_data
+
+            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
+
+            updates, opt_state = opt.update(grads, opt_state)
+            contexts = eqx.apply_updates(contexts, updates)
+
+            return model, contexts, opt_state, loss, aux_data
+
+        if verbose:
+            print(f"\n\n=== Beginning meta testing ... ===")
+            print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
+            print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
+
+        if dataloader.num_batches != 1:
+            raise ValueError("The dataloader must be a single batch of environments for meta-testing with NCF")
+        else:
+            nb_envs_in_batch = dataloader.batch_size
+            weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+            nb_batches = 1
+
+        if max_adapt_batches is None or max_adapt_batches<1 or max_adapt_batches>dataloader.num_batches:
+            max_adapt_batches = dataloader.num_batches
+        else:
+            if verbose:
+                print(f"    Training on {max_adapt_batches} batches")
+
+        contexts = ArrayContextParams(nb_envs_in_batch, self.learner.context_size)
+        opt_state_ctx = opt.init(eqx.filter(contexts, eqx.is_array))
+
+
+        start_time = time.time()
+
+        losses = []
+
+        loss_key, _ = jax.random.split(key)
+
+        for epoch in range(nb_epochs):
+
+            for env_batch, batch in enumerate(dataloader):
+                if env_batch >= max_adapt_batches:
+                    break
+
+                loss_key, _ = jax.random.split(loss_key)
+
+                model, contexts, opt_state_ctx, loss_ctx, (_, term2, term3) = adapt_step(model, contexts, batch, weightings, opt_state_ctx, loss_key)
+
+                losses.append(loss_ctx)
+
+            if epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_batches-1:
+                print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+
+
+        wall_time = time.time() - start_time
+        time_in_hmsecs = seconds_to_hours(wall_time)
+        if verbose:
+            print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
+
+        losses = jnp.vstack(losses)
+        if not hasattr(self, 'losses_adapt'):
+            self.losses_adapt = []
+        self.losses_adapt.append(losses)
+
+        ## DO NOT TRUST. Just for visualisation purposes
+        # self.opt_adapt = opt
+        # self.opt_state_adapt = opt_state
+        self.learner.contexts_adapt = contexts
+
+        if save_path:
+            self.save_adapted_trainer(save_path)
+
+        ## Use the contexts and the batch to predict Y_hat
+        aux_data = predict_step(model, contexts, batch, key)
+
+        return losses, contexts, aux_data
+
+
+
+
+
+
+
+
+
 
 
 
@@ -517,7 +650,7 @@ class CAVIATrainer(Trainer):
                             ## Save the model as well
                             eqx.tree_serialise_leaves(backup_ctx_folder+"model.eqx", model)
 
-            if epoch==nb_epochs-1:
+            if epoch==nb_epochs-1 and hasattr(self.learner.model, 'taylor_weight'):
                 alpha = model.taylor_weight[0]
                 print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\n")
                 print()

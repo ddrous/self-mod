@@ -265,6 +265,7 @@ class SelfModVectorField(eqx.Module):
     def __call__(self, t, x, args):
         ctx, ctx_ = args
 
+
         vf = lambda xi: self.neuralnet(x, xi)
 
         if self.taylor_order==0:
@@ -272,15 +273,34 @@ class SelfModVectorField(eqx.Module):
 
         elif self.taylor_order==1:
             gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-            return vf(ctx_) + 1.0*gradvf(ctx_)
+            taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
+
+            return taylor_exp
 
         elif self.taylor_order==2:
             gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
             scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
-            return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+            taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+
+            return taylor_exp
 
         else:
-            raise NotImplementedError("Higher order terms are not implemented yet.")
+            # raise NotImplementedError("Higher order terms are not implemented yet.")
+
+            h0 = ctx_
+            h1 = ctx-ctx_
+            h2 = jnp.zeros_like(h0)
+
+            hs = [h1, h2]
+            coeffs = [1, 0.5]
+            for order in range(2+1, self.taylor_order+1):
+                hs.append(jnp.zeros_like(h0))
+                coeffs.append(1 / factorial(order))
+
+            f0, fs = jet(vf, (h0,), (hs,))
+            taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
+
+            return taylor_exp
 
 
 
@@ -311,7 +331,7 @@ class NeuralODE(eqx.Module):
                     adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
                     max_steps=self.ivp_args.get("max_steps", 4096*1)
                 )
-            return sol.ys[-1]
+            return sol.ys[-1, :y0.shape[0]]
 
         return jax.vmap(integrate)(xs)
 
