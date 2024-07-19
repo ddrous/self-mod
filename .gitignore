@@ -79,3 +79,7 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 
 ## Sine experiment runs
 examples/sine-reg/runs/*
+
+
+## Forced oscillator experiment runs
+examples/forced-o/runs/*

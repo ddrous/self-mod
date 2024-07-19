@@ -476,3 +476,49 @@ class SinusoidDataset:
 
     def __len__(self):
         return self.total_envs
+
+
+
+
+
+
+
+
+class DynamicsDataset:
+    """
+    For all dynamics tasks as in Kirchmeyer et al. 2022
+    """
+
+    # def __init__(self, meta_tain=True, support_set=True):
+    def __init__(self, data_dir, num_shots=-1, skip_steps=1):
+
+        self.data_dir = data_dir
+        self.skip_steps = skip_steps
+
+        try:
+            raw_data = np.load(data_dir)
+        except:
+            raise ValueError(f"Data not found at {data_dir}")
+
+        self.dataset, self.t_eval = raw_data['X'][...,::self.skip_steps,:], raw_data['t'][::skip_steps]
+
+        datashape = self.dataset.shape
+        self.total_envs = datashape[0]
+
+        if num_shots is None or num_shots == -1:
+            num_shots = datashape[1]
+        self.num_shots = num_shots
+        if num_shots > datashape[1]:
+            raise ValueError("Number of shots must be less than the total number of trajectories")
+
+        self.num_steps = datashape[2]
+        self.data_size = datashape[3]
+
+
+    def __getitem__(self, idx):     ## Idx doesn't matter here
+        inputs = self.dataset[idx, :, 0, :]
+        outputs = self.dataset[idx, :, :, :]
+        return inputs, outputs
+
+    def __len__(self):
+        return self.total_envs

@@ -53,7 +53,7 @@ class VisualTester:
         pass
 
     @abstractmethod
-    def visualizeArtefacts(self, adaptation=False, save_path=False, key=None):
+    def visualize_artefacts(self, adaptation=False, save_path=False, key=None):
         """ Visualize the artefacts of the model : loss, and context dimensions """
         key = key if key != None else self.key
 

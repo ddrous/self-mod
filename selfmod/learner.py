@@ -110,6 +110,29 @@ class ArrayContextParams(eqx.Module):
         return self.params
 
 
+class IDContextParams(eqx.Module):
+    params: list
+    ctx_utils: any
+
+    def __init__(self, nb_envs, context_size, hidden_size, depth, key=None):
+
+        keys = generate_new_keys(key, num=nb_envs)
+
+        all_contexts = [MLP(1, context_size, hidden_size, depth, jax.nn.softplus, key=keys[i]) for i in range(nb_envs)]
+
+        mlp_utils = (context_size, hidden_size, depth)
+
+        ex_params, ex_static = eqx.partition(all_contexts[0], eqx.is_array)
+        ex_ravel, ex_shapes, ex_treedef = flatten_pytree(ex_params)
+        self.ctx_utils = (ex_shapes, ex_treedef, ex_static, mlp_utils)
+
+        all_params_1D = [flatten_pytree(eqx.filter(context, eqx.is_array))[0] for context in all_contexts]
+
+        if key is None:
+            self.params = jnp.zeros_like(jnp.stack(all_params_1D, axis=0))
+        else:
+            self.params = jnp.stack(all_params_1D, axis=0)
+
 
 
 
@@ -266,7 +289,7 @@ class SelfModVectorField(eqx.Module):
         ctx, ctx_ = args
 
 
-        vf = lambda xi: self.neuralnet(x, xi)
+        vf = lambda xi: self.neuralnet(t, x, xi)
 
         if self.taylor_order==0:
             return vf(ctx)
@@ -308,11 +331,22 @@ class NeuralODE(eqx.Module):
     vectorfield: eqx.Module
     ivp_args: dict
     taylor_order: int
+    t_eval: tuple
 
-    def __init__(self, neuralnet, taylor_order, ivp_args=None):
+    def __init__(self, neuralnet, taylor_order, ivp_args=None, t_eval=None):
         self.ivp_args = ivp_args if ivp_args is not None else {}
         self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order)
         self.taylor_order = taylor_order
+
+        # print("T eval is ", t_eval)
+
+        if t_eval is None:
+            self.t_eval = (0., ivp_args.get("T", 1.))
+        else:
+            self.t_eval = t_eval
+
+        t_eval = jnp.array(self.t_eval)
+        # print("T eval diff ", t_eval[:-1] - t_eval[1:] < 0)
 
     def __call__(self, xs, ctx, ctx_):
 
@@ -321,19 +355,33 @@ class NeuralODE(eqx.Module):
                     diffrax.ODETerm(self.vectorfield),
                     self.ivp_args.get("integrator", diffrax.Dopri5()),
                     args=(ctx, ctx_.squeeze()),
-                    t0=0.,
-                    t1=self.ivp_args.get("T", 1.),
+                    t0=self.t_eval[0],
+                    t1=self.t_eval[-1],
                     dt0=self.ivp_args.get("dt_init", 1e-2),
                     y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 1),))], axis=0),
                     stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
                                                                 atol=self.ivp_args.get("atol", 1e-6)),
-                    # saveat=diffrax.SaveAt(ts=t_eval),
+                    saveat=diffrax.SaveAt(ts=jnp.array(self.t_eval)),
                     adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
                     max_steps=self.ivp_args.get("max_steps", 4096*1)
                 )
-            return sol.ys[-1, :y0.shape[0]]
+
+            if self.ivp_args.get("return_traj", False):
+                return sol.ys[:, :y0.shape[0]]
+            else:
+                return sol.ys[-1, :y0.shape[0]]
 
         return jax.vmap(integrate)(xs)
+
+
+
+class Swish(eqx.Module):
+    """ Swish activation function """
+    beta: jnp.ndarray
+    def __init__(self, key=None):
+        self.beta = jax.random.uniform(key, shape=(1,), minval=0.01, maxval=1.0)
+    def __call__(self, x):
+        return x * jax.nn.sigmoid(self.beta * x)
 
 
 

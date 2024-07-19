@@ -2,7 +2,7 @@ import pickle
 from typing import Any, Tuple
 
 from selfmod.dataloader import DataLoader
-from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE, NonBatchedNeuralContextFlow
+from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE, NonBatchedNeuralContextFlow, IDContextParams
 from selfmod.visualtester import VisualTester
 from ._utils import *
 
@@ -158,6 +158,7 @@ class NCFTrainer(Trainer):
         print(f"\n\n=== Beginning meta training ... ===")
         print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
         print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
+        print(f"    Total number of epochs: {nb_epochs}")
         print(f"    Maximum number of outer minimizations: {nb_outer_steps}")
         print(f"    Maximum numbers of inner steps per outer minimizations: {nb_inner_steps_model, nb_inner_steps_ctx}")
 
@@ -192,7 +193,15 @@ class NCFTrainer(Trainer):
                 nb_envs_in_batch = batch[0].shape[0]
                 weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
-                contexts = ArrayContextParams(nb_envs_in_batch, self.learner.context_size)
+                if hasattr(model.vectorfield.neuralnet, "ctx_utils"):
+                    mlp_utils = model.vectorfield.neuralnet.ctx_utils[3]
+                    contexts = IDContextParams(nb_envs=nb_envs_in_batch, 
+                                            context_size=self.learner.context_size,
+                                            hidden_size=mlp_utils[1],
+                                            depth=mlp_utils[2])
+                else:
+                    contexts = ArrayContextParams(nb_envs=nb_envs_in_batch, 
+                                                context_size=self.learner.context_size)
                 opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
 
                 for out_step in range(nb_outer_steps):
@@ -239,16 +248,16 @@ class NCFTrainer(Trainer):
                         print(f"Stopping early after {patience} steps with no improvement in the loss. Consider increasing the tolerances for the inner minimizations.")
                         break
 
+                    losses_model.append(loss_model)
+                    losses_ctx.append(loss_ctx)
+
+                    if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
+                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                        # print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
+
                 loss_epochs_model += loss_model
                 loss_epochs_ctx += loss_ctx
                 nb_batches += 1
-
-                losses_model.append(loss_model)
-                losses_ctx.append(loss_ctx)
-
-                if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
-                    print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
-                    # print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
             # losses_model.append(loss_epochs_model/nb_batches)
             # losses_ctx.append(loss_epochs_ctx/nb_batches)
@@ -394,7 +403,15 @@ class NCFTrainer(Trainer):
             if verbose:
                 print(f"    Training on {max_adapt_batches} batches")
 
-        contexts = ArrayContextParams(nb_envs_in_batch, self.learner.context_size)
+        if hasattr(model.vectorfield.neuralnet, "ctx_utils"):
+            mlp_utils = model.vectorfield.neuralnet.ctx_utils[3]
+            contexts = IDContextParams(nb_envs=nb_envs_in_batch, 
+                                       context_size=self.learner.context_size,
+                                       hidden_size=mlp_utils[1],
+                                       depth=mlp_utils[2])
+        else:
+            contexts = ArrayContextParams(nb_envs=nb_envs_in_batch, 
+                                          context_size=self.learner.context_size)
         opt_state_ctx = opt.init(eqx.filter(contexts, eqx.is_array))
 
 
