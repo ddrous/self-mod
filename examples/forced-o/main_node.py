@@ -14,39 +14,41 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2026
+seed = 2024
 
 ## Dataloader hps
-num_envs = (9, 1)
+num_envs = (8, 1)
 num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
 context_pool_size = 2
-context_size = 16
-taylor_orders = (0, 0)
+context_size = 128
+taylor_orders = (2, 0)
 taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 # ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} 
 ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True} 
-skip_steps = 10
+skip_steps = 1
 
 ## Train and adapt hps
-init_lrs = (1e-4, 1e-1)
-sched_factor = 1.
+init_lrs = (5e-4, 1e-1)
+sched_factor = 0.5
 max_train_batches = -1
 max_eval_batches = -1
 
 nb_train_epochs = 1
-nb_outer_steps = 500
+nb_outer_steps = 2500
 nb_inner_steps = (10, 10)
 
-print_error_every = (10, 10)   ## every 1000 epochs, every 1 batch
+print_error_every = (10, 100)   ## every 1000 epochs, every 1 batch
+validate_every = 100
 
-nb_adapt_epochs = 100
-nb_inner_steps_eval = 50       ## To use during evaluation and visulisation
+# nb_adapt_epochs = 7500
+nb_inner_steps_eval = 2500       ## To use during evaluation and visulisation
 
 meta_train = True
 run_folder = "./runs/240719-113446-Test/"
+# run_folder = "./runs/240719-205911/"
 # run_folder = None
 save_trainer = True
 
@@ -121,7 +123,6 @@ val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz",
 
 
 
-
 #%%
 
 
@@ -168,7 +169,7 @@ class MultiMLP(eqx.Module):
     def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
         self.ctx_utils = ctx_utils
 
-        keys = jax.random.split(key, num=10)
+        keys = jax.random.split(key, num=12)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
         self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
@@ -228,13 +229,17 @@ def env_loss_fn(model, ctx, y_hat, y):
 
 
 ## Just so the model knows the kind of context to use
-contexts_ = IDContextParams(nb_envs=num_envs[0], context_size=context_size, hidden_size=32, depth=3, key=seed)
+contexts_ = IDContextParams(nb_envs=num_envs[0], 
+                            context_size=context_size, 
+                            hidden_size=32, 
+                            depth=3, 
+                            key=seed)
 neuralnet = MultiMLP(data_size=2,
-                     int_size=32,
-                     hidden_size=40, 
+                     int_size=128,
+                     hidden_size=128, 
                      context_size=context_size,
                      ctx_utils=contexts_.ctx_utils,
-                     key=model_key)
+                     key=mother_key)
 
 model = NeuralODE(neuralnet=neuralnet,
                     taylor_order=taylor_orders[0],
@@ -245,6 +250,7 @@ learner = Learner(model=model,
                 context_size=context_size, 
                 context_pool_size=context_pool_size,
                 env_loss_fn=env_loss_fn, 
+                contexts=contexts_,     ## Optional, but good for saving !
                 key=model_key)
 
 
@@ -287,16 +293,17 @@ if meta_train == True:
     #                     validate_every=nb_train_epochs//10,
     #                     backup_contexts=True,
     #                     key=trainer_key)
-    trainer.meta_train(dataloader=train_dataloader,
-                        nb_epochs=nb_train_epochs,
+    trainer.meta_train(dataloader=train_dataloader, 
+                        nb_epochs=nb_train_epochs, 
                         nb_outer_steps=nb_outer_steps,
                         nb_inner_steps=nb_inner_steps, 
                         inner_tols=(1e-12, 1e-12), 
                         proximal_betas=(10., 10.), 
-                        max_train_batches=max_train_batches,
+                        max_train_batches=max_train_batches, 
                         print_error_every=print_error_every[0], 
+                        validate_every=validate_every, 
                         save_path=trainer_save_path, 
-                        # val_dataloader=val_dataloader, 
+                        val_dataloader=val_dataloader, 
                         val_criterion_id=0,
                         key=trainer_key)
 else:
@@ -319,7 +326,7 @@ else:
 
 #%%
 ## Test and visualise the results on a test dataloader
-visualtester = SineVisualTester(trainer, key=test_key)
+visualtester = DynamicsVisualTester(trainer, key=test_key)
 
 # ind_crit, _ = visualtester.evaluate(val_dataloader, 
 #                                     nb_inner_steps=nb_inner_steps,
@@ -370,20 +377,21 @@ if meta_test:
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    opt_adapt = optax.sgd(init_lr_ctx)
-
-    _, contexts, aux_data = trainer.meta_test(adapt_dataloader,
-                                            nb_inner_steps=nb_inner_steps[1],
-                                            taylor_order=taylor_orders[1],
-                                            optimizer=opt_adapt,
-                                            max_adapt_batches=max_train_batches,     ## JUST to set up adaptation for future tasks
-                                            print_error_every=print_error_every, 
-                                            save_path=adapt_folder)
+    # opt_adapt = optax.sgd(init_lr_ctx)
+    # _, contexts, aux_data = trainer.meta_test(adapt_dataloader,
+    #                                         nb_inner_steps=nb_inner_steps[1],
+    #                                         taylor_order=taylor_orders[1],
+    #                                         optimizer=opt_adapt,
+    #                                         max_adapt_batches=max_train_batches,     ## JUST to set up adaptation for future tasks
+    #                                         print_error_every=print_error_every, 
+    #                                         save_path=adapt_folder)
 
     ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
                                         taylor_order=taylor_orders[1], 
                                         nb_inner_steps=nb_inner_steps_eval,
-                                        max_eval_batches=max_eval_batches)
+                                        print_error_every=print_error_every,
+                                        max_eval_batches=max_eval_batches,
+                                        verbose=True)
 
 
 #%%
@@ -420,4 +428,3 @@ try:
     __IPYTHON__ ## in a jupyter notebook
 except NameError:
     os.system(f"cp nohup.log {run_folder}")
-

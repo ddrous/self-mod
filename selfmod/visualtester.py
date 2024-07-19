@@ -15,23 +15,49 @@ class VisualTester:
 
     @abstractmethod
     def evaluate(self, 
-                 super_dataloader, 
+                 dataloader, 
+                 reuse_contexts=False,      ## DO not meta-test, just reuse existing contexts, as if taylor=0
                  nb_inner_steps=10,
+                 print_error_every=(10, 10),
                  loss_criterion=None, 
                  criterion_id=0, 
                  max_eval_batches=-1, 
                  taylor_order=0, 
-                 verbose=True):
+                 verbose=False):
         """
         Adapt and compute test metrics on the adaptation dataloader.
          - loss_criterion if the one used for training is not satisfactory.
          - criterion_id is the index of the desired criterion from the loss auxiliaries
         """
 
+
+        # if reuse_contexts:
+        #     if dataloader.adaptation:
+        #         contexts = self.trainer.learner.contexts_adapt
+        #     else:
+        #         contexts = self.trainer.learner.contexts
+
+        #     ## Evaluate the model on the test set without meta-testing
+        #     weightings = jnp.ones(contexts.shape[0]) / contexts.shape[0]
+
+        #     for env_batch, batch in enumerate(dataloader):
+        #         if env_batch >= max_eval_batches:
+        #             break
+        #         loss_key, _ = jax.random.split(loss_key)
+
+        #     loss_fn(model, contexts, batch, weightings, key)     
+
+        # else:
+
         ## Adapt and extract the losses for each batch of environment
-        losses, _, _ = self.trainer.meta_test(super_dataloader, 
-                                              nb_inner_steps=nb_inner_steps, max_adapt_batches=max_eval_batches,taylor_order=taylor_order, 
-                                              verbose=False)
+        losses, _, _ = self.trainer.meta_test(dataloader, 
+                                            nb_inner_steps=nb_inner_steps, 
+                                            max_adapt_batches=max_eval_batches,
+                                            print_error_every=print_error_every,
+                                            taylor_order=taylor_order, 
+                                            verbose=verbose)
+
+
         losses_means = jnp.mean(losses, axis=0)
 
         ## TODO Compute the confidence intervals on the losses
@@ -76,7 +102,7 @@ class VisualTester:
             xis = self.trainer.learner.contexts.params
         else:
             print("No contexts found. Using zeros.")
-            xis = jnp.zeros((10, self.learner.context_size))
+            xis = jnp.zeros((10, self.trainer.learner.context_size))
 
         if adaptation == True:  ## Overwrite the above if adaptation
             losses_model = np.vstack(self.trainer.losses_adapt)
@@ -315,4 +341,10 @@ class CelebAVisualTester(VisualTester):
 class SineVisualTester(VisualTester):
     def __init__(self, trainer, key=None):
         super().__init__(trainer, key)
+
+
+class DynamicsVisualTester(VisualTester):
+    def __init__(self, trainer, key=None):
+        super().__init__(trainer, key)
+
 

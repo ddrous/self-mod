@@ -100,6 +100,7 @@ class NCFTrainer(Trainer):
                     max_train_batches=None,
                     patience=None, 
                     print_error_every=1, 
+                    validate_every=100,
                     save_path=False, 
                     val_dataloader=None, 
                     val_criterion_id=None, 
@@ -198,7 +199,8 @@ class NCFTrainer(Trainer):
                     contexts = IDContextParams(nb_envs=nb_envs_in_batch, 
                                             context_size=self.learner.context_size,
                                             hidden_size=mlp_utils[1],
-                                            depth=mlp_utils[2])
+                                            depth=mlp_utils[2], 
+                                            key=loss_key)
                 else:
                     contexts = ArrayContextParams(nb_envs=nb_envs_in_batch, 
                                                 context_size=self.learner.context_size)
@@ -209,19 +211,6 @@ class NCFTrainer(Trainer):
 
                     model_old = jax.tree_util.tree_map(lambda x: x, model)
                     contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
-
-                    ## Contexts proximal innner minimization
-                    contexts_prev = jax.tree_util.tree_map(lambda x: x, contexts)
-                    for in_step_ctx in range(nb_inner_steps_ctx):
-
-                        loss_key, _ = jax.random.split(loss_key)
-
-                        model, contexts, opt_state_ctx, loss_ctx, (_, term1, term2, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
-
-                        diff_ctx = params_diff_norm_squared(contexts, contexts_prev) / params_norm_squared(contexts_prev)
-                        if diff_ctx < inner_tol_ctx or out_step==0:
-                            break
-                        contexts_prev = contexts
 
 
                     ## Model proximal innner minimization
@@ -239,6 +228,21 @@ class NCFTrainer(Trainer):
                             break
                         model_prev = model
 
+
+                    ## Contexts proximal innner minimization
+                    contexts_prev = jax.tree_util.tree_map(lambda x: x, contexts)
+                    for in_step_ctx in range(nb_inner_steps_ctx):
+
+                        loss_key, _ = jax.random.split(loss_key)
+
+                        model, contexts, opt_state_ctx, loss_ctx, (_, term1, term2, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
+
+                        diff_ctx = params_diff_norm_squared(contexts, contexts_prev) / params_norm_squared(contexts_prev)
+                        if diff_ctx < inner_tol_ctx or out_step==0:
+                            break
+                        contexts_prev = contexts
+
+
                     if in_step_model < 1 and in_step_ctx < 1:
                         early_stopping_count += 1
                     else:
@@ -251,9 +255,32 @@ class NCFTrainer(Trainer):
                     losses_model.append(loss_model)
                     losses_ctx.append(loss_ctx)
 
-                    if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
-                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
-                        # print(f"\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
+                    # if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
+                    if out_step%print_error_every==0 or out_step<=3 or out_step==dataloader.num_batches-1:
+                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+
+                    if val_dataloader is not None and out_step%validate_every==0:
+                        self.learner.model = model
+                        self.learner.contexts = contexts
+
+                        ind_crit,_ = tester.evaluate(val_dataloader,
+                                                    criterion_id=val_criterion_id,
+                                                    max_eval_batches=5,
+                                                    nb_inner_steps=1000,
+                                                    taylor_order=0, 
+                                                    verbose=False)
+                        print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
+                        val_losses.append(np.array([out_step, ind_crit]))
+
+                        ## Check if val loss is lowest to save the model
+                        if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
+                            print(f"        Saving best model so far ...")
+                            self.learner.save_learner(save_path)
+                        ## Restore the learner at the last evaluation step
+                        if out_step == nb_outer_steps-1:
+                            self.learner.load_learner(save_path)
+
+                print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                 loss_epochs_model += loss_model
                 loss_epochs_ctx += loss_ctx
@@ -262,31 +289,7 @@ class NCFTrainer(Trainer):
             # losses_model.append(loss_epochs_model/nb_batches)
             # losses_ctx.append(loss_epochs_ctx/nb_batches)
 
-            if val_dataloader is not None:
-                self.learner.model = model
 
-                ind_crit,_ = tester.evaluate(val_dataloader,
-                                             criterion_id=val_criterion_id,
-                                             max_eval_batches=5,
-                                             nb_inner_steps=nb_inner_steps_ctx,
-                                             taylor_order=0, 
-                                             verbose=False)
-                print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
-                val_losses.append(np.array([epoch, ind_crit]))
-
-                # ## TODO Make a visualisation and save (like Zintgraff)
-                # train_XY = dataloader.sample_environments(key, 0, 1)
-                # val_XY = val_dataloader.sample_environments(key, 0, 1)
-                # batch = (batch for batch in [train_XY, val_XY])
-                # tester.visualizeTrainVal(batch, save_path=save_path, key=key)
-
-                ## Check if val loss is lowest to save the model
-                if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
-                    print(f"        Saving best model so far ...")
-                    self.learner.save_learner(save_path)
-                ## Restore the learner at the last evaluation step
-                if epoch == nb_epochs-1:
-                    self.learner.load_learner(save_path)
 
 
         wall_time = time.time() - start_time
@@ -326,7 +329,7 @@ class NCFTrainer(Trainer):
                    nb_inner_steps=None,   ## TODO: There for consistnecy with CAVIA
                    taylor_order=0,
                    optimizer=None, 
-                   print_error_every=(1, 1), 
+                   print_error_every=(10, 10), 
                    max_adapt_batches=None,
                    verbose=True,
                    save_path=False, 
@@ -349,11 +352,20 @@ class NCFTrainer(Trainer):
             if verbose:
                 print(f"Creating a new model with taylor order {taylor_order} ...")
             if isinstance(self.learner.model, NeuralContextFlow):
-                model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
+                model = NeuralContextFlow(neuralnet=self.learner.model.neuralnet, 
+                                          taylor_order=taylor_order,
+                                          taylor_scale=self.learner.model.taylor_scale,
+                                          taylor_weight_init=self.learner.model.taylor_weight_init)
             elif isinstance(self.learner.model, NeuralODE):
-                model = NeuralODE(self.learner.model.vectorfield.neuralnet, taylor_order, ivp_args=self.learner.model.ivp_args)
+                model = NeuralODE(neuralnet=self.learner.model.vectorfield.neuralnet, 
+                                  taylor_order=taylor_order, 
+                                  ivp_args=self.learner.model.ivp_args,
+                                  t_eval=self.learner.model.t_eval)
             elif isinstance(self.learner.model, NonBatchedNeuralContextFlow):
-                model = NonBatchedNeuralContextFlow(self.learner.model.neuralnet, taylor_order)
+                model = NonBatchedNeuralContextFlow(neuralnet=self.learner.model.neuralnet, 
+                                                    taylor_order=taylor_order,
+                                                    taylor_scale=self.learner.model.taylor_scale,
+                                                    taylor_weight_init=self.learner.model.taylor_weight_init)
             else:
                 raise ValueError("The model type is not supported")
 
@@ -433,7 +445,7 @@ class NCFTrainer(Trainer):
 
                 losses.append(loss_ctx)
 
-            if epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_batches-1:
+            if verbose and epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_batches-1:
                 print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
 
 

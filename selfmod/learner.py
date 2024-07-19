@@ -5,7 +5,7 @@ from jax.experimental.jet import jet
 
 
 class Learner:
-    def __init__(self, model, env_loss_fn, context_size, context_pool_size, key=None):
+    def __init__(self, model, env_loss_fn, context_size, context_pool_size, contexts=None, key=None):
         if key is None:
             raise ValueError("You must provide a key for the learner.")
         self.key = key
@@ -45,7 +45,7 @@ class Learner:
     def load_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
         self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
-        if hasattr(self, "contexts"):
+        if os.exists(path+"contexts.eqx"):
             self.contexts = eqx.tree_deserialise_leaves(path+"contexts.eqx", self.contexts)
 
 
