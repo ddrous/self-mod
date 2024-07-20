@@ -1,9 +1,112 @@
+2024-07-20 15:18:01.706688: W external/xla/xla/service/hlo_rematerialization.cc:2948] Can't reduce memory use below 11.17GiB (11998923472 bytes) by rematerialization; only reduced to 20.91GiB (22453397096 bytes), down from 20.91GiB (22454944060 bytes) originally
+2024-07-20 15:18:32.918761: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 20.91GiB (rounded to 22451718144)requested by op 
+2024-07-20 15:18:32.919225: W external/tsl/tsl/framework/bfc_allocator.cc:494] _________________________________________________________________________________________________**_
+E0720 15:18:32.976784 2592429 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 22451717904 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:    1.32MiB
+              constant allocation:     3.3KiB
+        maybe_live_out allocation:    1.30MiB
+     preallocated temp allocation:   20.91GiB
+                 total allocation:   20.91GiB
+Peak buffers:
+	Buffer 1:
+		Size: 448.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,128,32]
+		==========================
+
+	Buffer 2:
+		Size: 448.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,128,32]
+		==========================
+
+	Buffer 3:
+		Size: 448.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,128,32]
+		==========================
+
+	Buffer 4:
+		Size: 224.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,256]
+		==========================
+
+	Buffer 5:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,32,32]
+		==========================
+
+	Buffer 6:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,32,32]
+		==========================
+
+	Buffer 7:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,32,32]
+		==========================
+
+	Buffer 8:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 9:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 10:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 11:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,128]
+		==========================
+
+	Buffer 12:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,128]
+		==========================
+
+	Buffer 13:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,128]
+		==========================
+
+	Buffer 14:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 15:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+
 
 ############# Contextual Self-Modulation #############
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240720-001043/
+Created a new run folder at: ./runs/240720-151557/
 Completed copied scripts 
 
 
@@ -11,28 +114,19 @@ Total number of parameters in the model: 99726
 
 
 === Beginning meta training ... ===
-    Number of examples in a batch along envs: 8
-    Maximum number of batches (along envs): 1
-    Total number of epochs: 1
-    Maximum number of outer minimizations: 2500
-    Maximum numbers of inner steps per outer minimizations: (10, 10)
-     ### Compiling function "train_step" for the model ...  
-     ### Compiling function "train_step" for the contexts ...  
-Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 10.70960045     ContextsNorm: 0.00000000WARNING: No key provided, using time as seed
-     ### Compiling function "adapt_step" for the contexts ...  
+    Number of examples in a batch: 8
+    Total number of batches : 1
+    Numbers of inner steps : 5
+    Training on 1 batches
+    Validating on 1 batches
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
 Traceback (most recent call last):
-  File "/home/gb21553/Projects/Self-Mod/examples/forced-o/main_node.py", line 296, in <module>
-    trainer.meta_train(dataloader=train_dataloader, 
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 266, in meta_train
-    ind_crit,_ = tester.evaluate(val_dataloader,
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 33, in evaluate
-    losses, _, _ = self.trainer.meta_test(super_dataloader, 
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 435, in meta_test
-    model, contexts, opt_state_ctx, loss_ctx, (_, term2, term3) = adapt_step(model, contexts, batch, weightings, opt_state_ctx, loss_key)
-                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/examples/forced-o/main_cavia.py", line 252, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 673, in meta_train
+    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
     return self._call(False, args, kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,23 +136,105 @@ Traceback (most recent call last):
   File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
     out = self._cached(dynamic_donate, dynamic_nodonate, static)
           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 384, in adapt_step
-    (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
-                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 381, in prox_loss_fn
-    loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/learner.py", line 32, in loss_fn
-    losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, batch, contexts.params, contexts.params, keys)
-                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/learner.py", line 25, in env_loss_fn_
-    Y_new = jnp.broadcast_to(Y, Y_hat.shape)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/numpy/lax_numpy.py", line 1481, in broadcast_to
-    return util._broadcast_to(array, shape)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/numpy/util.py", line 430, in _broadcast_to
-    raise ValueError(msg.format(arr_shape, shape))
-ValueError: Incompatible shapes for broadcasting: (32, 189, 2) and requested shape (2, 32, 2, 2)
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 22451717904 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:    1.32MiB
+              constant allocation:     3.3KiB
+        maybe_live_out allocation:    1.30MiB
+     preallocated temp allocation:   20.91GiB
+                 total allocation:   20.91GiB
+Peak buffers:
+	Buffer 1:
+		Size: 448.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,128,32]
+		==========================
+
+	Buffer 2:
+		Size: 448.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,128,32]
+		==========================
+
+	Buffer 3:
+		Size: 448.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,128,32]
+		==========================
+
+	Buffer 4:
+		Size: 224.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,256]
+		==========================
+
+	Buffer 5:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,32,32]
+		==========================
+
+	Buffer 6:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,32,32]
+		==========================
+
+	Buffer 7:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,32,32]
+		==========================
+
+	Buffer 8:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 9:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 10:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 11:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,128]
+		==========================
+
+	Buffer 12:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,128]
+		==========================
+
+	Buffer 13:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,128,128]
+		==========================
+
+	Buffer 14:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+	Buffer 15:
+		Size: 112.00MiB
+		XLA Label: fusion
+		Shape: f32[16,16,7,8,2,4,256]
+		==========================
+
+
 --------------------
 For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.

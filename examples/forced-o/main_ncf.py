@@ -22,17 +22,17 @@ num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 2
+context_pool_size = 1
 context_size = 128
-taylor_orders = (2, 0)
+taylor_orders = (0, 0)
 taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 # ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} 
-ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True} 
+ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "max_steps":4096*1, "dt_init":1e-2}
 skip_steps = 1
 
 ## Train and adapt hps
 init_lrs = (5e-4, 1e-1)
-sched_factor = 0.5
+sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
@@ -47,9 +47,9 @@ validate_every = 100
 nb_inner_steps_eval = 2500       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/240719-113446-Test/"
+# run_folder = "./runs/240719-113446-Test/"
 # run_folder = "./runs/240719-205911/"
-# run_folder = None
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -233,7 +233,7 @@ contexts_ = IDContextParams(nb_envs=num_envs[0],
                             context_size=context_size, 
                             hidden_size=32, 
                             depth=3, 
-                            key=seed)
+                            key=None)
 neuralnet = MultiMLP(data_size=2,
                      int_size=128,
                      hidden_size=128, 
@@ -305,6 +305,7 @@ if meta_train == True:
                         save_path=trainer_save_path, 
                         val_dataloader=val_dataloader, 
                         val_criterion_id=0,
+                        max_val_batches=5,
                         key=trainer_key)
 else:
     restore_folder = run_folder

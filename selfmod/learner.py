@@ -45,7 +45,7 @@ class Learner:
     def load_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
         self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
-        if os.exists(path+"contexts.eqx"):
+        if os.path.exists(path+"contexts.eqx") and hasattr(self, "contexts"):
             self.contexts = eqx.tree_deserialise_leaves(path+"contexts.eqx", self.contexts)
 
 
@@ -116,7 +116,10 @@ class IDContextParams(eqx.Module):
 
     def __init__(self, nb_envs, context_size, hidden_size, depth, key=None):
 
-        keys = generate_new_keys(key, num=nb_envs)
+        if key is None:
+            keys = jax.random.split(jax.random.PRNGKey(0), nb_envs)
+        else:
+            keys = jax.random.split(key, nb_envs)
 
         all_contexts = [MLP(1, context_size, hidden_size, depth, jax.nn.softplus, key=keys[i]) for i in range(nb_envs)]
 
@@ -345,9 +348,6 @@ class NeuralODE(eqx.Module):
         else:
             self.t_eval = t_eval
 
-        t_eval = jnp.array(self.t_eval)
-        # print("T eval diff ", t_eval[:-1] - t_eval[1:] < 0)
-
     def __call__(self, xs, ctx, ctx_):
 
         def integrate(y0):
@@ -371,7 +371,7 @@ class NeuralODE(eqx.Module):
             else:
                 return sol.ys[-1, :y0.shape[0]]
 
-        return jax.vmap(integrate)(xs)
+        return eqx.filter_vmap(integrate)(xs)
 
 
 
