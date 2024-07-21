@@ -1,9 +1,18 @@
+2024-07-21 18:10:38.001061: E external/xla/xla/service/slow_operation_alarm.cc:65] 
+********************************
+[Compiling module jit_outer_train_step] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+2024-07-21 18:10:47.195114: E external/xla/xla/service/slow_operation_alarm.cc:133] The operation took 2m9.194212537s
+
+********************************
+[Compiling module jit_outer_train_step] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
 
 ############# Contextual Self-Modulation #############
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240721-145131/
+Created a new run folder at: ./runs/240721-180605/
 Completed copied scripts 
 
 
@@ -18,39 +27,80 @@ Total number of parameters in the model: 99726
     Validating on 1 batches
      ### (Re)Compiling function: outer_train_step ...  
      ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   0    Loss: 1.24809813     ContextsNorm: 0.00000000
+Epoch:   0      Batch:   0    Loss: 1.25350416     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
      ### (Re)Compiling function: adapt_step_cavia ...  
-     Validation Criterion: 1.08993566
+     Validation Criterion: 1.06987131
         Saving best model so far ...
-Epoch:  10      Batch:   0    Loss: 0.40621120     ContextsNorm: 0.00000000
-Epoch:  20      Batch:   0    Loss: 0.31813574     ContextsNorm: 0.00000000
-Epoch:  30      Batch:   0    Loss: 0.22840823     ContextsNorm: 0.00000000
-Epoch:  40      Batch:   0    Loss: 0.16212958     ContextsNorm: 0.00000000
-Epoch:  50      Batch:   0    Loss: 0.14631596     ContextsNorm: 0.00000000
-Epoch:  60      Batch:   0    Loss: 0.13518378     ContextsNorm: 0.00000000
-Epoch:  70      Batch:   0    Loss: 0.12241246     ContextsNorm: 0.00000000
-Epoch:  80      Batch:   0    Loss: 0.10018796     ContextsNorm: 0.00000000
-Epoch:  90      Batch:   0    Loss: 0.06426092     ContextsNorm: 0.00000000
-Epoch:  99      Batch:   0    Loss: 0.04315967     ContextsNorm: 0.00000000
-
-Total gradient descent training time: 0 hours 3 mins 12 secs
-==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [64 80 24]
-    Visualized context dimensions along y: [ 38 100  62]
-Saving artefacts in: ./runs/240721-145131/artefacts.png
-Using any previrouly defined optimizer for adapation
-
-
-=== Beginning adaptation ... ===
-    Number of environment batches: 1
-    Number of envs train steps per batch: 25
-    Total number of training steps: 25
+Epoch:  10      Batch:   0    Loss: 0.41454595     ContextsNorm: 0.00000000
+Epoch:  20      Batch:   0    Loss: 0.30341747     ContextsNorm: 0.00000000
+Epoch:  30      Batch:   0    Loss: 6.62091303     ContextsNorm: 0.00000000
+Epoch:  40      Batch:   0    Loss: 155.10815430     ContextsNorm: 0.00000000
+Epoch:  50      Batch:   0    Loss: 2312.25512695     ContextsNorm: 0.00000000
+Epoch:  60      Batch:   0    Loss: 2878.76489258     ContextsNorm: 0.00000000
+Epoch:  70      Batch:   0    Loss: 3269.76806641     ContextsNorm: 0.00000000
+Epoch:  80      Batch:   0    Loss: 3511.42895508     ContextsNorm: 0.00000000
+Epoch:  90      Batch:   0    Loss: 3660.93896484     ContextsNorm: 0.00000000
+Epoch: 100      Batch:   0    Loss: 3711.43261719     ContextsNorm: 0.00000000
+jax.pure_callback failed
+Traceback (most recent call last):
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 79, in pure_callback_impl
+    return tree_util.tree_map(np.asarray, callback(*args))
+                                          ^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+    return tree_util.tree_leaves(self.callback_func(*args, **kwargs))
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+    raise EqxRuntimeError(msgs[_index.item()])
+equinox._errors.EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+E0721 18:20:26.130760 3287400 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: INTERNAL: CustomCall failed: CpuCallback error: Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/lotka-v/main_cavia.py", line 252, in <module>
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 706, in meta_train
+  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 33, in evaluate
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 859, in meta_test
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/traceback_util.py", line 179, in reraise_with_filtered_traceback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 304, in cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 181, in _python_pjit_helper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 2789, in bind
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 391, in bind_with_trace
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 879, in process_primitive
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1525, in _pjit_call_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1508, in call_impl_cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1462, in _pjit_call_impl_python
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/profiler.py", line 335, in wrapper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/pxla.py", line 1177, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/mlir.py", line 2483, in _wrapped_callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 221, in _callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 82, in pure_callback_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+Creating a new model with taylor order 0 ...
      ### (Re)Compiling function: adapt_step_cavia ...  
-    Batch:   0     Loss: 1.49689865        OtherNorms: [1.4968987 0.        0.       ]
-Total gradient descent adaptation time: 0 hours 0 mins 4 secs
-==  Testing finished ... ==
-    Criterion loss value: 1.5172122
-==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [64 80 24]
-    Visualized context dimensions along y: [ 38 100  62]
-Saving artefacts in: ./runs/240721-145131/adapt/artefacts.png
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/lotka-v/main_cavia.py", line 252, in <module>
+    if meta_train == True:
+        ^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 706, in meta_train
+    ind_crit,_ = tester.evaluate(val_dataloader,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 33, in evaluate
+    losses, _, _ = self.trainer.meta_test(dataloader, 
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 859, in meta_test
+    model, contexts, opt_state, loss, aux_losses = adapt_step_cavia(model, contexts, batch, weightings, opt_state, opt, self.learner.env_loss_fn, loss_key)
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+-------
+This error occurred during the runtime of your JAX program. Setting the environment
+variable `EQX_ON_ERROR=breakpoint` is usually the most useful way to debug such errors.
+(This can be navigated using most of the usual commands for the Python debugger:
+`u` and `d` to move through stack frames, the name of a variable to print its value,
+etc.) See also `https://docs.kidger.site/equinox/api/errors/#equinox.error_if` for more
+information.
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.

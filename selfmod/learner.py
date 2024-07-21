@@ -298,8 +298,11 @@ class SelfModVectorField(eqx.Module):
             return vf(ctx)
 
         elif self.taylor_order==1:
-            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-            taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
+            # gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            # taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
+
+            jac = eqx.filter_jacrev(vf)(ctx_)
+            taylor_exp = vf(ctx_) + jac @ (ctx-ctx_)
 
             return taylor_exp
 
@@ -341,8 +344,6 @@ class NeuralODE(eqx.Module):
         self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order)
         self.taylor_order = taylor_order
 
-        # print("T eval is ", t_eval)
-
         if t_eval is None:
             self.t_eval = (0., ivp_args.get("T", 1.))
         else:
@@ -350,26 +351,44 @@ class NeuralODE(eqx.Module):
 
     def __call__(self, xs, ctx, ctx_):
 
-        def integrate(y0):
-            sol = diffrax.diffeqsolve(
-                    diffrax.ODETerm(self.vectorfield),
-                    self.ivp_args.get("integrator", diffrax.Dopri5()),
-                    args=(ctx, ctx_.squeeze()),
-                    t0=self.t_eval[0],
-                    t1=self.t_eval[-1],
-                    dt0=self.ivp_args.get("dt_init", 1e-2),
-                    y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 1),))], axis=0),
-                    stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
-                                                                atol=self.ivp_args.get("atol", 1e-6)),
-                    saveat=diffrax.SaveAt(ts=jnp.array(self.t_eval)),
-                    adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
-                    max_steps=self.ivp_args.get("max_steps", 4096*1)
-                )
+        integrator = self.ivp_args.get("integrator", diffrax.Dopri5())
 
-            if self.ivp_args.get("return_traj", False):
-                return sol.ys[:, :y0.shape[0]]
-            else:
-                return sol.ys[-1, :y0.shape[0]]
+        # if isinstance(integrator, type(eqx.Module)):
+        if not callable(integrator):
+            def integrate(y0):
+                sol = diffrax.diffeqsolve(
+                        terms=diffrax.ODETerm(self.vectorfield),
+                        solver=integrator,
+                        args=(ctx, ctx_.squeeze()),
+                        t0=self.t_eval[0],
+                        t1=self.t_eval[-1],
+                        dt0=self.ivp_args.get("dt_init", 1e-2),
+                        y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 1),))], axis=0),
+                        stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
+                                                                    atol=self.ivp_args.get("atol", 1e-6)),
+                        saveat=diffrax.SaveAt(ts=jnp.array(self.t_eval)),
+                        adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
+                        max_steps=self.ivp_args.get("max_steps", 4096*1)
+                    )
+
+                if self.ivp_args.get("return_traj", False):
+                    return sol.ys[:, :y0.shape[0]]
+                else:
+                    return sol.ys[-1, :y0.shape[0]]
+
+        else:   ## Custom-made integrator
+            def integrate(y0):
+                ys = integrator(fun=self.vectorfield, 
+                                t_span=(self.t_eval[0], self.t_eval[-1]), 
+                                y0=y0,
+                                args=(ctx, ctx_.squeeze()),
+                                t_eval=jnp.array(self.t_eval), 
+                                **self.ivp_args
+                                )
+                if self.ivp_args.get("return_traj", False):
+                    return ys
+                else:
+                    return ys[-1]
 
         return eqx.filter_vmap(integrate)(xs)
 
