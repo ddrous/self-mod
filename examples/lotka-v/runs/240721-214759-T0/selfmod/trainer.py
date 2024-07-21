@@ -109,8 +109,7 @@ class Trainer:
                                             taylor_weight_init=self.learner.model.taylor_weight_init)
             elif isinstance(self.learner.model, NeuralODE):
                 model = NeuralODE(neuralnet=self.learner.model.vectorfield.neuralnet, 
-                                    taylor_order=taylor_order,
-                                    ad_mode=self.learner.model.ad_mode, 
+                                    taylor_order=taylor_order, 
                                     ivp_args=self.learner.model.ivp_args,
                                     t_eval=self.learner.model.t_eval)
             elif isinstance(self.learner.model, NonBatchedNeuralContextFlow):

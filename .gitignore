@@ -77,6 +77,7 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 !examples/celeb-a/runs/240713-134917-GoldenT0/
 # examples/celeb-a/runs/240713-134917-GoldenT0/contexts/
 
+
 ## Sine experiment runs
 examples/sine-reg/runs/*
 
@@ -88,3 +89,8 @@ examples/forced-o/runs/*
 
 ## Forced oscillator experiment runs
 examples/lotka-v/runs/*
+!examples/lotka-v/runs/240721-214759-T0/
+!examples/lotka-v/runs/240721-205112-T1/
+
+
+

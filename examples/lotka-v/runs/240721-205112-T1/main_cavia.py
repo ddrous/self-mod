@@ -25,12 +25,11 @@ num_workers = 0
 ## Learner/model hps
 context_pool_size = 1
 context_size = 128
-taylor_orders = (0, 0)
+taylor_orders = (1, 0)
 # taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 # ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} ## diffrax.BacksolveAdjoint()
 # ivp_args = {"integrator":diffrax.Dopri5(), "y0_pad_size":0, "return_traj":True, "max_steps":4096*2, "dt_init":1e-2, "adjoint":diffrax.BacksolveAdjoint()}
 ivp_args = {"integrator":RK4, "subdisisions":1, "return_traj":True}
-ad_mode = "reverse"
 skip_steps = 1
 
 # print(type(ivp_args["integrator"]))
@@ -218,7 +217,6 @@ neuralnet = MultiMLP(data_size=2,
 
 model = NeuralODE(neuralnet=neuralnet,
                     taylor_order=taylor_orders[0],
-                    ad_mode=ad_mode,
                     ivp_args=ivp_args,
                     t_eval=train_dataloader.dataset.t_eval.tolist())
 

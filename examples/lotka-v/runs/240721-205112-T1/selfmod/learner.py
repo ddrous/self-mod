@@ -280,17 +280,17 @@ class NonBatchedNeuralContextFlow(eqx.Module):
 
 class SelfModVectorField(eqx.Module):
     """ A vector field with fixed Taylor order """
+
     neuralnet: eqx.Module
     taylor_order: int
-    ad_mode: str
 
-    def __init__(self, neuralnet, taylor_order, ad_mode):
+    def __init__(self, neuralnet, taylor_order):
         self.neuralnet = neuralnet
         self.taylor_order = taylor_order
-        self.ad_mode = ad_mode
 
     def __call__(self, t, x, args):
         ctx, ctx_ = args
+
 
         vf = lambda xi: self.neuralnet(t, x, xi)
 
@@ -298,48 +298,36 @@ class SelfModVectorField(eqx.Module):
             return vf(ctx)
 
         elif self.taylor_order==1:
-            if self.ad_mode=="forward":
-                gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-                taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
-            elif self.ad_mode=="reverse":
-                jac = eqx.filter_jacrev(vf)(ctx_)
-                taylor_exp = vf(ctx_) + jac @ (ctx-ctx_)
-            else:
-                raise ValueError("Invalid AD mode provided.")
+            # gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            # taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
+
+            jac = eqx.filter_jacrev(vf)(ctx_)
+            taylor_exp = vf(ctx_) + jac @ (ctx-ctx_)
 
             return taylor_exp
 
         elif self.taylor_order==2:
-            if self.ad_mode=="forward":
-                gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-                scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
-                taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
-            elif self.ad_mode=="reverse":
-                pass
-                ## TODO: for tomorrow using for loop
-
-
-            else:
-                raise ValueError("Invalid AD mode provided.")
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+            taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
 
             return taylor_exp
 
         else:
-            if self.ad_mode=="forward":
-                h0 = ctx_
-                h1 = ctx-ctx_
-                h2 = jnp.zeros_like(h0)
+            # raise NotImplementedError("Higher order terms are not implemented yet.")
 
-                hs = [h1, h2]
-                coeffs = [1, 0.5]
-                for order in range(2+1, self.taylor_order+1):
-                    hs.append(jnp.zeros_like(h0))
-                    coeffs.append(1 / factorial(order))
+            h0 = ctx_
+            h1 = ctx-ctx_
+            h2 = jnp.zeros_like(h0)
 
-                f0, fs = jet(vf, (h0,), (hs,))
-                taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
-            else:
-                raise ValueError("Higher order terms are only implemented for forward mode AD.")
+            hs = [h1, h2]
+            coeffs = [1, 0.5]
+            for order in range(2+1, self.taylor_order+1):
+                hs.append(jnp.zeros_like(h0))
+                coeffs.append(1 / factorial(order))
+
+            f0, fs = jet(vf, (h0,), (hs,))
+            taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
 
             return taylor_exp
 
@@ -349,14 +337,12 @@ class NeuralODE(eqx.Module):
     vectorfield: eqx.Module
     ivp_args: dict
     taylor_order: int
-    ad_mode: str
     t_eval: tuple
 
-    def __init__(self, neuralnet, taylor_order, ivp_args=None, t_eval=None, ad_mode="forward"):
+    def __init__(self, neuralnet, taylor_order, ivp_args=None, t_eval=None):
         self.ivp_args = ivp_args if ivp_args is not None else {}
-        self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order, ad_mode=ad_mode)
+        self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order)
         self.taylor_order = taylor_order
-        self.ad_mode = ad_mode
 
         if t_eval is None:
             self.t_eval = (0., ivp_args.get("T", 1.))

@@ -1,0 +1,714 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+Created a new run folder at: ./runs/240721-205112/
+Completed copied scripts 
+
+
+Total number of parameters in the model: 99726
+
+
+=== Beginning meta training ... ===
+    Number of examples in a batch: 9
+    Total number of batches : 1
+    Numbers of inner steps : 5
+    Training on 1 batches
+    Validating on 1 batches
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   0    Loss: 1.20042944     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 1.14657426
+        Saving best model so far ...
+Epoch:  10      Batch:   0    Loss: 0.90812653     ContextsNorm: 0.00000000
+Epoch:  20      Batch:   0    Loss: 0.48080853     ContextsNorm: 0.00000000
+Epoch:  30      Batch:   0    Loss: 0.34437039     ContextsNorm: 0.00000000
+Epoch:  40      Batch:   0    Loss: 0.32014045     ContextsNorm: 0.00000000
+Epoch:  50      Batch:   0    Loss: 0.27515507     ContextsNorm: 0.00000000
+Epoch:  60      Batch:   0    Loss: 0.22514077     ContextsNorm: 0.00000000
+Epoch:  70      Batch:   0    Loss: 0.17636146     ContextsNorm: 0.00000000
+Epoch:  80      Batch:   0    Loss: 0.15607591     ContextsNorm: 0.00000000
+Epoch:  90      Batch:   0    Loss: 0.14663786     ContextsNorm: 0.00000000
+Epoch: 100      Batch:   0    Loss: 0.14313562     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.26191697
+        Saving best model so far ...
+Epoch: 110      Batch:   0    Loss: 0.13787219     ContextsNorm: 0.00000000
+Epoch: 120      Batch:   0    Loss: 0.13191453     ContextsNorm: 0.00000000
+Epoch: 130      Batch:   0    Loss: 0.12497792     ContextsNorm: 0.00000000
+Epoch: 140      Batch:   0    Loss: 0.11639950     ContextsNorm: 0.00000000
+Epoch: 150      Batch:   0    Loss: 0.10585672     ContextsNorm: 0.00000000
+Epoch: 160      Batch:   0    Loss: 0.09222816     ContextsNorm: 0.00000000
+Epoch: 170      Batch:   0    Loss: 0.07541223     ContextsNorm: 0.00000000
+Epoch: 180      Batch:   0    Loss: 0.05746155     ContextsNorm: 0.00000000
+Epoch: 190      Batch:   0    Loss: 0.04459586     ContextsNorm: 0.00000000
+Epoch: 200      Batch:   0    Loss: 0.04002744     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.15201150
+        Saving best model so far ...
+Epoch: 210      Batch:   0    Loss: 0.03750103     ContextsNorm: 0.00000000
+Epoch: 220      Batch:   0    Loss: 0.03504085     ContextsNorm: 0.00000000
+Epoch: 230      Batch:   0    Loss: 0.03284592     ContextsNorm: 0.00000000
+Epoch: 240      Batch:   0    Loss: 0.03104135     ContextsNorm: 0.00000000
+Epoch: 250      Batch:   0    Loss: 0.02945365     ContextsNorm: 0.00000000
+Epoch: 260      Batch:   0    Loss: 0.02792444     ContextsNorm: 0.00000000
+Epoch: 270      Batch:   0    Loss: 0.02663997     ContextsNorm: 0.00000000
+Epoch: 280      Batch:   0    Loss: 0.02535080     ContextsNorm: 0.00000000
+Epoch: 290      Batch:   0    Loss: 0.02409996     ContextsNorm: 0.00000000
+Epoch: 300      Batch:   0    Loss: 0.02305539     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.11175590
+        Saving best model so far ...
+Epoch: 310      Batch:   0    Loss: 0.02192388     ContextsNorm: 0.00000000
+Epoch: 320      Batch:   0    Loss: 0.02093856     ContextsNorm: 0.00000000
+Epoch: 330      Batch:   0    Loss: 0.02001875     ContextsNorm: 0.00000000
+Epoch: 340      Batch:   0    Loss: 0.01910496     ContextsNorm: 0.00000000
+Epoch: 350      Batch:   0    Loss: 0.01835697     ContextsNorm: 0.00000000
+Epoch: 360      Batch:   0    Loss: 0.01759157     ContextsNorm: 0.00000000
+Epoch: 370      Batch:   0    Loss: 0.01705229     ContextsNorm: 0.00000000
+Epoch: 380      Batch:   0    Loss: 0.01629118     ContextsNorm: 0.00000000
+Epoch: 390      Batch:   0    Loss: 0.01576258     ContextsNorm: 0.00000000
+Epoch: 400      Batch:   0    Loss: 0.01523099     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.06421977
+        Saving best model so far ...
+Epoch: 410      Batch:   0    Loss: 0.01474541     ContextsNorm: 0.00000000
+Epoch: 420      Batch:   0    Loss: 0.01436118     ContextsNorm: 0.00000000
+Epoch: 430      Batch:   0    Loss: 0.01386464     ContextsNorm: 0.00000000
+Epoch: 440      Batch:   0    Loss: 0.01352091     ContextsNorm: 0.00000000
+Epoch: 450      Batch:   0    Loss: 0.01315482     ContextsNorm: 0.00000000
+Epoch: 460      Batch:   0    Loss: 0.01278601     ContextsNorm: 0.00000000
+Epoch: 470      Batch:   0    Loss: 0.01244549     ContextsNorm: 0.00000000
+Epoch: 480      Batch:   0    Loss: 0.01211915     ContextsNorm: 0.00000000
+Epoch: 490      Batch:   0    Loss: 0.01180845     ContextsNorm: 0.00000000
+Epoch: 500      Batch:   0    Loss: 0.01148021     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.05172244
+        Saving best model so far ...
+Epoch: 510      Batch:   0    Loss: 0.01131447     ContextsNorm: 0.00000000
+Epoch: 520      Batch:   0    Loss: 0.01096865     ContextsNorm: 0.00000000
+Epoch: 530      Batch:   0    Loss: 0.01079345     ContextsNorm: 0.00000000
+Epoch: 540      Batch:   0    Loss: 0.01043755     ContextsNorm: 0.00000000
+Epoch: 550      Batch:   0    Loss: 0.01020657     ContextsNorm: 0.00000000
+Epoch: 560      Batch:   0    Loss: 0.01005318     ContextsNorm: 0.00000000
+Epoch: 570      Batch:   0    Loss: 0.00978023     ContextsNorm: 0.00000000
+Epoch: 580      Batch:   0    Loss: 0.00958589     ContextsNorm: 0.00000000
+Epoch: 590      Batch:   0    Loss: 0.00942805     ContextsNorm: 0.00000000
+Epoch: 600      Batch:   0    Loss: 0.00936972     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.05140853
+        Saving best model so far ...
+Epoch: 610      Batch:   0    Loss: 0.00915853     ContextsNorm: 0.00000000
+Epoch: 620      Batch:   0    Loss: 0.00899586     ContextsNorm: 0.00000000
+Epoch: 630      Batch:   0    Loss: 0.00883845     ContextsNorm: 0.00000000
+Epoch: 640      Batch:   0    Loss: 0.00873526     ContextsNorm: 0.00000000
+Epoch: 650      Batch:   0    Loss: 0.00868034     ContextsNorm: 0.00000000
+Epoch: 660      Batch:   0    Loss: 0.00850253     ContextsNorm: 0.00000000
+Epoch: 670      Batch:   0    Loss: 0.00853811     ContextsNorm: 0.00000000
+Epoch: 680      Batch:   0    Loss: 0.00852231     ContextsNorm: 0.00000000
+Epoch: 690      Batch:   0    Loss: 0.00827444     ContextsNorm: 0.00000000
+Epoch: 700      Batch:   0    Loss: 0.00820344     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.04786990
+        Saving best model so far ...
+Epoch: 710      Batch:   0    Loss: 0.00812101     ContextsNorm: 0.00000000
+Epoch: 720      Batch:   0    Loss: 0.00808850     ContextsNorm: 0.00000000
+Epoch: 730      Batch:   0    Loss: 0.00805352     ContextsNorm: 0.00000000
+Epoch: 740      Batch:   0    Loss: 0.00797679     ContextsNorm: 0.00000000
+Epoch: 750      Batch:   0    Loss: 0.00777767     ContextsNorm: 0.00000000
+Epoch: 760      Batch:   0    Loss: 0.00778129     ContextsNorm: 0.00000000
+Epoch: 770      Batch:   0    Loss: 0.00767318     ContextsNorm: 0.00000000
+Epoch: 780      Batch:   0    Loss: 0.00761086     ContextsNorm: 0.00000000
+Epoch: 790      Batch:   0    Loss: 0.00748992     ContextsNorm: 0.00000000
+Epoch: 800      Batch:   0    Loss: 0.00747297     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.04144419
+        Saving best model so far ...
+Epoch: 810      Batch:   0    Loss: 0.00758069     ContextsNorm: 0.00000000
+Epoch: 820      Batch:   0    Loss: 0.00725500     ContextsNorm: 0.00000000
+Epoch: 830      Batch:   0    Loss: 0.00715450     ContextsNorm: 0.00000000
+Epoch: 840      Batch:   0    Loss: 0.00707108     ContextsNorm: 0.00000000
+Epoch: 850      Batch:   0    Loss: 0.00712731     ContextsNorm: 0.00000000
+Epoch: 860      Batch:   0    Loss: 0.00691821     ContextsNorm: 0.00000000
+Epoch: 870      Batch:   0    Loss: 0.00684430     ContextsNorm: 0.00000000
+Epoch: 880      Batch:   0    Loss: 0.00676605     ContextsNorm: 0.00000000
+Epoch: 890      Batch:   0    Loss: 0.00671281     ContextsNorm: 0.00000000
+Epoch: 900      Batch:   0    Loss: 0.00659550     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03619653
+        Saving best model so far ...
+Epoch: 910      Batch:   0    Loss: 0.00652879     ContextsNorm: 0.00000000
+Epoch: 920      Batch:   0    Loss: 0.00647043     ContextsNorm: 0.00000000
+Epoch: 930      Batch:   0    Loss: 0.00640371     ContextsNorm: 0.00000000
+Epoch: 940      Batch:   0    Loss: 0.00646564     ContextsNorm: 0.00000000
+Epoch: 950      Batch:   0    Loss: 0.00629333     ContextsNorm: 0.00000000
+Epoch: 960      Batch:   0    Loss: 0.00615667     ContextsNorm: 0.00000000
+Epoch: 970      Batch:   0    Loss: 0.00602687     ContextsNorm: 0.00000000
+Epoch: 980      Batch:   0    Loss: 0.00610269     ContextsNorm: 0.00000000
+Epoch: 990      Batch:   0    Loss: 0.00592340     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0    Loss: 0.00586433     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03425643
+        Saving best model so far ...
+Epoch: 1010      Batch:   0    Loss: 0.00593985     ContextsNorm: 0.00000000
+Epoch: 1020      Batch:   0    Loss: 0.00586801     ContextsNorm: 0.00000000
+Epoch: 1030      Batch:   0    Loss: 0.00564442     ContextsNorm: 0.00000000
+Epoch: 1040      Batch:   0    Loss: 0.00559729     ContextsNorm: 0.00000000
+Epoch: 1050      Batch:   0    Loss: 0.00550034     ContextsNorm: 0.00000000
+Epoch: 1060      Batch:   0    Loss: 0.00544328     ContextsNorm: 0.00000000
+Epoch: 1070      Batch:   0    Loss: 0.00540120     ContextsNorm: 0.00000000
+Epoch: 1080      Batch:   0    Loss: 0.00534589     ContextsNorm: 0.00000000
+Epoch: 1090      Batch:   0    Loss: 0.00525247     ContextsNorm: 0.00000000
+Epoch: 1100      Batch:   0    Loss: 0.00531314     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03527388
+Epoch: 1110      Batch:   0    Loss: 0.00538859     ContextsNorm: 0.00000000
+Epoch: 1120      Batch:   0    Loss: 0.00517310     ContextsNorm: 0.00000000
+Epoch: 1130      Batch:   0    Loss: 0.00502106     ContextsNorm: 0.00000000
+Epoch: 1140      Batch:   0    Loss: 0.00518431     ContextsNorm: 0.00000000
+Epoch: 1150      Batch:   0    Loss: 0.00508972     ContextsNorm: 0.00000000
+Epoch: 1160      Batch:   0    Loss: 0.00517403     ContextsNorm: 0.00000000
+Epoch: 1170      Batch:   0    Loss: 0.00511368     ContextsNorm: 0.00000000
+Epoch: 1180      Batch:   0    Loss: 0.00499063     ContextsNorm: 0.00000000
+Epoch: 1190      Batch:   0    Loss: 0.00473966     ContextsNorm: 0.00000000
+Epoch: 1200      Batch:   0    Loss: 0.00476585     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03518208
+Epoch: 1210      Batch:   0    Loss: 0.00477488     ContextsNorm: 0.00000000
+Epoch: 1220      Batch:   0    Loss: 0.00469581     ContextsNorm: 0.00000000
+Epoch: 1230      Batch:   0    Loss: 0.00453361     ContextsNorm: 0.00000000
+Epoch: 1240      Batch:   0    Loss: 0.00450600     ContextsNorm: 0.00000000
+Epoch: 1250      Batch:   0    Loss: 0.00476697     ContextsNorm: 0.00000000
+Epoch: 1260      Batch:   0    Loss: 0.00448201     ContextsNorm: 0.00000000
+Epoch: 1270      Batch:   0    Loss: 0.00463131     ContextsNorm: 0.00000000
+Epoch: 1280      Batch:   0    Loss: 0.00456831     ContextsNorm: 0.00000000
+Epoch: 1290      Batch:   0    Loss: 0.00460814     ContextsNorm: 0.00000000
+Epoch: 1300      Batch:   0    Loss: 0.00470776     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03774432
+Epoch: 1310      Batch:   0    Loss: 0.00444513     ContextsNorm: 0.00000000
+Epoch: 1320      Batch:   0    Loss: 0.00476717     ContextsNorm: 0.00000000
+Epoch: 1330      Batch:   0    Loss: 0.00448883     ContextsNorm: 0.00000000
+Epoch: 1340      Batch:   0    Loss: 0.00429650     ContextsNorm: 0.00000000
+Epoch: 1350      Batch:   0    Loss: 0.00436000     ContextsNorm: 0.00000000
+Epoch: 1360      Batch:   0    Loss: 0.00447085     ContextsNorm: 0.00000000
+Epoch: 1370      Batch:   0    Loss: 0.00408667     ContextsNorm: 0.00000000
+Epoch: 1380      Batch:   0    Loss: 0.00460661     ContextsNorm: 0.00000000
+Epoch: 1390      Batch:   0    Loss: 0.00398255     ContextsNorm: 0.00000000
+Epoch: 1400      Batch:   0    Loss: 0.00401925     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03934914
+Epoch: 1410      Batch:   0    Loss: 0.00434060     ContextsNorm: 0.00000000
+Epoch: 1420      Batch:   0    Loss: 0.00399567     ContextsNorm: 0.00000000
+Epoch: 1430      Batch:   0    Loss: 0.00429290     ContextsNorm: 0.00000000
+Epoch: 1440      Batch:   0    Loss: 0.00388756     ContextsNorm: 0.00000000
+Epoch: 1450      Batch:   0    Loss: 0.00391161     ContextsNorm: 0.00000000
+Epoch: 1460      Batch:   0    Loss: 0.00402103     ContextsNorm: 0.00000000
+Epoch: 1470      Batch:   0    Loss: 0.00372750     ContextsNorm: 0.00000000
+Epoch: 1480      Batch:   0    Loss: 0.00413052     ContextsNorm: 0.00000000
+Epoch: 1490      Batch:   0    Loss: 0.00391335     ContextsNorm: 0.00000000
+Epoch: 1500      Batch:   0    Loss: 0.00397788     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03886943
+Epoch: 1510      Batch:   0    Loss: 0.00391649     ContextsNorm: 0.00000000
+Epoch: 1520      Batch:   0    Loss: 0.00368614     ContextsNorm: 0.00000000
+Epoch: 1530      Batch:   0    Loss: 0.00398559     ContextsNorm: 0.00000000
+Epoch: 1540      Batch:   0    Loss: 0.00375289     ContextsNorm: 0.00000000
+Epoch: 1550      Batch:   0    Loss: 0.00366627     ContextsNorm: 0.00000000
+Epoch: 1560      Batch:   0    Loss: 0.00348036     ContextsNorm: 0.00000000
+Epoch: 1570      Batch:   0    Loss: 0.00342648     ContextsNorm: 0.00000000
+Epoch: 1580      Batch:   0    Loss: 0.00355767     ContextsNorm: 0.00000000
+Epoch: 1590      Batch:   0    Loss: 0.00373807     ContextsNorm: 0.00000000
+Epoch: 1600      Batch:   0    Loss: 0.00358907     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03794277
+Epoch: 1610      Batch:   0    Loss: 0.00357820     ContextsNorm: 0.00000000
+Epoch: 1620      Batch:   0    Loss: 0.00336118     ContextsNorm: 0.00000000
+Epoch: 1630      Batch:   0    Loss: 0.00327924     ContextsNorm: 0.00000000
+Epoch: 1640      Batch:   0    Loss: 0.00319094     ContextsNorm: 0.00000000
+Epoch: 1650      Batch:   0    Loss: 0.00330526     ContextsNorm: 0.00000000
+Epoch: 1660      Batch:   0    Loss: 0.00323827     ContextsNorm: 0.00000000
+Epoch: 1670      Batch:   0    Loss: 0.00308369     ContextsNorm: 0.00000000
+Epoch: 1680      Batch:   0    Loss: 0.00341163     ContextsNorm: 0.00000000
+Epoch: 1690      Batch:   0    Loss: 0.00311805     ContextsNorm: 0.00000000
+Epoch: 1700      Batch:   0    Loss: 0.00305873     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03719820
+Epoch: 1710      Batch:   0    Loss: 0.00311628     ContextsNorm: 0.00000000
+Epoch: 1720      Batch:   0    Loss: 0.00308165     ContextsNorm: 0.00000000
+Epoch: 1730      Batch:   0    Loss: 0.00320214     ContextsNorm: 0.00000000
+Epoch: 1740      Batch:   0    Loss: 0.00300769     ContextsNorm: 0.00000000
+Epoch: 1750      Batch:   0    Loss: 0.00289564     ContextsNorm: 0.00000000
+Epoch: 1760      Batch:   0    Loss: 0.00291142     ContextsNorm: 0.00000000
+Epoch: 1770      Batch:   0    Loss: 0.00287293     ContextsNorm: 0.00000000
+Epoch: 1780      Batch:   0    Loss: 0.00274719     ContextsNorm: 0.00000000
+Epoch: 1790      Batch:   0    Loss: 0.00262573     ContextsNorm: 0.00000000
+Epoch: 1800      Batch:   0    Loss: 0.00267733     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03576359
+Epoch: 1810      Batch:   0    Loss: 0.00256205     ContextsNorm: 0.00000000
+Epoch: 1820      Batch:   0    Loss: 0.00266424     ContextsNorm: 0.00000000
+Epoch: 1830      Batch:   0    Loss: 0.00252555     ContextsNorm: 0.00000000
+Epoch: 1840      Batch:   0    Loss: 0.00247696     ContextsNorm: 0.00000000
+Epoch: 1850      Batch:   0    Loss: 0.00240976     ContextsNorm: 0.00000000
+Epoch: 1860      Batch:   0    Loss: 0.00232871     ContextsNorm: 0.00000000
+Epoch: 1870      Batch:   0    Loss: 0.00228613     ContextsNorm: 0.00000000
+Epoch: 1880      Batch:   0    Loss: 0.00236441     ContextsNorm: 0.00000000
+Epoch: 1890      Batch:   0    Loss: 0.00225843     ContextsNorm: 0.00000000
+Epoch: 1900      Batch:   0    Loss: 0.00223483     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03319431
+        Saving best model so far ...
+Epoch: 1910      Batch:   0    Loss: 0.00225077     ContextsNorm: 0.00000000
+Epoch: 1920      Batch:   0    Loss: 0.00231061     ContextsNorm: 0.00000000
+Epoch: 1930      Batch:   0    Loss: 0.00213550     ContextsNorm: 0.00000000
+Epoch: 1940      Batch:   0    Loss: 0.00196823     ContextsNorm: 0.00000000
+Epoch: 1950      Batch:   0    Loss: 0.00200009     ContextsNorm: 0.00000000
+Epoch: 1960      Batch:   0    Loss: 0.00197510     ContextsNorm: 0.00000000
+Epoch: 1970      Batch:   0    Loss: 0.00197469     ContextsNorm: 0.00000000
+Epoch: 1980      Batch:   0    Loss: 0.00188721     ContextsNorm: 0.00000000
+Epoch: 1990      Batch:   0    Loss: 0.00178343     ContextsNorm: 0.00000000
+Epoch: 2000      Batch:   0    Loss: 0.00181788     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03289660
+        Saving best model so far ...
+Epoch: 2010      Batch:   0    Loss: 0.00187080     ContextsNorm: 0.00000000
+Epoch: 2020      Batch:   0    Loss: 0.00181984     ContextsNorm: 0.00000000
+Epoch: 2030      Batch:   0    Loss: 0.00166030     ContextsNorm: 0.00000000
+Epoch: 2040      Batch:   0    Loss: 0.00177217     ContextsNorm: 0.00000000
+Epoch: 2050      Batch:   0    Loss: 0.00195362     ContextsNorm: 0.00000000
+Epoch: 2060      Batch:   0    Loss: 0.00170285     ContextsNorm: 0.00000000
+Epoch: 2070      Batch:   0    Loss: 0.00170228     ContextsNorm: 0.00000000
+Epoch: 2080      Batch:   0    Loss: 0.00170796     ContextsNorm: 0.00000000
+Epoch: 2090      Batch:   0    Loss: 0.00166117     ContextsNorm: 0.00000000
+Epoch: 2100      Batch:   0    Loss: 0.00158338     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03029911
+        Saving best model so far ...
+Epoch: 2110      Batch:   0    Loss: 0.00156874     ContextsNorm: 0.00000000
+Epoch: 2120      Batch:   0    Loss: 0.00151160     ContextsNorm: 0.00000000
+Epoch: 2130      Batch:   0    Loss: 0.00151644     ContextsNorm: 0.00000000
+Epoch: 2140      Batch:   0    Loss: 0.00155198     ContextsNorm: 0.00000000
+Epoch: 2150      Batch:   0    Loss: 0.00152253     ContextsNorm: 0.00000000
+Epoch: 2160      Batch:   0    Loss: 0.00148982     ContextsNorm: 0.00000000
+Epoch: 2170      Batch:   0    Loss: 0.00138222     ContextsNorm: 0.00000000
+Epoch: 2180      Batch:   0    Loss: 0.00137647     ContextsNorm: 0.00000000
+Epoch: 2190      Batch:   0    Loss: 0.00138790     ContextsNorm: 0.00000000
+Epoch: 2200      Batch:   0    Loss: 0.00139890     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03073688
+Epoch: 2210      Batch:   0    Loss: 0.00144921     ContextsNorm: 0.00000000
+Epoch: 2220      Batch:   0    Loss: 0.00132473     ContextsNorm: 0.00000000
+Epoch: 2230      Batch:   0    Loss: 0.00137822     ContextsNorm: 0.00000000
+Epoch: 2240      Batch:   0    Loss: 0.00143587     ContextsNorm: 0.00000000
+Epoch: 2250      Batch:   0    Loss: 0.00136757     ContextsNorm: 0.00000000
+Epoch: 2260      Batch:   0    Loss: 0.00132092     ContextsNorm: 0.00000000
+Epoch: 2270      Batch:   0    Loss: 0.00126661     ContextsNorm: 0.00000000
+Epoch: 2280      Batch:   0    Loss: 0.00121832     ContextsNorm: 0.00000000
+Epoch: 2290      Batch:   0    Loss: 0.00128210     ContextsNorm: 0.00000000
+Epoch: 2300      Batch:   0    Loss: 0.00129354     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03035246
+Epoch: 2310      Batch:   0    Loss: 0.00124878     ContextsNorm: 0.00000000
+Epoch: 2320      Batch:   0    Loss: 0.00126311     ContextsNorm: 0.00000000
+Epoch: 2330      Batch:   0    Loss: 0.00118314     ContextsNorm: 0.00000000
+Epoch: 2340      Batch:   0    Loss: 0.00126498     ContextsNorm: 0.00000000
+Epoch: 2350      Batch:   0    Loss: 0.00120420     ContextsNorm: 0.00000000
+Epoch: 2360      Batch:   0    Loss: 0.00116757     ContextsNorm: 0.00000000
+Epoch: 2370      Batch:   0    Loss: 0.00121551     ContextsNorm: 0.00000000
+Epoch: 2380      Batch:   0    Loss: 0.00120121     ContextsNorm: 0.00000000
+Epoch: 2390      Batch:   0    Loss: 0.00115035     ContextsNorm: 0.00000000
+Epoch: 2400      Batch:   0    Loss: 0.00118674     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02991203
+        Saving best model so far ...
+Epoch: 2410      Batch:   0    Loss: 0.00110704     ContextsNorm: 0.00000000
+Epoch: 2420      Batch:   0    Loss: 0.00112045     ContextsNorm: 0.00000000
+Epoch: 2430      Batch:   0    Loss: 0.00109417     ContextsNorm: 0.00000000
+Epoch: 2440      Batch:   0    Loss: 0.00112447     ContextsNorm: 0.00000000
+Epoch: 2450      Batch:   0    Loss: 0.00115428     ContextsNorm: 0.00000000
+Epoch: 2460      Batch:   0    Loss: 0.00106360     ContextsNorm: 0.00000000
+Epoch: 2470      Batch:   0    Loss: 0.00106266     ContextsNorm: 0.00000000
+Epoch: 2480      Batch:   0    Loss: 0.00111360     ContextsNorm: 0.00000000
+Epoch: 2490      Batch:   0    Loss: 0.00107734     ContextsNorm: 0.00000000
+Epoch: 2500      Batch:   0    Loss: 0.00108254     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02978248
+        Saving best model so far ...
+Epoch: 2510      Batch:   0    Loss: 0.00103926     ContextsNorm: 0.00000000
+Epoch: 2520      Batch:   0    Loss: 0.00102152     ContextsNorm: 0.00000000
+Epoch: 2530      Batch:   0    Loss: 0.00106264     ContextsNorm: 0.00000000
+Epoch: 2540      Batch:   0    Loss: 0.00102124     ContextsNorm: 0.00000000
+Epoch: 2550      Batch:   0    Loss: 0.00098139     ContextsNorm: 0.00000000
+Epoch: 2560      Batch:   0    Loss: 0.00100628     ContextsNorm: 0.00000000
+Epoch: 2570      Batch:   0    Loss: 0.00098079     ContextsNorm: 0.00000000
+Epoch: 2580      Batch:   0    Loss: 0.00100370     ContextsNorm: 0.00000000
+Epoch: 2590      Batch:   0    Loss: 0.00095486     ContextsNorm: 0.00000000
+Epoch: 2600      Batch:   0    Loss: 0.00100727     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02897124
+        Saving best model so far ...
+Epoch: 2610      Batch:   0    Loss: 0.00092554     ContextsNorm: 0.00000000
+Epoch: 2620      Batch:   0    Loss: 0.00095729     ContextsNorm: 0.00000000
+Epoch: 2630      Batch:   0    Loss: 0.00095381     ContextsNorm: 0.00000000
+Epoch: 2640      Batch:   0    Loss: 0.00094289     ContextsNorm: 0.00000000
+Epoch: 2650      Batch:   0    Loss: 0.00092225     ContextsNorm: 0.00000000
+Epoch: 2660      Batch:   0    Loss: 0.00092031     ContextsNorm: 0.00000000
+Epoch: 2670      Batch:   0    Loss: 0.00096304     ContextsNorm: 0.00000000
+Epoch: 2680      Batch:   0    Loss: 0.00092894     ContextsNorm: 0.00000000
+Epoch: 2690      Batch:   0    Loss: 0.00086853     ContextsNorm: 0.00000000
+Epoch: 2700      Batch:   0    Loss: 0.00089440     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02930257
+Epoch: 2710      Batch:   0    Loss: 0.00089850     ContextsNorm: 0.00000000
+Epoch: 2720      Batch:   0    Loss: 0.00083289     ContextsNorm: 0.00000000
+Epoch: 2730      Batch:   0    Loss: 0.00091294     ContextsNorm: 0.00000000
+Epoch: 2740      Batch:   0    Loss: 0.00085429     ContextsNorm: 0.00000000
+Epoch: 2750      Batch:   0    Loss: 0.00086714     ContextsNorm: 0.00000000
+Epoch: 2760      Batch:   0    Loss: 0.00089432     ContextsNorm: 0.00000000
+Epoch: 2770      Batch:   0    Loss: 0.00084520     ContextsNorm: 0.00000000
+Epoch: 2780      Batch:   0    Loss: 0.00081777     ContextsNorm: 0.00000000
+Epoch: 2790      Batch:   0    Loss: 0.00085801     ContextsNorm: 0.00000000
+Epoch: 2800      Batch:   0    Loss: 0.00083257     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02848973
+        Saving best model so far ...
+Epoch: 2810      Batch:   0    Loss: 0.00078720     ContextsNorm: 0.00000000
+Epoch: 2820      Batch:   0    Loss: 0.00088380     ContextsNorm: 0.00000000
+Epoch: 2830      Batch:   0    Loss: 0.00080256     ContextsNorm: 0.00000000
+Epoch: 2840      Batch:   0    Loss: 0.00081930     ContextsNorm: 0.00000000
+Epoch: 2850      Batch:   0    Loss: 0.00077073     ContextsNorm: 0.00000000
+Epoch: 2860      Batch:   0    Loss: 0.00080958     ContextsNorm: 0.00000000
+Epoch: 2870      Batch:   0    Loss: 0.00075496     ContextsNorm: 0.00000000
+Epoch: 2880      Batch:   0    Loss: 0.00077236     ContextsNorm: 0.00000000
+Epoch: 2890      Batch:   0    Loss: 0.00077418     ContextsNorm: 0.00000000
+Epoch: 2900      Batch:   0    Loss: 0.00080398     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02941670
+Epoch: 2910      Batch:   0    Loss: 0.00077884     ContextsNorm: 0.00000000
+Epoch: 2920      Batch:   0    Loss: 0.00077922     ContextsNorm: 0.00000000
+Epoch: 2930      Batch:   0    Loss: 0.00077703     ContextsNorm: 0.00000000
+Epoch: 2940      Batch:   0    Loss: 0.00076248     ContextsNorm: 0.00000000
+Epoch: 2950      Batch:   0    Loss: 0.00074994     ContextsNorm: 0.00000000
+Epoch: 2960      Batch:   0    Loss: 0.00072193     ContextsNorm: 0.00000000
+Epoch: 2970      Batch:   0    Loss: 0.00072738     ContextsNorm: 0.00000000
+Epoch: 2980      Batch:   0    Loss: 0.00073508     ContextsNorm: 0.00000000
+Epoch: 2990      Batch:   0    Loss: 0.00076628     ContextsNorm: 0.00000000
+Epoch: 3000      Batch:   0    Loss: 0.00073616     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02854207
+Epoch: 3010      Batch:   0    Loss: 0.00070373     ContextsNorm: 0.00000000
+Epoch: 3020      Batch:   0    Loss: 0.00072199     ContextsNorm: 0.00000000
+Epoch: 3030      Batch:   0    Loss: 0.00069254     ContextsNorm: 0.00000000
+Epoch: 3040      Batch:   0    Loss: 0.00066036     ContextsNorm: 0.00000000
+Epoch: 3050      Batch:   0    Loss: 0.00070086     ContextsNorm: 0.00000000
+Epoch: 3060      Batch:   0    Loss: 0.00067406     ContextsNorm: 0.00000000
+Epoch: 3070      Batch:   0    Loss: 0.00071574     ContextsNorm: 0.00000000
+Epoch: 3080      Batch:   0    Loss: 0.00067045     ContextsNorm: 0.00000000
+Epoch: 3090      Batch:   0    Loss: 0.00066093     ContextsNorm: 0.00000000
+Epoch: 3100      Batch:   0    Loss: 0.00064824     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02957986
+Epoch: 3110      Batch:   0    Loss: 0.00063461     ContextsNorm: 0.00000000
+Epoch: 3120      Batch:   0    Loss: 0.00064426     ContextsNorm: 0.00000000
+Epoch: 3130      Batch:   0    Loss: 0.00063756     ContextsNorm: 0.00000000
+Epoch: 3140      Batch:   0    Loss: 0.00066581     ContextsNorm: 0.00000000
+Epoch: 3150      Batch:   0    Loss: 0.00063524     ContextsNorm: 0.00000000
+Epoch: 3160      Batch:   0    Loss: 0.00066440     ContextsNorm: 0.00000000
+Epoch: 3170      Batch:   0    Loss: 0.00067922     ContextsNorm: 0.00000000
+Epoch: 3180      Batch:   0    Loss: 0.00061114     ContextsNorm: 0.00000000
+Epoch: 3190      Batch:   0    Loss: 0.00062790     ContextsNorm: 0.00000000
+Epoch: 3200      Batch:   0    Loss: 0.00057911     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02801981
+        Saving best model so far ...
+Epoch: 3210      Batch:   0    Loss: 0.00061022     ContextsNorm: 0.00000000
+Epoch: 3220      Batch:   0    Loss: 0.00058929     ContextsNorm: 0.00000000
+Epoch: 3230      Batch:   0    Loss: 0.00058735     ContextsNorm: 0.00000000
+Epoch: 3240      Batch:   0    Loss: 0.00061120     ContextsNorm: 0.00000000
+Epoch: 3250      Batch:   0    Loss: 0.00062709     ContextsNorm: 0.00000000
+Epoch: 3260      Batch:   0    Loss: 0.00057184     ContextsNorm: 0.00000000
+Epoch: 3270      Batch:   0    Loss: 0.00059999     ContextsNorm: 0.00000000
+Epoch: 3280      Batch:   0    Loss: 0.00057836     ContextsNorm: 0.00000000
+Epoch: 3290      Batch:   0    Loss: 0.00056790     ContextsNorm: 0.00000000
+Epoch: 3300      Batch:   0    Loss: 0.00063728     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02817096
+Epoch: 3310      Batch:   0    Loss: 0.00056470     ContextsNorm: 0.00000000
+Epoch: 3320      Batch:   0    Loss: 0.00057315     ContextsNorm: 0.00000000
+Epoch: 3330      Batch:   0    Loss: 0.00057976     ContextsNorm: 0.00000000
+Epoch: 3340      Batch:   0    Loss: 0.00056207     ContextsNorm: 0.00000000
+Epoch: 3350      Batch:   0    Loss: 0.00052925     ContextsNorm: 0.00000000
+Epoch: 3360      Batch:   0    Loss: 0.00052412     ContextsNorm: 0.00000000
+Epoch: 3370      Batch:   0    Loss: 0.00054963     ContextsNorm: 0.00000000
+Epoch: 3380      Batch:   0    Loss: 0.00054335     ContextsNorm: 0.00000000
+Epoch: 3390      Batch:   0    Loss: 0.00054802     ContextsNorm: 0.00000000
+Epoch: 3400      Batch:   0    Loss: 0.00056456     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02750754
+        Saving best model so far ...
+Epoch: 3410      Batch:   0    Loss: 0.00057056     ContextsNorm: 0.00000000
+Epoch: 3420      Batch:   0    Loss: 0.00053256     ContextsNorm: 0.00000000
+Epoch: 3430      Batch:   0    Loss: 0.00053492     ContextsNorm: 0.00000000
+Epoch: 3440      Batch:   0    Loss: 0.00051771     ContextsNorm: 0.00000000
+Epoch: 3450      Batch:   0    Loss: 0.00053024     ContextsNorm: 0.00000000
+Epoch: 3460      Batch:   0    Loss: 0.00054090     ContextsNorm: 0.00000000
+Epoch: 3470      Batch:   0    Loss: 0.00054323     ContextsNorm: 0.00000000
+Epoch: 3480      Batch:   0    Loss: 0.00052738     ContextsNorm: 0.00000000
+Epoch: 3490      Batch:   0    Loss: 0.00052681     ContextsNorm: 0.00000000
+Epoch: 3500      Batch:   0    Loss: 0.00049407     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02853334
+Epoch: 3510      Batch:   0    Loss: 0.00051693     ContextsNorm: 0.00000000
+Epoch: 3520      Batch:   0    Loss: 0.00050019     ContextsNorm: 0.00000000
+Epoch: 3530      Batch:   0    Loss: 0.00049065     ContextsNorm: 0.00000000
+Epoch: 3540      Batch:   0    Loss: 0.00048969     ContextsNorm: 0.00000000
+Epoch: 3550      Batch:   0    Loss: 0.00049434     ContextsNorm: 0.00000000
+Epoch: 3560      Batch:   0    Loss: 0.00047516     ContextsNorm: 0.00000000
+Epoch: 3570      Batch:   0    Loss: 0.00048787     ContextsNorm: 0.00000000
+Epoch: 3580      Batch:   0    Loss: 0.00049258     ContextsNorm: 0.00000000
+Epoch: 3590      Batch:   0    Loss: 0.00047685     ContextsNorm: 0.00000000
+Epoch: 3600      Batch:   0    Loss: 0.00046964     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.02928312
+Epoch: 3610      Batch:   0    Loss: 0.00048691     ContextsNorm: 0.00000000
+Epoch: 3620      Batch:   0    Loss: 0.00047435     ContextsNorm: 0.00000000
+Epoch: 3630      Batch:   0    Loss: 0.00049567     ContextsNorm: 0.00000000
+Epoch: 3640      Batch:   0    Loss: 0.00050413     ContextsNorm: 0.00000000
+Epoch: 3650      Batch:   0    Loss: 0.00045672     ContextsNorm: 0.00000000
+Epoch: 3660      Batch:   0    Loss: 0.00045388     ContextsNorm: 0.00000000
+Epoch: 3670      Batch:   0    Loss: 0.00046869     ContextsNorm: 0.00000000
+Epoch: 3680      Batch:   0    Loss: 0.00045113     ContextsNorm: 0.00000000
+Epoch: 3690      Batch:   0    Loss: 0.00042640     ContextsNorm: 0.00000000
+Epoch: 3700      Batch:   0    Loss: 0.00046724     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03145167
+Epoch: 3710      Batch:   0    Loss: 0.00045417     ContextsNorm: 0.00000000
+Epoch: 3720      Batch:   0    Loss: 0.00046409     ContextsNorm: 0.00000000
+Epoch: 3730      Batch:   0    Loss: 0.00046418     ContextsNorm: 0.00000000
+Epoch: 3740      Batch:   0    Loss: 0.00044313     ContextsNorm: 0.00000000
+Epoch: 3750      Batch:   0    Loss: 0.00046909     ContextsNorm: 0.00000000
+Epoch: 3760      Batch:   0    Loss: 0.00046749     ContextsNorm: 0.00000000
+Epoch: 3770      Batch:   0    Loss: 0.00041881     ContextsNorm: 0.00000000
+Epoch: 3780      Batch:   0    Loss: 0.00043243     ContextsNorm: 0.00000000
+Epoch: 3790      Batch:   0    Loss: 0.00045047     ContextsNorm: 0.00000000
+Epoch: 3800      Batch:   0    Loss: 0.00044335     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03340086
+Epoch: 3810      Batch:   0    Loss: 0.00044588     ContextsNorm: 0.00000000
+Epoch: 3820      Batch:   0    Loss: 0.00040326     ContextsNorm: 0.00000000
+Epoch: 3830      Batch:   0    Loss: 0.00046535     ContextsNorm: 0.00000000
+Epoch: 3840      Batch:   0    Loss: 0.00040983     ContextsNorm: 0.00000000
+Epoch: 3850      Batch:   0    Loss: 0.00043084     ContextsNorm: 0.00000000
+Epoch: 3860      Batch:   0    Loss: 0.00039390     ContextsNorm: 0.00000000
+Epoch: 3870      Batch:   0    Loss: 0.00042858     ContextsNorm: 0.00000000
+Epoch: 3880      Batch:   0    Loss: 0.00042456     ContextsNorm: 0.00000000
+Epoch: 3890      Batch:   0    Loss: 0.00043744     ContextsNorm: 0.00000000
+Epoch: 3900      Batch:   0    Loss: 0.00042173     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03406380
+Epoch: 3910      Batch:   0    Loss: 0.00044823     ContextsNorm: 0.00000000
+Epoch: 3920      Batch:   0    Loss: 0.00045198     ContextsNorm: 0.00000000
+Epoch: 3930      Batch:   0    Loss: 0.00040724     ContextsNorm: 0.00000000
+Epoch: 3940      Batch:   0    Loss: 0.00041569     ContextsNorm: 0.00000000
+Epoch: 3950      Batch:   0    Loss: 0.00040571     ContextsNorm: 0.00000000
+Epoch: 3960      Batch:   0    Loss: 0.00040648     ContextsNorm: 0.00000000
+Epoch: 3970      Batch:   0    Loss: 0.00040889     ContextsNorm: 0.00000000
+Epoch: 3980      Batch:   0    Loss: 0.00041088     ContextsNorm: 0.00000000
+Epoch: 3990      Batch:   0    Loss: 0.00038849     ContextsNorm: 0.00000000
+Epoch: 4000      Batch:   0    Loss: 0.00039582     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03368911
+Epoch: 4010      Batch:   0    Loss: 0.00038741     ContextsNorm: 0.00000000
+Epoch: 4020      Batch:   0    Loss: 0.00041335     ContextsNorm: 0.00000000
+Epoch: 4030      Batch:   0    Loss: 0.00042079     ContextsNorm: 0.00000000
+Epoch: 4040      Batch:   0    Loss: 0.00040340     ContextsNorm: 0.00000000
+Epoch: 4050      Batch:   0    Loss: 0.00037212     ContextsNorm: 0.00000000
+Epoch: 4060      Batch:   0    Loss: 0.00041460     ContextsNorm: 0.00000000
+Epoch: 4070      Batch:   0    Loss: 0.00038954     ContextsNorm: 0.00000000
+Epoch: 4080      Batch:   0    Loss: 0.00042366     ContextsNorm: 0.00000000
+Epoch: 4090      Batch:   0    Loss: 0.00037220     ContextsNorm: 0.00000000
+Epoch: 4100      Batch:   0    Loss: 0.00040440     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03370093
+Epoch: 4110      Batch:   0    Loss: 0.00039077     ContextsNorm: 0.00000000
+Epoch: 4120      Batch:   0    Loss: 0.00038697     ContextsNorm: 0.00000000
+Epoch: 4130      Batch:   0    Loss: 0.00039216     ContextsNorm: 0.00000000
+Epoch: 4140      Batch:   0    Loss: 0.00037221     ContextsNorm: 0.00000000
+Epoch: 4150      Batch:   0    Loss: 0.00038550     ContextsNorm: 0.00000000
+Epoch: 4160      Batch:   0    Loss: 0.00038441     ContextsNorm: 0.00000000
+Epoch: 4170      Batch:   0    Loss: 0.00038741     ContextsNorm: 0.00000000
+Epoch: 4180      Batch:   0    Loss: 0.00039499     ContextsNorm: 0.00000000
+Epoch: 4190      Batch:   0    Loss: 0.00037125     ContextsNorm: 0.00000000
+Epoch: 4200      Batch:   0    Loss: 0.00037378     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03662974
+Epoch: 4210      Batch:   0    Loss: 0.00036203     ContextsNorm: 0.00000000
+Epoch: 4220      Batch:   0    Loss: 0.00036497     ContextsNorm: 0.00000000
+Epoch: 4230      Batch:   0    Loss: 0.00034574     ContextsNorm: 0.00000000
+Epoch: 4240      Batch:   0    Loss: 0.00038612     ContextsNorm: 0.00000000
+Epoch: 4250      Batch:   0    Loss: 0.00035638     ContextsNorm: 0.00000000
+Epoch: 4260      Batch:   0    Loss: 0.00033561     ContextsNorm: 0.00000000
+Epoch: 4270      Batch:   0    Loss: 0.00035894     ContextsNorm: 0.00000000
+Epoch: 4280      Batch:   0    Loss: 0.00039202     ContextsNorm: 0.00000000
+Epoch: 4290      Batch:   0    Loss: 0.00034526     ContextsNorm: 0.00000000
+Epoch: 4300      Batch:   0    Loss: 0.00038023     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03620674
+Epoch: 4310      Batch:   0    Loss: 0.00036127     ContextsNorm: 0.00000000
+Epoch: 4320      Batch:   0    Loss: 0.00035853     ContextsNorm: 0.00000000
+Epoch: 4330      Batch:   0    Loss: 0.00037296     ContextsNorm: 0.00000000
+Epoch: 4340      Batch:   0    Loss: 0.00034116     ContextsNorm: 0.00000000
+Epoch: 4350      Batch:   0    Loss: 0.00034557     ContextsNorm: 0.00000000
+Epoch: 4360      Batch:   0    Loss: 0.00035648     ContextsNorm: 0.00000000
+Epoch: 4370      Batch:   0    Loss: 0.00035458     ContextsNorm: 0.00000000
+Epoch: 4380      Batch:   0    Loss: 0.00036112     ContextsNorm: 0.00000000
+Epoch: 4390      Batch:   0    Loss: 0.00036754     ContextsNorm: 0.00000000
+Epoch: 4400      Batch:   0    Loss: 0.00035798     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03757575
+Epoch: 4410      Batch:   0    Loss: 0.00035932     ContextsNorm: 0.00000000
+Epoch: 4420      Batch:   0    Loss: 0.00036397     ContextsNorm: 0.00000000
+Epoch: 4430      Batch:   0    Loss: 0.00037060     ContextsNorm: 0.00000000
+Epoch: 4440      Batch:   0    Loss: 0.00035622     ContextsNorm: 0.00000000
+Epoch: 4450      Batch:   0    Loss: 0.00035938     ContextsNorm: 0.00000000
+Epoch: 4460      Batch:   0    Loss: 0.00033703     ContextsNorm: 0.00000000
+Epoch: 4470      Batch:   0    Loss: 0.00033760     ContextsNorm: 0.00000000
+Epoch: 4480      Batch:   0    Loss: 0.00032731     ContextsNorm: 0.00000000
+Epoch: 4490      Batch:   0    Loss: 0.00033952     ContextsNorm: 0.00000000
+Epoch: 4500      Batch:   0    Loss: 0.00037392     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03619128
+Epoch: 4510      Batch:   0    Loss: 0.00035116     ContextsNorm: 0.00000000
+Epoch: 4520      Batch:   0    Loss: 0.00034087     ContextsNorm: 0.00000000
+Epoch: 4530      Batch:   0    Loss: 0.00033572     ContextsNorm: 0.00000000
+Epoch: 4540      Batch:   0    Loss: 0.00036019     ContextsNorm: 0.00000000
+Epoch: 4550      Batch:   0    Loss: 0.00033358     ContextsNorm: 0.00000000
+Epoch: 4560      Batch:   0    Loss: 0.00031720     ContextsNorm: 0.00000000
+Epoch: 4570      Batch:   0    Loss: 0.00031629     ContextsNorm: 0.00000000
+Epoch: 4580      Batch:   0    Loss: 0.00034025     ContextsNorm: 0.00000000
+Epoch: 4590      Batch:   0    Loss: 0.00035725     ContextsNorm: 0.00000000
+Epoch: 4600      Batch:   0    Loss: 0.00033232     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03689593
+Epoch: 4610      Batch:   0    Loss: 0.00032768     ContextsNorm: 0.00000000
+Epoch: 4620      Batch:   0    Loss: 0.00033916     ContextsNorm: 0.00000000
+Epoch: 4630      Batch:   0    Loss: 0.00036309     ContextsNorm: 0.00000000
+Epoch: 4640      Batch:   0    Loss: 0.00032724     ContextsNorm: 0.00000000
+Epoch: 4650      Batch:   0    Loss: 0.00033112     ContextsNorm: 0.00000000
+Epoch: 4660      Batch:   0    Loss: 0.00033985     ContextsNorm: 0.00000000
+Epoch: 4670      Batch:   0    Loss: 0.00033964     ContextsNorm: 0.00000000
+Epoch: 4680      Batch:   0    Loss: 0.00031751     ContextsNorm: 0.00000000
+Epoch: 4690      Batch:   0    Loss: 0.00031656     ContextsNorm: 0.00000000
+Epoch: 4700      Batch:   0    Loss: 0.00031374     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03720165
+Epoch: 4710      Batch:   0    Loss: 0.00030418     ContextsNorm: 0.00000000
+Epoch: 4720      Batch:   0    Loss: 0.00031088     ContextsNorm: 0.00000000
+Epoch: 4730      Batch:   0    Loss: 0.00031409     ContextsNorm: 0.00000000
+Epoch: 4740      Batch:   0    Loss: 0.00033493     ContextsNorm: 0.00000000
+Epoch: 4750      Batch:   0    Loss: 0.00031035     ContextsNorm: 0.00000000
+Epoch: 4760      Batch:   0    Loss: 0.00031353     ContextsNorm: 0.00000000
+Epoch: 4770      Batch:   0    Loss: 0.00032512     ContextsNorm: 0.00000000
+Epoch: 4780      Batch:   0    Loss: 0.00030273     ContextsNorm: 0.00000000
+Epoch: 4790      Batch:   0    Loss: 0.00031583     ContextsNorm: 0.00000000
+Epoch: 4800      Batch:   0    Loss: 0.00032178     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03803616
+Epoch: 4810      Batch:   0    Loss: 0.00031909     ContextsNorm: 0.00000000
+Epoch: 4820      Batch:   0    Loss: 0.00032450     ContextsNorm: 0.00000000
+Epoch: 4830      Batch:   0    Loss: 0.00032732     ContextsNorm: 0.00000000
+Epoch: 4840      Batch:   0    Loss: 0.00028936     ContextsNorm: 0.00000000
+Epoch: 4850      Batch:   0    Loss: 0.00030444     ContextsNorm: 0.00000000
+Epoch: 4860      Batch:   0    Loss: 0.00033636     ContextsNorm: 0.00000000
+Epoch: 4870      Batch:   0    Loss: 0.00030060     ContextsNorm: 0.00000000
+Epoch: 4880      Batch:   0    Loss: 0.00029528     ContextsNorm: 0.00000000
+Epoch: 4890      Batch:   0    Loss: 0.00029796     ContextsNorm: 0.00000000
+Epoch: 4900      Batch:   0    Loss: 0.00030477     ContextsNorm: 0.00000000
+Creating a new model with taylor order 0 ...
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.03774602
+Epoch: 4910      Batch:   0    Loss: 0.00032688     ContextsNorm: 0.00000000
+Epoch: 4920      Batch:   0    Loss: 0.00030747     ContextsNorm: 0.00000000
+Epoch: 4930      Batch:   0    Loss: 0.00031172     ContextsNorm: 0.00000000
+Epoch: 4940      Batch:   0    Loss: 0.00030306     ContextsNorm: 0.00000000
+Epoch: 4950      Batch:   0    Loss: 0.00028865     ContextsNorm: 0.00000000
+Epoch: 4960      Batch:   0    Loss: 0.00029398     ContextsNorm: 0.00000000
+Epoch: 4970      Batch:   0    Loss: 0.00032318     ContextsNorm: 0.00000000
+Epoch: 4980      Batch:   0    Loss: 0.00031582     ContextsNorm: 0.00000000
+Epoch: 4990      Batch:   0    Loss: 0.00030795     ContextsNorm: 0.00000000
+Epoch: 4999      Batch:   0    Loss: 0.00028789     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 54 mins 59 secs
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./runs/240721-205112/artefacts.png
+Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+
+=== Beginning adaptation ... ===
+    Number of environment batches: 1
+    Number of envs train steps per batch: 25
+    Total number of training steps: 25
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.00033588        OtherNorms: [0.00033588 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 1 secs
+==  Testing finished ... ==
+    Criterion loss value: 0.007661576
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./runs/240721-205112/adapt/artefacts.png
