@@ -15,7 +15,7 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2024
+seed = 2026
 
 ## Dataloader hps
 num_envs = (9, 4)
@@ -25,16 +25,14 @@ num_workers = 0
 ## Learner/model hps
 context_pool_size = 1
 context_size = 128
-taylor_orders = (0, 0)
-# taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
-# ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} ## diffrax.BacksolveAdjoint()
+taylor_orders = (1, 0)
+
+## "adjoint":diffrax.DirectAdjoint()} ## diffrax.BacksolveAdjoint()
 # ivp_args = {"integrator":diffrax.Dopri5(), "y0_pad_size":0, "return_traj":True, "max_steps":4096*2, "dt_init":1e-2, "adjoint":diffrax.BacksolveAdjoint()}
 ivp_args = {"integrator":RK4, "subdisisions":1, "return_traj":True}
 ad_mode = "reverse"
 skip_steps = 1
 
-# print(type(ivp_args["integrator"]))
-# print(callable(ivp_args["integrator"]))
 
 ## Train and adapt hps
 init_lrs = (1e-4, 1e-1)
@@ -42,19 +40,18 @@ sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
-nb_train_epochs = 5000
+nb_train_epochs = 2500
 # nb_outer_steps = 2500
-nb_inner_steps = 5
+nb_inner_steps = 10
 
 print_error_every = (10, 100)   ## every 1000 epochs, every 1 batch
 validate_every = 100
 
 # nb_adapt_epochs = 7500
-nb_inner_steps_eval = 25        ## To use during evaluation and visulisation
+nb_inner_steps_eval = 10        ## To use during evaluation and visulisation
 
 meta_train = True
 # run_folder = "./runs/240719-113446-Test/"
-# run_folder = "./runs/240719-205911/"
 run_folder = None
 save_trainer = True
 
