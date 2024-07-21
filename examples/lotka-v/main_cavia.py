@@ -17,7 +17,7 @@ from selfmod import *
 seed = 2024
 
 ## Dataloader hps
-num_envs = (8, 1)
+num_envs = (9, 4)
 num_shots = (-1, -1)
 num_workers = 0
 
@@ -31,12 +31,12 @@ ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "max_steps":4096*1, "d
 skip_steps = 1
 
 ## Train and adapt hps
-init_lrs = (5e-4, 1e-2)
+init_lrs = (5e-4, 1e-1)
 sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
-nb_train_epochs = 100
+nb_train_epochs = 1000
 # nb_outer_steps = 2500
 nb_inner_steps = 5
 

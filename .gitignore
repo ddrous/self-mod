@@ -83,3 +83,8 @@ examples/sine-reg/runs/*
 
 ## Forced oscillator experiment runs
 examples/forced-o/runs/*
+
+
+
+## Forced oscillator experiment runs
+examples/lotka-v/runs/*
