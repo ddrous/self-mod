@@ -413,9 +413,8 @@ class NCFTrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        # self.opt_adapt = opt
-        # self.opt_state_adapt = opt_state
-        self.learner.contexts_adapt = contexts
+        if dataloader.dataset.adaptation: self.learner.contexts_adapt = contexts
+        else: self.learner.contexts = contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)
@@ -796,9 +795,8 @@ class CAVIATrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        # self.opt_adapt = opt
-        # self.opt_state_adapt = opt_state
-        self.learner.contexts_adapt = contexts
+        if dataloader.dataset.adaptation: self.learner.contexts_adapt = contexts
+        else: self.learner.contexts = contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)

@@ -338,7 +338,7 @@ class DynamicsVisualTester(VisualTester):
         """ Visualize the dynamics of the model on a single trajectory from all environments """
 
         key = key if key != None else jax.random.PRNGKey(time.time_ns())
-        traj = traj is not None if traj else jax.random.randint(key, (1,), 0, data_loader.dataset.num_shots)[0]
+        traj = traj if traj is not None else jax.random.randint(key, (1,), 0, data_loader.dataset.num_shots)[0]
 
         t_test = data_loader.dataset.t_eval
         batch = next(iter(data_loader))
@@ -356,9 +356,8 @@ class DynamicsVisualTester(VisualTester):
         else:
             contexts = self.trainer.learner.contexts_adapt
 
-        # model = self.trainer.learner.reset_model(taylor_order=0, verbose=False)
-        model = self.trainer.learner.model
-        # _, X, X_hat = predict_step(model, contexts, batch)
+        # model = self.trainer.learner.model
+        model = self.trainer.learner.reset_model(taylor_order=0, verbose=False)
         _, X, X_hat = self.trainer.learner.batch_predict(model, contexts, batch)
 
         X_hat = X_hat[:,traj,...]
@@ -377,33 +376,25 @@ class DynamicsVisualTester(VisualTester):
         eps = 0.1
 
         for e in range(nb_envs):
-            ax[e, 0].plot(t_test, X[e, :, dim0], c="deepskyblue", label=f"$x_{{{dim0}}}$ (GT)")
-            ax[e, 0].plot(t_test, X_hat[e, :, dim0], "o", c="royalblue", label=f"$\\hat{{x}}_{{{dim0}}}$ (Pred)", markersize=mks)
+            ax[e, 0].plot(t_test, X_hat[e, :, dim0], c="deepskyblue", label=f"$\\hat{{x}}_{{{dim0}}}$ (Pred)")
+            ax[e, 0].plot(t_test, X[e, :, dim0], "o", c="royalblue", label=f"$x_{{{dim0}}}$ (GT)", markersize=mks)
 
-            ax[e, 0].plot(t_test, X[e, :, dim1], c="violet", label=f"$x_{{{dim1}}}$ (GT)")
-            ax[e, 0].plot(t_test, X_hat[e, :, dim1], "x", c="purple", label=f"$\\hat{{x}}_{{{dim1}}}$ (Pred)", markersize=mks)
+            ax[e, 0].plot(t_test, X_hat[e, :, dim1], c="violet", label=f"$\\hat{{x}}_{{{dim1}}}$ (Pred)")
+            ax[e, 0].plot(t_test, X[e, :, dim1], "x", c="purple", label=f"$x_{{{dim1}}}$ (GT)", markersize=mks+1)
 
-            ax[e, 1].plot(X[e, :, dim0], X[e, :, dim1], c="turquoise", label="GT")
-            ax[e, 1].plot(X_hat[e, :, dim0], X_hat[e, :, dim1], ".", c="teal", label="Pred")
+            ax[e, 1].plot(X_hat[e, :, dim0], X_hat[e, :, dim1], c="turquoise", label="Pred")
+            ax[e, 1].plot(X[e, :, dim0], X[e, :, dim1], ".", c="teal", label="GT")
 
-            if e==nb_envs-1: 
-                ax[e, 0].set_xlabel("Time")
-            else:
-                ax[e, 0].set_xticklabels([])
-            if e==0: 
-                ax[e, 0].legend(title=f"Env {e}", loc='upper right')
-            else:
-                ax[e, 0].legend([], title=f"Env {e}", loc='upper right')
+            if e==nb_envs-1: ax[e, 0].set_xlabel("Time")
+            else: ax[e, 0].set_xticklabels([])
+            if e==0: ax[e, 0].legend(title=f"Env {e}", loc='upper right')
+            else: ax[e, 0].legend([], title=f"Env {e}", loc='upper right')
             ax[e, 0].set_ylabel("State")
 
-            if e==nb_envs-1: 
-                ax[e, 1].set_xlabel(f"$x_{{{dim0}}}$")
-            else:
-                ax[e, 1].set_xticklabels([])
-            if e==0:
-                ax[e, 1].legend(title=f"Env {e}", loc='upper right')
-            else:
-                ax[e, 1].legend([], title=f"Env {e}", loc='upper right')
+            if e==nb_envs-1: ax[e, 1].set_xlabel(f"$x_{{{dim0}}}$")
+            else: ax[e, 1].set_xticklabels([])
+            if e==0: ax[e, 1].legend(title=f"Env {e}", loc='upper right')
+            else: ax[e, 1].legend([], title=f"Env {e}", loc='upper right')
             ax[e, 1].set_ylabel(f"$x_{{{dim1}}}$")
 
             ax[e, 0].set_ylim(min(xlim_0, ylim_0)-eps, max(xlim_1, ylim_1)+eps)

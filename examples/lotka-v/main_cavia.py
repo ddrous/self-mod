@@ -23,10 +23,10 @@ num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 1
+context_pool_size = 8
 context_size = 16
 intermediate_size = 32
-taylor_orders = (0, 0)
+taylor_orders = (1, 0)
 taylor_ad_mode = "reverse"
 
 ## "adjoint":diffrax.DirectAdjoint()} ## diffrax.BacksolveAdjoint()
@@ -36,20 +36,20 @@ skip_steps = 1
 
 
 ## Train and adapt hps
-init_lrs = (1e-4, 1e-1)
+init_lrs = (5e-3, 1e-1)
 sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
 nb_train_epochs = 2500
 # nb_outer_steps = 2500
-nb_inner_steps = 10
+nb_inner_steps = 5
 
 print_error_every = (10, 100)   ## every 1000 epochs, every 1 batch
 validate_every = 100
 
 # nb_adapt_epochs = 7500
-nb_inner_steps_eval = 10        ## To use during evaluation and visulisation
+nb_inner_steps_eval = 5        ## To use during evaluation and visulisation
 
 meta_train = True
 # run_folder = "./runs/240719-113446-Test/"
@@ -193,18 +193,18 @@ def env_loss_fn(model, ctx, y_hat, y):
     """
 
     term1 = jnp.mean((y_hat-y)**2)
-    # term2 = jnp.mean(jnp.abs(ctx))
+    term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
 
     # loss_val = term1 + 1e-3*term2 + 1e-3*term3
     loss_val = term1
 
-    return loss_val, (term1, 0., 0.)
+    return loss_val, (term1, term2, 0.)
 
 ## Just so the model knows the kind of context to use
 contexts_ = IDContextParams(nb_envs=num_envs[0], 
                             context_size=context_size, 
-                            hidden_size=16,
+                            hidden_size=12,
                             depth=3,
                             key=None)
 neuralnet = MultiMLP(data_size=2,
@@ -365,7 +365,6 @@ if meta_test:
     visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png", 
                                     data_loader=adapt_dataloader_test,
                                     traj=0)
-
 
 
 
