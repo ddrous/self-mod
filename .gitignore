@@ -87,10 +87,11 @@ examples/forced-o/runs/*
 
 
 
-## Forced oscillator experiment runs
+## Lotka volterra experiment runs
 examples/lotka-v/runs/*
 !examples/lotka-v/runs/240721-214759-T0/
 !examples/lotka-v/runs/240721-205112-T1/
+!examples/lotka-v/runs/ContextPoolSizeExperiment/
 
 
 
