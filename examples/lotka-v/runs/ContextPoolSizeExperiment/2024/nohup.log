@@ -1,0 +1,33 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+Created a new run folder at: ./240723-201732/
+Completed copied scripts 
+
+
+Total number of parameters in the model: 5998
+Total number of parameters in the contexts: 3492
+
+
+=== Beginning meta training ... ===
+    Number of examples in a batch: 9
+    Total number of batches : 1
+    Numbers of inner steps : 5
+    Training on 1 batches
+    Validating on 1 batches
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   0    Loss: 1.37034810     ContextsNorm: 0.00157017
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.97643012
+     Saving best model so far ...
+Epoch: 100      Batch:   0    Loss: 0.01300555     ContextsNorm: 0.01171036
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.19130217
+     Saving best model so far ...
+Epoch: 200      Batch:   0    Loss: 0.00625642     ContextsNorm: 0.01526658
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     Validation Criterion: 0.28548828
+Epoch: 300      Batch:   0    Loss: 0.00328426     ContextsNorm: 0.02013245
