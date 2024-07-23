@@ -321,13 +321,13 @@ class Trainer:
             model = self.learner.model
         else:
             if verbose:
-                print(f"Creating a new model with taylor order {taylor_order} ...")
+                print(f"    Creating a new model with taylor order {taylor_order} ...")
             model = NeuralContextFlow(self.learner.model.neuralnet, taylor_order)
 
         if optimizer is None:       ## To continue a previous adaptation
             if hasattr(self, 'opt_ctx'):
                 if verbose:
-                    print("Using any previrouly defined optimizer for adapation")
+                    print("     Using any previrouly defined optimizer for adapation")
                 opt = self.opt_ctx
             else:
                 raise ValueError("No optimizer provided for adaptation, and none previously defined")
@@ -381,7 +381,7 @@ class Trainer:
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
         if verbose:
-            print("\nTotal gradient descent adaptation time: %d hours %d mins %d secs" %time_in_hmsecs)
+            print("\n   Total gradient descent adaptation time: %d hours %d mins %d secs" %time_in_hmsecs)
 
         losses = jnp.vstack(losses)
         if not hasattr(self, 'losses_adapt'):

@@ -328,3 +328,95 @@ class DynamicsVisualTester(VisualTester):
         super().__init__(trainer, key)
 
 
+    def visualize_dynamics(self, 
+                           data_loader, 
+                           traj,
+                           dims=(0,1), 
+                           save_path=False, 
+                           key=None):
+
+        """ Visualize the dynamics of the model on a single trajectory from all environments """
+
+        key = key if key != None else jax.random.PRNGKey(time.time_ns())
+        traj = traj is not None if traj else jax.random.randint(key, (1,), 0, data_loader.dataset.num_shots)[0]
+
+        t_test = data_loader.dataset.t_eval
+        batch = next(iter(data_loader))
+
+        if data_loader.dataset.adaptation == False:
+            print("==  Begining in-domain dynamics visualisation ... ==")
+        else:
+            print("==  Begining out-of-distribution dynamics visualisation ... ==")
+        print("    Trajectory id:", traj)
+        print("    Visualized dimensions:", dims)
+
+        ## Dynamics models are handled in a single batch, so the saved contexts can be reused
+        if data_loader.dataset.adaptation == False:
+            contexts = self.trainer.learner.contexts
+        else:
+            contexts = self.trainer.learner.contexts_adapt
+
+        # model = self.trainer.learner.reset_model(taylor_order=0, verbose=False)
+        model = self.trainer.learner.model
+        # _, X, X_hat = predict_step(model, contexts, batch)
+        _, X, X_hat = self.trainer.learner.batch_predict(model, contexts, batch)
+
+        X_hat = X_hat[:,traj,...]
+        X = X[:,traj,...]
+
+        nb_envs = data_loader.dataset.total_envs
+        fig, ax = plt.subplots(nb_envs, 2, figsize=(5*2, 3*nb_envs), sharex=False, sharey=False)
+
+        mks = 2
+        dim0, dim1 = dims
+
+        xlim_0 = np.min([np.min(X[...,dim0]), np.min(X_hat[...,dim0])])
+        xlim_1 = np.max([np.max(X[...,dim0]), np.max(X_hat[...,dim0])])
+        ylim_0 = np.min([np.min(X[...,dim1]), np.min(X_hat[...,dim1])])
+        ylim_1 = np.max([np.max(X[...,dim1]), np.max(X_hat[...,dim1])])
+        eps = 0.1
+
+        for e in range(nb_envs):
+            ax[e, 0].plot(t_test, X[e, :, dim0], c="deepskyblue", label=f"$x_{{{dim0}}}$ (GT)")
+            ax[e, 0].plot(t_test, X_hat[e, :, dim0], "o", c="royalblue", label=f"$\\hat{{x}}_{{{dim0}}}$ (Pred)", markersize=mks)
+
+            ax[e, 0].plot(t_test, X[e, :, dim1], c="violet", label=f"$x_{{{dim1}}}$ (GT)")
+            ax[e, 0].plot(t_test, X_hat[e, :, dim1], "x", c="purple", label=f"$\\hat{{x}}_{{{dim1}}}$ (Pred)", markersize=mks)
+
+            ax[e, 1].plot(X[e, :, dim0], X[e, :, dim1], c="turquoise", label="GT")
+            ax[e, 1].plot(X_hat[e, :, dim0], X_hat[e, :, dim1], ".", c="teal", label="Pred")
+
+            if e==nb_envs-1: 
+                ax[e, 0].set_xlabel("Time")
+            else:
+                ax[e, 0].set_xticklabels([])
+            if e==0: 
+                ax[e, 0].legend(title=f"Env {e}", loc='upper right')
+            else:
+                ax[e, 0].legend([], title=f"Env {e}", loc='upper right')
+            ax[e, 0].set_ylabel("State")
+
+            if e==nb_envs-1: 
+                ax[e, 1].set_xlabel(f"$x_{{{dim0}}}$")
+            else:
+                ax[e, 1].set_xticklabels([])
+            if e==0:
+                ax[e, 1].legend(title=f"Env {e}", loc='upper right')
+            else:
+                ax[e, 1].legend([], title=f"Env {e}", loc='upper right')
+            ax[e, 1].set_ylabel(f"$x_{{{dim1}}}$")
+
+            ax[e, 0].set_ylim(min(xlim_0, ylim_0)-eps, max(xlim_1, ylim_1)+eps)
+            ax[e, 1].set_xlim(xlim_0-eps, xlim_1+eps)
+            ax[e, 1].set_ylim(ylim_0-eps, ylim_1+eps)
+
+        plt.tight_layout()
+        plt.suptitle(f"Trajectories and Phase Spaces for traj {traj}", fontsize=16, y=1.005)
+
+        plt.draw();
+
+        if save_path:
+            plt.savefig(save_path, dpi=100, bbox_inches='tight')
+            print("Testing finished. Figure saved in:", save_path);
+
+

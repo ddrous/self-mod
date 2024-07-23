@@ -1,6 +1,6 @@
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
@@ -24,13 +24,14 @@ num_workers = 0
 
 ## Learner/model hps
 context_pool_size = 1
-context_size = 128
-taylor_orders = (1, 0)
+context_size = 16
+intermediate_size = 32
+taylor_orders = (0, 0)
+taylor_ad_mode = "reverse"
 
 ## "adjoint":diffrax.DirectAdjoint()} ## diffrax.BacksolveAdjoint()
 # ivp_args = {"integrator":diffrax.Dopri5(), "y0_pad_size":0, "return_traj":True, "max_steps":4096*2, "dt_init":1e-2, "adjoint":diffrax.BacksolveAdjoint()}
 ivp_args = {"integrator":RK4, "subdisisions":1, "return_traj":True}
-ad_mode = "reverse"
 skip_steps = 1
 
 
@@ -203,19 +204,19 @@ def env_loss_fn(model, ctx, y_hat, y):
 ## Just so the model knows the kind of context to use
 contexts_ = IDContextParams(nb_envs=num_envs[0], 
                             context_size=context_size, 
-                            hidden_size=32, 
-                            depth=3, 
+                            hidden_size=16,
+                            depth=3,
                             key=None)
 neuralnet = MultiMLP(data_size=2,
-                     int_size=128,
-                     hidden_size=128, 
+                     int_size=intermediate_size,
+                     hidden_size=32,
                      context_size=context_size,
                      ctx_utils=contexts_.ctx_utils,
                      key=mother_key)
 
 model = NeuralODE(neuralnet=neuralnet,
                     taylor_order=taylor_orders[0],
-                    ad_mode=ad_mode,
+                    taylor_ad_mode=taylor_ad_mode,
                     ivp_args=ivp_args,
                     t_eval=train_dataloader.dataset.t_eval.tolist())
 
@@ -227,8 +228,8 @@ learner = Learner(model=model,
                 key=model_key)
 
 
-model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
-print("\n\nTotal number of parameters in the model:", model_params)
+print("\n\nTotal number of parameters in the model:", count_params(model))
+print("Total number of parameters in the contexts:", count_params(contexts_))
 
 
 
@@ -299,30 +300,20 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
-# ind_crit, _ = visualtester.evaluate(val_dataloader, 
-#                                     nb_inner_steps=nb_inner_steps,
-#                                     max_eval_batches=max_eval_batches)
-
-# all_shots_dataloader = NumpyLoader(CelebADataset(data_folder, 
-#                                             data_split="train",
-#                                             num_shots=np.prod(resolution), 
-#                                             order_pixels=False, 
-#                                             seed=seed), 
-#                               batch_size=envs_batch_size, 
-#                               shuffle=True,
-#                               num_workers=24,
-#                               drop_last=False)
-
+ind_crit, _ = visualtester.evaluate(val_dataloader, 
+                                    taylor_order=taylor_orders[1], 
+                                    print_error_every=print_error_every,
+                                    nb_inner_steps=nb_inner_steps_eval,
+                                    max_eval_batches=max_eval_batches,
+                                    verbose=True)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
-# visualtester.visualizeFewShotsMulti(few_shots_loader=train_dataloader,
-#                                     all_shots_loader=all_shots_dataloader,
-#                                     nb_inner_steps=nb_inner_steps_eval,
-#                                     num_envs=6,
-#                                     save_path=run_folder+"few_shots_multi_ind.png",
-#                                     key=jax.random.PRNGKey(time.time_ns())
-#                              );
+visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
+                                data_loader=val_dataloader,
+                                traj=0)
+
+
 
 #%%
 
@@ -348,16 +339,7 @@ if meta_test:
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    # opt_adapt = optax.sgd(init_lr_ctx)
-    # _, contexts, aux_data = trainer.meta_test(adapt_dataloader,
-    #                                         nb_inner_steps=nb_inner_steps[1],
-    #                                         taylor_order=taylor_orders[1],
-    #                                         optimizer=opt_adapt,
-    #                                         max_adapt_batches=max_train_batches,     ## JUST to set up adaptation for future tasks
-    #                                         print_error_every=print_error_every, 
-    #                                         save_path=adapt_folder)
-
-    ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
+    ood_crit, _ = visualtester.evaluate(adapt_dataloader,
                                         taylor_order=taylor_orders[1], 
                                         nb_inner_steps=nb_inner_steps_eval,
                                         print_error_every=print_error_every,
@@ -370,7 +352,7 @@ if meta_test:
 ## Visualise the adaptation results
 
 if meta_test:
-    all_shots_loader = NumpyLoader(DynamicsDataset(data_dir="./data/adapt_test.npz", 
+    adapt_dataloader_test = NumpyLoader(DynamicsDataset(data_dir="./data/adapt_test.npz", 
                                                    num_shots=num_shots[0], 
                                                    skip_steps=skip_steps),
                                 batch_size=num_envs[1],
@@ -380,14 +362,9 @@ if meta_test:
 
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
-    # visualtester.visualizeFewShotsMulti(few_shots_loader=adapt_dataloader,
-    #                             all_shots_loader=all_shots_loader,
-    #                             nb_inner_steps=nb_inner_steps_eval,
-    #                             num_envs=6,
-    #                             save_path=adapt_folder+"few_shots_multi_ood.png",
-    #                             key=jax.random.PRNGKey(time.time_ns())
-    #                             );
-
+    visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png", 
+                                    data_loader=adapt_dataloader_test,
+                                    traj=0)
 
 
 

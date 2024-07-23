@@ -2,7 +2,7 @@ import pickle
 from typing import Any, Tuple
 
 from selfmod.dataloader import DataLoader
-from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE, NonBatchedNeuralContextFlow, IDContextParams
+from selfmod.learner import Learner
 from selfmod.visualtester import VisualTester
 from ._utils import *
 
@@ -11,6 +11,7 @@ from ._utils import *
 
 
 #%%
+
 class Trainer:
     def __init__(self, learner:Learner, optimisers, key=None):
         """ Base class for training the models"""
@@ -72,55 +73,7 @@ class Trainer:
         eqx.tree_serialise_leaves(path+"/adapted_contexts_.eqx", self.learner.contexts_adapt)
 
 
-    # def restore_adapted_trainer(self, path):
 
-    #     print(f"\nNo adaptation, loading adaptation parameters from {path} folder ...\n")
-
-    #     histories = np.load(path+"adapt_histories_.npz")
-    #     self.losses_adapt = [histories['losses_adapt']]
-
-    #     self.opt_state_adapt = pickle.load(open(path+"/opt_state_adapt.pkl", "rb"))
-
-    def reset_contexts(self, nb_envs):
-        if hasattr(self.learner.model.vectorfield.neuralnet, "ctx_utils"):
-            mlp_utils = self.learner.model.vectorfield.neuralnet.ctx_utils[3]
-            contexts = IDContextParams(nb_envs=nb_envs, 
-                                    context_size=self.learner.context_size,
-                                    hidden_size=mlp_utils[1],
-                                    depth=mlp_utils[2], 
-                                    key=None)
-        else:
-            contexts = ArrayContextParams(nb_envs=nb_envs, 
-                                        context_size=self.learner.context_size)
-
-        return contexts
-
-
-    def reset_model(self, taylor_order, verbose=True):
-        if taylor_order==self.learner.model.taylor_order:
-            model = self.learner.model
-        else:
-            if verbose:
-                print(f"Creating a new model with taylor order {taylor_order} ...")
-            if isinstance(self.learner.model, NeuralContextFlow):
-                model = NeuralContextFlow(neuralnet=self.learner.model.neuralnet, 
-                                            taylor_order=taylor_order,
-                                            taylor_scale=self.learner.model.taylor_scale,
-                                            taylor_weight_init=self.learner.model.taylor_weight_init)
-            elif isinstance(self.learner.model, NeuralODE):
-                model = NeuralODE(neuralnet=self.learner.model.vectorfield.neuralnet, 
-                                    taylor_order=taylor_order,
-                                    ad_mode=self.learner.model.ad_mode, 
-                                    ivp_args=self.learner.model.ivp_args,
-                                    t_eval=self.learner.model.t_eval)
-            elif isinstance(self.learner.model, NonBatchedNeuralContextFlow):
-                model = NonBatchedNeuralContextFlow(neuralnet=self.learner.model.neuralnet, 
-                                                    taylor_order=taylor_order,
-                                                    taylor_scale=self.learner.model.taylor_scale,
-                                                    taylor_weight_init=self.learner.model.taylor_weight_init)
-            else:
-                raise ValueError("The model type is not supported")
-        return model
 
 
 
@@ -236,7 +189,7 @@ class NCFTrainer(Trainer):
                 nb_envs_in_batch = batch[0].shape[0]
                 weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
-                contexts = self.reset_contexts(nb_envs_in_batch)
+                contexts = self.learner.reset_contexts(nb_envs_in_batch)
                 opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
 
                 for out_step in range(nb_outer_steps):
@@ -323,8 +276,6 @@ class NCFTrainer(Trainer):
             # losses_ctx.append(loss_epochs_ctx/nb_batches)
 
 
-
-
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
         print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
@@ -379,7 +330,7 @@ class NCFTrainer(Trainer):
             nb_epochs = nb_inner_steps
 
         ## This is useful if we want to disable the taylor expansion
-        model = self.reset_model(taylor_order, verbose=verbose)
+        model = self.learner.reset_model(taylor_order, verbose=verbose)
 
         if optimizer is None:       ## To continue a previous adaptation
             if hasattr(self, 'opt_ctx'):
@@ -391,13 +342,6 @@ class NCFTrainer(Trainer):
         else:
             opt = optimizer
             self.losses_adapt = []
-
-        @eqx.filter_jit
-        def predict_step(model, contexts, batch, key):
-            ## Use the contexts and the batch to predict Y_hat
-            X, Y = batch
-            Y_hat = jax.vmap(model, in_axes=(0, 0, None))(X, contexts.params, contexts.params)
-            return X, Y, Y_hat
 
         @eqx.filter_jit
         def adapt_step(model, contexts, batch, weightings, opt_state, key):
@@ -432,7 +376,7 @@ class NCFTrainer(Trainer):
             if verbose:
                 print(f"    Training on {max_adapt_batches} batches")
 
-        contexts = self.reset_contexts(nb_envs_in_batch)
+        contexts = self.learner.reset_contexts(nb_envs_in_batch)
         opt_state_ctx = opt.init(eqx.filter(contexts, eqx.is_array))
 
 
@@ -477,7 +421,7 @@ class NCFTrainer(Trainer):
             self.save_adapted_trainer(save_path)
 
         ## Use the contexts and the batch to predict Y_hat
-        aux_data = predict_step(model, contexts, batch, key)
+        aux_data = self.learner.batch_predict(model, contexts, batch)
 
         return losses, contexts, aux_data
 
@@ -515,7 +459,6 @@ class CAVIATrainer(Trainer):
 
         key = key if key is not None else self.key
 
-        loss_fn = self.learner.loss_fn
         model = self.learner.model
         opt_state_model = self.opt_state_model
 
@@ -524,23 +467,6 @@ class CAVIATrainer(Trainer):
             backup_ctx_folder = save_path+"contexts/"
             if not os.path.exists(backup_ctx_folder):
                 os.makedirs(backup_ctx_folder)
-
-        # # @eqx.filter_jit
-        # def inner_train_step(model, contexts, batch, weightings, opt_state, key):
-        #     print(f'     ### (Re)Compiling function: {inner_train_step.__name__} ...  ')
-
-        #     def prox_loss_fn(contexts, model, batch, weightings, key):                  ## TODO this loss function is already defined as a mean across envs. MAML is environment specific !
-        #         loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-        #         return loss, aux_data
-
-        #     for _ in range(nb_inner_steps):
-        #         (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
-        #         updates, opt_state = self.opt_ctx.update(grads, opt_state)
-        #         contexts = eqx.apply_updates(contexts, updates)
-
-        #     meta_loss = loss_fn(model, contexts, batch, weightings, key)[0]
-
-        #     return meta_loss, (contexts, opt_state, loss, aux_data)
 
 
         def inner_train_step(model, contexts, batch, weightings, opt_state, key):
@@ -574,10 +500,13 @@ class CAVIATrainer(Trainer):
 
             keys = jax.random.split(key, num=nb_inner_steps)
 
-            # for i in range(nb_inner_steps): ## TODO : use scan for longer inner step counts
+            ####### Use the simple update rule  #######
+            # for i in range(nb_inner_steps):
             #     contexts, opt_state, loss, aux_data = step(contexts, model, batch, opt_state, keys[i])
+            ##########################################
 
-            ## Use the scan algorithm
+
+            # ####### Use the scan algorithm  #######
             def body_func(carry, key):
                 contexts, opt_state = carry
                 contexts = eqx.combine(contexts, contexts_stat)
@@ -593,6 +522,7 @@ class CAVIATrainer(Trainer):
             contexts = eqx.combine(contexts_dyn, contexts_stat)
 
             aux_data = [jnp.mean(term) for term in aux_datas]
+            # ##########################################
 
             meta_loss = self.learner.loss_fn(model, contexts, batch, weightings, key)[0]
 
@@ -662,12 +592,11 @@ class CAVIATrainer(Trainer):
                 weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
                 ## Reset the context and the optimizer
-                contexts = self.reset_contexts(nb_envs_in_batch)
+                contexts = self.learner.reset_contexts(nb_envs_in_batch)
                 opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
 
                 loss_key, _ = jax.random.split(loss_key)
                 opt_states = (opt_state_model, opt_state_ctx)
-                # print("Model t_eval final:", self.learner.model.t_eval)
                 model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
 
                 opt_state_model, _ = opt_states
@@ -677,7 +606,6 @@ class CAVIATrainer(Trainer):
                 step += 1
 
                 losses.append(loss)
-
 
                 if epoch%print_every_epoch==0 or epoch==nb_epochs-1:
                     if env_batch%print_every_batch==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
@@ -721,7 +649,7 @@ class CAVIATrainer(Trainer):
 
                 ## Check if val loss is lowest to save the model
                 if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
-                    print(f"        Saving best model so far ...", end="\n")
+                    print(f"     Saving best model so far ...", end="\n")
                     self.learner.save_learner(save_path)
                 ## Restore the learner at the last evaluation step
                 if epoch == nb_epochs-1:
@@ -772,7 +700,7 @@ class CAVIATrainer(Trainer):
         loss_fn = self.learner.loss_fn
 
         ## This is useful if we want to disable the taylor expansion
-        model = self.reset_model(taylor_order)
+        model = self.learner.reset_model(taylor_order, verbose=verbose)
 
         if optimizer is None:       ## To continue a previous adaptation
             if hasattr(self, 'opt_ctx'):
@@ -784,14 +712,6 @@ class CAVIATrainer(Trainer):
         else:
             opt = optimizer
             self.losses_adapt = []
-
-
-        @eqx.filter_jit
-        def predict_step(model, contexts, batch, key):
-            ## Use the contexts and the batch to predict Y_hat
-            X, Y = batch
-            Y_hat = jax.vmap(model, in_axes=(0, 0, None))(X, contexts.params, contexts.params)
-            return X, Y, Y_hat
 
         @eqx.filter_jit
         def adapt_step_cavia(model, contexts, batch, weightings, opt_state, opt, env_loss_fn, key):
@@ -849,7 +769,7 @@ class CAVIATrainer(Trainer):
             nb_envs_in_batch = batch[0].shape[0]
             weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
-            contexts = self.reset_contexts(nb_envs_in_batch)
+            contexts = self.learner.reset_contexts(nb_envs_in_batch)
             opt_state = opt.init(contexts)
 
             for inner_step in range(nb_inner_steps):
@@ -884,63 +804,11 @@ class CAVIATrainer(Trainer):
             self.save_adapted_trainer(save_path)
 
         ## Use the contexts and the batch to predict Y_hat
-        aux_data = predict_step(model, contexts, batch, key)
+        aux_data = self.learner.batch_predict(model, contexts, batch)
 
         return losses, contexts, aux_data
 
 
-
-
-
-# @eqx.filter_jit
-# def predict_step(model, contexts, batch, key):
-#     ## Use the contexts and the batch to predict Y_hat
-#     X, Y = batch
-#     Y_hat = jax.vmap(model, in_axes=(0, 0, None))(X, contexts.params, contexts.params)
-#     return X, Y, Y_hat
-
-
-# @eqx.filter_jit
-# def adapt_step_proxi(model, contexts, batch, weightings, opt_state, opt, loss_fn, key):
-#     print('     ### (Re)Compiling function "adapt_step" for context ... ')
-
-#     loss_fn_ = lambda contexts, model, batch, weightings, key: loss_fn(model, contexts, batch, weightings, key)
-
-#     (loss, aux_data), grads = eqx.filter_value_and_grad(loss_fn_, has_aux=True)(contexts, model, batch, weightings, key)
-
-#     updates, opt_state = opt.update(grads, opt_state)
-#     contexts = eqx.apply_updates(contexts, updates)
-
-#     return model, contexts, opt_state, loss, aux_data
-
-
-
-
-# @eqx.filter_jit
-# def adapt_step_cavia(model, contexts, batch, weightings, opt_state, opt, env_loss_fn, key):
-#     print(f'     ### (Re)Compiling function: {adapt_step_cavia.__name__} ...  ')
-
-#     nb_envs, context_size = contexts.params.shape
-
-#     env_loss_fn_ = lambda ctx, model, batch, ctxs, key: env_loss_fn(model, batch, ctx, ctxs, key)
-
-#     ctx_grad_fn = eqx.filter_value_and_grad(env_loss_fn_, has_aux=True)
-#     keys = jax.random.split(key, num=nb_envs)
-#     (loss, aux_data), grads = eqx.filter_vmap(ctx_grad_fn, in_axes=(0, None, 0, None, 0))(contexts.params, model, batch, contexts.params, keys)
-
-#     #### ===== Optimizer approach
-#     grads_pytree = ArrayContextParams(nb_envs, context_size)
-#     grads_pytree = eqx.tree_at(lambda ptree: ptree.params, grads_pytree, grads)
-#     updates, opt_state = opt.update(grads_pytree, opt_state)
-#     contexts = eqx.apply_updates(contexts, updates)
-#     #### =====
-
-#     # #### ===== Simple update rule approach
-#     # new_params = contexts.params - 0.1*grads
-#     # contexts = eqx.tree_at(lambda ptree: ptree.params, contexts, new_params)
-#     # #### =====
-
-#     return model, contexts, opt_state, jnp.mean(loss), aux_data
 
 
 

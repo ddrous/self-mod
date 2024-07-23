@@ -258,3 +258,7 @@ def RK4(fun, t_span, y0, args, *, t_eval=None, subdivisions=1, **kwargs):
 
     _, ys = jax.lax.scan(step, (t_solve[0], y0), t_solve[:])
     return ys[eval_indices, :]
+
+
+def count_params(module):
+    return sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(module, eqx.is_array)) if x is not None)

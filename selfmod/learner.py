@@ -50,6 +50,60 @@ class Learner:
 
 
 
+    def reset_model(self, taylor_order, verbose=True):
+        if taylor_order==self.model.taylor_order:
+            model = self.model
+        else:
+            if verbose:
+                print(f"    Creating a new model with taylor order {taylor_order} ...")
+            if isinstance(self.model, NeuralContextFlow):
+                model = NeuralContextFlow(neuralnet=self.model.neuralnet, 
+                                            taylor_order=taylor_order,
+                                            taylor_scale=self.model.taylor_scale,
+                                            taylor_weight_init=self.model.taylor_weight_init)
+            elif isinstance(self.model, NeuralODE):
+                model = NeuralODE(neuralnet=self.model.vectorfield.neuralnet, 
+                                    taylor_order=taylor_order,
+                                    taylor_ad_mode=self.model.taylor_ad_mode, 
+                                    ivp_args=self.model.ivp_args,
+                                    t_eval=self.model.t_eval)
+            elif isinstance(self.model, NonBatchedNeuralContextFlow):
+                model = NonBatchedNeuralContextFlow(neuralnet=self.model.neuralnet, 
+                                                    taylor_order=taylor_order,
+                                                    taylor_scale=self.model.taylor_scale,
+                                                    taylor_weight_init=self.model.taylor_weight_init)
+            else:
+                raise ValueError("The model type is not supported")
+        return model
+
+
+    def reset_contexts(self, nb_envs):
+        if hasattr(self.model.vectorfield.neuralnet, "ctx_utils"):
+            mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
+            contexts = IDContextParams(nb_envs=nb_envs, 
+                                    context_size=self.context_size,
+                                    hidden_size=mlp_utils[1],
+                                    depth=mlp_utils[2], 
+                                    key=None)
+        else:
+            contexts = ArrayContextParams(nb_envs=nb_envs, 
+                                        context_size=self.context_size)
+
+        return contexts
+
+
+    @eqx.filter_jit
+    def batch_predict(self, model, contexts, batch):
+        """ Predict Y_hat for a batch issued from a dataloader
+            CSM may or may not be deleted from the model; 
+            as this function ensures the deactivation of CSM"""
+        X, Y = batch
+        Y_hat = eqx.filter_vmap(model, in_axes=(0, 0, 0))(X, contexts.params, contexts.params)
+        return X, Y, Y_hat
+
+
+
+
 
 
 
@@ -282,12 +336,12 @@ class SelfModVectorField(eqx.Module):
     """ A vector field with fixed Taylor order """
     neuralnet: eqx.Module
     taylor_order: int
-    ad_mode: str
+    taylor_ad_mode: str
 
-    def __init__(self, neuralnet, taylor_order, ad_mode):
+    def __init__(self, neuralnet, taylor_order, taylor_ad_mode):
         self.neuralnet = neuralnet
         self.taylor_order = taylor_order
-        self.ad_mode = ad_mode
+        self.taylor_ad_mode = taylor_ad_mode
 
     def __call__(self, t, x, args):
         ctx, ctx_ = args
@@ -298,10 +352,10 @@ class SelfModVectorField(eqx.Module):
             return vf(ctx)
 
         elif self.taylor_order==1:
-            if self.ad_mode=="forward":
+            if self.taylor_ad_mode=="forward":
                 gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
                 taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
-            elif self.ad_mode=="reverse":
+            elif self.taylor_ad_mode=="reverse":
                 jac = eqx.filter_jacrev(vf)(ctx_)
                 taylor_exp = vf(ctx_) + jac @ (ctx-ctx_)
             else:
@@ -310,22 +364,22 @@ class SelfModVectorField(eqx.Module):
             return taylor_exp
 
         elif self.taylor_order==2:
-            if self.ad_mode=="forward":
+            if self.taylor_ad_mode=="forward":
                 gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
                 scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
                 taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
-            elif self.ad_mode=="reverse":
-                pass
-                ## TODO: for tomorrow using for loop
-
-
+            elif self.taylor_ad_mode=="reverse":
+                print("WARNING: Reverse-mode AD for 2nd order Taylor expansion materialises the Hessian and is unstable for the CAVIA algorithm. Consider reducing the Taylor order or using forward-mode AD.")
+                jac = eqx.filter_jacrev(vf)(ctx_)
+                hess = eqx.filter_jacrev(eqx.filter_jacrev(vf))(ctx_)
+                taylor_exp = vf(ctx_) + jac @ (ctx-ctx_) + 0.5 * (hess @ (ctx-ctx_)) @ (ctx-ctx_)
             else:
                 raise ValueError("Invalid AD mode provided.")
 
             return taylor_exp
 
         else:
-            if self.ad_mode=="forward":
+            if self.taylor_ad_mode=="forward":
                 h0 = ctx_
                 h1 = ctx-ctx_
                 h2 = jnp.zeros_like(h0)
@@ -349,14 +403,14 @@ class NeuralODE(eqx.Module):
     vectorfield: eqx.Module
     ivp_args: dict
     taylor_order: int
-    ad_mode: str
+    taylor_ad_mode: str
     t_eval: tuple
 
-    def __init__(self, neuralnet, taylor_order, ivp_args=None, t_eval=None, ad_mode="forward"):
+    def __init__(self, neuralnet, taylor_order, ivp_args=None, t_eval=None, taylor_ad_mode="forward"):
         self.ivp_args = ivp_args if ivp_args is not None else {}
-        self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order, ad_mode=ad_mode)
+        self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order, taylor_ad_mode=taylor_ad_mode)
         self.taylor_order = taylor_order
-        self.ad_mode = ad_mode
+        self.taylor_ad_mode = taylor_ad_mode
 
         if t_eval is None:
             self.t_eval = (0., ivp_args.get("T", 1.))

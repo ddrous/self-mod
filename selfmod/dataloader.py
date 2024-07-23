@@ -494,6 +494,7 @@ class DynamicsDataset:
 
         self.data_dir = data_dir
         self.skip_steps = skip_steps
+        self.adaptation = data_dir.find("adapt") != -1 or data_dir.find("ood") != -1
 
         try:
             raw_data = np.load(data_dir)
