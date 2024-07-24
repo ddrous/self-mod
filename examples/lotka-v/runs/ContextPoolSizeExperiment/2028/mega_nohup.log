@@ -1,0 +1,34 @@
+cp: cannot stat '../../../../selfmod': No such file or directory
+cp: cannot stat '../../../../selfmod': No such file or directory
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/lotka-v/runs/ContextPoolSizeExperiment/2028/1.py", line 309, in <module>
+    visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
+  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 400, in visualize_dynamics
+    ax[e, 0].set_ylim(min(xlim_0, ylim_0)-eps, max(xlim_1, ylim_1)+eps)
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 3898, in set_ylim
+    return self.yaxis._set_lim(bottom, top, emit=emit, auto=auto)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/axis.py", line 1210, in _set_lim
+    v0 = self.axes._validate_converted_limits(v0, self.convert_units)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 3585, in _validate_converted_limits
+    raise ValueError("Axis limits cannot be NaN or Inf")
+ValueError: Axis limits cannot be NaN or Inf
+cp: cannot stat '../../../../selfmod': No such file or directory
+cp: cannot stat '../../../../selfmod': No such file or directory
+cp: cannot stat '../../../../selfmod': No such file or directory
+cp: cannot stat '../../../../selfmod': No such file or directory
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/lotka-v/runs/ContextPoolSizeExperiment/2028/8.py", line 308, in <module>
+    visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
+  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 400, in visualize_dynamics
+    ax[e, 0].set_ylim(min(xlim_0, ylim_0)-eps, max(xlim_1, ylim_1)+eps)
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 3898, in set_ylim
+    return self.yaxis._set_lim(bottom, top, emit=emit, auto=auto)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/axis.py", line 1210, in _set_lim
+    v0 = self.axes._validate_converted_limits(v0, self.convert_units)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 3585, in _validate_converted_limits
+    raise ValueError("Axis limits cannot be NaN or Inf")
+ValueError: Axis limits cannot be NaN or Inf
