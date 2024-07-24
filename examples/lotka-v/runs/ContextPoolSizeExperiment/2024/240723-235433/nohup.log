@@ -231,7 +231,3 @@ Total gradient descent adaptation time: 0 hours 0 mins 1 secs
     Visualized context dimensions along x: [9 9 4]
     Visualized context dimensions along y: [ 4 10  8]
 Saving artefacts in: ./240723-235433/adapt/artefacts.png
-==  Begining out-of-distribution dynamics visualisation ... ==
-    Trajectory id: 0
-    Visualized dimensions: (0, 1)
-Testing finished. Figure saved in: ./240723-235433/adapt/dynamics.png
