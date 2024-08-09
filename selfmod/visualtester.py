@@ -16,12 +16,14 @@ class VisualTester:
     @abstractmethod
     def evaluate(self, 
                  dataloader, 
+                 nb_epochs=500,
                  nb_inner_steps=10,
                  print_error_every=(10, 10),
                  loss_criterion=None, 
                  criterion_id=0, 
                  max_eval_batches=-1, 
                  taylor_order=0, 
+                 val_dataloader=None,
                  verbose=False):
         """
         Adapt and compute test metrics on the adaptation dataloader.
@@ -31,10 +33,12 @@ class VisualTester:
 
         ## Adapt and extract the losses for each batch of environment
         losses, _, _ = self.trainer.meta_test(dataloader, 
+                                            nb_epochs=nb_epochs,
                                             nb_inner_steps=nb_inner_steps, 
                                             max_adapt_batches=max_eval_batches,
                                             print_error_every=print_error_every,
                                             taylor_order=taylor_order, 
+                                            val_dataloader=val_dataloader,
                                             verbose=verbose)
 
 
@@ -350,6 +354,7 @@ class DynamicsVisualTester(VisualTester):
         print("    Trajectory id:", traj)
         print("    Visualized dimensions:", dims)
 
+        ## TODO check is learner.reset_model is True, otherwise, relearn the contexts
         ## Dynamics models are handled in a single batch, so the saved contexts can be reused
         if data_loader.dataset.adaptation == False:
             contexts = self.trainer.learner.contexts

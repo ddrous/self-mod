@@ -5,7 +5,15 @@ from jax.experimental.jet import jet
 
 
 class Learner:
-    def __init__(self, model, env_loss_fn, context_size, context_pool_size, contexts=None, key=None):
+    def __init__(self, 
+                 model, 
+                 env_loss_fn, 
+                 context_size, 
+                 context_pool_size, 
+                 pool_filling="NF", 
+                 contexts=None, 
+                 reuse_contexts=False,
+                 key=None):
         if key is None:
             raise ValueError("You must provide a key for the learner.")
         self.key = key
@@ -13,13 +21,30 @@ class Learner:
         self.model = model
         self.context_size = context_size
         self.context_pool_size = context_pool_size
+        self.pool_filling = pool_filling
+        self.reuse_contexts = reuse_contexts
 
         def env_loss_fn_(model, batch, ctx, ctxs, key):
             """ Wrapping the loss function before vectorizing it below """
             X, Y = batch
 
-            ind = jax.random.permutation(key, ctxs.shape[0])[:self.context_pool_size]
-            ctx_pool = ctxs[ind, :]
+            if self.pool_filling=="RA":         ## Randomly fill the context pool
+                ind = jax.random.permutation(key, ctxs.shape[0])[:self.context_pool_size]
+                ctx_pool = ctxs[ind, :]
+            elif self.pool_filling=="NF":       ## Fill the context with the nearest first
+                dists = jnp.mean(jnp.abs(ctxs-ctx), axis=1)
+                ind = jnp.argsort(dists)[:self.context_pool_size]
+                ctx_pool = ctxs[ind, :]
+            elif self.pool_filling=="NF*":      ## Same as NF, but excluding the current context
+                dists = jnp.mean(jnp.abs(ctxs-ctx), axis=1)
+                ind = jnp.argsort(dists)[1:self.context_pool_size+1]
+                ctx_pool = ctxs[ind, :]
+            elif self.pool_filling=="SF":       ## Smallest contexts first
+                dists = jnp.mean(jnp.abs(ctxs), axis=1)
+                ind = jnp.argsort(dists)[:self.context_pool_size]
+                ctx_pool = ctxs[ind, :]
+            else:
+                raise ValueError("Invalid pool filling strategy provided. Use one of 'RA', 'NF', 'NF*', 'SF'.")
 
             Y_hat = jax.vmap(model, in_axes=(None, None, 0))(X, ctx, ctx_pool)
             Y_new = jnp.broadcast_to(Y, Y_hat.shape)

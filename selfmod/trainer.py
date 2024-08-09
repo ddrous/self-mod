@@ -97,12 +97,16 @@ class NCFTrainer(Trainer):
                     val_dataloader=None, 
                     val_criterion_id=None, 
                     max_val_batches=None,
+                    val_nb_epochs=10,
                     key=None):
         """ Train the model using the proximal gradient descent algorithm """
 
         key = key if key is not None else self.key
 
+        if isinstance(nb_inner_steps, int):
+            nb_inner_steps = (nb_inner_steps, nb_inner_steps)
         nb_inner_steps_model, nb_inner_steps_ctx = nb_inner_steps
+
         inner_tol_model, inner_tol_ctx = inner_tols
         proximal_reg_model, proximal_reg_ctx = proximal_betas
 
@@ -198,7 +202,6 @@ class NCFTrainer(Trainer):
                     model_old = jax.tree_util.tree_map(lambda x: x, model)
                     contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
 
-
                     ## Model proximal innner minimization
                     model_prev = jax.tree_util.tree_map(lambda x: x, model)
                     for in_step_model in range(nb_inner_steps_model):
@@ -252,7 +255,8 @@ class NCFTrainer(Trainer):
                         ind_crit,_ = tester.evaluate(val_dataloader,
                                                     criterion_id=val_criterion_id,
                                                     max_eval_batches=max_val_batches,
-                                                    nb_inner_steps=nb_outer_steps,
+                                                    nb_epochs=val_nb_epochs,
+                                                    nb_inner_steps=None,
                                                     taylor_order=0, 
                                                     verbose=False)
                         print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
@@ -315,6 +319,7 @@ class NCFTrainer(Trainer):
                    optimizer=None, 
                    print_error_every=(10, 10), 
                    max_adapt_batches=None,
+                   val_dataloader=None,
                    verbose=True,
                    save_path=False, 
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
@@ -324,6 +329,9 @@ class NCFTrainer(Trainer):
 
         loss_fn = self.learner.loss_fn
         model = self.learner.model
+
+        if val_dataloader is None:
+            val_dataloader = dataloader
 
         print_every_epoch, print_every_batch = print_error_every
         if nb_inner_steps is not None:
@@ -343,20 +351,8 @@ class NCFTrainer(Trainer):
             opt = optimizer
             self.losses_adapt = []
 
-        @eqx.filter_jit
-        def adapt_step(model, contexts, batch, weightings, opt_state, key):
-            print('     ### Compiling function "adapt_step" for the contexts ...  ')
-
-            def prox_loss_fn(contexts, model, batch, weightings, key):
-                loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-                return loss, aux_data
-
-            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
-
-            updates, opt_state = opt.update(grads, opt_state)
-            contexts = eqx.apply_updates(contexts, updates)
-
-            return model, contexts, opt_state, loss, aux_data
+        if not hasattr(self, 'losses_adapt'):
+            self.losses_adapt = []
 
         if verbose:
             print(f"\n\n=== Beginning meta testing ... ===")
@@ -367,18 +363,45 @@ class NCFTrainer(Trainer):
             raise ValueError("The dataloader must be a single batch of environments for meta-testing with NCF")
         else:
             nb_envs_in_batch = dataloader.batch_size
-            weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
             nb_batches = 1
+        weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
         if max_adapt_batches is None or max_adapt_batches<1 or max_adapt_batches>dataloader.num_batches:
             max_adapt_batches = dataloader.num_batches
         else:
-            if verbose:
+            if verbose and not self.learner.reuse_contexts:
                 print(f"    Training on {max_adapt_batches} batches")
+
+        def prox_loss_fn(contexts, model, batch, weightings, key):
+            loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+            return loss, aux_data
+
+        ## Shortcut to not recreate contexts (only use this for single batch cases)
+        if verbose and self.learner.reuse_contexts:
+            print(f"    Reusing contexts for adaptation on the single bach")
+        if self.learner.reuse_contexts and not dataloader.dataset.adaptation:
+            contexts = self.learner.contexts
+            batch = next(iter(val_dataloader))
+            loss, aux_data = prox_loss_fn(contexts, model, batch, weightings, key)
+            state_data = self.learner.batch_predict(model, contexts, batch)
+
+            self.losses_adapt.append(jnp.reshape(loss, (1, 1)))
+
+            return jnp.stack(aux_data, axis=1), contexts, state_data
+
+        @eqx.filter_jit
+        def adapt_step(model, contexts, batch, weightings, opt_state, key):
+            print('     ### Compiling function "adapt_step" for the contexts ...  ')
+
+            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
+
+            updates, opt_state = opt.update(grads, opt_state)
+            contexts = eqx.apply_updates(contexts, updates)
+
+            return model, contexts, opt_state, loss, aux_data
 
         contexts = self.learner.reset_contexts(nb_envs_in_batch)
         opt_state_ctx = opt.init(eqx.filter(contexts, eqx.is_array))
-
 
         start_time = time.time()
 
@@ -388,15 +411,19 @@ class NCFTrainer(Trainer):
 
         for epoch in range(nb_epochs):
 
+            losses_epoch = []
             for env_batch, batch in enumerate(dataloader):
                 if env_batch >= max_adapt_batches:
                     break
 
                 loss_key, _ = jax.random.split(loss_key)
 
-                model, contexts, opt_state_ctx, loss_ctx, (_, term2, term3) = adapt_step(model, contexts, batch, weightings, opt_state_ctx, loss_key)
+                model, contexts, opt_state_ctx, loss_ctx, (term1, term2, term3) = adapt_step(model, contexts, batch, weightings, opt_state_ctx, loss_key)
 
                 losses.append(loss_ctx)
+                losses_epoch.append(jnp.stack([term1, term2, term3], axis=1))
+
+            losses_epochs = jnp.mean(jnp.stack(losses_epoch, axis=0), axis=0)
 
             if verbose and (epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_batches-1):
                 print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
@@ -408,21 +435,23 @@ class NCFTrainer(Trainer):
             print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
 
         losses = jnp.vstack(losses)
-        if not hasattr(self, 'losses_adapt'):
-            self.losses_adapt = []
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        if dataloader.dataset.adaptation: self.learner.contexts_adapt = contexts
-        else: self.learner.contexts = contexts
+        if dataloader.dataset.adaptation: 
+            self.learner.contexts_adapt = contexts
+        else: 
+            self.learner.contexts = contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)
 
         ## Use the contexts and the batch to predict Y_hat
-        aux_data = self.learner.batch_predict(model, contexts, batch)
+        for batch in val_dataloader:
+            pass        ## Batch is the last batch from val_dataloader
+        state_data = self.learner.batch_predict(model, contexts, batch)
 
-        return losses, contexts, aux_data
+        return losses_epochs, contexts, state_data
 
 
 
