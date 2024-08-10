@@ -116,6 +116,22 @@ class Learner:
 
         return contexts
 
+    # def reset_contexts(self, nb_envs):
+    #     if isinstance(self.contexts, IDContextParams):
+    #         mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
+    #         contexts = IDContextParams(nb_envs=nb_envs, 
+    #                                 context_size=self.context_size,
+    #                                 hidden_size=mlp_utils[1],
+    #                                 depth=mlp_utils[2], 
+    #                                 key=None)
+    #     elif isinstance(self.contexts, ArrayContextParams):
+    #         contexts = ArrayContextParams(nb_envs=nb_envs, 
+    #                                     context_size=self.context_size)
+    #     else:
+    #         raise ValueError("The context type is not supported")
+
+    #     return contexts
+
 
     @eqx.filter_jit
     def batch_predict(self, model, contexts, batch):

@@ -18,7 +18,7 @@ class VisualTester:
                  dataloader, 
                  nb_epochs=500,
                  nb_inner_steps=10,
-                 print_error_every=(10, 10),
+                 print_error_every=(100, 100),
                  loss_criterion=None, 
                  criterion_id=0, 
                  max_eval_batches=-1, 
@@ -41,8 +41,8 @@ class VisualTester:
                                             val_dataloader=val_dataloader,
                                             verbose=verbose)
 
-
         losses_means = jnp.mean(losses, axis=0)
+        # losses_means = jnp.min(losses, axis=0)
 
         ## TODO Compute the confidence intervals on the losses
 
@@ -52,6 +52,8 @@ class VisualTester:
         if verbose:
             print("==  Testing finished ... ==")
             print("    Criterion loss value:", mean_loss)
+
+        # print("\n\n All values that contribute to the loss:", mean_loss, losses[:, criterion_id], flush=True)
 
         return mean_loss, None
 

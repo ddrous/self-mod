@@ -208,7 +208,7 @@ class NCFTrainer(Trainer):
 
                         loss_key, _ = jax.random.split(loss_key)
 
-                        model, contexts, opt_state_model, loss_model, (_, term1, term2, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
+                        model, contexts, opt_state_model, loss_model, (_, term2, term3, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
 
                         ## TODO Update the weightings based on loss progress
 
@@ -224,7 +224,7 @@ class NCFTrainer(Trainer):
 
                         loss_key, _ = jax.random.split(loss_key)
 
-                        model, contexts, opt_state_ctx, loss_ctx, (_, term1, term2, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
+                        model, contexts, opt_state_ctx, loss_ctx, (_, term2, term3, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
 
                         diff_ctx = params_diff_norm_squared(contexts, contexts_prev) / params_norm_squared(contexts_prev)
                         if diff_ctx < inner_tol_ctx or out_step==0:
@@ -247,10 +247,12 @@ class NCFTrainer(Trainer):
                     # if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
                     if out_step%print_error_every==0 or out_step<=3 or out_step==dataloader.num_batches-1:
                         print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                        print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                     if val_dataloader is not None and out_step%validate_every==0:
                         self.learner.model = model
                         self.learner.contexts = contexts
+                        # print("Setting contexts in the metatrainer: \n", contexts.params)
 
                         ind_crit,_ = tester.evaluate(val_dataloader,
                                                     criterion_id=val_criterion_id,
@@ -270,7 +272,7 @@ class NCFTrainer(Trainer):
                         if out_step == nb_outer_steps-1:
                             self.learner.load_learner(save_path)
 
-                print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
+                # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                 loss_epochs_model += loss_model
                 loss_epochs_ctx += loss_ctx
@@ -328,7 +330,7 @@ class NCFTrainer(Trainer):
         key = key if key is not None else self.key
 
         loss_fn = self.learner.loss_fn
-        model = self.learner.model
+        # model = self.learner.model
 
         if val_dataloader is None:
             val_dataloader = dataloader
@@ -382,9 +384,10 @@ class NCFTrainer(Trainer):
         if self.learner.reuse_contexts and not dataloader.dataset.adaptation:
             contexts = self.learner.contexts
             batch = next(iter(val_dataloader))
+
+            # print("Using contexts in the metatester: \n", contexts.params)
             loss, aux_data = prox_loss_fn(contexts, model, batch, weightings, key)
             state_data = self.learner.batch_predict(model, contexts, batch)
-
             self.losses_adapt.append(jnp.reshape(loss, (1, 1)))
 
             return jnp.stack(aux_data, axis=1), contexts, state_data
@@ -426,7 +429,7 @@ class NCFTrainer(Trainer):
             losses_epochs = jnp.mean(jnp.stack(losses_epoch, axis=0), axis=0)
 
             if verbose and (epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_batches-1):
-                print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
 
 
         wall_time = time.time() - start_time

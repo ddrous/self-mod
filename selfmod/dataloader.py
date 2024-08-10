@@ -490,11 +490,12 @@ class DynamicsDataset:
     """
 
     # def __init__(self, meta_tain=True, support_set=True):
-    def __init__(self, data_dir, num_shots=-1, skip_steps=1):
+    def __init__(self, data_dir, num_shots=-1, skip_steps=1, adaptation=False):
 
         self.data_dir = data_dir
         self.skip_steps = skip_steps
-        self.adaptation = data_dir.find("adapt") != -1 or data_dir.find("ood") != -1
+        # self.adaptation = data_dir.find("adapt") != -1 or data_dir.find("ood") != -1
+        self.adaptation = adaptation
 
         try:
             raw_data = np.load(data_dir)

@@ -1,0 +1,47 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+Created a new run folder at: ./runs/240809-174504/
+Completed copied scripts 
+
+
+Total number of parameters in the model: 5550
+Total number of parameters in the contexts: 1854
+
+
+=== Beginning meta training ... ===
+    Number of examples in a batch along envs: 9
+    Maximum number of batches (along envs): 1
+    Total number of epochs: 1
+    Number of outer minimizations: 500
+    Maximum numbers of inner steps per outer minimizations: (20, 20)
+    Training on 1 batches
+    Validating on 1 batches
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 1.59887958     ContextsNorm: 0.00000000     Validation Criterion: 1.12554502
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:   1      LossModel: 0.29995984     ContextsNorm: 0.00012129Epoch:   0      Batch:   0      OuterStep:   2      LossModel: 0.18205421     ContextsNorm: 0.00086428Epoch:   0      Batch:   0      OuterStep:   3      LossModel: 0.14734244     ContextsNorm: 0.00141912Epoch:   0      Batch:   0      OuterStep:  10      LossModel: 0.00763637     ContextsNorm: 0.00247110     Validation Criterion: 0.13044719
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:  20      LossModel: 0.00350401     ContextsNorm: 0.00256744     Validation Criterion: 0.13203961
+Epoch:   0      Batch:   0      OuterStep:  30      LossModel: 0.00121802     ContextsNorm: 0.00265995     Validation Criterion: 0.16432178
+Epoch:   0      Batch:   0      OuterStep:  40      LossModel: 0.00051209     ContextsNorm: 0.00272382     Validation Criterion: 0.17250077
+Epoch:   0      Batch:   0      OuterStep:  50      LossModel: 0.00033705     ContextsNorm: 0.00282236     Validation Criterion: 0.13924646
+Epoch:   0      Batch:   0      OuterStep:  60      LossModel: 0.00019880     ContextsNorm: 0.00300458     Validation Criterion: 0.17429614
+Epoch:   0      Batch:   0      OuterStep:  70      LossModel: 0.00019924     ContextsNorm: 0.00305968     Validation Criterion: 0.06434881
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:  80      LossModel: 0.00099735     ContextsNorm: 0.00290478     Validation Criterion: 0.14989057
+Epoch:   0      Batch:   0      OuterStep:  90      LossModel: 0.00009214     ContextsNorm: 0.00294457     Validation Criterion: 0.15420619
+Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.00023953     ContextsNorm: 0.00285399     Validation Criterion: 0.07917673
+Epoch:   0      Batch:   0      OuterStep: 110      LossModel: 0.00011037     ContextsNorm: 0.00271065     Validation Criterion: 0.16001548
+Epoch:   0      Batch:   0      OuterStep: 120      LossModel: 0.00011352     ContextsNorm: 0.00262606     Validation Criterion: 0.17550991
+Epoch:   0      Batch:   0      OuterStep: 130      LossModel: 0.00007773     ContextsNorm: 0.00267938     Validation Criterion: 0.18555428
+Epoch:   0      Batch:   0      OuterStep: 140      LossModel: 0.00011525     ContextsNorm: 0.00264298     Validation Criterion: 0.20059225
+Epoch:   0      Batch:   0      OuterStep: 150      LossModel: 0.00007154     ContextsNorm: 0.00259173     Validation Criterion: 0.15017717
+Epoch:   0      Batch:   0      OuterStep: 160      LossModel: 0.00015160     ContextsNorm: 0.00259495     Validation Criterion: 0.19301103
+Epoch:   0      Batch:   0      OuterStep: 170      LossModel: 0.00006943     ContextsNorm: 0.00270301     Validation Criterion: 0.13484375
+Epoch:   0      Batch:   0      OuterStep: 180      LossModel: 0.00005609     ContextsNorm: 0.00267764     Validation Criterion: 0.14017235
+Epoch:   0      Batch:   0      OuterStep: 190      LossModel: 0.00010855     ContextsNorm: 0.00270980     Validation Criterion: 0.16728310
+Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.00008936     ContextsNorm: 0.00276141     Validation Criterion: 0.16022788
