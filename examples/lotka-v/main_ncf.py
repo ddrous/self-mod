@@ -185,45 +185,45 @@ class MultiMLP(eqx.Module):
         return y
 
 
-# ## Define model and loss function for the learner
-class MultiMLP(eqx.Module):
-    layers_data: list
-    layers_context: list
-    layers_shared: list
-    activations: list
+# # ## Define model and loss function for the learner
+# class MultiMLP(eqx.Module):
+#     layers_data: list
+#     layers_context: list
+#     layers_shared: list
+#     activations: list
 
-    def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
+#     def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
 
-        keys = jax.random.split(key, num=12)
-        self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+#         keys = jax.random.split(key, num=12)
+#         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
-        self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0], 
-                               eqx.nn.Linear(hidden_size, int_size, key=keys[1])]
+#         self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0], 
+#                                eqx.nn.Linear(hidden_size, int_size, key=keys[1])]
 
-        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
-                            eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
+#         self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
+#                             eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
 
-        self.layers_shared = [eqx.nn.Linear(int_size+int_size, hidden_size, key=keys[6]), self.activations[4], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
-                              eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
+#         self.layers_shared = [eqx.nn.Linear(int_size+int_size, hidden_size, key=keys[6]), self.activations[4], 
+#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+#                               eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
 
-    def __call__(self, t, y, ctx_arr):
-        t_arr = jnp.array([t])
+#     def __call__(self, t, y, ctx_arr):
+#         t_arr = jnp.array([t])
 
-        ctx = ctx_arr
-        for layer in self.layers_context:
-            ctx = layer(ctx)
+#         ctx = ctx_arr
+#         for layer in self.layers_context:
+#             ctx = layer(ctx)
 
-        y = jnp.concatenate([t_arr, y], axis=0)
-        for layer in self.layers_data:
-            y = layer(y)
+#         y = jnp.concatenate([t_arr, y], axis=0)
+#         for layer in self.layers_data:
+#             y = layer(y)
 
-        y = jnp.concatenate([y, ctx], axis=0)
-        for layer in self.layers_shared:
-            y = layer(y)
+#         y = jnp.concatenate([y, ctx], axis=0)
+#         for layer in self.layers_shared:
+#             y = layer(y)
 
-        return y
+#         return y
 
 
 

@@ -249,7 +249,7 @@ class NCFTrainer(Trainer):
                         print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
                         print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
-                    if val_dataloader is not None and out_step%validate_every==0:
+                    if val_dataloader is not None and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
                         self.learner.model = model
                         self.learner.contexts = contexts
                         # print("Setting contexts in the metatrainer: \n", contexts.params)
@@ -503,7 +503,6 @@ class CAVIATrainer(Trainer):
             if not os.path.exists(backup_ctx_folder):
                 os.makedirs(backup_ctx_folder)
 
-
         def inner_train_step(model, contexts, batch, weightings, opt_state, key):
             print(f'     ### (Re)Compiling function: {inner_train_step.__name__} ...  ')
 
@@ -602,7 +601,6 @@ class CAVIATrainer(Trainer):
 
         print_every_epoch, print_every_batch = print_error_every
 
-
         start_time = time.time()
 
         losses = []
@@ -643,6 +641,8 @@ class CAVIATrainer(Trainer):
 
                 losses.append(loss)
 
+                # print("All loss terms: ", term1, term2, term3)
+
                 if epoch%print_every_epoch==0 or epoch==nb_epochs-1:
                     if env_batch%print_every_batch==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
                         print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
@@ -665,8 +665,9 @@ class CAVIATrainer(Trainer):
                 print()
 
 
-            if val_dataloader is not None and epoch%validate_every==0:
+            if val_dataloader is not None and (epoch%validate_every==0 or epoch==nb_epochs-1):
                 self.learner.model = model
+                self.learner.contexts = contexts
 
                 ind_crit,_ = tester.evaluate(dataloader,
                                             criterion_id=val_criterion_id,
