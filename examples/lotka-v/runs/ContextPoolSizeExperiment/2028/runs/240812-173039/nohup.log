@@ -1,0 +1,256 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+Created a new run folder at: ./runs/240812-173039/
+Completed copied scripts 
+
+
+Total number of parameters in the model: 4526
+Total number of parameters in the contexts: 18
+
+
+=== Beginning meta training ... ===
+    Number of examples in a batch: 9
+    Total number of batches : 1
+    Numbers of inner steps : 1
+    Training on 1 batches
+    Validating on 1 batches
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   0    Loss: 3.16899085     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 2.35268331
+        Saving best model so far ...
+Epoch:  10      Batch:   0    Loss: 0.33194280     ContextsNorm: 0.00000000
+Epoch:  20      Batch:   0    Loss: 0.31648558     ContextsNorm: 0.00000000
+Epoch:  30      Batch:   0    Loss: 0.28954187     ContextsNorm: 0.00000000
+Epoch:  40      Batch:   0    Loss: 0.24443202     ContextsNorm: 0.00000000
+Epoch:  50      Batch:   0    Loss: 0.18669969     ContextsNorm: 0.00000000
+Epoch:  60      Batch:   0    Loss: 0.17304438     ContextsNorm: 0.00000000
+Epoch:  70      Batch:   0    Loss: 0.16417211     ContextsNorm: 0.00000000
+Epoch:  80      Batch:   0    Loss: 0.15545201     ContextsNorm: 0.00000000
+Epoch:  90      Batch:   0    Loss: 0.14700226     ContextsNorm: 0.00000000
+Epoch: 100      Batch:   0    Loss: 0.13398030     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.15115434
+        Saving best model so far ...
+Epoch: 110      Batch:   0    Loss: 0.11431929     ContextsNorm: 0.00000000
+Epoch: 120      Batch:   0    Loss: 0.09009255     ContextsNorm: 0.00000000
+Epoch: 130      Batch:   0    Loss: 0.07991756     ContextsNorm: 0.00000000
+Epoch: 140      Batch:   0    Loss: 0.07981800     ContextsNorm: 0.00000000
+Epoch: 150      Batch:   0    Loss: 0.07699563     ContextsNorm: 0.00000000
+Epoch: 160      Batch:   0    Loss: 0.07567199     ContextsNorm: 0.00000000
+Epoch: 170      Batch:   0    Loss: 0.07361832     ContextsNorm: 0.00000000
+Epoch: 180      Batch:   0    Loss: 0.06879118     ContextsNorm: 0.00000000
+Epoch: 190      Batch:   0    Loss: 0.05196419     ContextsNorm: 0.00000000
+Epoch: 200      Batch:   0    Loss: 0.04992572     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.05544519
+        Saving best model so far ...
+Epoch: 210      Batch:   0    Loss: 0.04446805     ContextsNorm: 0.00000000
+Epoch: 220      Batch:   0    Loss: 0.03869128     ContextsNorm: 0.00000000
+Epoch: 230      Batch:   0    Loss: 0.03535249     ContextsNorm: 0.00000000
+Epoch: 240      Batch:   0    Loss: 0.03276215     ContextsNorm: 0.00000000
+Epoch: 250      Batch:   0    Loss: 0.03111950     ContextsNorm: 0.00000000
+Epoch: 260      Batch:   0    Loss: 0.03031238     ContextsNorm: 0.00000000
+Epoch: 270      Batch:   0    Loss: 0.02983366     ContextsNorm: 0.00000000
+Epoch: 280      Batch:   0    Loss: 0.02951704     ContextsNorm: 0.00000000
+Epoch: 290      Batch:   0    Loss: 0.02935358     ContextsNorm: 0.00000000
+Epoch: 300      Batch:   0    Loss: 0.02916421     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.03614233
+        Saving best model so far ...
+Epoch: 310      Batch:   0    Loss: 0.02901368     ContextsNorm: 0.00000000
+Epoch: 320      Batch:   0    Loss: 0.02889246     ContextsNorm: 0.00000000
+Epoch: 330      Batch:   0    Loss: 0.02878449     ContextsNorm: 0.00000000
+Epoch: 340      Batch:   0    Loss: 0.02869539     ContextsNorm: 0.00000000
+Epoch: 350      Batch:   0    Loss: 0.02860648     ContextsNorm: 0.00000000
+Epoch: 360      Batch:   0    Loss: 0.02852656     ContextsNorm: 0.00000000
+Epoch: 370      Batch:   0    Loss: 0.02845055     ContextsNorm: 0.00000000
+Epoch: 380      Batch:   0    Loss: 0.02838241     ContextsNorm: 0.00000000
+Epoch: 390      Batch:   0    Loss: 0.02830870     ContextsNorm: 0.00000000
+Epoch: 400      Batch:   0    Loss: 0.02824328     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.03457240
+        Saving best model so far ...
+Epoch: 410      Batch:   0    Loss: 0.02817812     ContextsNorm: 0.00000000
+Epoch: 420      Batch:   0    Loss: 0.02812932     ContextsNorm: 0.00000000
+Epoch: 430      Batch:   0    Loss: 0.02805369     ContextsNorm: 0.00000000
+Epoch: 440      Batch:   0    Loss: 0.02799938     ContextsNorm: 0.00000000
+Epoch: 450      Batch:   0    Loss: 0.02793943     ContextsNorm: 0.00000000
+Epoch: 460      Batch:   0    Loss: 0.02787635     ContextsNorm: 0.00000000
+Epoch: 470      Batch:   0    Loss: 0.02782571     ContextsNorm: 0.00000000
+Epoch: 480      Batch:   0    Loss: 0.02776285     ContextsNorm: 0.00000000
+Epoch: 490      Batch:   0    Loss: 0.02770957     ContextsNorm: 0.00000000
+Epoch: 500      Batch:   0    Loss: 0.02766236     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.03295957
+        Saving best model so far ...
+Epoch: 510      Batch:   0    Loss: 0.02761180     ContextsNorm: 0.00000000
+Epoch: 520      Batch:   0    Loss: 0.02754263     ContextsNorm: 0.00000000
+Epoch: 530      Batch:   0    Loss: 0.02744828     ContextsNorm: 0.00000000
+Epoch: 540      Batch:   0    Loss: 0.02736402     ContextsNorm: 0.00000000
+Epoch: 550      Batch:   0    Loss: 0.02716897     ContextsNorm: 0.00000000
+Epoch: 560      Batch:   0    Loss: 0.02694493     ContextsNorm: 0.00000000
+Epoch: 570      Batch:   0    Loss: 0.02569140     ContextsNorm: 0.00000000
+Epoch: 580      Batch:   0    Loss: 0.01617947     ContextsNorm: 0.00000000
+Epoch: 590      Batch:   0    Loss: 0.00885915     ContextsNorm: 0.00000000
+Epoch: 600      Batch:   0    Loss: 0.00614993     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.01026568
+        Saving best model so far ...
+Epoch: 610      Batch:   0    Loss: 0.00531887     ContextsNorm: 0.00000000
+Epoch: 620      Batch:   0    Loss: 0.00481880     ContextsNorm: 0.00000000
+Epoch: 630      Batch:   0    Loss: 0.00458423     ContextsNorm: 0.00000000
+Epoch: 640      Batch:   0    Loss: 0.00443358     ContextsNorm: 0.00000000
+Epoch: 650      Batch:   0    Loss: 0.00432715     ContextsNorm: 0.00000000
+Epoch: 660      Batch:   0    Loss: 0.00422696     ContextsNorm: 0.00000000
+Epoch: 670      Batch:   0    Loss: 0.00406469     ContextsNorm: 0.00000000
+Epoch: 680      Batch:   0    Loss: 0.00396431     ContextsNorm: 0.00000000
+Epoch: 690      Batch:   0    Loss: 0.00386763     ContextsNorm: 0.00000000
+Epoch: 700      Batch:   0    Loss: 0.00377276     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00732814
+        Saving best model so far ...
+Epoch: 710      Batch:   0    Loss: 0.00367772     ContextsNorm: 0.00000000
+Epoch: 720      Batch:   0    Loss: 0.00358174     ContextsNorm: 0.00000000
+Epoch: 730      Batch:   0    Loss: 0.00348436     ContextsNorm: 0.00000000
+Epoch: 740      Batch:   0    Loss: 0.00338630     ContextsNorm: 0.00000000
+Epoch: 750      Batch:   0    Loss: 0.00328854     ContextsNorm: 0.00000000
+Epoch: 760      Batch:   0    Loss: 0.00318846     ContextsNorm: 0.00000000
+Epoch: 770      Batch:   0    Loss: 0.00309039     ContextsNorm: 0.00000000
+Epoch: 780      Batch:   0    Loss: 0.00299454     ContextsNorm: 0.00000000
+Epoch: 790      Batch:   0    Loss: 0.00289868     ContextsNorm: 0.00000000
+Epoch: 800      Batch:   0    Loss: 0.00280132     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00546345
+        Saving best model so far ...
+Epoch: 810      Batch:   0    Loss: 0.00270576     ContextsNorm: 0.00000000
+Epoch: 820      Batch:   0    Loss: 0.00261189     ContextsNorm: 0.00000000
+Epoch: 830      Batch:   0    Loss: 0.00251873     ContextsNorm: 0.00000000
+Epoch: 840      Batch:   0    Loss: 0.00242876     ContextsNorm: 0.00000000
+Epoch: 850      Batch:   0    Loss: 0.00234102     ContextsNorm: 0.00000000
+Epoch: 860      Batch:   0    Loss: 0.00225916     ContextsNorm: 0.00000000
+Epoch: 870      Batch:   0    Loss: 0.00217640     ContextsNorm: 0.00000000
+Epoch: 880      Batch:   0    Loss: 0.00210142     ContextsNorm: 0.00000000
+Epoch: 890      Batch:   0    Loss: 0.00202701     ContextsNorm: 0.00000000
+Epoch: 900      Batch:   0    Loss: 0.00196663     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00456358
+        Saving best model so far ...
+Epoch: 910      Batch:   0    Loss: 0.00223532     ContextsNorm: 0.00000000
+Epoch: 920      Batch:   0    Loss: 0.00206196     ContextsNorm: 0.00000000
+Epoch: 930      Batch:   0    Loss: 0.00184293     ContextsNorm: 0.00000000
+Epoch: 940      Batch:   0    Loss: 0.00177671     ContextsNorm: 0.00000000
+Epoch: 950      Batch:   0    Loss: 0.00171220     ContextsNorm: 0.00000000
+Epoch: 960      Batch:   0    Loss: 0.00164952     ContextsNorm: 0.00000000
+Epoch: 970      Batch:   0    Loss: 0.00233003     ContextsNorm: 0.00000000
+Epoch: 980      Batch:   0    Loss: 0.00248984     ContextsNorm: 0.00000000
+Epoch: 990      Batch:   0    Loss: 0.00183840     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0    Loss: 0.00162626     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00475785
+Epoch: 1010      Batch:   0    Loss: 0.00152208     ContextsNorm: 0.00000000
+Epoch: 1020      Batch:   0    Loss: 0.00149499     ContextsNorm: 0.00000000
+Epoch: 1030      Batch:   0    Loss: 0.00146147     ContextsNorm: 0.00000000
+Epoch: 1040      Batch:   0    Loss: 0.00142896     ContextsNorm: 0.00000000
+Epoch: 1050      Batch:   0    Loss: 0.00141399     ContextsNorm: 0.00000000
+Epoch: 1060      Batch:   0    Loss: 0.00139111     ContextsNorm: 0.00000000
+Epoch: 1070      Batch:   0    Loss: 0.00137818     ContextsNorm: 0.00000000
+Epoch: 1080      Batch:   0    Loss: 0.00137013     ContextsNorm: 0.00000000
+Epoch: 1090      Batch:   0    Loss: 0.00141368     ContextsNorm: 0.00000000
+Epoch: 1100      Batch:   0    Loss: 0.00207098     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00642640
+Epoch: 1110      Batch:   0    Loss: 0.00166869     ContextsNorm: 0.00000000
+Epoch: 1120      Batch:   0    Loss: 0.00140194     ContextsNorm: 0.00000000
+Epoch: 1130      Batch:   0    Loss: 0.00130568     ContextsNorm: 0.00000000
+Epoch: 1140      Batch:   0    Loss: 0.00129093     ContextsNorm: 0.00000000
+Epoch: 1150      Batch:   0    Loss: 0.00127440     ContextsNorm: 0.00000000
+Epoch: 1160      Batch:   0    Loss: 0.00125646     ContextsNorm: 0.00000000
+Epoch: 1170      Batch:   0    Loss: 0.00124253     ContextsNorm: 0.00000000
+Epoch: 1180      Batch:   0    Loss: 0.00122955     ContextsNorm: 0.00000000
+Epoch: 1190      Batch:   0    Loss: 0.00121666     ContextsNorm: 0.00000000
+Epoch: 1200      Batch:   0    Loss: 0.00120647     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00522354
+Epoch: 1210      Batch:   0    Loss: 0.00126069     ContextsNorm: 0.00000000
+Epoch: 1220      Batch:   0    Loss: 0.00139180     ContextsNorm: 0.00000000
+Epoch: 1230      Batch:   0    Loss: 0.00140211     ContextsNorm: 0.00000000
+Epoch: 1240      Batch:   0    Loss: 0.00120664     ContextsNorm: 0.00000000
+Epoch: 1250      Batch:   0    Loss: 0.00119627     ContextsNorm: 0.00000000
+Epoch: 1260      Batch:   0    Loss: 0.00118508     ContextsNorm: 0.00000000
+Epoch: 1270      Batch:   0    Loss: 0.00114574     ContextsNorm: 0.00000000
+Epoch: 1280      Batch:   0    Loss: 0.00113524     ContextsNorm: 0.00000000
+Epoch: 1290      Batch:   0    Loss: 0.00112401     ContextsNorm: 0.00000000
+Epoch: 1300      Batch:   0    Loss: 0.00111683     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00532888
+Epoch: 1310      Batch:   0    Loss: 0.00238349     ContextsNorm: 0.00000000
+Epoch: 1320      Batch:   0    Loss: 0.00131372     ContextsNorm: 0.00000000
+Epoch: 1330      Batch:   0    Loss: 0.00123665     ContextsNorm: 0.00000000
+Epoch: 1340      Batch:   0    Loss: 0.00118605     ContextsNorm: 0.00000000
+Epoch: 1350      Batch:   0    Loss: 0.00109052     ContextsNorm: 0.00000000
+Epoch: 1360      Batch:   0    Loss: 0.00109132     ContextsNorm: 0.00000000
+Epoch: 1370      Batch:   0    Loss: 0.00106484     ContextsNorm: 0.00000000
+Epoch: 1380      Batch:   0    Loss: 0.00105703     ContextsNorm: 0.00000000
+Epoch: 1390      Batch:   0    Loss: 0.00104475     ContextsNorm: 0.00000000
+Epoch: 1400      Batch:   0    Loss: 0.00103878     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00528504
+Epoch: 1410      Batch:   0    Loss: 0.00112395     ContextsNorm: 0.00000000
+Epoch: 1420      Batch:   0    Loss: 0.00142858     ContextsNorm: 0.00000000
+Epoch: 1430      Batch:   0    Loss: 0.00133703     ContextsNorm: 0.00000000
+Epoch: 1440      Batch:   0    Loss: 0.00105396     ContextsNorm: 0.00000000
+Epoch: 1450      Batch:   0    Loss: 0.00106659     ContextsNorm: 0.00000000
+Epoch: 1460      Batch:   0    Loss: 0.00105460     ContextsNorm: 0.00000000
+Epoch: 1470      Batch:   0    Loss: 0.00099255     ContextsNorm: 0.00000000
+Epoch: 1480      Batch:   0    Loss: 0.00098859     ContextsNorm: 0.00000000
+Epoch: 1490      Batch:   0    Loss: 0.00104931     ContextsNorm: 0.00000000
+Epoch: 1499      Batch:   0    Loss: 0.00104549     ContextsNorm: 0.00000000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00506093
+
+Total gradient descent training time: 0 hours 4 mins 25 secs
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+
+=== Beginning adaptation ... ===
+    Number of environment batches: 1
+    Number of envs train steps per batch: 1
+    Total number of training steps: 1
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.08011667        OtherNorms: [0.08011667 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 0 secs
+==  Meta-evaluation ... ==
+    Test loss value: 4.56e-03 ± 2.86e-03
+    Train loss value for criterion 0: 8.01e-02
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [0 0 0]
+    Visualized context dimensions along y: [1 1 1]
+Saving artefacts in: ./runs/240812-173039/artefacts.png
+==  Begining in-domain dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 1)
+Testing finished. Figure saved in: ./runs/240812-173039/dynamics.png
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+
+=== Beginning adaptation ... ===
+    Number of environment batches: 1
+    Number of envs train steps per batch: 1
+    Total number of training steps: 1
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.05474541        OtherNorms: [0.05474541 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 1 secs
+==  Meta-evaluation ... ==
+    Test loss value: 6.31e-03 ± 2.70e-03
+    Train loss value for criterion 0: 5.47e-02
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [0 0 0]
+    Visualized context dimensions along y: [1 1 1]
+Saving artefacts in: ./runs/240812-173039/adapt/artefacts.png
