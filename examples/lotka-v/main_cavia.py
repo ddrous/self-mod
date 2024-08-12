@@ -26,7 +26,7 @@ num_workers = 0
 context_pool_size = 2
 context_size = 2
 intermediate_size = 16
-taylor_orders = (1, 0)
+taylor_orders = (0, 0)
 taylor_ad_mode = "reverse"
 
 ## "adjoint":diffrax.DirectAdjoint()} ## diffrax.BacksolveAdjoint()
@@ -41,7 +41,7 @@ sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
-nb_train_epochs = 1500
+nb_train_epochs = 500
 nb_inner_steps = 1
 nb_inner_steps_eval = 1        ## To use during evaluation and visulisation
 
@@ -253,10 +253,6 @@ def env_loss_fn(model, ctx, y_hat, y):
 #                             hidden_size=12,
 #                             depth=3,
 #                             key=None)
-
-contexts_ = ArrayContextParams(nb_envs=num_envs[0], 
-                                context_size=context_size)
-
 # neuralnet = MultiMLP(data_size=2,
 #                      int_size=intermediate_size,
 #                      hidden_size=32,
@@ -264,6 +260,10 @@ contexts_ = ArrayContextParams(nb_envs=num_envs[0],
 #                      ctx_utils=contexts_.ctx_utils,
 #                      key=mother_key)
 
+
+## Just so the model knows the kind of context to use
+contexts_ = ArrayContextParams(nb_envs=num_envs[0], 
+                                context_size=context_size)
 neuralnet = MultiMLP(data_size=2,
                      int_size=intermediate_size,
                      hidden_size=32,
@@ -281,6 +281,7 @@ learner = Learner(model=model,
                 context_size=context_size, 
                 context_pool_size=context_pool_size,
                 env_loss_fn=env_loss_fn, 
+                reuse_contexts=True,
                 contexts=contexts_,     ## Optional, but good for saving !
                 key=model_key)
 

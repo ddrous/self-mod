@@ -23,10 +23,10 @@ num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 4
+context_pool_size = 2
 context_size = 2
-intermediate_size = 32
-taylor_orders = (2, 0)
+intermediate_size = 16
+taylor_orders = (1, 0)
 taylor_ad_mode = "forward"
 pool_filling_strategy = "NF"
 reuse_contexts = True
@@ -43,7 +43,7 @@ max_train_batches = -1
 max_eval_batches = -1
 
 nb_train_epochs = 1
-nb_outer_steps = 500
+nb_outer_steps = 50
 nb_inner_steps = (20, 20)
 
 print_error_every = (10, 10)   ## every 1000 epochs, every 1 batch
@@ -140,80 +140,39 @@ val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz",
 
 
 
-# ## Define model and loss function for the learner
-class MultiMLP(eqx.Module):
-    layers_data: list
-    layers_shared: list
-    activations: list
-    ctx_utils:any
-
-    def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
-        self.ctx_utils = ctx_utils
-
-        keys = jax.random.split(key, num=12)
-        self.activations = [Swish(key=key_i) for key_i in keys[:7]]
-
-        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
-                            eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
-
-        self.layers_shared = [eqx.nn.Linear(int_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
-                              eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
-
-    def __call__(self, t, y, ctx_arr):
-
-        ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils
-        ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
-        ctx_fun = eqx.combine(ctx_params, ctx_static)
-
-        t_arr = jnp.array([t])
-
-        ctx = ctx_fun(t_arr)
-        # for layer in self.layers_context:
-        #     ctx = layer(ctx)
-
-        y = jnp.concatenate([t_arr, y], axis=0)
-        for layer in self.layers_data:
-            y = layer(y)
-
-        y = jnp.concatenate([y, ctx], axis=0)
-        for layer in self.layers_shared:
-            y = layer(y)
-
-        return y
-
-
 # # ## Define model and loss function for the learner
 # class MultiMLP(eqx.Module):
 #     layers_data: list
-#     layers_context: list
 #     layers_shared: list
 #     activations: list
+#     ctx_utils:any
 
 #     def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
+#         self.ctx_utils = ctx_utils
 
 #         keys = jax.random.split(key, num=12)
 #         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
-#         self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0], 
-#                                eqx.nn.Linear(hidden_size, int_size, key=keys[1])]
-
 #         self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
+#                             eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
 #                             eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
 
-#         self.layers_shared = [eqx.nn.Linear(int_size+int_size, hidden_size, key=keys[6]), self.activations[4], 
+#         self.layers_shared = [eqx.nn.Linear(int_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
 #                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
 #                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
 #                               eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
 
 #     def __call__(self, t, y, ctx_arr):
+
+#         ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils
+#         ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
+#         ctx_fun = eqx.combine(ctx_params, ctx_static)
+
 #         t_arr = jnp.array([t])
 
-#         ctx = ctx_arr
-#         for layer in self.layers_context:
-#             ctx = layer(ctx)
+#         ctx = ctx_fun(t_arr)
+#         # for layer in self.layers_context:
+#         #     ctx = layer(ctx)
 
 #         y = jnp.concatenate([t_arr, y], axis=0)
 #         for layer in self.layers_data:
@@ -224,6 +183,47 @@ class MultiMLP(eqx.Module):
 #             y = layer(y)
 
 #         return y
+
+
+# ## Define model and loss function for the learner
+class MultiMLP(eqx.Module):
+    layers_data: list
+    layers_context: list
+    layers_shared: list
+    activations: list
+
+    def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
+
+        keys = jax.random.split(key, num=12)
+        self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+
+        self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0], 
+                               eqx.nn.Linear(hidden_size, int_size, key=keys[1])]
+
+        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
+                            eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
+
+        self.layers_shared = [eqx.nn.Linear(int_size+int_size, hidden_size, key=keys[6]), self.activations[4], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+                              eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
+
+    def __call__(self, t, y, ctx_arr):
+        t_arr = jnp.array([t])
+
+        ctx = ctx_arr
+        for layer in self.layers_context:
+            ctx = layer(ctx)
+
+        y = jnp.concatenate([t_arr, y], axis=0)
+        for layer in self.layers_data:
+            y = layer(y)
+
+        y = jnp.concatenate([y, ctx], axis=0)
+        for layer in self.layers_shared:
+            y = layer(y)
+
+        return y
 
 
 
@@ -243,25 +243,27 @@ def env_loss_fn(model, ctx, y_hat, y):
     return loss_val, (term1, term2, 0.)
 
 ## Just so the model knows the kind of context to use
-contexts_ = InfDimContextParams(nb_envs=num_envs[0], 
-                            context_size=context_size, 
-                            hidden_size=12,
-                            depth=3,
-                            key=None)
-# contexts_ = ArrayContextParams(nb_envs=num_envs[0], 
-#                                 context_size=context_size)
-neuralnet = MultiMLP(data_size=2,
-                     int_size=intermediate_size,
-                     hidden_size=16,
-                     context_size=context_size,
-                     ctx_utils=contexts_.ctx_utils,
-                     key=mother_key)
+# contexts_ = InfDimContextParams(nb_envs=num_envs[0], 
+#                             context_size=context_size, 
+#                             hidden_size=12,
+#                             depth=3,
+#                             key=None)
 # neuralnet = MultiMLP(data_size=2,
 #                      int_size=intermediate_size,
-#                      hidden_size=32,
+#                      hidden_size=16,
 #                      context_size=context_size,
-#                      ctx_utils=None,
+#                      ctx_utils=contexts_.ctx_utils,
 #                      key=mother_key)
+
+## Just so the model knows the kind of context to use
+contexts_ = ArrayContextParams(nb_envs=num_envs[0], 
+                                context_size=context_size)
+neuralnet = MultiMLP(data_size=2,
+                     int_size=intermediate_size,
+                     hidden_size=32,
+                     context_size=context_size,
+                     ctx_utils=None,
+                     key=mother_key)
 
 model = NeuralODE(neuralnet=neuralnet,
                     taylor_order=taylor_orders[0],
@@ -356,7 +358,6 @@ ind_crit, _ = visualtester.evaluate(val_dataloader,
                                     taylor_order=taylor_orders[1], 
                                     print_error_every=print_error_every,
                                     nb_epochs=nb_adapt_epochs,
-                                    nb_inner_steps=None,
                                     max_eval_batches=max_eval_batches,
                                     verbose=True)
 
@@ -404,7 +405,6 @@ if meta_test:
     ood_crit, _ = visualtester.evaluate(adapt_dataloader,
                                         taylor_order=taylor_orders[1], 
                                         nb_epochs=nb_adapt_epochs,
-                                        nb_inner_steps=None,
                                         print_error_every=print_error_every,
                                         max_eval_batches=max_eval_batches,
                                         val_dataloader=adapt_dataloader_test,

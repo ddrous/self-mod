@@ -360,12 +360,11 @@ class NCFTrainer(Trainer):
             print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
             print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
 
-        if dataloader.num_batches != 1:
-            raise ValueError("The dataloader must be a single batch of environments for meta-testing with NCF")
-        else:
-            nb_envs_in_batch = dataloader.batch_size
-            nb_batches = 1
-        weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+        # if dataloader.num_batches != 1:
+        #     raise ValueError("The dataloader must be a single batch of environments for meta-testing with NCF")
+        # else:
+        #     nb_envs_in_batch = dataloader.batch_size
+        #     nb_batches = 1
 
         if max_adapt_batches is None or max_adapt_batches<1 or max_adapt_batches>dataloader.num_batches:
             max_adapt_batches = dataloader.num_batches
@@ -373,24 +372,24 @@ class NCFTrainer(Trainer):
             if verbose and not self.learner.reuse_contexts:
                 print(f"    Training on {max_adapt_batches} batches")
 
-        def prox_loss_fn(contexts, model, batch, weightings, key):
-            loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-            return loss, aux_data
-
         #################### Shortcut to not recreate contexts (only use this for single batch cases)
-        if verbose and self.learner.reuse_contexts:
-            print(f"    Reusing contexts for adaptation on the single bach")
-        if self.learner.reuse_contexts and not dataloader.dataset.adaptation:
+        if self.learner.reuse_contexts and not dataloader.dataset.adaptation and dataloader.num_batches==1:
+            if verbose:
+                print(f"    Reusing contexts for adaptation on the single bach")
+
             contexts = self.learner.contexts
             batch = next(iter(val_dataloader))
+            weightings = jnp.ones(dataloader.batch_size) / dataloader.batch_size
 
-            # print("Using contexts in the metatester: \n", contexts.params)
-            loss, aux_data = prox_loss_fn(contexts, model, batch, weightings, key)
+            loss, aux_data = self.learner.loss_fn(model, contexts, batch, weightings, key)
             state_data = self.learner.batch_predict(model, contexts, batch)
-            self.losses_adapt.append(jnp.reshape(loss, (1, 1)))
 
             return jnp.stack(aux_data, axis=1), contexts, state_data
         ####################
+
+        def prox_loss_fn(contexts, model, batch, weightings, key):
+            loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+            return loss, aux_data
 
         @eqx.filter_jit
         def adapt_step(model, contexts, batch, weightings, opt_state, key):
@@ -415,11 +414,14 @@ class NCFTrainer(Trainer):
         for epoch in range(nb_epochs):
 
             losses_epoch = []
+
             torch.manual_seed(loss_key[0])  # Ensure the same shuffling order
-            # for env_batch, batch in enumerate(dataloader):
             for env_batch, (batch, val_batch) in enumerate(zip(dataloader, val_dataloader)):
                 if env_batch >= max_adapt_batches:
                     break
+
+                nb_envs_in_batch = batch[0].shape[0]
+                weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
                 loss_key, _ = jax.random.split(loss_key)
 
@@ -736,8 +738,6 @@ class CAVIATrainer(Trainer):
 
         key = key if key is not None else self.key
 
-        loss_fn = self.learner.loss_fn
-
         nb_inner_steps = nb_epochs
         if val_dataloader is None:
             val_dataloader = dataloader
@@ -797,6 +797,23 @@ class CAVIATrainer(Trainer):
         else:
             if verbose:
                 print(f"    Adapting on {max_adapt_batches} batches")
+
+
+        #################### Shortcut to not recreate contexts (only use this for single batch cases)
+        if self.learner.reuse_contexts and not dataloader.dataset.adaptation and dataloader.num_batches==1:
+            if verbose:
+                print(f"    Reusing contexts for adaptation on the single bach")
+
+            contexts = self.learner.contexts
+            batch = next(iter(val_dataloader))
+            weightings = jnp.ones(dataloader.batch_size) / dataloader.batch_size
+
+            loss, aux_data = self.learner.loss_fn(model, contexts, batch, weightings, key)
+            state_data = self.learner.batch_predict(model, contexts, batch)
+
+            return jnp.stack(aux_data, axis=1), contexts, state_data
+        ####################
+
 
         print_every_epoch, print_every_batch = print_error_every
 
