@@ -272,6 +272,13 @@ class NCFTrainer(Trainer):
                         if out_step == nb_outer_steps-1:
                             self.learner.load_learner(save_path)
 
+                        # ## TODO remember to remove this (stop as soon as we get to 1e-4)
+                        # if ind_crit <= 1e-4:
+                        #     wall_time = time.time() - start_time
+                        #     time_in_hmsecs = seconds_to_hours(wall_time)
+                        #     print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
+                        #     return
+
                 # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                 loss_epochs_model += loss_model
@@ -694,6 +701,13 @@ class CAVIATrainer(Trainer):
                 ## Restore the learner at the last evaluation step
                 if epoch == nb_epochs-1:
                     self.learner.load_learner(save_path)
+
+                # ## TODO remember to remove this (stop as soon as we get to 1e-4)
+                # if ind_crit <= 1e-4:
+                #     wall_time = time.time() - start_time
+                #     time_in_hmsecs = seconds_to_hours(wall_time)
+                #     print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
+                #     return
 
             loss_epoch /= nb_batches
 

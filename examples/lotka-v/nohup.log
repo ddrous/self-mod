@@ -3,45 +3,622 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240809-174504/
+Using user-defined run folder: ./runs/240719-113446-Test/
 Completed copied scripts 
 
 
-Total number of parameters in the model: 5550
-Total number of parameters in the contexts: 1854
+Total number of parameters in the model: 8558
+Total number of parameters in the contexts: 1152
 
 
 === Beginning meta training ... ===
     Number of examples in a batch along envs: 9
     Maximum number of batches (along envs): 1
     Total number of epochs: 1
-    Number of outer minimizations: 500
+    Number of outer minimizations: 1000
     Maximum numbers of inner steps per outer minimizations: (20, 20)
     Training on 1 batches
     Validating on 1 batches
      ### Compiling function "train_step" for the model ...  
      ### Compiling function "train_step" for the contexts ...  
-Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 1.59887958     ContextsNorm: 0.00000000     Validation Criterion: 1.12554502
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 1.65674949     ContextsNorm: 0.00000000
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:    1
+	-DiffMod:   1.58e-03
+	-DiffCxt:   inf        Validation Criterion: 1.14273119
         Saving best model so far ...
-Epoch:   0      Batch:   0      OuterStep:   1      LossModel: 0.29995984     ContextsNorm: 0.00012129Epoch:   0      Batch:   0      OuterStep:   2      LossModel: 0.18205421     ContextsNorm: 0.00086428Epoch:   0      Batch:   0      OuterStep:   3      LossModel: 0.14734244     ContextsNorm: 0.00141912Epoch:   0      Batch:   0      OuterStep:  10      LossModel: 0.00763637     ContextsNorm: 0.00247110     Validation Criterion: 0.13044719
+Epoch:   0      Batch:   0      OuterStep:   1      LossModel: 0.29623353     ContextsNorm: 0.00678375
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.53e-04
+	-DiffCxt:   5.81e-03Epoch:   0      Batch:   0      OuterStep:   2      LossModel: 0.17603594     ContextsNorm: 0.01543414
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.00e-04
+	-DiffCxt:   3.39e-03Epoch:   0      Batch:   0      OuterStep:   3      LossModel: 0.14590146     ContextsNorm: 0.02050520
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   9.30e-05
+	-DiffCxt:   6.11e-04Epoch:   0      Batch:   0      OuterStep:  10      LossModel: 0.00558936     ContextsNorm: 0.02210417
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.65e-06
+	-DiffCxt:   1.05e-05        Validation Criterion: 0.01352624
         Saving best model so far ...
-Epoch:   0      Batch:   0      OuterStep:  20      LossModel: 0.00350401     ContextsNorm: 0.00256744     Validation Criterion: 0.13203961
-Epoch:   0      Batch:   0      OuterStep:  30      LossModel: 0.00121802     ContextsNorm: 0.00265995     Validation Criterion: 0.16432178
-Epoch:   0      Batch:   0      OuterStep:  40      LossModel: 0.00051209     ContextsNorm: 0.00272382     Validation Criterion: 0.17250077
-Epoch:   0      Batch:   0      OuterStep:  50      LossModel: 0.00033705     ContextsNorm: 0.00282236     Validation Criterion: 0.13924646
-Epoch:   0      Batch:   0      OuterStep:  60      LossModel: 0.00019880     ContextsNorm: 0.00300458     Validation Criterion: 0.17429614
-Epoch:   0      Batch:   0      OuterStep:  70      LossModel: 0.00019924     ContextsNorm: 0.00305968     Validation Criterion: 0.06434881
+Epoch:   0      Batch:   0      OuterStep:  20      LossModel: 0.00138499     ContextsNorm: 0.02362943
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.66e-06
+	-DiffCxt:   6.69e-06        Validation Criterion: 0.00699536
         Saving best model so far ...
-Epoch:   0      Batch:   0      OuterStep:  80      LossModel: 0.00099735     ContextsNorm: 0.00290478     Validation Criterion: 0.14989057
-Epoch:   0      Batch:   0      OuterStep:  90      LossModel: 0.00009214     ContextsNorm: 0.00294457     Validation Criterion: 0.15420619
-Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.00023953     ContextsNorm: 0.00285399     Validation Criterion: 0.07917673
-Epoch:   0      Batch:   0      OuterStep: 110      LossModel: 0.00011037     ContextsNorm: 0.00271065     Validation Criterion: 0.16001548
-Epoch:   0      Batch:   0      OuterStep: 120      LossModel: 0.00011352     ContextsNorm: 0.00262606     Validation Criterion: 0.17550991
-Epoch:   0      Batch:   0      OuterStep: 130      LossModel: 0.00007773     ContextsNorm: 0.00267938     Validation Criterion: 0.18555428
-Epoch:   0      Batch:   0      OuterStep: 140      LossModel: 0.00011525     ContextsNorm: 0.00264298     Validation Criterion: 0.20059225
-Epoch:   0      Batch:   0      OuterStep: 150      LossModel: 0.00007154     ContextsNorm: 0.00259173     Validation Criterion: 0.15017717
-Epoch:   0      Batch:   0      OuterStep: 160      LossModel: 0.00015160     ContextsNorm: 0.00259495     Validation Criterion: 0.19301103
-Epoch:   0      Batch:   0      OuterStep: 170      LossModel: 0.00006943     ContextsNorm: 0.00270301     Validation Criterion: 0.13484375
-Epoch:   0      Batch:   0      OuterStep: 180      LossModel: 0.00005609     ContextsNorm: 0.00267764     Validation Criterion: 0.14017235
-Epoch:   0      Batch:   0      OuterStep: 190      LossModel: 0.00010855     ContextsNorm: 0.00270980     Validation Criterion: 0.16728310
-Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.00008936     ContextsNorm: 0.00276141     Validation Criterion: 0.16022788
+Epoch:   0      Batch:   0      OuterStep:  30      LossModel: 0.00043581     ContextsNorm: 0.02464839
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.31e-07
+	-DiffCxt:   4.97e-06        Validation Criterion: 0.00357479
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:  40      LossModel: 0.00033014     ContextsNorm: 0.02474148
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.24e-06
+	-DiffCxt:   9.91e-06        Validation Criterion: 0.00262973
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:  50      LossModel: 0.00023864     ContextsNorm: 0.02550709
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.70e-07
+	-DiffCxt:   4.68e-06        Validation Criterion: 0.00208392
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:  60      LossModel: 0.00017905     ContextsNorm: 0.02571117
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.05e-07
+	-DiffCxt:   2.09e-05        Validation Criterion: 0.00177292
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:  70      LossModel: 0.00014797     ContextsNorm: 0.02613851
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.67e-06
+	-DiffCxt:   3.86e-05        Validation Criterion: 0.00154986
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep:  80      LossModel: 0.00016401     ContextsNorm: 0.02569371
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.05e-06
+	-DiffCxt:   1.09e-04        Validation Criterion: 0.00162057
+Epoch:   0      Batch:   0      OuterStep:  90      LossModel: 0.00026656     ContextsNorm: 0.02576336
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   9.07e-06
+	-DiffCxt:   1.70e-04        Validation Criterion: 0.00133155
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.00009818     ContextsNorm: 0.02612856
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.34e-07
+	-DiffCxt:   3.71e-06        Validation Criterion: 0.00125045
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 110      LossModel: 0.00009060     ContextsNorm: 0.02595846
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.24e-07
+	-DiffCxt:   5.99e-06        Validation Criterion: 0.00127810
+Epoch:   0      Batch:   0      OuterStep: 120      LossModel: 0.00008405     ContextsNorm: 0.02641888
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   9.61e-08
+	-DiffCxt:   2.57e-06        Validation Criterion: 0.00107572
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 130      LossModel: 0.00013887     ContextsNorm: 0.02619821
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.38e-06
+	-DiffCxt:   4.92e-05        Validation Criterion: 0.00101146
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 140      LossModel: 0.00006724     ContextsNorm: 0.02613886
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   9.77e-08
+	-DiffCxt:   3.96e-06        Validation Criterion: 0.00094452
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 150      LossModel: 0.00006273     ContextsNorm: 0.02640397
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.57e-07
+	-DiffCxt:   4.49e-06        Validation Criterion: 0.00087304
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 160      LossModel: 0.00005454     ContextsNorm: 0.02671807
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.63e-08
+	-DiffCxt:   3.87e-06        Validation Criterion: 0.00084356
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 170      LossModel: 0.00005929     ContextsNorm: 0.02703346
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.38e-07
+	-DiffCxt:   6.35e-06        Validation Criterion: 0.00077476
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 180      LossModel: 0.00009174     ContextsNorm: 0.02716173
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   8.25e-07
+	-DiffCxt:   5.11e-05        Validation Criterion: 0.00074324
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 190      LossModel: 0.00004394     ContextsNorm: 0.02674016
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.03e-07
+	-DiffCxt:   6.36e-06        Validation Criterion: 0.00071106
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.00006385     ContextsNorm: 0.02761121
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   7.11e-07
+	-DiffCxt:   2.97e-05        Validation Criterion: 0.00069194
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 210      LossModel: 0.00004266     ContextsNorm: 0.02830002
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.52e-07
+	-DiffCxt:   3.74e-06        Validation Criterion: 0.00070133
+Epoch:   0      Batch:   0      OuterStep: 220      LossModel: 0.00020553     ContextsNorm: 0.02835536
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.32e-05
+	-DiffCxt:   3.54e-04        Validation Criterion: 0.00080025
+Epoch:   0      Batch:   0      OuterStep: 230      LossModel: 0.00003188     ContextsNorm: 0.02902126
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.35e-07
+	-DiffCxt:   1.07e-05        Validation Criterion: 0.00060044
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 240      LossModel: 0.00003076     ContextsNorm: 0.02886735
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.45e-08
+	-DiffCxt:   1.30e-06        Validation Criterion: 0.00058376
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 250      LossModel: 0.00008492     ContextsNorm: 0.02832992
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.45e-06
+	-DiffCxt:   1.32e-04        Validation Criterion: 0.00067393
+Epoch:   0      Batch:   0      OuterStep: 260      LossModel: 0.00011908     ContextsNorm: 0.02866887
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.99e-06
+	-DiffCxt:   4.03e-05        Validation Criterion: 0.00056917
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 270      LossModel: 0.00002865     ContextsNorm: 0.02862886
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.23e-07
+	-DiffCxt:   5.25e-06        Validation Criterion: 0.00050761
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 280      LossModel: 0.00016206     ContextsNorm: 0.03062370
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.50e-06
+	-DiffCxt:   1.93e-05        Validation Criterion: 0.00067631
+Epoch:   0      Batch:   0      OuterStep: 290      LossModel: 0.00002500     ContextsNorm: 0.03091013
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.46e-08
+	-DiffCxt:   9.44e-07        Validation Criterion: 0.00049313
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 300      LossModel: 0.00004677     ContextsNorm: 0.03050766
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.00e-07
+	-DiffCxt:   1.68e-05        Validation Criterion: 0.00047680
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 310      LossModel: 0.00003027     ContextsNorm: 0.03044977
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.43e-07
+	-DiffCxt:   2.47e-06        Validation Criterion: 0.00051567
+Epoch:   0      Batch:   0      OuterStep: 320      LossModel: 0.00006797     ContextsNorm: 0.03026467
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.65e-06
+	-DiffCxt:   5.20e-05        Validation Criterion: 0.00049287
+Epoch:   0      Batch:   0      OuterStep: 330      LossModel: 0.00030066     ContextsNorm: 0.02976709
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.59e-06
+	-DiffCxt:   1.67e-04        Validation Criterion: 0.00052852
+Epoch:   0      Batch:   0      OuterStep: 340      LossModel: 0.00002228     ContextsNorm: 0.03036710
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   7.22e-09
+	-DiffCxt:   2.90e-07        Validation Criterion: 0.00044288
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 350      LossModel: 0.00003868     ContextsNorm: 0.03107990
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.38e-07
+	-DiffCxt:   8.72e-06        Validation Criterion: 0.00040662
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 360      LossModel: 0.00002555     ContextsNorm: 0.03138926
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.37e-07
+	-DiffCxt:   1.23e-06        Validation Criterion: 0.00040938
+Epoch:   0      Batch:   0      OuterStep: 370      LossModel: 0.00002273     ContextsNorm: 0.03095141
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.29e-07
+	-DiffCxt:   6.50e-06        Validation Criterion: 0.00043206
+Epoch:   0      Batch:   0      OuterStep: 380      LossModel: 0.00002295     ContextsNorm: 0.03145468
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.01e-07
+	-DiffCxt:   3.23e-06        Validation Criterion: 0.00040638
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 390      LossModel: 0.00003790     ContextsNorm: 0.03107436
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   9.04e-07
+	-DiffCxt:   2.52e-05        Validation Criterion: 0.00044347
+Epoch:   0      Batch:   0      OuterStep: 400      LossModel: 0.00004360     ContextsNorm: 0.03063907
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.90e-07
+	-DiffCxt:   1.29e-05        Validation Criterion: 0.00038687
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 410      LossModel: 0.00002827     ContextsNorm: 0.03067259
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.36e-07
+	-DiffCxt:   1.56e-05        Validation Criterion: 0.00038176
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 420      LossModel: 0.00003617     ContextsNorm: 0.03074322
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.63e-07
+	-DiffCxt:   4.99e-06        Validation Criterion: 0.00038908
+Epoch:   0      Batch:   0      OuterStep: 430      LossModel: 0.00002916     ContextsNorm: 0.03046833
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.06e-07
+	-DiffCxt:   9.55e-06        Validation Criterion: 0.00036693
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 440      LossModel: 0.00002234     ContextsNorm: 0.02984333
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.29e-07
+	-DiffCxt:   1.18e-05        Validation Criterion: 0.00036153
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 450      LossModel: 0.00003939     ContextsNorm: 0.03042045
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.79e-06
+	-DiffCxt:   7.02e-05        Validation Criterion: 0.00046753
+Epoch:   0      Batch:   0      OuterStep: 460      LossModel: 0.00001957     ContextsNorm: 0.03047195
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.33e-07
+	-DiffCxt:   4.27e-06        Validation Criterion: 0.00036181
+Epoch:   0      Batch:   0      OuterStep: 470      LossModel: 0.00003745     ContextsNorm: 0.02999621
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   9.96e-07
+	-DiffCxt:   1.88e-05        Validation Criterion: 0.00034318
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 480      LossModel: 0.00001525     ContextsNorm: 0.03038354
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.90e-08
+	-DiffCxt:   1.65e-06        Validation Criterion: 0.00032585
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 490      LossModel: 0.00006040     ContextsNorm: 0.03030315
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.11e-06
+	-DiffCxt:   4.01e-05        Validation Criterion: 0.00033951
+Epoch:   0      Batch:   0      OuterStep: 500      LossModel: 0.00010008     ContextsNorm: 0.03036647
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.67e-06
+	-DiffCxt:   2.60e-05        Validation Criterion: 0.00036232
+Epoch:   0      Batch:   0      OuterStep: 510      LossModel: 0.00005657     ContextsNorm: 0.03153666
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.43e-06
+	-DiffCxt:   5.91e-05        Validation Criterion: 0.00033931
+Epoch:   0      Batch:   0      OuterStep: 520      LossModel: 0.00002440     ContextsNorm: 0.03191540
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.58e-07
+	-DiffCxt:   6.18e-06        Validation Criterion: 0.00028848
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 530      LossModel: 0.00003085     ContextsNorm: 0.03257855
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.04e-06
+	-DiffCxt:   1.22e-05        Validation Criterion: 0.00030585
+Epoch:   0      Batch:   0      OuterStep: 540      LossModel: 0.00005148     ContextsNorm: 0.03232516
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.64e-06
+	-DiffCxt:   1.96e-05        Validation Criterion: 0.00032063
+Epoch:   0      Batch:   0      OuterStep: 550      LossModel: 0.00001732     ContextsNorm: 0.03208186
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.43e-07
+	-DiffCxt:   5.86e-06        Validation Criterion: 0.00028160
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 560      LossModel: 0.00002647     ContextsNorm: 0.03201891
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   8.02e-07
+	-DiffCxt:   2.43e-05        Validation Criterion: 0.00028580
+Epoch:   0      Batch:   0      OuterStep: 570      LossModel: 0.00003740     ContextsNorm: 0.03195203
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   7.61e-07
+	-DiffCxt:   3.40e-06        Validation Criterion: 0.00031341
+Epoch:   0      Batch:   0      OuterStep: 580      LossModel: 0.00001527     ContextsNorm: 0.03189466
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.64e-07
+	-DiffCxt:   2.45e-06        Validation Criterion: 0.00029731
+Epoch:   0      Batch:   0      OuterStep: 590      LossModel: 0.00002125     ContextsNorm: 0.03141234
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.60e-07
+	-DiffCxt:   1.30e-05        Validation Criterion: 0.00027452
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 600      LossModel: 0.00001649     ContextsNorm: 0.03157389
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.64e-07
+	-DiffCxt:   1.15e-05        Validation Criterion: 0.00026538
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 610      LossModel: 0.00001382     ContextsNorm: 0.03183426
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.12e-07
+	-DiffCxt:   4.09e-06        Validation Criterion: 0.00025768
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 620      LossModel: 0.00006116     ContextsNorm: 0.03285798
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.72e-06
+	-DiffCxt:   8.11e-05        Validation Criterion: 0.00037026
+Epoch:   0      Batch:   0      OuterStep: 630      LossModel: 0.00002474     ContextsNorm: 0.03283024
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   5.95e-07
+	-DiffCxt:   1.92e-05        Validation Criterion: 0.00026729
+Epoch:   0      Batch:   0      OuterStep: 640      LossModel: 0.00004566     ContextsNorm: 0.03382864
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.48e-06
+	-DiffCxt:   5.83e-06        Validation Criterion: 0.00030434
+Epoch:   0      Batch:   0      OuterStep: 650      LossModel: 0.00001188     ContextsNorm: 0.03419673
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.61e-07
+	-DiffCxt:   4.98e-06        Validation Criterion: 0.00024026
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 660      LossModel: 0.00005622     ContextsNorm: 0.03416385
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.88e-06
+	-DiffCxt:   7.81e-05        Validation Criterion: 0.00032836
+Epoch:   0      Batch:   0      OuterStep: 670      LossModel: 0.00003697     ContextsNorm: 0.03367127
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   8.58e-07
+	-DiffCxt:   1.59e-05        Validation Criterion: 0.00026435
+Epoch:   0      Batch:   0      OuterStep: 680      LossModel: 0.00007081     ContextsNorm: 0.03430722
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.86e-06
+	-DiffCxt:   4.00e-05        Validation Criterion: 0.00026683
+Epoch:   0      Batch:   0      OuterStep: 690      LossModel: 0.00002110     ContextsNorm: 0.03519478
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   9.82e-07
+	-DiffCxt:   1.76e-05        Validation Criterion: 0.00026515
+Epoch:   0      Batch:   0      OuterStep: 700      LossModel: 0.00002807     ContextsNorm: 0.03451299
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.04e-06
+	-DiffCxt:   1.10e-05        Validation Criterion: 0.00024870
+Epoch:   0      Batch:   0      OuterStep: 710      LossModel: 0.00001277     ContextsNorm: 0.03464039
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.46e-07
+	-DiffCxt:   2.42e-06        Validation Criterion: 0.00026827
+Epoch:   0      Batch:   0      OuterStep: 720      LossModel: 0.00000980     ContextsNorm: 0.03467041
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.91e-08
+	-DiffCxt:   1.42e-06        Validation Criterion: 0.00023299
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 730      LossModel: 0.00004634     ContextsNorm: 0.03435230
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.73e-06
+	-DiffCxt:   1.57e-05        Validation Criterion: 0.00026029
+Epoch:   0      Batch:   0      OuterStep: 740      LossModel: 0.00004653     ContextsNorm: 0.03474496
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.88e-06
+	-DiffCxt:   2.82e-05        Validation Criterion: 0.00026411
+Epoch:   0      Batch:   0      OuterStep: 750      LossModel: 0.00004675     ContextsNorm: 0.03519872
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.78e-06
+	-DiffCxt:   2.69e-05        Validation Criterion: 0.00030263
+Epoch:   0      Batch:   0      OuterStep: 760      LossModel: 0.00001782     ContextsNorm: 0.03674971
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.90e-07
+	-DiffCxt:   6.86e-07        Validation Criterion: 0.00025034
+Epoch:   0      Batch:   0      OuterStep: 770      LossModel: 0.00009890     ContextsNorm: 0.03798806
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   6.69e-06
+	-DiffCxt:   6.83e-05        Validation Criterion: 0.00028455
+Epoch:   0      Batch:   0      OuterStep: 780      LossModel: 0.00002821     ContextsNorm: 0.03858341
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.10e-06
+	-DiffCxt:   1.61e-05        Validation Criterion: 0.00022762
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 790      LossModel: 0.00002963     ContextsNorm: 0.03816371
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   7.97e-07
+	-DiffCxt:   1.04e-05        Validation Criterion: 0.00024992
+Epoch:   0      Batch:   0      OuterStep: 800      LossModel: 0.00001059     ContextsNorm: 0.03847984
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   4.34e-07
+	-DiffCxt:   6.31e-06        Validation Criterion: 0.00022274
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 810      LossModel: 0.00002518     ContextsNorm: 0.03976335
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.22e-06
+	-DiffCxt:   4.11e-06        Validation Criterion: 0.00026231
+Epoch:   0      Batch:   0      OuterStep: 820      LossModel: 0.00001152     ContextsNorm: 0.03917895
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.31e-07
+	-DiffCxt:   1.39e-06        Validation Criterion: 0.00021183
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 830      LossModel: 0.00001547     ContextsNorm: 0.03913467
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.90e-07
+	-DiffCxt:   2.07e-06        Validation Criterion: 0.00024952
+Epoch:   0      Batch:   0      OuterStep: 840      LossModel: 0.00003514     ContextsNorm: 0.03921988
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.30e-06
+	-DiffCxt:   5.33e-06        Validation Criterion: 0.00020981
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 850      LossModel: 0.00001288     ContextsNorm: 0.03980713
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.39e-07
+	-DiffCxt:   6.16e-06        Validation Criterion: 0.00020547
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 860      LossModel: 0.00001048     ContextsNorm: 0.03827414
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.34e-07
+	-DiffCxt:   3.87e-06        Validation Criterion: 0.00024281
+Epoch:   0      Batch:   0      OuterStep: 870      LossModel: 0.00004645     ContextsNorm: 0.03826405
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.00e-06
+	-DiffCxt:   2.05e-05        Validation Criterion: 0.00023577
+Epoch:   0      Batch:   0      OuterStep: 880      LossModel: 0.00000821     ContextsNorm: 0.03839966
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.08e-08
+	-DiffCxt:   3.68e-07        Validation Criterion: 0.00019263
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 890      LossModel: 0.00001277     ContextsNorm: 0.03891196
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.46e-07
+	-DiffCxt:   1.71e-06        Validation Criterion: 0.00022687
+Epoch:   0      Batch:   0      OuterStep: 900      LossModel: 0.00003932     ContextsNorm: 0.03967847
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.56e-06
+	-DiffCxt:   4.01e-05        Validation Criterion: 0.00024135
+Epoch:   0      Batch:   0      OuterStep: 910      LossModel: 0.00001428     ContextsNorm: 0.03933342
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.23e-07
+	-DiffCxt:   2.11e-06        Validation Criterion: 0.00020835
+Epoch:   0      Batch:   0      OuterStep: 920      LossModel: 0.00004330     ContextsNorm: 0.03982905
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.98e-06
+	-DiffCxt:   4.18e-05        Validation Criterion: 0.00021061
+Epoch:   0      Batch:   0      OuterStep: 930      LossModel: 0.00001647     ContextsNorm: 0.04089567
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.83e-07
+	-DiffCxt:   3.40e-06        Validation Criterion: 0.00020182
+Epoch:   0      Batch:   0      OuterStep: 940      LossModel: 0.00001548     ContextsNorm: 0.04056813
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   3.57e-07
+	-DiffCxt:   6.70e-06        Validation Criterion: 0.00019197
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 950      LossModel: 0.00002221     ContextsNorm: 0.04042529
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   7.46e-07
+	-DiffCxt:   1.29e-05        Validation Criterion: 0.00020931
+Epoch:   0      Batch:   0      OuterStep: 960      LossModel: 0.00001022     ContextsNorm: 0.04150050
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.25e-07
+	-DiffCxt:   1.18e-06        Validation Criterion: 0.00020505
+Epoch:   0      Batch:   0      OuterStep: 970      LossModel: 0.00001237     ContextsNorm: 0.04181559
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   8.01e-07
+	-DiffCxt:   3.28e-06        Validation Criterion: 0.00022201
+Epoch:   0      Batch:   0      OuterStep: 980      LossModel: 0.00003737     ContextsNorm: 0.04338745
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   2.12e-06
+	-DiffCxt:   2.53e-05        Validation Criterion: 0.00020140
+Epoch:   0      Batch:   0      OuterStep: 990      LossModel: 0.00002734     ContextsNorm: 0.04299302
+	-NbInnerStepsMod:   20
+	-NbInnerStepsCxt:   20
+	-DiffMod:   1.27e-06
+	-DiffCxt:   1.54e-05        Validation Criterion: 0.00018638
+        Saving best model so far ...
+        Validation Criterion: 0.00021153
+
+Total gradient descent training time: 0 hours 28 mins 25 secs
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+
+=== Beginning meta testing ... ===
+    Number of examples in a batch along envs: 9
+    Maximum number of batches (along envs): 1
+    Reusing contexts for adaptation on the single bach
+==  Meta-evaluation ... ==
+    Test loss value: 3.18e-04 ± 1.40e-04
+    Train loss value for criterion 0: 5.27e-02
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [ 43  42 106]
+    Visualized context dimensions along y: [114  79 103]
+Saving artefacts in: ./runs/240719-113446-Test/artefacts.png
+==  Begining in-domain dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 1)
+Testing finished. Figure saved in: ./runs/240719-113446-Test/dynamics.png
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+
+=== Beginning meta testing ... ===
+    Number of examples in a batch along envs: 4
+    Maximum number of batches (along envs): 1
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/lotka-v/main_ncf.py", line 405, in <module>
+    ood_crit, _ = visualtester.evaluate(adapt_dataloader,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 35, in evaluate
+    losses, _, state_data = self.trainer.meta_test(dataloader, 
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 412, in meta_test
+    contexts = self.learner.reset_contexts(nb_envs_in_batch)
+                                           ^^^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'nb_envs_in_batch' where it is not associated with a value

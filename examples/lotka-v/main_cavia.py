@@ -1,6 +1,6 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
@@ -23,7 +23,7 @@ num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 2
+context_pool_size = 1
 context_size = 2
 intermediate_size = 16
 taylor_orders = (0, 0)
@@ -41,13 +41,12 @@ sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
-nb_train_epochs = 500
-nb_inner_steps = 1
-nb_inner_steps_eval = 1        ## To use during evaluation and visulisation
+nb_train_epochs = 50000
+nb_inner_steps = 10
+nb_inner_steps_eval = 10        ## To use during evaluation and visulisation
 
-print_error_every = (10, 100)   ## every 1000 epochs, every 1 batch
+print_error_every = (100, 100)   ## every 1000 epochs, every 1 batch
 validate_every = 100
-
 
 meta_train = True
 run_folder = "./runs/240719-113446-Test/"
@@ -323,19 +322,6 @@ if meta_train == True:
                         validate_every=validate_every,
                         backup_contexts=True,
                         key=trainer_key)
-    # trainer.meta_train(dataloader=train_dataloader, 
-    #                     nb_epochs=nb_train_epochs, 
-    #                     nb_outer_steps=nb_outer_steps,
-    #                     nb_inner_steps=nb_inner_steps, 
-    #                     inner_tols=(1e-12, 1e-12), 
-    #                     proximal_betas=(10., 10.), 
-    #                     max_train_batches=max_train_batches, 
-    #                     print_error_every=print_error_every[0], 
-    #                     validate_every=validate_every, 
-    #                     save_path=trainer_save_path, 
-    #                     val_dataloader=val_dataloader, 
-    #                     val_criterion_id=0,
-    #                     key=trainer_key)
 else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)

@@ -1,6 +1,6 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
@@ -26,7 +26,7 @@ num_workers = 0
 context_pool_size = 2
 context_size = 2
 intermediate_size = 16
-taylor_orders = (1, 0)
+taylor_orders = (2, 0)
 taylor_ad_mode = "forward"
 pool_filling_strategy = "NF"
 reuse_contexts = True
@@ -43,7 +43,7 @@ max_train_batches = -1
 max_eval_batches = -1
 
 nb_train_epochs = 1
-nb_outer_steps = 50
+nb_outer_steps = 1000
 nb_inner_steps = (20, 20)
 
 print_error_every = (10, 10)   ## every 1000 epochs, every 1 batch
@@ -52,8 +52,8 @@ validate_every = 10
 nb_adapt_epochs = 1000
 
 meta_train = True
-# run_folder = "./runs/240719-113446-Test/"
-run_folder = None
+run_folder = "./runs/240719-113446-Test/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
