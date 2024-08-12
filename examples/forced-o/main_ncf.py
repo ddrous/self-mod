@@ -229,7 +229,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 
 
 ## Just so the model knows the kind of context to use
-contexts_ = IDContextParams(nb_envs=num_envs[0], 
+contexts_ = InfDimContextParams(nb_envs=num_envs[0], 
                             context_size=context_size, 
                             hidden_size=32, 
                             depth=3, 

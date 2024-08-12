@@ -23,8 +23,8 @@ num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 8
-context_size = 16
+context_pool_size = 2
+context_size = 2
 intermediate_size = 32
 taylor_orders = (1, 0)
 taylor_ad_mode = "reverse"
@@ -41,12 +41,12 @@ sched_factor = 1.
 max_train_batches = -1
 max_eval_batches = -1
 
-nb_train_epochs = 2500
+nb_train_epochs = 250
 # nb_outer_steps = 2500
 nb_inner_steps = 5
 
 print_error_every = (10, 100)   ## every 1000 epochs, every 1 batch
-validate_every = 100
+validate_every = 10
 
 # nb_adapt_epochs = 7500
 nb_inner_steps_eval = 5        ## To use during evaluation and visulisation
@@ -109,7 +109,7 @@ train_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/train_data.npz",
                                                num_shots=num_shots[0], 
                                                skip_steps=skip_steps), 
                               batch_size=num_envs[0],
-                              shuffle=True,
+                              shuffle=False,
                               num_workers=num_workers,
                               drop_last=False)
 
@@ -117,7 +117,7 @@ val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz",
                                              num_shots=num_shots[1], 
                                              skip_steps=skip_steps),
                               batch_size=num_envs[0],
-                              shuffle=True,
+                              shuffle=False,
                               num_workers=num_workers,
                               drop_last=False)
 
@@ -202,7 +202,7 @@ def env_loss_fn(model, ctx, y_hat, y):
     return loss_val, (term1, term2, 0.)
 
 ## Just so the model knows the kind of context to use
-contexts_ = IDContextParams(nb_envs=num_envs[0], 
+contexts_ = InfDimContextParams(nb_envs=num_envs[0], 
                             context_size=context_size, 
                             hidden_size=12,
                             depth=3,
@@ -255,7 +255,7 @@ trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
     trainer.meta_train(dataloader=train_dataloader,
-                        nb_epochs=nb_train_epochs,
+                        nb_outer_steps=nb_train_epochs,
                         nb_inner_steps=nb_inner_steps, 
                         max_train_batches=max_train_batches,
                         print_error_every=print_error_every, 
@@ -300,10 +300,11 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
-ind_crit, _ = visualtester.evaluate(val_dataloader, 
+ind_crit, _ = visualtester.evaluate(train_dataloader, 
                                     taylor_order=taylor_orders[1], 
                                     print_error_every=print_error_every,
-                                    nb_inner_steps=nb_inner_steps_eval,
+                                    nb_epochs=nb_inner_steps_eval,
+                                    val_dataloader=val_dataloader,
                                     max_eval_batches=max_eval_batches,
                                     verbose=True)
 
@@ -335,14 +336,22 @@ if meta_test:
                                                    num_shots=num_shots[0], 
                                                    skip_steps=skip_steps),
                                 batch_size=num_envs[1], 
-                                shuffle=True,
+                                shuffle=False,
+                                num_workers=num_workers,
+                                drop_last=False)
+    adapt_dataloader_test = NumpyLoader(DynamicsDataset(data_dir="./data/adapt_test.npz", 
+                                                   num_shots=num_shots[0], 
+                                                   skip_steps=skip_steps),
+                                batch_size=num_envs[1],
+                                shuffle=False,
                                 num_workers=num_workers,
                                 drop_last=False)
 
     ood_crit, _ = visualtester.evaluate(adapt_dataloader,
                                         taylor_order=taylor_orders[1], 
-                                        nb_inner_steps=nb_inner_steps_eval,
+                                        nb_epochs=nb_inner_steps_eval,
                                         print_error_every=print_error_every,
+                                        val_dataloader=adapt_dataloader_test,
                                         max_eval_batches=max_eval_batches,
                                         verbose=True)
 
@@ -352,14 +361,6 @@ if meta_test:
 ## Visualise the adaptation results
 
 if meta_test:
-    adapt_dataloader_test = NumpyLoader(DynamicsDataset(data_dir="./data/adapt_test.npz", 
-                                                   num_shots=num_shots[0], 
-                                                   skip_steps=skip_steps),
-                                batch_size=num_envs[1],
-                                shuffle=True,
-                                num_workers=num_workers,
-                                drop_last=False)
-
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
     visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png", 

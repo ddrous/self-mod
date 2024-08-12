@@ -140,49 +140,49 @@ val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz",
 
 
 
-# # ## Define model and loss function for the learner
-# class MultiMLP(eqx.Module):
-#     layers_data: list
-#     layers_shared: list
-#     activations: list
-#     ctx_utils:any
+# ## Define model and loss function for the learner
+class MultiMLP(eqx.Module):
+    layers_data: list
+    layers_shared: list
+    activations: list
+    ctx_utils:any
 
-#     def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
-#         self.ctx_utils = ctx_utils
+    def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
+        self.ctx_utils = ctx_utils
 
-#         keys = jax.random.split(key, num=12)
-#         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+        keys = jax.random.split(key, num=12)
+        self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
-#         self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
-#                             eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
-#                             eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
+        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
+                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
+                            eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
 
-#         self.layers_shared = [eqx.nn.Linear(int_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
-#                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
-#                               eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
+        self.layers_shared = [eqx.nn.Linear(int_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
+                              eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
 
-#     def __call__(self, t, y, ctx_arr):
+    def __call__(self, t, y, ctx_arr):
 
-#         ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils
-#         ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
-#         ctx_fun = eqx.combine(ctx_params, ctx_static)
+        ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils
+        ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
+        ctx_fun = eqx.combine(ctx_params, ctx_static)
 
-#         t_arr = jnp.array([t])
+        t_arr = jnp.array([t])
 
-#         ctx = ctx_fun(t_arr)
-#         # for layer in self.layers_context:
-#         #     ctx = layer(ctx)
+        ctx = ctx_fun(t_arr)
+        # for layer in self.layers_context:
+        #     ctx = layer(ctx)
 
-#         y = jnp.concatenate([t_arr, y], axis=0)
-#         for layer in self.layers_data:
-#             y = layer(y)
+        y = jnp.concatenate([t_arr, y], axis=0)
+        for layer in self.layers_data:
+            y = layer(y)
 
-#         y = jnp.concatenate([y, ctx], axis=0)
-#         for layer in self.layers_shared:
-#             y = layer(y)
+        y = jnp.concatenate([y, ctx], axis=0)
+        for layer in self.layers_shared:
+            y = layer(y)
 
-#         return y
+        return y
 
 
 # ## Define model and loss function for the learner
@@ -243,25 +243,25 @@ def env_loss_fn(model, ctx, y_hat, y):
     return loss_val, (term1, term2, 0.)
 
 ## Just so the model knows the kind of context to use
-# contexts_ = IDContextParams(nb_envs=num_envs[0], 
-#                             context_size=context_size, 
-#                             hidden_size=12,
-#                             depth=3,
-#                             key=None)
-contexts_ = ArrayContextParams(nb_envs=num_envs[0], 
-                                context_size=context_size)
+contexts_ = InfDimContextParams(nb_envs=num_envs[0], 
+                            context_size=context_size, 
+                            hidden_size=12,
+                            depth=3,
+                            key=None)
+# contexts_ = ArrayContextParams(nb_envs=num_envs[0], 
+#                                 context_size=context_size)
+neuralnet = MultiMLP(data_size=2,
+                     int_size=intermediate_size,
+                     hidden_size=16,
+                     context_size=context_size,
+                     ctx_utils=contexts_.ctx_utils,
+                     key=mother_key)
 # neuralnet = MultiMLP(data_size=2,
 #                      int_size=intermediate_size,
 #                      hidden_size=32,
 #                      context_size=context_size,
-#                      ctx_utils=contexts_.ctx_utils,
+#                      ctx_utils=None,
 #                      key=mother_key)
-neuralnet = MultiMLP(data_size=2,
-                     int_size=intermediate_size,
-                     hidden_size=32,
-                     context_size=context_size,
-                     ctx_utils=None,
-                     key=mother_key)
 
 model = NeuralODE(neuralnet=neuralnet,
                     taylor_order=taylor_orders[0],

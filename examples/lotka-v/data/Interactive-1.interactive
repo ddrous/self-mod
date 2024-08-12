@@ -1,0 +1,566 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Connected to jax (Python 3.12.0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "d71a45fa-d426-4705-b792-a3e769ba8c4e",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "############# Contextual Self-Modulation #############\n",
+      "\n",
+      "Jax version: 0.4.28\n",
+      "Available devices: [cuda(id=0)]\n"
+     ]
+    }
+   ],
+   "source": [
+    "%load_ext autoreload\n",
+    "%autoreload 2\n",
+    "\n",
+    "import os\n",
+    "os.environ[\"XLA_PYTHON_CLIENT_PREALLOCATE\"] = 'false'\n",
+    "# os.environ[\"EQX_ON_ERROR\"] = 'breakpoint'\n",
+    "\n",
+    "from selfmod import *\n",
+    "# jax.config.update(\"jax_debug_nans\", True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "0c34dee4-6cbb-4202-b5a5-7dfb0416d25f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "## For reproducibility\n",
+    "seed = 2026\n",
+    "\n",
+    "## Dataloader hps\n",
+    "num_envs = (9, 4)\n",
+    "num_shots = (-1, -1)\n",
+    "num_workers = 0\n",
+    "\n",
+    "## Learner/model hps\n",
+    "context_pool_size = 4\n",
+    "context_size = 2\n",
+    "intermediate_size = 32\n",
+    "taylor_orders = (2, 0)\n",
+    "taylor_ad_mode = \"forward\"\n",
+    "pool_filling_strategy = \"NF\"\n",
+    "reuse_contexts = True\n",
+    "\n",
+    "## \"adjoint\":diffrax.DirectAdjoint()} ## diffrax.BacksolveAdjoint()\n",
+    "# ivp_args = {\"integrator\":diffrax.Dopri5(), \"y0_pad_size\":0, \"return_traj\":True, \"max_steps\":4096*2, \"dt_init\":1e-2, \"adjoint\":diffrax.BacksolveAdjoint()}\n",
+    "ivp_args = {\"integrator\":RK4, \"subdisisions\":1, \"return_traj\":True}\n",
+    "skip_steps = 1\n",
+    "\n",
+    "## Train and adapt hps\n",
+    "init_lrs = (5e-3, 5e-3)\n",
+    "sched_factor = 1.\n",
+    "max_train_batches = -1\n",
+    "max_eval_batches = -1\n",
+    "\n",
+    "nb_train_epochs = 1\n",
+    "nb_outer_steps = 500\n",
+    "nb_inner_steps = (20, 20)\n",
+    "\n",
+    "print_error_every = (10, 10)   ## every 1000 epochs, every 1 batch\n",
+    "validate_every = 10\n",
+    "\n",
+    "nb_adapt_epochs = 1000\n",
+    "\n",
+    "meta_train = True\n",
+    "# run_folder = \"./runs/240719-113446-Test/\"\n",
+    "run_folder = None\n",
+    "save_trainer = True\n",
+    "\n",
+    "meta_test = True"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "8d889b2e-6065-43fc-9256-1406fc568db3",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mother_key = jax.random.PRNGKey(seed)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "34131d7f-6d9d-4310-b478-4d4756fc2d1d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Created a new run folder at: ./runs/240812-142931/\n",
+      "Completed copied scripts \n"
+     ]
+    }
+   ],
+   "source": [
+    "if meta_train == True:\n",
+    "    if not os.path.exists('./runs'):\n",
+    "        os.mkdir('./runs')\n",
+    "\n",
+    "    # Run folder to store the result of this run\n",
+    "    if run_folder == None:\n",
+    "        run_folder = './runs/'+time.strftime(\"%y%m%d-%H%M%S\")+'/'\n",
+    "    else:\n",
+    "        print(\"Using user-defined run folder:\", run_folder)\n",
+    "    if not os.path.exists(run_folder):\n",
+    "        os.mkdir(run_folder)\n",
+    "        print(\"Created a new run folder at:\", run_folder)\n",
+    "\n",
+    "    # Save the run scripts in that folder\n",
+    "    script_name = os.path.basename(__file__)\n",
+    "    os.system(f\"cp {script_name} {run_folder}\")\n",
+    "\n",
+    "    # Save the selfmod module files as well\n",
+    "    os.system(f\"cp -r ../../selfmod {run_folder}\")\n",
+    "    print(\"Completed copied scripts \")\n",
+    "else:\n",
+    "    print(\"No training. Loading model and results from:\", run_folder)\n",
+    "\n",
+    "## Create a folder for the adaptation results\n",
+    "if meta_test:\n",
+    "    adapt_folder = run_folder+\"adapt/\"\n",
+    "    if not os.path.exists(adapt_folder):\n",
+    "        os.mkdir(adapt_folder)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "9411a427-917d-4c98-8220-d1701645f4d1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "## Define 4 keys for dataloader(s), learner(s), trainer(s) and visualtester(s)\n",
+    "mother_key = jax.random.PRNGKey(seed)\n",
+    "data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)\n",
+    "\n",
+    "train_dataloader = NumpyLoader(DynamicsDataset(data_dir=\"./data/train_data.npz\", \n",
+    "                                               num_shots=num_shots[0], \n",
+    "                                               skip_steps=skip_steps), \n",
+    "                              batch_size=num_envs[0],\n",
+    "                              shuffle=False,\n",
+    "                              num_workers=num_workers,\n",
+    "                              drop_last=False)\n",
+    "\n",
+    "val_dataloader = NumpyLoader(DynamicsDataset(data_dir=\"./data/test_data.npz\", \n",
+    "                                             num_shots=num_shots[1], \n",
+    "                                             skip_steps=skip_steps),\n",
+    "                              batch_size=num_envs[0],\n",
+    "                              shuffle=False,\n",
+    "                              num_workers=num_workers,\n",
+    "                              drop_last=False)\n",
+    "\n",
+    "\n",
+    "# ins, outs = next(iter(train_dataloader))\n",
+    "# ins.shape, outs.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "abaa8922-4ad0-4f6e-87c8-7d4f481614fe",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "AttributeError",
+     "evalue": "'ArrayContextParams' object has no attribute 'ctx_utils'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mAttributeError\u001b[0m                            Traceback (most recent call last)",
+      "File \u001b[1;32m/home/gb21553/Projects/Self-Mod/examples/lotka-v/main_ncf.py:128\u001b[0m\n\u001b[1;32m    117\u001b[0m contexts_ \u001b[39m=\u001b[39m IDContextParams(nb_envs\u001b[39m=\u001b[39mnum_envs[\u001b[39m0\u001b[39m], \n\u001b[1;32m    118\u001b[0m                             context_size\u001b[39m=\u001b[39mcontext_size, \n\u001b[1;32m    119\u001b[0m                             hidden_size\u001b[39m=\u001b[39m\u001b[39m12\u001b[39m,\n\u001b[1;32m    120\u001b[0m                             depth\u001b[39m=\u001b[39m\u001b[39m3\u001b[39m,\n\u001b[1;32m    121\u001b[0m                             key\u001b[39m=\u001b[39m\u001b[39mNone\u001b[39;00m)\n\u001b[1;32m    122\u001b[0m contexts_ \u001b[39m=\u001b[39m ArrayContextParams(nb_envs\u001b[39m=\u001b[39mnum_envs[\u001b[39m0\u001b[39m], \n\u001b[1;32m    123\u001b[0m                                 context_size\u001b[39m=\u001b[39mcontext_size)\n\u001b[1;32m    124\u001b[0m neuralnet \u001b[39m=\u001b[39m MultiMLP(data_size\u001b[39m=\u001b[39m\u001b[39m2\u001b[39m,\n\u001b[1;32m    125\u001b[0m                      int_size\u001b[39m=\u001b[39mintermediate_size,\n\u001b[1;32m    126\u001b[0m                      hidden_size\u001b[39m=\u001b[39m\u001b[39m16\u001b[39m,\n\u001b[1;32m    127\u001b[0m                      context_size\u001b[39m=\u001b[39mcontext_size,\n\u001b[0;32m--> 128\u001b[0m                      ctx_utils\u001b[39m=\u001b[39mcontexts_\u001b[39m.\u001b[39;49mctx_utils,\n\u001b[1;32m    129\u001b[0m                      key\u001b[39m=\u001b[39mmother_key)\n\u001b[1;32m    130\u001b[0m \u001b[39m# neuralnet = MultiMLP(data_size=2,\u001b[39;00m\n\u001b[1;32m    131\u001b[0m \u001b[39m#                      int_size=intermediate_size,\u001b[39;00m\n\u001b[1;32m    132\u001b[0m \u001b[39m#                      hidden_size=32,\u001b[39;00m\n\u001b[1;32m    133\u001b[0m \u001b[39m#                      context_size=context_size,\u001b[39;00m\n\u001b[1;32m    134\u001b[0m \u001b[39m#                      ctx_utils=None,\u001b[39;00m\n\u001b[1;32m    135\u001b[0m \u001b[39m#                      key=mother_key)\u001b[39;00m\n\u001b[1;32m    137\u001b[0m model \u001b[39m=\u001b[39m NeuralODE(neuralnet\u001b[39m=\u001b[39mneuralnet,\n\u001b[1;32m    138\u001b[0m                     taylor_order\u001b[39m=\u001b[39mtaylor_orders[\u001b[39m0\u001b[39m],\n\u001b[1;32m    139\u001b[0m                     taylor_ad_mode\u001b[39m=\u001b[39mtaylor_ad_mode,\n\u001b[1;32m    140\u001b[0m                     ivp_args\u001b[39m=\u001b[39mivp_args,\n\u001b[1;32m    141\u001b[0m                     t_eval\u001b[39m=\u001b[39mtrain_dataloader\u001b[39m.\u001b[39mdataset\u001b[39m.\u001b[39mt_eval\u001b[39m.\u001b[39mtolist())\n",
+      "\u001b[0;31mAttributeError\u001b[0m: 'ArrayContextParams' object has no attribute 'ctx_utils'"
+     ]
+    }
+   ],
+   "source": [
+    "# ## Define model and loss function for the learner\n",
+    "class MultiMLP(eqx.Module):\n",
+    "    layers_data: list\n",
+    "    layers_shared: list\n",
+    "    activations: list\n",
+    "    ctx_utils:any\n",
+    "\n",
+    "    def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):\n",
+    "        self.ctx_utils = ctx_utils\n",
+    "\n",
+    "        keys = jax.random.split(key, num=12)\n",
+    "        self.activations = [Swish(key=key_i) for key_i in keys[:7]]\n",
+    "\n",
+    "        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], \n",
+    "                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], \n",
+    "                            eqx.nn.Linear(hidden_size, int_size, key=keys[5])]\n",
+    "\n",
+    "        self.layers_shared = [eqx.nn.Linear(int_size+context_size, hidden_size, key=keys[6]), self.activations[4], \n",
+    "                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], \n",
+    "                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], \n",
+    "                              eqx.nn.Linear(hidden_size, data_size, key=keys[9])]\n",
+    "\n",
+    "    def __call__(self, t, y, ctx_arr):\n",
+    "\n",
+    "        ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils\n",
+    "        ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)\n",
+    "        ctx_fun = eqx.combine(ctx_params, ctx_static)\n",
+    "\n",
+    "        t_arr = jnp.array([t])\n",
+    "\n",
+    "        ctx = ctx_fun(t_arr)\n",
+    "        # for layer in self.layers_context:\n",
+    "        #     ctx = layer(ctx)\n",
+    "\n",
+    "        y = jnp.concatenate([t_arr, y], axis=0)\n",
+    "        for layer in self.layers_data:\n",
+    "            y = layer(y)\n",
+    "\n",
+    "        y = jnp.concatenate([y, ctx], axis=0)\n",
+    "        for layer in self.layers_shared:\n",
+    "            y = layer(y)\n",
+    "\n",
+    "        return y\n",
+    "\n",
+    "\n",
+    "# ## Define model and loss function for the learner\n",
+    "class MultiMLP(eqx.Module):\n",
+    "    layers_data: list\n",
+    "    layers_context: list\n",
+    "    layers_shared: list\n",
+    "    activations: list\n",
+    "\n",
+    "    def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):\n",
+    "\n",
+    "        keys = jax.random.split(key, num=12)\n",
+    "        self.activations = [Swish(key=key_i) for key_i in keys[:7]]\n",
+    "\n",
+    "        self.layers_context = [eqx.nn.Linear(context_size, hidden_size, key=keys[0]), self.activations[0], \n",
+    "                               eqx.nn.Linear(hidden_size, int_size, key=keys[1])]\n",
+    "\n",
+    "        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], \n",
+    "                            eqx.nn.Linear(hidden_size, int_size, key=keys[5])]\n",
+    "\n",
+    "        self.layers_shared = [eqx.nn.Linear(int_size+int_size, hidden_size, key=keys[6]), self.activations[4], \n",
+    "                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], \n",
+    "                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], \n",
+    "                              eqx.nn.Linear(hidden_size, data_size, key=keys[9])]\n",
+    "\n",
+    "    def __call__(self, t, y, ctx_arr):\n",
+    "        t_arr = jnp.array([t])\n",
+    "\n",
+    "        ctx = ctx_arr\n",
+    "        for layer in self.layers_context:\n",
+    "            ctx = layer(ctx)\n",
+    "\n",
+    "        y = jnp.concatenate([t_arr, y], axis=0)\n",
+    "        for layer in self.layers_data:\n",
+    "            y = layer(y)\n",
+    "\n",
+    "        y = jnp.concatenate([y, ctx], axis=0)\n",
+    "        for layer in self.layers_shared:\n",
+    "            y = layer(y)\n",
+    "\n",
+    "        return y\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "def env_loss_fn(model, ctx, y_hat, y):\n",
+    "    \"\"\"\n",
+    "    Loss function for one environment. Leading dimension of y_hat corresponds to the pool size !\n",
+    "    \"\"\"\n",
+    "\n",
+    "    term1 = jnp.mean((y_hat-y)**2)\n",
+    "    term2 = jnp.mean(jnp.abs(ctx))\n",
+    "    # term3 = params_norm_squared(model)\n",
+    "\n",
+    "    # loss_val = term1 + 1e-3*term2 + 1e-3*term3\n",
+    "    loss_val = term1\n",
+    "\n",
+    "    return loss_val, (term1, term2, 0.)\n",
+    "\n",
+    "## Just so the model knows the kind of context to use\n",
+    "contexts_ = InfDimContextParams(nb_envs=num_envs[0], \n",
+    "                            context_size=context_size, \n",
+    "                            hidden_size=12,\n",
+    "                            depth=3,\n",
+    "                            key=None)\n",
+    "contexts_ = ArrayContextParams(nb_envs=num_envs[0], \n",
+    "                                context_size=context_size)\n",
+    "neuralnet = MultiMLP(data_size=2,\n",
+    "                     int_size=intermediate_size,\n",
+    "                     hidden_size=16,\n",
+    "                     context_size=context_size,\n",
+    "                     ctx_utils=contexts_.ctx_utils,\n",
+    "                     key=mother_key)\n",
+    "# neuralnet = MultiMLP(data_size=2,\n",
+    "#                      int_size=intermediate_size,\n",
+    "#                      hidden_size=32,\n",
+    "#                      context_size=context_size,\n",
+    "#                      ctx_utils=None,\n",
+    "#                      key=mother_key)\n",
+    "\n",
+    "model = NeuralODE(neuralnet=neuralnet,\n",
+    "                    taylor_order=taylor_orders[0],\n",
+    "                    taylor_ad_mode=taylor_ad_mode,\n",
+    "                    ivp_args=ivp_args,\n",
+    "                    t_eval=train_dataloader.dataset.t_eval.tolist())\n",
+    "\n",
+    "learner = Learner(model=model,\n",
+    "                context_size=context_size, \n",
+    "                context_pool_size=context_pool_size,\n",
+    "                pool_filling=pool_filling_strategy,\n",
+    "                env_loss_fn=env_loss_fn, \n",
+    "                contexts=contexts_,                     ## Optional, but good for saving !\n",
+    "                reuse_contexts=reuse_contexts,\n",
+    "                key=model_key)\n",
+    "\n",
+    "\n",
+    "print(\"\\n\\nTotal number of parameters in the model:\", count_params(model))\n",
+    "print(\"Total number of parameters in the contexts:\", count_params(contexts_))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "81a7c19b-c53d-4564-9244-5a748b37b93c",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "",
+     "evalue": "",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31mCell was canceled due to an error in a previous cell."
+     ]
+    }
+   ],
+   "source": [
+    "## Define optimiser and train the model\n",
+    "init_lr_model, init_lr_ctx = init_lrs\n",
+    "\n",
+    "bd_scales = {nb_train_epochs//3:sched_factor, 2*nb_train_epochs//3:sched_factor}\n",
+    "sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)\n",
+    "opt_model = optax.adabelief(sched_model)\n",
+    "\n",
+    "opt_ctx = optax.adabelief(init_lr_ctx)\n",
+    "\n",
+    "# trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)\n",
+    "trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "515f7c6b-5785-4ccd-abe8-46ac060834af",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "",
+     "evalue": "",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31mCell was canceled due to an error in a previous cell."
+     ]
+    }
+   ],
+   "source": [
+    "# with jax.profiler.trace(\"data/jax-trace\", create_perfetto_link=True, create_perfetto_trace=True):\n",
+    "\n",
+    "## Meta-training\n",
+    "if meta_train == True:\n",
+    "    trainer_save_path = run_folder if save_trainer == True else False\n",
+    "    # trainer.meta_train(dataloader=train_dataloader,\n",
+    "    #                     nb_epochs=nb_train_epochs,\n",
+    "    #                     nb_inner_steps=nb_inner_steps, \n",
+    "    #                     max_train_batches=max_train_batches,\n",
+    "    #                     print_error_every=print_error_every, \n",
+    "    #                     save_path=trainer_save_path, \n",
+    "    #                     val_dataloader=val_dataloader, \n",
+    "    #                     val_criterion_id=0,\n",
+    "    #                     validate_every=validate_every,\n",
+    "    #                     backup_contexts=True,\n",
+    "    #                     key=trainer_key)\n",
+    "    trainer.meta_train(dataloader=train_dataloader, \n",
+    "                        nb_epochs=nb_train_epochs, \n",
+    "                        nb_outer_steps=nb_outer_steps,\n",
+    "                        nb_inner_steps=nb_inner_steps, \n",
+    "                        inner_tols=(1e-12, 1e-12), \n",
+    "                        proximal_betas=(10., 10.), \n",
+    "                        max_train_batches=max_train_batches, \n",
+    "                        print_error_every=print_error_every[0], \n",
+    "                        save_path=trainer_save_path, \n",
+    "                        validate_every=validate_every, \n",
+    "                        val_dataloader=val_dataloader, \n",
+    "                        val_nb_epochs=nb_adapt_epochs,\n",
+    "                        val_criterion_id=0,\n",
+    "                        key=trainer_key)\n",
+    "else:\n",
+    "    restore_folder = run_folder\n",
+    "    trainer.restore_trainer(path=run_folder)\n",
+    "    print(\"\\nNo training, loaded model and results from \"+ run_folder +\" folder ...\\n\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9fdff369-bc95-48c8-816c-ee915177a146",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "",
+     "evalue": "",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31mCell was canceled due to an error in a previous cell."
+     ]
+    }
+   ],
+   "source": [
+    "## Test and visualise the results on a test dataloader\n",
+    "visualtester = DynamicsVisualTester(trainer, key=test_key)\n",
+    "\n",
+    "ind_crit, _ = visualtester.evaluate(val_dataloader, \n",
+    "                                    taylor_order=taylor_orders[1], \n",
+    "                                    print_error_every=print_error_every,\n",
+    "                                    nb_epochs=nb_adapt_epochs,\n",
+    "                                    nb_inner_steps=None,\n",
+    "                                    max_eval_batches=max_eval_batches,\n",
+    "                                    verbose=True)\n",
+    "\n",
+    "visualtester.visualize_artefacts(save_path=run_folder+\"artefacts.png\")\n",
+    "\n",
+    "visualtester.visualize_dynamics(save_path=run_folder+\"dynamics.png\",\n",
+    "                                data_loader=val_dataloader,\n",
+    "                                traj=0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1a99ef00-1e3c-48bc-b219-1bfd09a35288",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "",
+     "evalue": "",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31mCell was canceled due to an error in a previous cell."
+     ]
+    }
+   ],
+   "source": [
+    "## Adapt the model to the new dataset\n",
+    "if meta_test:\n",
+    "    adapt_dataloader = NumpyLoader(DynamicsDataset(data_dir=\"./data/adapt_train.npz\", \n",
+    "                                                   num_shots=num_shots[0], \n",
+    "                                                   skip_steps=skip_steps,\n",
+    "                                                   adaptation=True),\n",
+    "                                batch_size=num_envs[1], \n",
+    "                                shuffle=False,\n",
+    "                                num_workers=num_workers,\n",
+    "                                drop_last=False)\n",
+    "    adapt_dataloader_test = NumpyLoader(DynamicsDataset(data_dir=\"./data/adapt_test.npz\", \n",
+    "                                                   num_shots=num_shots[0], \n",
+    "                                                   skip_steps=skip_steps,\n",
+    "                                                   adaptation=True),\n",
+    "                                batch_size=num_envs[1],\n",
+    "                                shuffle=False,\n",
+    "                                num_workers=num_workers,\n",
+    "                                drop_last=False)\n",
+    "\n",
+    "    ood_crit, _ = visualtester.evaluate(adapt_dataloader,\n",
+    "                                        taylor_order=taylor_orders[1], \n",
+    "                                        nb_epochs=nb_adapt_epochs,\n",
+    "                                        nb_inner_steps=None,\n",
+    "                                        print_error_every=print_error_every,\n",
+    "                                        max_eval_batches=max_eval_batches,\n",
+    "                                        val_dataloader=adapt_dataloader_test,\n",
+    "                                        verbose=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "7ec11e54-313a-4d6c-8b16-9436c5e9626a",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "",
+     "evalue": "",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31mCell was canceled due to an error in a previous cell."
+     ]
+    }
+   ],
+   "source": [
+    "## Visualise the adaptation results\n",
+    "\n",
+    "if meta_test:\n",
+    "\n",
+    "    visualtester.visualize_artefacts(save_path=adapt_folder+\"artefacts.png\", adaptation=True)\n",
+    "\n",
+    "    visualtester.visualize_dynamics(save_path=adapt_folder+\"dynamics.png\", \n",
+    "                                    data_loader=adapt_dataloader_test,\n",
+    "                                    traj=0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c0e36b3b-1206-4ff1-a588-d5386a0acd9a",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "",
+     "evalue": "",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31mCell was canceled due to an error in a previous cell."
+     ]
+    }
+   ],
+   "source": [
+    "## After training, copy nohup.log to the runfolder\n",
+    "try:\n",
+    "    __IPYTHON__ ## in a jupyter notebook\n",
+    "except NameError:\n",
+    "    os.system(f\"cp nohup.log {run_folder}\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "jax",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "version": "3.12.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

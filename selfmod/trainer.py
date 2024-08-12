@@ -258,10 +258,10 @@ class NCFTrainer(Trainer):
                                                     criterion_id=val_criterion_id,
                                                     max_eval_batches=max_val_batches,
                                                     nb_epochs=val_nb_epochs,
-                                                    nb_inner_steps=None,
+                                                    # nb_inner_steps=None,
                                                     taylor_order=0, 
                                                     verbose=False)
-                        print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True)
+                        print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True)
                         val_losses.append(np.array([out_step, ind_crit]))
 
                         ## Check if val loss is lowest to save the model
@@ -316,7 +316,6 @@ class NCFTrainer(Trainer):
     def meta_test(self, 
                    dataloader: DataLoader, ## Either a full dataloader or a tuple of batches
                    nb_epochs=10, 
-                   nb_inner_steps=None,   ## TODO: There for consistnecy with CAVIA
                    taylor_order=0,
                    optimizer=None, 
                    print_error_every=(10, 10), 
@@ -336,8 +335,8 @@ class NCFTrainer(Trainer):
             val_dataloader = dataloader
 
         print_every_epoch, print_every_batch = print_error_every
-        if nb_inner_steps is not None:
-            nb_epochs = nb_inner_steps
+        # if nb_inner_steps is not None:
+        #     nb_epochs = nb_inner_steps
 
         ## This is useful if we want to disable the taylor expansion
         model = self.learner.reset_model(taylor_order, verbose=verbose)
@@ -378,7 +377,7 @@ class NCFTrainer(Trainer):
             loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
             return loss, aux_data
 
-        ## Shortcut to not recreate contexts (only use this for single batch cases)
+        #################### Shortcut to not recreate contexts (only use this for single batch cases)
         if verbose and self.learner.reuse_contexts:
             print(f"    Reusing contexts for adaptation on the single bach")
         if self.learner.reuse_contexts and not dataloader.dataset.adaptation:
@@ -391,6 +390,7 @@ class NCFTrainer(Trainer):
             self.losses_adapt.append(jnp.reshape(loss, (1, 1)))
 
             return jnp.stack(aux_data, axis=1), contexts, state_data
+        ####################
 
         @eqx.filter_jit
         def adapt_step(model, contexts, batch, weightings, opt_state, key):
@@ -409,13 +409,15 @@ class NCFTrainer(Trainer):
         start_time = time.time()
 
         losses = []
-
+        state_data = [[], [], []]
         loss_key, _ = jax.random.split(key)
 
         for epoch in range(nb_epochs):
 
             losses_epoch = []
-            for env_batch, batch in enumerate(dataloader):
+            torch.manual_seed(loss_key[0])  # Ensure the same shuffling order
+            # for env_batch, batch in enumerate(dataloader):
+            for env_batch, (batch, val_batch) in enumerate(zip(dataloader, val_dataloader)):
                 if env_batch >= max_adapt_batches:
                     break
 
@@ -424,7 +426,12 @@ class NCFTrainer(Trainer):
                 model, contexts, opt_state_ctx, loss_ctx, (term1, term2, term3) = adapt_step(model, contexts, batch, weightings, opt_state_ctx, loss_key)
 
                 losses.append(loss_ctx)
-                losses_epoch.append(jnp.stack([term1, term2, term3], axis=1))
+                losses_epoch.append(jnp.stack([loss_ctx, term1, term2, term3], axis=1))
+
+                if epoch == nb_epochs-1:
+                    ## Use the contexts and the val_batch to predict Y_hat
+                    state_data_ = self.learner.batch_predict(model, contexts, val_batch)
+                    [state_data[i].append(state_data_[i]) for i in range(3)]
 
             losses_epochs = jnp.mean(jnp.stack(losses_epoch, axis=0), axis=0)
 
@@ -449,10 +456,7 @@ class NCFTrainer(Trainer):
         if save_path:
             self.save_adapted_trainer(save_path)
 
-        ## Use the contexts and the batch to predict Y_hat
-        for batch in val_dataloader:
-            pass        ## Batch is the last batch from val_dataloader
-        state_data = self.learner.batch_predict(model, contexts, batch)
+        state_data = tuple(jnp.concat(state_data[i], axis=0) for i in range(3))
 
         return losses_epochs, contexts, state_data
 
@@ -475,7 +479,7 @@ class CAVIATrainer(Trainer):
 
     def meta_train(self,
                     dataloader: DataLoader, 
-                    nb_epochs,
+                    nb_outer_steps,
                     nb_inner_steps=10,
                     print_error_every=(1, 1), 
                     save_path=False, 
@@ -610,6 +614,7 @@ class CAVIATrainer(Trainer):
 
         step = 0
 
+        nb_epochs = nb_outer_steps
         for epoch in range(nb_epochs):
 
             loss_epoch = 0.
@@ -663,13 +668,14 @@ class CAVIATrainer(Trainer):
             if val_dataloader is not None and epoch%validate_every==0:
                 self.learner.model = model
 
-                ind_crit,_ = tester.evaluate(val_dataloader,
+                ind_crit,_ = tester.evaluate(dataloader,
                                             criterion_id=val_criterion_id,
                                             max_eval_batches=max_val_batches,
-                                            nb_inner_steps=nb_inner_steps,
+                                            nb_epochs=nb_inner_steps,
+                                            val_dataloader=val_dataloader,
                                             taylor_order=0, 
                                             verbose=False)
-                print(f"     Validation Criterion: {ind_crit:-.8f}", flush=True, end="\n")
+                print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True, end="\n")
                 val_losses.append(np.array([step, ind_crit]))
 
                 # ## TODO Make a visualisation and save (like Zintgraff)
@@ -680,7 +686,7 @@ class CAVIATrainer(Trainer):
 
                 ## Check if val loss is lowest to save the model
                 if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
-                    print(f"     Saving best model so far ...", end="\n")
+                    print(f"        Saving best model so far ...", end="\n")
                     self.learner.save_learner(save_path)
                 ## Restore the learner at the last evaluation step
                 if epoch == nb_epochs-1:
@@ -716,11 +722,12 @@ class CAVIATrainer(Trainer):
 
     def meta_test(self, 
                    dataloader: DataLoader, ## Either a full dataloader or a tuple of batches
-                   nb_inner_steps=10, 
+                   nb_epochs=10,        ## Number of inner gradient update steps
                    taylor_order=0,
                    optimizer=None, 
                    print_error_every=(1, 1), 
                    max_adapt_batches=None,
+                   val_dataloader=None,
                    verbose=True,
                    save_path=False, 
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
@@ -729,6 +736,10 @@ class CAVIATrainer(Trainer):
         key = key if key is not None else self.key
 
         loss_fn = self.learner.loss_fn
+
+        nb_inner_steps = nb_epochs
+        if val_dataloader is None:
+            val_dataloader = dataloader
 
         ## This is useful if we want to disable the taylor expansion
         model = self.learner.reset_model(taylor_order, verbose=verbose)
@@ -792,8 +803,12 @@ class CAVIATrainer(Trainer):
 
         losses = []
         loss_key, _ = jax.random.split(key)
+        state_data = [[], [], []]
+        # all_contexts = []
 
-        for env_batch, batch in enumerate(dataloader):
+        torch.manual_seed(key[0])  # Ensure the same shuffling order
+        # for env_batch, batch in enumerate(dataloader):
+        for env_batch, (batch, val_batch) in enumerate(zip(dataloader, val_dataloader)):
             if env_batch >= max_adapt_batches:
                 break
 
@@ -816,6 +831,11 @@ class CAVIATrainer(Trainer):
             if verbose and (env_batch%print_every_batch==0 or env_batch<=3 or env_batch==nb_batches-1):
                 print(f"    Batch: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True, end="\r")
 
+            ## Use the contexts and the val_batch to predict Y_hat
+            state_data_ = self.learner.batch_predict(model, contexts, val_batch)
+            [state_data[i].append(state_data_[i]) for i in range(3)]
+            # all_contexts.append(contexts)
+
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
         if verbose:
@@ -827,16 +847,23 @@ class CAVIATrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        if dataloader.dataset.adaptation: self.learner.contexts_adapt = contexts
-        else: self.learner.contexts = contexts
+        if dataloader.dataset.adaptation: 
+            self.learner.contexts_adapt = contexts
+        else: 
+            self.learner.contexts = contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)
 
-        ## Use the contexts and the batch to predict Y_hat
-        aux_data = self.learner.batch_predict(model, contexts, batch)
+        # ## Use the contexts and the batch to predict Y_hat
+        # for batch in val_dataloader:
+        #     pass        ## Batch is the last batch from val_dataloader
+        # state_data = self.learner.batch_predict(model, contexts, batch)
 
-        return losses, contexts, aux_data
+        state_data = tuple(jnp.concat(state_data[i], axis=0) for i in range(3))
+        # all_contexts = jnp.concatenate(all_contexts, axis=0)
+
+        return losses, contexts, state_data
 
 
 

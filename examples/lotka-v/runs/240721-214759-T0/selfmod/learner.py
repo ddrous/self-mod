@@ -110,7 +110,7 @@ class ArrayContextParams(eqx.Module):
         return self.params
 
 
-class IDContextParams(eqx.Module):
+class InfDimContextParams(eqx.Module):
     params: list
     ctx_utils: any
 

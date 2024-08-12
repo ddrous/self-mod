@@ -2,7 +2,7 @@ import pickle
 from typing import Any, Tuple
 
 from selfmod.dataloader import DataLoader
-from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE, NonBatchedNeuralContextFlow, IDContextParams
+from selfmod.learner import ArrayContextParams, NeuralContextFlow, Learner, NeuralODE, NonBatchedNeuralContextFlow, InfDimContextParams
 from selfmod.visualtester import VisualTester
 from ._utils import *
 
@@ -84,7 +84,7 @@ class Trainer:
     def reset_contexts(self, nb_envs):
         if hasattr(self.learner.model.vectorfield.neuralnet, "ctx_utils"):
             mlp_utils = self.learner.model.vectorfield.neuralnet.ctx_utils[3]
-            contexts = IDContextParams(nb_envs=nb_envs, 
+            contexts = InfDimContextParams(nb_envs=nb_envs, 
                                     context_size=self.learner.context_size,
                                     hidden_size=mlp_utils[1],
                                     depth=mlp_utils[2], 

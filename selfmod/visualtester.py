@@ -17,7 +17,7 @@ class VisualTester:
     def evaluate(self, 
                  dataloader, 
                  nb_epochs=500,
-                 nb_inner_steps=10,
+                #  nb_inner_steps=10,
                  print_error_every=(100, 100),
                  loss_criterion=None, 
                  criterion_id=0, 
@@ -32,30 +32,42 @@ class VisualTester:
         """
 
         ## Adapt and extract the losses for each batch of environment
-        losses, _, _ = self.trainer.meta_test(dataloader, 
+        losses, _, state_data = self.trainer.meta_test(dataloader, 
                                             nb_epochs=nb_epochs,
-                                            nb_inner_steps=nb_inner_steps, 
+                                            # nb_inner_steps=nb_inner_steps, 
                                             max_adapt_batches=max_eval_batches,
                                             print_error_every=print_error_every,
                                             taylor_order=taylor_order, 
                                             val_dataloader=val_dataloader,
                                             verbose=verbose)
 
-        losses_means = jnp.mean(losses, axis=0)
+        # ## losses: (nb_inner_steps, nb_criterions)
+        # ## state_data: (X, Y, Y_hat)
+        # ## Y, Y_hat: (envs, trajs_per_envs, steps_per_traj, data_size)
+
+        ## Compute the confidence intervals on the losses
+        if loss_criterion is None:
+            loss_criterion = lambda y, y_hat: jnp.mean((y - y_hat)**2, axis=(-1, -2, -3))
+        _, Y, Y_hat = state_data
+        test_means = jax.vmap(loss_criterion, in_axes=(0, 0))(Y, Y_hat)
+        test_mean, test_std = jnp.mean(test_means), jnp.std(test_means)
+
+        ## Gather a metric from the training losses
+        losses_means = losses[-1, :]
+        # losses_means = jnp.mean(losses, axis=0)
         # losses_means = jnp.min(losses, axis=0)
 
-        ## TODO Compute the confidence intervals on the losses
-
         ## TODO Add the environment-wide UQ from NCF aware testing
+        aux_losses = None
 
-        mean_loss = losses_means[criterion_id]
+        train_mean = losses_means[criterion_id+1]
         if verbose:
-            print("==  Testing finished ... ==")
-            print("    Criterion loss value:", mean_loss)
+            print("==  Meta-evaluation ... ==")
+            print(f"    Test loss value: {test_mean:.2e} ± {test_std:.2e}")
+            print(f"    Train loss value for criterion {criterion_id}: {train_mean:.2e}")
 
-        # print("\n\n All values that contribute to the loss:", mean_loss, losses[:, criterion_id], flush=True)
-
-        return mean_loss, None
+        # return mean_loss, None
+        return test_mean, (test_std, train_mean, aux_losses)
 
 
     @abstractmethod
@@ -97,7 +109,7 @@ class VisualTester:
                 xis = self.trainer.learner.contexts_adapt.params
             else:
                 print("No contexts found. Using zeros.")
-                xis = jnp.zeros((10, self.learner.context_size))
+                xis = jnp.zeros((10, self.trainer.learner.context_size))
 
         mke = np.ceil(losses_model.shape[0]/100).astype(int)
         mks = 2

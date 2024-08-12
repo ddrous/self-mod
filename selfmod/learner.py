@@ -105,7 +105,7 @@ class Learner:
     def reset_contexts(self, nb_envs):
         if hasattr(self.model.vectorfield.neuralnet, "ctx_utils"):
             mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
-            contexts = IDContextParams(nb_envs=nb_envs, 
+            contexts = InfDimContextParams(nb_envs=nb_envs, 
                                     context_size=self.context_size,
                                     hidden_size=mlp_utils[1],
                                     depth=mlp_utils[2], 
@@ -117,9 +117,9 @@ class Learner:
         return contexts
 
     # def reset_contexts(self, nb_envs):
-    #     if isinstance(self.contexts, IDContextParams):
+    #     if isinstance(self.contexts, InfDimContextParams):
     #         mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
-    #         contexts = IDContextParams(nb_envs=nb_envs, 
+    #         contexts = InfDimContextParams(nb_envs=nb_envs, 
     #                                 context_size=self.context_size,
     #                                 hidden_size=mlp_utils[1],
     #                                 depth=mlp_utils[2], 
@@ -205,7 +205,7 @@ class ArrayContextParams(eqx.Module):
         return self.params
 
 
-class IDContextParams(eqx.Module):
+class InfDimContextParams(eqx.Module):
     params: list
     ctx_utils: any
 
