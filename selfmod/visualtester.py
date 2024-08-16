@@ -46,9 +46,10 @@ class VisualTester:
         # ## Y, Y_hat: (envs, trajs_per_envs, steps_per_traj, data_size)
 
         ## Compute the confidence intervals on the losses
-        if loss_criterion is None:
-            loss_criterion = lambda y, y_hat: jnp.mean((y - y_hat)**2, axis=(-1, -2, -3))
         _, Y, Y_hat = state_data
+        if loss_criterion is None:
+            axis = (-1, -2, -3) if len(Y.shape)>3 else (-1, -2)
+            loss_criterion = lambda y, y_hat: jnp.mean((y - y_hat)**2, axis=axis)
         test_means = jax.vmap(loss_criterion, in_axes=(0, 0))(Y, Y_hat)
         test_mean, test_std = jnp.mean(test_means), jnp.std(test_means)
 
@@ -71,7 +72,7 @@ class VisualTester:
 
 
     @abstractmethod
-    def visualizeTrainVal(self, dataloader, few_shot_loader, save_path=False, environment=None, key=None):
+    def visualize_train_val(self, dataloader, few_shot_loader, save_path=False, environment=None, key=None):
         """ Visualize two samples and their predictions: one from training and the other from validation """
         ## The dataloader muct be a generator of length 2. One containing training data and the second validation data.
         pass
@@ -174,7 +175,7 @@ class CelebAVisualTester(VisualTester):
     def __init__(self, trainer, key=None):
         super().__init__(trainer, key)
 
-    def visualizeFewShots(self, 
+    def visualize_few_shots(self, 
                         few_shots_loader:DataLoader, 
                         all_shots_loader:DataLoader, 
                         nb_inner_steps=10,
@@ -198,7 +199,7 @@ class CelebAVisualTester(VisualTester):
         print("    Environment (batch) id:", e)
 
         _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                                     nb_inner_steps=nb_inner_steps, 
+                                                     nb_epochs=nb_inner_steps, 
                                                      verbose=False)
         X_hat, Y_true, Y_hat = X[0], Y[0], Y_hat[0]
 
@@ -249,7 +250,7 @@ class CelebAVisualTester(VisualTester):
 
 
 
-    def visualizeFewShotsMulti(self, 
+    def visualize_few_shots_multi(self, 
                                 few_shots_loader:DataLoader, 
                                 all_shots_loader:DataLoader, 
                                 nb_inner_steps=10,
@@ -276,7 +277,7 @@ class CelebAVisualTester(VisualTester):
 
 
         _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                                     nb_inner_steps=nb_inner_steps, 
+                                                     nb_epochs=nb_inner_steps, 
                                                      verbose=False)
         X_hat, Y_true, Y_hat = X, Y, Y_hat
 

@@ -301,6 +301,13 @@ class CelebADataset(DataLoader):
         else:
             raise ValueError(f"Invalid data split provided. Got {data_split}")
 
+        if data_split in ["train", "val"]:
+            self.adaptation = False
+        elif data_split in ["test"]:
+            self.adaptation = True
+        else:
+            raise ValueError(f"Invalid data split provided. Got {data_split}")
+
         ## A list of MVPs images (or the worst during self-modulation) - Useful for active learning
         # self.mvp_files = self.files
 

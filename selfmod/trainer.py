@@ -77,6 +77,22 @@ class Trainer:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class NCFTrainer(Trainer):
     def __init__(self, learner:Learner, optimisers, key=None):
         """ Trainer class for the proximal gradient descent algorithms (NCF) """
@@ -163,9 +179,14 @@ class NCFTrainer(Trainer):
         if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:
             max_train_batches = dataloader.num_batches
         print(f"    Training on {max_train_batches} batches")
-        if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
-            max_val_batches = val_dataloader.num_batches
-        print(f"    Validating on {max_val_batches} batches")
+        if val_dataloader is not None:
+            if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
+                max_val_batches = val_dataloader.num_batches
+            print(f"    Validating on {max_val_batches} batches")
+
+        if isinstance(print_error_every, int):
+            print_error_every = (print_error_every, print_error_every)
+        print_every_batch, print_every_out_step = print_error_every
 
         start_time = time.time()
 
@@ -244,10 +265,10 @@ class NCFTrainer(Trainer):
                     losses_model.append(loss_model)
                     losses_ctx.append(loss_ctx)
 
-                    # if env_batch%print_error_every==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
-                    if out_step%print_error_every==0 or out_step<=3 or out_step==dataloader.num_batches-1:
-                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
-                        print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
+                    if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
+                        if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
+                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+                            print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                     if val_dataloader is not None and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
                         self.learner.model = model
@@ -341,9 +362,9 @@ class NCFTrainer(Trainer):
         if val_dataloader is None:
             val_dataloader = dataloader
 
+        if isinstance(print_error_every, int):
+            print_error_every = (print_error_every, print_error_every)
         print_every_epoch, print_every_batch = print_error_every
-        # if nb_inner_steps is not None:
-        #     nb_epochs = nb_inner_steps
 
         ## This is useful if we want to disable the taylor expansion
         model = self.learner.reset_model(taylor_order, verbose=verbose)
@@ -373,11 +394,16 @@ class NCFTrainer(Trainer):
         #     nb_envs_in_batch = dataloader.batch_size
         #     nb_batches = 1
 
+        if isinstance(dataloader, DataLoader):
+            nb_batches = dataloader.nb_batches
+        else:
+            nb_batches = len(dataloader)    ## A tuple of batches
+
         if max_adapt_batches is None or max_adapt_batches<1 or max_adapt_batches>dataloader.num_batches:
-            max_adapt_batches = dataloader.num_batches
+            max_adapt_batches = nb_batches
         else:
             if verbose and not self.learner.reuse_contexts:
-                print(f"    Training on {max_adapt_batches} batches")
+                print(f"    Adapting on {max_adapt_batches} batches")
 
         #################### Shortcut to not recreate contexts (only use this for single batch cases)
         if self.learner.reuse_contexts and not dataloader.dataset.adaptation and dataloader.num_batches==1:
@@ -409,42 +435,44 @@ class NCFTrainer(Trainer):
 
             return model, contexts, opt_state, loss, aux_data
 
-        contexts = self.learner.reset_contexts(nb_envs_in_batch)
-        opt_state_ctx = opt.init(eqx.filter(contexts, eqx.is_array))
-
         start_time = time.time()
 
         losses = []
         state_data = [[], [], []]
         loss_key, _ = jax.random.split(key)
 
-        for epoch in range(nb_epochs):
+        torch.manual_seed(loss_key[0])  # Ensure the same shuffling order
+        for env_batch, (batch, val_batch) in enumerate(zip(dataloader, val_dataloader)):
+            if env_batch >= max_adapt_batches:
+                break
+
+            nb_envs_in_batch = batch[0].shape[0]
+            weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+
+            contexts = self.learner.reset_contexts(nb_envs_in_batch)
+            opt_state_ctx = opt.init(eqx.filter(contexts, eqx.is_array))
 
             losses_epoch = []
 
-            torch.manual_seed(loss_key[0])  # Ensure the same shuffling order
-            for env_batch, (batch, val_batch) in enumerate(zip(dataloader, val_dataloader)):
-                if env_batch >= max_adapt_batches:
-                    break
-
-                nb_envs_in_batch = batch[0].shape[0]
-                weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+            for epoch in range(nb_epochs):
 
                 loss_key, _ = jax.random.split(loss_key)
 
                 model, contexts, opt_state_ctx, loss_ctx, (term1, term2, term3) = adapt_step(model, contexts, batch, weightings, opt_state_ctx, loss_key)
 
                 losses.append(loss_ctx)
-                losses_epoch.append(jnp.stack([loss_ctx, term1, term2, term3], axis=1))
+
+                mean_loss_terms = [jnp.mean(term) for term in (term1, term2, term3)]
+                losses_epoch.append(jnp.stack([loss_ctx]+mean_loss_terms))
 
                 if epoch == nb_epochs-1:
                     ## Use the contexts and the val_batch to predict Y_hat
                     state_data_ = self.learner.batch_predict(model, contexts, val_batch)
                     [state_data[i].append(state_data_[i]) for i in range(3)]
 
-            losses_epochs = jnp.mean(jnp.stack(losses_epoch, axis=0), axis=0)
+            losses_epochs = jnp.stack(losses_epoch, axis=0)
 
-            if verbose and (epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_batches-1):
+            if verbose and (epoch%print_every_epoch==0 or epoch<=3 or epoch==max_adapt_batches-1):
                 print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
 
 
@@ -457,7 +485,7 @@ class NCFTrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        if dataloader.dataset.adaptation: 
+        if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation: 
             self.learner.contexts_adapt = contexts
         else: 
             self.learner.contexts = contexts
@@ -468,6 +496,23 @@ class NCFTrainer(Trainer):
         state_data = tuple(jnp.concat(state_data[i], axis=0) for i in range(3))
 
         return losses_epochs, contexts, state_data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -604,10 +649,13 @@ class CAVIATrainer(Trainer):
         if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:
             max_train_batches = dataloader.num_batches
         print(f"    Training on {max_train_batches} batches")
-        if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
-            max_val_batches = val_dataloader.num_batches
-        print(f"    Validating on {max_val_batches} batches")
+        if val_dataloader is not None:
+            if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
+                max_val_batches = val_dataloader.num_batches
+            print(f"    Validating on {max_val_batches} batches")
 
+        if isinstance(print_error_every, int):
+            print_error_every = (print_error_every, print_error_every)
         print_every_epoch, print_every_batch = print_error_every
 
         start_time = time.time()
@@ -653,7 +701,7 @@ class CAVIATrainer(Trainer):
                 # print("All loss terms: ", term1, term2, term3)
 
                 if epoch%print_every_epoch==0 or epoch==nb_epochs-1:
-                    if env_batch%print_every_batch==0 or env_batch<=3 or env_batch==dataloader.num_batches-1:
+                    if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
                         print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
 
                         # alpha = model.taylor_weight[0]
@@ -672,7 +720,6 @@ class CAVIATrainer(Trainer):
                 alpha = model.taylor_weight[0]
                 print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\n")
                 print()
-
 
             if val_dataloader is not None and (epoch%validate_every==0 or epoch==nb_epochs-1):
                 self.learner.model = model
@@ -828,7 +875,8 @@ class CAVIATrainer(Trainer):
             return jnp.stack(aux_data, axis=1), contexts, state_data
         ####################
 
-
+        if isinstance(print_error_every, int):
+            print_error_every = (print_error_every, print_error_every)
         print_every_epoch, print_every_batch = print_error_every
 
         start_time = time.time()
@@ -860,7 +908,7 @@ class CAVIATrainer(Trainer):
                 mean_loss_terms = [jnp.mean(term) for term in aux_losses]
                 losses.append(jnp.stack([loss]+mean_loss_terms))
 
-            if verbose and (env_batch%print_every_batch==0 or env_batch<=3 or env_batch==nb_batches-1):
+            if verbose and (env_batch%print_every_epoch==0 or env_batch<=3 or env_batch==max_adapt_batches-1):
                 print(f"    Batch: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True, end="\r")
 
             ## Use the contexts and the val_batch to predict Y_hat
@@ -879,7 +927,7 @@ class CAVIATrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        if dataloader.dataset.adaptation: 
+        if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation: 
             self.learner.contexts_adapt = contexts
         else: 
             self.learner.contexts = contexts

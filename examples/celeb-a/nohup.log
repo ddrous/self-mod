@@ -3,119 +3,475 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240713-203319/
+New run folder created successfuly: ./runs/240816-072817/
 Completed copied scripts 
 
 
-Total number of parameters in the model: 1230302
+Total number of parameters in the model: 11783
+Total number of parameters in one context: 128
 
 
 === Beginning meta training ... ===
-    Number of examples in a batch: 432
-    Total number of batches : 377
-    Numbers of inner steps : 5
+    Number of examples in a batch along envs: 1024
+    Maximum number of batches (along envs): 159
+    Total number of epochs: 1
+    Number of outer minimizations: 100000
+    Maximum numbers of inner steps per outer minimizations: (10, 10)
+    Training on 1 batches
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   0    Loss: 0.12364940     ContextsNorm: 0.00000003Current unnormalised weight of the taylor expansion: -0.00099999       NormalisedWeight: 0.47502095
-     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   1    Loss: 0.11787947     ContextsNorm: 0.00000004Current unnormalised weight of the taylor expansion: -0.00204861       NormalisedWeight: 0.44896320
-     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   2    Loss: 0.11094581     ContextsNorm: 0.00000004Current unnormalised weight of the taylor expansion: -0.00314086       NormalisedWeight: 0.42211768
-Epoch:   0      Batch:   3    Loss: 0.10928116     ContextsNorm: 0.00000006Current unnormalised weight of the taylor expansion: -0.00427507       NormalisedWeight: 0.39472181
-Epoch:   0      Batch: 100    Loss: 0.07508822     ContextsNorm: 0.00002021Current unnormalised weight of the taylor expansion: -0.01526245       NormalisedWeight: 0.17854381
-Epoch:   0      Batch: 200    Loss: 0.06091741     ContextsNorm: 0.00273740Current unnormalised weight of the taylor expansion: -0.01278348       NormalisedWeight: 0.21783151
-Epoch:   0      Batch: 300    Loss: 0.04359536     ContextsNorm: 0.00328369Current unnormalised weight of the taylor expansion: -0.01881197       NormalisedWeight: 0.13225150
-     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch: 376    Loss: 0.03790204     ContextsNorm: 0.00388596Current unnormalised weight of the taylor expansion: -0.02161277       NormalisedWeight: 0.10328211
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-     ### (Re)Compiling function: adapt_step_cavia ...  
-     ### (Re)Compiling function: adapt_step_cavia ...  
-     Validation Criterion: 0.04679890
-        Saving best model so far ...
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-Epoch:   1      Batch:   0    Loss: 0.03647510     ContextsNorm: 0.00387688Current unnormalised weight of the taylor expansion: -0.02163956       NormalisedWeight: 0.10303430
-Epoch:   1      Batch:   1    Loss: 0.03809807     ContextsNorm: 0.00386484Current unnormalised weight of the taylor expansion: -0.02166499       NormalisedWeight: 0.10279949
-Epoch:   1      Batch:   2    Loss: 0.03883892     ContextsNorm: 0.00393901Current unnormalised weight of the taylor expansion: -0.02169110       NormalisedWeight: 0.10255890
-Epoch:   1      Batch:   3    Loss: 0.03731871     ContextsNorm: 0.00376314Current unnormalised weight of the taylor expansion: -0.02171410       NormalisedWeight: 0.10234740
-Epoch:   1      Batch: 100    Loss: 0.03227656     ContextsNorm: 0.00411157Current unnormalised weight of the taylor expansion: -0.02305029       NormalisedWeight: 0.09070730
-Epoch:   1      Batch: 200    Loss: 0.02606235     ContextsNorm: 0.00434963Current unnormalised weight of the taylor expansion: -0.02380643       NormalisedWeight: 0.08466072
-Epoch:   1      Batch: 300    Loss: 0.02200703     ContextsNorm: 0.00459755Current unnormalised weight of the taylor expansion: -0.02552292       NormalisedWeight: 0.07227266
-Epoch:   1      Batch: 376    Loss: 0.01982154     ContextsNorm: 0.00474490Current unnormalised weight of the taylor expansion: -0.02719307       NormalisedWeight: 0.06184366
-     Validation Criterion: 0.03751669
-        Saving best model so far ...
-Epoch:   2      Batch:   0    Loss: 0.02007721     ContextsNorm: 0.00486813Current unnormalised weight of the taylor expansion: -0.02721644       NormalisedWeight: 0.06170821
-Epoch:   2      Batch:   1    Loss: 0.02001305     ContextsNorm: 0.00469065Current unnormalised weight of the taylor expansion: -0.02723894       NormalisedWeight: 0.06157804
-Epoch:   2      Batch:   2    Loss: 0.02047309     ContextsNorm: 0.00467071Current unnormalised weight of the taylor expansion: -0.02726016       NormalisedWeight: 0.06145558
-Epoch:   2      Batch:   3    Loss: 0.02118931     ContextsNorm: 0.00480218Current unnormalised weight of the taylor expansion: -0.02727955       NormalisedWeight: 0.06134382
-Epoch:   2      Batch: 100    Loss: 0.01876022     ContextsNorm: 0.00503828Current unnormalised weight of the taylor expansion: -0.02882511       NormalisedWeight: 0.05302492
-Epoch:   2      Batch: 200    Loss: 0.01683494     ContextsNorm: 0.00503951Current unnormalised weight of the taylor expansion: -0.03008231       NormalisedWeight: 0.04705540
-Epoch:   2      Batch: 300    Loss: 0.01662394     ContextsNorm: 0.00471827Current unnormalised weight of the taylor expansion: -0.03160425       NormalisedWeight: 0.04068248
-Epoch:   2      Batch: 376    Loss: 0.01576390     ContextsNorm: 0.00493182Current unnormalised weight of the taylor expansion: -0.03248038       NormalisedWeight: 0.03739745
-     Validation Criterion: 0.03646272
-        Saving best model so far ...
-Epoch:   3      Batch:   0    Loss: 0.01546763     ContextsNorm: 0.00479486Current unnormalised weight of the taylor expansion: -0.03248977       NormalisedWeight: 0.03736367
-Epoch:   3      Batch:   1    Loss: 0.01567654     ContextsNorm: 0.00481464Current unnormalised weight of the taylor expansion: -0.03250147       NormalisedWeight: 0.03732160
-Epoch:   3      Batch:   2    Loss: 0.01571872     ContextsNorm: 0.00496267Current unnormalised weight of the taylor expansion: -0.03251395       NormalisedWeight: 0.03727680
-Epoch:   3      Batch:   3    Loss: 0.01611805     ContextsNorm: 0.00500362Current unnormalised weight of the taylor expansion: -0.03252487       NormalisedWeight: 0.03723762
-Epoch:   3      Batch: 100    Loss: 0.01564258     ContextsNorm: 0.00467406Current unnormalised weight of the taylor expansion: -0.03339096       NormalisedWeight: 0.03425406
-Epoch:   3      Batch: 200    Loss: 0.01502271     ContextsNorm: 0.00478625Current unnormalised weight of the taylor expansion: -0.03417359       NormalisedWeight: 0.03175732
-Epoch:   3      Batch: 300    Loss: 0.01570645     ContextsNorm: 0.00474890Current unnormalised weight of the taylor expansion: -0.03485841       NormalisedWeight: 0.02971778
-Epoch:   3      Batch: 376    Loss: 0.01483575     ContextsNorm: 0.00468589Current unnormalised weight of the taylor expansion: -0.03538107       NormalisedWeight: 0.02824720
-     Validation Criterion: 0.03547749
-        Saving best model so far ...
-Epoch:   4      Batch:   0    Loss: 0.01436355     ContextsNorm: 0.00455388Current unnormalised weight of the taylor expansion: -0.03538877       NormalisedWeight: 0.02822607
-Epoch:   4      Batch:   1    Loss: 0.01426107     ContextsNorm: 0.00451655Current unnormalised weight of the taylor expansion: -0.03539722       NormalisedWeight: 0.02820291
-Epoch:   4      Batch:   2    Loss: 0.01459787     ContextsNorm: 0.00460170Current unnormalised weight of the taylor expansion: -0.03540529       NormalisedWeight: 0.02818081
-Epoch:   4      Batch:   3    Loss: 0.01371018     ContextsNorm: 0.00462508Current unnormalised weight of the taylor expansion: -0.03540985       NormalisedWeight: 0.02816830
-Epoch:   4      Batch: 100    Loss: 0.01379992     ContextsNorm: 0.00473187Current unnormalised weight of the taylor expansion: -0.03598851       NormalisedWeight: 0.02662677
-Epoch:   4      Batch: 200    Loss: 0.01344059     ContextsNorm: 0.00474889Current unnormalised weight of the taylor expansion: -0.03664923       NormalisedWeight: 0.02496683
-Epoch:   4      Batch: 300    Loss: 0.01379605     ContextsNorm: 0.00486632Current unnormalised weight of the taylor expansion: -0.03724137       NormalisedWeight: 0.02356521
-Epoch:   4      Batch: 376    Loss: 0.01378584     ContextsNorm: 0.00486538Current unnormalised weight of the taylor expansion: -0.03771635       NormalisedWeight: 0.02249666
-     Validation Criterion: 0.03284063
-        Saving best model so far ...
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.65870720     ContextsNorm: 0.00000000
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:    1
+	-DiffMod:   5.90e-05
+	-DiffCxt:   infEpoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.04169830     ContextsNorm: 0.07065554
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.24e-08
+	-DiffCxt:   9.46e-08Epoch:   0      Batch:   0      OuterStep: 2000      LossModel: 0.03458719     ContextsNorm: 0.11790285
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.48e-08
+	-DiffCxt:   8.30e-08Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.02624285     ContextsNorm: 0.15669811
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.91e-08
+	-DiffCxt:   1.33e-07Epoch:   0      Batch:   0      OuterStep: 4000      LossModel: 0.02360474     ContextsNorm: 0.18055475
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.49e-09
+	-DiffCxt:   7.56e-08Epoch:   0      Batch:   0      OuterStep: 5000      LossModel: 0.02242375     ContextsNorm: 0.19907838
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.22e-08
+	-DiffCxt:   2.15e-07Epoch:   0      Batch:   0      OuterStep: 6000      LossModel: 0.02069144     ContextsNorm: 0.21785268
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.69e-10
+	-DiffCxt:   7.52e-10Epoch:   0      Batch:   0      OuterStep: 7000      LossModel: 0.01996661     ContextsNorm: 0.23446825
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.04e-08
+	-DiffCxt:   4.37e-07Epoch:   0      Batch:   0      OuterStep: 8000      LossModel: 0.01881060     ContextsNorm: 0.25046623
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.57e-09
+	-DiffCxt:   1.09e-08Epoch:   0      Batch:   0      OuterStep: 9000      LossModel: 0.01807650     ContextsNorm: 0.26325715
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.92e-08
+	-DiffCxt:   4.19e-08Epoch:   0      Batch:   0      OuterStep: 10000      LossModel: 0.01713197     ContextsNorm: 0.27462447
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.66e-11
+	-DiffCxt:   2.64e-10Epoch:   0      Batch:   0      OuterStep: 11000      LossModel: 0.01646723     ContextsNorm: 0.28677565
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.79e-10
+	-DiffCxt:   1.09e-09Epoch:   0      Batch:   0      OuterStep: 12000      LossModel: 0.01606474     ContextsNorm: 0.30028343
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.07e-08
+	-DiffCxt:   8.05e-08Epoch:   0      Batch:   0      OuterStep: 13000      LossModel: 0.01532513     ContextsNorm: 0.31324679
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.45e-09
+	-DiffCxt:   7.11e-09Epoch:   0      Batch:   0      OuterStep: 14000      LossModel: 0.01485547     ContextsNorm: 0.32173374
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.32e-09
+	-DiffCxt:   4.70e-08Epoch:   0      Batch:   0      OuterStep: 15000      LossModel: 0.01437457     ContextsNorm: 0.33292294
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.16e-10
+	-DiffCxt:   4.03e-10Epoch:   0      Batch:   0      OuterStep: 16000      LossModel: 0.01396075     ContextsNorm: 0.34496033
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.63e-10
+	-DiffCxt:   5.47e-09Epoch:   0      Batch:   0      OuterStep: 17000      LossModel: 0.01368572     ContextsNorm: 0.35542586
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.75e-09
+	-DiffCxt:   4.26e-09Epoch:   0      Batch:   0      OuterStep: 18000      LossModel: 0.01343478     ContextsNorm: 0.36551014
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.25e-08
+	-DiffCxt:   1.63e-07Epoch:   0      Batch:   0      OuterStep: 19000      LossModel: 0.01388248     ContextsNorm: 0.37496048
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.05e-08
+	-DiffCxt:   9.48e-08Epoch:   0      Batch:   0      OuterStep: 20000      LossModel: 0.01277861     ContextsNorm: 0.38881043
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.78e-09
+	-DiffCxt:   3.95e-09Epoch:   0      Batch:   0      OuterStep: 21000      LossModel: 0.01315419     ContextsNorm: 0.39476374
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.41e-08
+	-DiffCxt:   1.37e-07Epoch:   0      Batch:   0      OuterStep: 22000      LossModel: 0.01227386     ContextsNorm: 0.40441126
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.42e-09
+	-DiffCxt:   7.91e-09Epoch:   0      Batch:   0      OuterStep: 23000      LossModel: 0.01232940     ContextsNorm: 0.41462347
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.66e-08
+	-DiffCxt:   4.07e-08Epoch:   0      Batch:   0      OuterStep: 24000      LossModel: 0.01225545     ContextsNorm: 0.42178315
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.37e-08
+	-DiffCxt:   2.81e-08Epoch:   0      Batch:   0      OuterStep: 25000      LossModel: 0.01190031     ContextsNorm: 0.43555820
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.92e-09
+	-DiffCxt:   4.97e-09Epoch:   0      Batch:   0      OuterStep: 26000      LossModel: 0.01200100     ContextsNorm: 0.45633698
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.03e-08
+	-DiffCxt:   1.91e-08Epoch:   0      Batch:   0      OuterStep: 27000      LossModel: 0.01181871     ContextsNorm: 0.47166884
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.17e-08
+	-DiffCxt:   1.51e-08Epoch:   0      Batch:   0      OuterStep: 28000      LossModel: 0.01168679     ContextsNorm: 0.48362786
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.12e-08
+	-DiffCxt:   2.52e-08Epoch:   0      Batch:   0      OuterStep: 29000      LossModel: 0.01146557     ContextsNorm: 0.48246983
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.43e-09
+	-DiffCxt:   1.23e-08Epoch:   0      Batch:   0      OuterStep: 30000      LossModel: 0.01145807     ContextsNorm: 0.48854584
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.59e-09
+	-DiffCxt:   1.21e-08Epoch:   0      Batch:   0      OuterStep: 31000      LossModel: 0.01143892     ContextsNorm: 0.50037950
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.25e-09
+	-DiffCxt:   1.27e-08Epoch:   0      Batch:   0      OuterStep: 32000      LossModel: 0.01140838     ContextsNorm: 0.51672935
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.69e-09
+	-DiffCxt:   1.33e-08Epoch:   0      Batch:   0      OuterStep: 33000      LossModel: 0.01133419     ContextsNorm: 0.53634763
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.62e-09
+	-DiffCxt:   9.93e-09Epoch:   0      Batch:   0      OuterStep: 34000      LossModel: 0.01130125     ContextsNorm: 0.55745214
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.21e-09
+	-DiffCxt:   8.67e-09Epoch:   0      Batch:   0      OuterStep: 35000      LossModel: 0.01127953     ContextsNorm: 0.58066285
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.09e-09
+	-DiffCxt:   7.55e-09Epoch:   0      Batch:   0      OuterStep: 36000      LossModel: 0.01124757     ContextsNorm: 0.60502315
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.71e-09
+	-DiffCxt:   6.71e-09Epoch:   0      Batch:   0      OuterStep: 37000      LossModel: 0.01118619     ContextsNorm: 0.62763917
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.26e-09
+	-DiffCxt:   6.15e-09Epoch:   0      Batch:   0      OuterStep: 38000      LossModel: 0.01111109     ContextsNorm: 0.64711845
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.49e-09
+	-DiffCxt:   5.46e-09Epoch:   0      Batch:   0      OuterStep: 39000      LossModel: 0.01103361     ContextsNorm: 0.66474849
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.83e-09
+	-DiffCxt:   5.92e-09Epoch:   0      Batch:   0      OuterStep: 40000      LossModel: 0.01093942     ContextsNorm: 0.68393242
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.32e-09
+	-DiffCxt:   4.07e-09Epoch:   0      Batch:   0      OuterStep: 41000      LossModel: 0.01088976     ContextsNorm: 0.70458430
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.45e-09
+	-DiffCxt:   3.11e-09Epoch:   0      Batch:   0      OuterStep: 42000      LossModel: 0.01088852     ContextsNorm: 0.72573447
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.67e-09
+	-DiffCxt:   2.77e-09Epoch:   0      Batch:   0      OuterStep: 43000      LossModel: 0.01083682     ContextsNorm: 0.74676251
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.96e-09
+	-DiffCxt:   2.06e-09Epoch:   0      Batch:   0      OuterStep: 44000      LossModel: 0.01080024     ContextsNorm: 0.76801205
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.02e-09
+	-DiffCxt:   2.59e-09Epoch:   0      Batch:   0      OuterStep: 45000      LossModel: 0.01041481     ContextsNorm: 0.77316689
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.02e-09
+	-DiffCxt:   5.62e-09Epoch:   0      Batch:   0      OuterStep: 46000      LossModel: 0.01056681     ContextsNorm: 0.78477073
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.38e-09
+	-DiffCxt:   7.12e-09Epoch:   0      Batch:   0      OuterStep: 47000      LossModel: 0.01065155     ContextsNorm: 0.80317628
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.78e-09
+	-DiffCxt:   5.56e-09Epoch:   0      Batch:   0      OuterStep: 48000      LossModel: 0.01055747     ContextsNorm: 0.82281578
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.30e-09
+	-DiffCxt:   3.00e-09Epoch:   0      Batch:   0      OuterStep: 49000      LossModel: 0.01047634     ContextsNorm: 0.84318173
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.61e-09
+	-DiffCxt:   2.44e-09Epoch:   0      Batch:   0      OuterStep: 50000      LossModel: 0.01052043     ContextsNorm: 0.86387402
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.19e-09
+	-DiffCxt:   3.09e-09Epoch:   0      Batch:   0      OuterStep: 51000      LossModel: 0.01054816     ContextsNorm: 0.88550466
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.41e-09
+	-DiffCxt:   3.17e-09Epoch:   0      Batch:   0      OuterStep: 52000      LossModel: 0.01058143     ContextsNorm: 0.90761524
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.53e-09
+	-DiffCxt:   3.14e-09Epoch:   0      Batch:   0      OuterStep: 53000      LossModel: 0.01059918     ContextsNorm: 0.93032867
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.52e-09
+	-DiffCxt:   2.47e-09Epoch:   0      Batch:   0      OuterStep: 54000      LossModel: 0.00975679     ContextsNorm: 0.93273622
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.53e-09
+	-DiffCxt:   6.02e-09Epoch:   0      Batch:   0      OuterStep: 55000      LossModel: 0.01074622     ContextsNorm: 0.93813515
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.70e-09
+	-DiffCxt:   2.06e-09Epoch:   0      Batch:   0      OuterStep: 56000      LossModel: 0.01123217     ContextsNorm: 0.95087850
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.84e-09
+	-DiffCxt:   2.46e-09Epoch:   0      Batch:   0      OuterStep: 57000      LossModel: 0.01117084     ContextsNorm: 0.96807826
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.74e-09
+	-DiffCxt:   2.81e-09Epoch:   0      Batch:   0      OuterStep: 58000      LossModel: 0.01022191     ContextsNorm: 0.97317898
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.96e-09
+	-DiffCxt:   1.68e-09Epoch:   0      Batch:   0      OuterStep: 59000      LossModel: 0.01171911     ContextsNorm: 0.97673845
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.05e-08
+	-DiffCxt:   2.08e-08Epoch:   0      Batch:   0      OuterStep: 60000      LossModel: 0.00962058     ContextsNorm: 0.98123860
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.87e-09
+	-DiffCxt:   3.14e-09Epoch:   0      Batch:   0      OuterStep: 61000      LossModel: 0.01029104     ContextsNorm: 0.98532486
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.67e-09
+	-DiffCxt:   6.23e-09Epoch:   0      Batch:   0      OuterStep: 62000      LossModel: 0.00974029     ContextsNorm: 0.98938584
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.12e-09
+	-DiffCxt:   2.41e-09Epoch:   0      Batch:   0      OuterStep: 63000      LossModel: 0.00941902     ContextsNorm: 0.99102426
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.51e-09
+	-DiffCxt:   3.08e-09Epoch:   0      Batch:   0      OuterStep: 64000      LossModel: 0.00925854     ContextsNorm: 0.99419087
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.20e-09
+	-DiffCxt:   3.15e-09Epoch:   0      Batch:   0      OuterStep: 65000      LossModel: 0.00947522     ContextsNorm: 0.99734664
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.19e-09
+	-DiffCxt:   6.60e-09Epoch:   0      Batch:   0      OuterStep: 66000      LossModel: 0.00946887     ContextsNorm: 0.99993587
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.90e-09
+	-DiffCxt:   4.93e-09Epoch:   0      Batch:   0      OuterStep: 67000      LossModel: 0.00949613     ContextsNorm: 1.00185847
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.18e-09
+	-DiffCxt:   4.99e-09Epoch:   0      Batch:   0      OuterStep: 68000      LossModel: 0.00951479     ContextsNorm: 1.00375605
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.82e-09
+	-DiffCxt:   4.27e-09Epoch:   0      Batch:   0      OuterStep: 69000      LossModel: 0.00919627     ContextsNorm: 1.00601161
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.51e-09
+	-DiffCxt:   4.36e-09Epoch:   0      Batch:   0      OuterStep: 70000      LossModel: 0.00894256     ContextsNorm: 1.00850630
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.02e-09
+	-DiffCxt:   1.23e-09Epoch:   0      Batch:   0      OuterStep: 71000      LossModel: 0.00883788     ContextsNorm: 1.01120210
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.52e-10
+	-DiffCxt:   8.17e-10Epoch:   0      Batch:   0      OuterStep: 72000      LossModel: 0.00923328     ContextsNorm: 1.01415873
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.43e-09
+	-DiffCxt:   2.21e-09Epoch:   0      Batch:   0      OuterStep: 73000      LossModel: 0.00943937     ContextsNorm: 1.01679862
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.78e-09
+	-DiffCxt:   2.93e-09Epoch:   0      Batch:   0      OuterStep: 74000      LossModel: 0.00884462     ContextsNorm: 1.01975894
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.34e-09
+	-DiffCxt:   2.17e-09Epoch:   0      Batch:   0      OuterStep: 75000      LossModel: 0.00882322     ContextsNorm: 1.02271998
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-09
+	-DiffCxt:   4.33e-09Epoch:   0      Batch:   0      OuterStep: 76000      LossModel: 0.00884905     ContextsNorm: 1.02558637
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.73e-09
+	-DiffCxt:   1.04e-08Epoch:   0      Batch:   0      OuterStep: 77000      LossModel: 0.00871641     ContextsNorm: 1.02848101
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.87e-10
+	-DiffCxt:   1.66e-09Epoch:   0      Batch:   0      OuterStep: 78000      LossModel: 0.00879301     ContextsNorm: 1.03129435
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.65e-09
+	-DiffCxt:   2.80e-09Epoch:   0      Batch:   0      OuterStep: 79000      LossModel: 0.00898277     ContextsNorm: 1.03421164
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.22e-09
+	-DiffCxt:   4.62e-09Epoch:   0      Batch:   0      OuterStep: 80000      LossModel: 0.00902699     ContextsNorm: 1.03709960
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.62e-09
+	-DiffCxt:   2.68e-09Epoch:   0      Batch:   0      OuterStep: 81000      LossModel: 0.00879391     ContextsNorm: 1.04004467
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.09e-09
+	-DiffCxt:   3.71e-09Epoch:   0      Batch:   0      OuterStep: 82000      LossModel: 0.00863163     ContextsNorm: 1.04306984
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.37e-09
+	-DiffCxt:   1.65e-09Epoch:   0      Batch:   0      OuterStep: 83000      LossModel: 0.00860666     ContextsNorm: 1.04626906
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.05e-10
+	-DiffCxt:   2.08e-09Epoch:   0      Batch:   0      OuterStep: 84000      LossModel: 0.00915186     ContextsNorm: 1.04941702
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.70e-09
+	-DiffCxt:   6.33e-09Epoch:   0      Batch:   0      OuterStep: 85000      LossModel: 0.00876609     ContextsNorm: 1.05268288
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.44e-09
+	-DiffCxt:   1.01e-09Epoch:   0      Batch:   0      OuterStep: 86000      LossModel: 0.00926001     ContextsNorm: 1.05591273
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.80e-09
+	-DiffCxt:   9.53e-09Epoch:   0      Batch:   0      OuterStep: 87000      LossModel: 0.00929387     ContextsNorm: 1.05910897
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.51e-09
+	-DiffCxt:   7.01e-09Epoch:   0      Batch:   0      OuterStep: 88000      LossModel: 0.00872032     ContextsNorm: 1.06244469
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.10e-09
+	-DiffCxt:   7.89e-10Epoch:   0      Batch:   0      OuterStep: 89000      LossModel: 0.00861396     ContextsNorm: 1.06568003
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.28e-09
+	-DiffCxt:   4.21e-09Epoch:   0      Batch:   0      OuterStep: 90000      LossModel: 0.00899042     ContextsNorm: 1.06910026
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.30e-09
+	-DiffCxt:   5.39e-09Epoch:   0      Batch:   0      OuterStep: 91000      LossModel: 0.00863572     ContextsNorm: 1.07262468
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.42e-09
+	-DiffCxt:   4.72e-09Epoch:   0      Batch:   0      OuterStep: 92000      LossModel: 0.00845491     ContextsNorm: 1.07610977
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.01e-10
+	-DiffCxt:   1.41e-09Epoch:   0      Batch:   0      OuterStep: 93000      LossModel: 0.00906366     ContextsNorm: 1.07966173
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.35e-09
+	-DiffCxt:   3.52e-09Epoch:   0      Batch:   0      OuterStep: 94000      LossModel: 0.00871915     ContextsNorm: 1.08324444
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.03e-09
+	-DiffCxt:   1.59e-09Epoch:   0      Batch:   0      OuterStep: 95000      LossModel: 0.00877804     ContextsNorm: 1.08677506
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.09e-09
+	-DiffCxt:   1.37e-09Epoch:   0      Batch:   0      OuterStep: 96000      LossModel: 0.00853817     ContextsNorm: 1.09011912
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.01e-09
+	-DiffCxt:   3.09e-09Epoch:   0      Batch:   0      OuterStep: 97000      LossModel: 0.00898973     ContextsNorm: 1.09355760
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.90e-09
+	-DiffCxt:   5.70e-09Epoch:   0      Batch:   0      OuterStep: 98000      LossModel: 0.00832594     ContextsNorm: 1.09678483
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.51e-10
+	-DiffCxt:   5.74e-10Epoch:   0      Batch:   0      OuterStep: 99000      LossModel: 0.00865393     ContextsNorm: 1.09999466
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.35e-09
+	-DiffCxt:   1.14e-09Epoch:   0      Batch:   0      OuterStep: 99999      LossModel: 0.00876611     ContextsNorm: 1.10310030
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.23e-09
+	-DiffCxt:   7.83e-09
+Total gradient descent training time: 1 hours 42 mins 46 secs
+Using any previrouly defined optimizer for adapation
 
-Total gradient descent training time: 0 hours 9 mins 42 secs
-==  Testing finished ... ==
-    Criterion loss value: 0.032839485
+
+=== Beginning meta testing ... ===
+    Number of examples in a batch along envs: 1024
+    Maximum number of batches (along envs): 20
+    Adapting on 1 batches
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### Compiling function "adapt_step" for the contexts ...  
+
+Total gradient descent training time: 0 hours 0 mins 4 secs
+==  Meta-evaluation ... ==
+    Test loss value: 2.46e-01 ± 6.58e-02
+    Train loss value for criterion 0: 2.34e-01
 ==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [ 83  93 197]
-    Visualized context dimensions along y: [ 77 214 128]
-Saving artefacts in: ./runs/240713-203319/artefacts.png
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./runs/240816-072817/artefacts.png
 ==  Begining in-domain CelebA visualisation ... ==
     Environment ids: range(0, 6)
-     ### (Re)Compiling function: adapt_step_cavia ...  
-Saving visualization in: ./runs/240713-203319/few_shots_multi_ind.png
+     ### Compiling function "adapt_step" for the contexts ...  
+Saving visualization in: ./runs/240816-072817/few_shots_ind.png
+Using any previrouly defined optimizer for adapation
 
 
-=== Beginning adaptation ... ===
-    Number of environment batches: 47
-    Number of envs train steps per batch: 5
-    Total number of training steps: 235
+=== Beginning meta testing ... ===
+    Number of examples in a batch along envs: 1024
+    Maximum number of batches (along envs): 20
+    Adapting on 1 batches
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-     ### (Re)Compiling function: adapt_step_cavia ...  
-    Batch:   0     Loss: 0.01376972        OtherNorms: [0.01376972 0.00709636 0.0025011 ]    Batch:   1     Loss: 0.01420850        OtherNorms: [0.0142085  0.00696766 0.0025011 ]    Batch:   2     Loss: 0.01371745        OtherNorms: [0.01371745 0.00712794 0.0025011 ]    Batch:   3     Loss: 0.01338515        OtherNorms: [0.01338515 0.00727071 0.0025011 ]     ### (Re)Compiling function: adapt_step_cavia ...  
-    Batch:  46     Loss: 0.01468261        OtherNorms: [0.01468261 0.00712404 0.0025011 ]
-Total gradient descent adaptation time: 0 hours 0 mins 5 secs
+     ### Compiling function "adapt_step" for the contexts ...  
 
-Saving adaptation parameters into ./runs/240713-203319/adapt/ folder ...
-
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-     ### (Re)Compiling function: adapt_step_cavia ...  
-==  Testing finished ... ==
-    Criterion loss value: 0.033102218
+Total gradient descent training time: 0 hours 0 mins 3 secs
+==  Meta-evaluation ... ==
+    Test loss value: 2.45e-01 ± 5.68e-02
+    Train loss value for criterion 0: 2.31e-01
 ==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [ 83  93 197]
-    Visualized context dimensions along y: [ 77 214 128]
-Saving artefacts in: ./runs/240713-203319/adapt/artefacts.png
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+No contexts found. Using zeros.
+Saving artefacts in: ./runs/240816-072817/adapt/artefacts.png
 ==  Begining in-domain CelebA visualisation ... ==
     Environment ids: range(0, 6)
-Saving visualization in: ./runs/240713-203319/adapt/few_shots_multi_ood.png
+     ### Compiling function "adapt_step" for the contexts ...  
+Saving visualization in: ./runs/240816-072817/adapt/few_shots_ood.png

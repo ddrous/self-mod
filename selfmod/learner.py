@@ -24,6 +24,12 @@ class Learner:
         self.pool_filling = pool_filling
         self.reuse_contexts = reuse_contexts
 
+        if contexts is not None:
+            self.contexts = contexts
+        else:
+            print("    No context template provides, using arrays ...")
+            self.contexts = ArrayContextParams(nb_envs=1, context_size=context_size)
+
         def env_loss_fn_(model, batch, ctx, ctxs, key):
             """ Wrapping the loss function before vectorizing it below """
             X, Y = batch
@@ -102,35 +108,49 @@ class Learner:
         return model
 
 
-    def reset_contexts(self, nb_envs):
-        if hasattr(self.model.vectorfield.neuralnet, "ctx_utils"):
-            mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
-            contexts = InfDimContextParams(nb_envs=nb_envs, 
-                                    context_size=self.context_size,
-                                    hidden_size=mlp_utils[1],
-                                    depth=mlp_utils[2], 
-                                    key=None)
-        else:
-            contexts = ArrayContextParams(nb_envs=nb_envs, 
-                                        context_size=self.context_size)
-
-        return contexts
-
     # def reset_contexts(self, nb_envs):
-    #     if isinstance(self.contexts, InfDimContextParams):
+    #     if hasattr(self.model.vectorfield.neuralnet, "ctx_utils"):
     #         mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
     #         contexts = InfDimContextParams(nb_envs=nb_envs, 
     #                                 context_size=self.context_size,
     #                                 hidden_size=mlp_utils[1],
     #                                 depth=mlp_utils[2], 
     #                                 key=None)
-    #     elif isinstance(self.contexts, ArrayContextParams):
+    #     else:
     #         contexts = ArrayContextParams(nb_envs=nb_envs, 
     #                                     context_size=self.context_size)
-    #     else:
-    #         raise ValueError("The context type is not supported")
 
     #     return contexts
+
+    def reset_contexts(self, nb_envs):
+        if isinstance(self.contexts, InfDimContextParams):
+            if hasattr(self.model, "vectorfield"):
+                mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
+            else:
+                mlp_utils = self.model.neuralnet.ctx_utils[3]
+            # contexts = InfDimContextParams(nb_envs=nb_envs, 
+            #                         context_size=self.context_size,
+            #                         hidden_size=mlp_utils[1],
+            #                         depth=mlp_utils[2], 
+            #                         key=None)
+            input_dim, output_dim, hidden_size, depth, activation = mlp_utils
+            key = self.contexts.key
+            if key is not None:
+                key, _ = jax.random.split(key)
+            contexts = InfDimContextParams(nb_envs=nb_envs, 
+                                    input_dim=input_dim,
+                                    output_dim=output_dim,
+                                    hidden_size=hidden_size,
+                                    depth=depth, 
+                                    activation=activation,
+                                    key=key)
+        elif isinstance(self.contexts, ArrayContextParams):
+            contexts = ArrayContextParams(nb_envs=nb_envs, 
+                                        context_size=self.context_size)
+        else:
+            raise ValueError("The context type is not supported")
+
+        return contexts
 
 
     @eqx.filter_jit
@@ -193,6 +213,7 @@ class MLP(eqx.Module):
 class ArrayContextParams(eqx.Module):
     """ A context initialised with gaussian """
     params: jnp.ndarray
+    eff_context_size: int
 
 
     def __init__(self, nb_envs, context_size, key=None):
@@ -200,6 +221,7 @@ class ArrayContextParams(eqx.Module):
             self.params = jnp.zeros((nb_envs, context_size))
         else:
             self.params = jax.random.normal(key, (nb_envs, context_size))
+        self.eff_context_size = context_size
 
     def __call__(self):
         return self.params
@@ -208,23 +230,29 @@ class ArrayContextParams(eqx.Module):
 class InfDimContextParams(eqx.Module):
     params: list
     ctx_utils: any
+    eff_context_size: int     ## The effective/actual size of a context vector (flattened neural network)
+    key: jnp.ndarray
 
-    def __init__(self, nb_envs, context_size, hidden_size, depth, key=None):
+    def __init__(self, nb_envs, input_dim, output_dim, hidden_size, depth, activation=jax.nn.softplus, key=None):
 
         if key is None:
+            self.key = None
             keys = jax.random.split(jax.random.PRNGKey(0), nb_envs)
         else:
+            self.key = key
             keys = jax.random.split(key, nb_envs)
 
-        all_contexts = [MLP(1, context_size, hidden_size, depth, jax.nn.softplus, key=keys[i]) for i in range(nb_envs)]
+        all_contexts = [MLP(input_dim, output_dim, hidden_size, depth, activation, key=keys[i]) for i in range(nb_envs)]
 
-        mlp_utils = (context_size, hidden_size, depth)
+        mlp_utils = (input_dim, output_dim, hidden_size, depth, activation)
 
         ex_params, ex_static = eqx.partition(all_contexts[0], eqx.is_array)
         ex_ravel, ex_shapes, ex_treedef = flatten_pytree(ex_params)
         self.ctx_utils = (ex_shapes, ex_treedef, ex_static, mlp_utils)
 
         all_params_1D = [flatten_pytree(eqx.filter(context, eqx.is_array))[0] for context in all_contexts]
+
+        self.eff_context_size = sum(x.size for x in jax.tree_util.tree_leaves(ex_params) if x is not None)
 
         if key is None:
             self.params = jnp.zeros_like(jnp.stack(all_params_1D, axis=0))
