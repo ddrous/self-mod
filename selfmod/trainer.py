@@ -485,7 +485,8 @@ class NCFTrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation: 
+        # if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation: 
+        if dataloader.dataset.adaptation: 
             self.learner.contexts_adapt = contexts
         else: 
             self.learner.contexts = contexts

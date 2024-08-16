@@ -23,9 +23,9 @@ num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 2
-context_size = 2
-intermediate_size = 16
+context_pool_size = 5
+context_size = 128
+intermediate_size = 32
 taylor_orders = (2, 0)
 taylor_ad_mode = "forward"
 pool_filling_strategy = "NF"
@@ -43,7 +43,7 @@ max_train_batches = -1
 max_eval_batches = -1
 
 nb_train_epochs = 1
-nb_outer_steps = 1000
+nb_outer_steps = 1500
 nb_inner_steps = (20, 20)
 
 print_error_every = (10, 10)   ## every 1000 epochs, every 1 batch
@@ -52,8 +52,8 @@ validate_every = 10
 nb_adapt_epochs = 1000
 
 meta_train = True
-run_folder = "./runs/240719-113446-Test/"
-# run_folder = None
+# run_folder = "./runs/240719-113446-Test/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -107,7 +107,8 @@ data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 train_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/train_data.npz", 
                                                num_shots=num_shots[0], 
-                                               skip_steps=skip_steps), 
+                                               skip_steps=skip_steps, 
+                                               adaptation=False),
                               batch_size=num_envs[0],
                               shuffle=False,
                               num_workers=num_workers,
@@ -115,7 +116,8 @@ train_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/train_data.npz",
 
 val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz", 
                                              num_shots=num_shots[1], 
-                                             skip_steps=skip_steps),
+                                             skip_steps=skip_steps,
+                                             adaptation=False),
                               batch_size=num_envs[0],
                               shuffle=False,
                               num_workers=num_workers,
