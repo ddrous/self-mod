@@ -1,6 +1,6 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
@@ -25,11 +25,11 @@ context_size = 128
 taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 16*4
-max_train_batches = 10      ## TODO: should be -1
-max_val_batches = 10
+envs_batch_size = 16*16*4*1
+max_train_batches = 1      ## TODO: should be -1
+max_val_batches = 1
 
-nb_train_epochs = 2000
+nb_train_epochs = 50000
 nb_inner_steps = 5
 
 print_error_every = 100
@@ -39,8 +39,8 @@ nb_adapt_epochs = 10
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/240609-215946-Test/"
-# run_folder = None
+# run_folder = "./runs/240609-215946-Test/"
+run_folder = None
 save_trainer = True
 
 meta_test = True

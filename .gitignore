@@ -76,6 +76,7 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 !examples/celeb-a/runs/240713-051118-VNet/
 !examples/celeb-a/runs/240713-134917-GoldenT0/
 # examples/celeb-a/runs/240713-134917-GoldenT0/contexts/
+!examples/celeb-a/runs/240816-182136-3DaysTrain-Awesome/
 
 
 ## Sine experiment runs

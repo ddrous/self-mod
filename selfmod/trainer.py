@@ -94,8 +94,23 @@ class Trainer:
 
 
 class NCFTrainer(Trainer):
-    def __init__(self, learner:Learner, optimisers, key=None):
+    def __init__(self, learner:Learner, optimisers, schedulers=None, key=None):
         """ Trainer class for the proximal gradient descent algorithms (NCF) """
+
+        if schedulers is not None:
+            self.scheduler_model, self.scheduler_ctx = schedulers
+        else:
+            self.scheduler_model, self.scheduler_ctx = None, None
+
+        if self.scheduler_model is None:
+            self.scheduler_model = optax.constant_schedule(1e-4)
+        elif isinstance(self.scheduler_model, float):
+            self.scheduler_model = optax.constant_schedule(self.scheduler_model)
+        if self.scheduler_ctx is None:
+            self.scheduler_ctx = optax.constant_schedule(1e-4)
+        elif isinstance(self.scheduler_ctx, float):
+            self.scheduler_ctx = optax.constant_schedule(self.scheduler_ctx)
+
         super().__init__(learner, optimisers, key)
 
     def meta_train(self,
@@ -115,7 +130,7 @@ class NCFTrainer(Trainer):
                     max_val_batches=None,
                     val_nb_epochs=10,
                     key=None):
-        """ Train the model using the proximal gradient descent algorithm """
+        """ Train the model using the proximal gradient descent algorithm (PAM) """
 
         key = key if key is not None else self.key
 
@@ -338,6 +353,270 @@ class NCFTrainer(Trainer):
 
 
 
+
+
+    def meta_train_palm(self,
+                    dataloader: DataLoader, 
+                    nb_epochs,
+                    nb_outer_steps,
+                    # proximal_betas=(100., 100.), 
+                    max_train_batches=None,
+                    print_error_every=1,
+                    validate_every=100,
+                    save_path=False,
+                    val_dataloader=None,
+                    val_criterion_id=None,
+                    max_val_batches=None,
+                    val_nb_epochs=10,
+                    key=None):
+        """ Train the model using the proximal alternating linearized minimisation (PALM) from Driggs et al. 2021 """
+
+        key = key if key is not None else self.key
+
+        loss_fn = self.learner.loss_fn
+        model = self.learner.model
+        opt_state_model = self.opt_state_model
+
+        def prox_l1(v, lamb):
+            """Proximal operator for the L1 norm (soft thresholding), see page 188 of Proximal Algorithms
+            by Neal Parikh and Stephen Boyd """
+            # return jnp.sign(v) * jnp.maximum(jnp.abs(v) - lamb, 0.)
+            v_dyn, v_stat = eqx.partition(v, eqx.is_array)
+            new_v = jax.tree_map(lambda x: jnp.sign(x) * jnp.maximum(jnp.abs(x) - lamb, 0.), v_dyn)
+            return eqx.combine(new_v, v_stat)
+
+        def prox_l2(v, lamb):
+            """Proximal operator for the L2 norm squared (shrinkage), see page 174 of Proximal Algorithms
+            by Neal Parikh and Stephen Boyd """
+            # return v / (1. + lamb)
+            v_dyn, v_stat = eqx.partition(v, eqx.is_array)
+            new_v = jax.tree_map(lambda x: x / (1. + lamb), v_dyn)
+            return eqx.combine(new_v, v_stat)
+
+        if self.learner.model_reg == 'l1':
+            proximal_reg_model = prox_l1
+        elif self.learner.model_reg == 'l2':
+            proximal_reg_model = prox_l2
+        else:
+            raise NotImplementedError("Invalid model regularizer. Must be either 'l1' or 'l2' for now.")
+
+
+        def lipschitz_constant_approx(fn, x, y, aux_inputs, nb_samples=5):
+            """Approximate the Lipschitz constant of the function fn(x, y, aux_input) wrt x"""
+
+            # print("This is the x I was given: ", x)
+            x_dyn, x_stat = eqx.partition(x, eqx.is_array)
+            flat_x, shapes, tree_def = flatten_pytree(x_dyn)
+
+            ## Generate 5 flatttened vectors like flat_x
+            keys = jax.random.split(key, nb_samples)
+            x_perturb = [flat_x] + [flat_x + 1e-3 * jax.random.normal(k, flat_x.shape) for k in keys[:2]]
+            x_perturb += [jax.random.uniform(k, flat_x.shape, minval=flat_x.min(), maxval=flat_x.max()) for k in keys[3:]]
+            x_perturb = jnp.vstack(x_perturb)
+
+            def eval_fn(flat_x):
+                x_dyn = unflatten_pytree(flat_x, shapes, tree_def)
+                x_full = eqx.combine(x_dyn, x_stat)
+                return fn(x_full, y, *aux_inputs, key)[0][0]
+
+            ## Evaluate the function at the perturbed points
+            # keys = jax.random.split(key, 5)
+            outs = jax.vmap(eval_fn)(x_perturb)
+
+            ## Compute the product of all possible pairwise differences
+            diffs_outs = jnp.abs(outs[:, None] - outs[None, :])
+            diffs_ins = jnp.sum(jnp.abs(x_perturb[:, None] - x_perturb[None, :]), axis=-1)
+
+            ## Compute the Lipschitz constant
+            lipschitz_constant = jnp.max(diffs_outs / diffs_ins)
+
+            return lipschitz_constant
+
+
+
+        @eqx.filter_jit
+        def train_step_model(model, contexts, batch, weightings, opt_state, key):
+            print('     ### Compiling function "train_step" for the model ...  ')
+
+            partial_loss_fn = eqx.filter_value_and_grad(loss_fn, has_aux=True)
+            (loss, aux_data), grads = partial_loss_fn(model, contexts, batch, weightings, key)
+
+            # ## TODO Approximate the Lipschitz constant of the gradient wrt model
+            # l_model = lipschitz_constant_approx(partial_loss_fn, model, contexts, (batch, weightings), nb_samples=5)
+            # # print(f"    Lipschitz constant of the gradient wrt model: {l_model:.2e}")
+            # jax.debug.print("    Lipschitz constant of the gradient wrt model: {}", l_model)
+
+            ## To perform this update, the learning rate should be 1/L(ctx), where L(ctx) is the Lipschitz constant of the derivative wrt model (See paper Driggs et al. 2021, page 1961)
+            updates, opt_state = self.opt_model.update(grads, opt_state)
+            model = eqx.apply_updates(model, updates)
+
+            ## For now, let's retrieve whatever learning the optimiser is using
+            _, scale_by_schedule_state = opt_state
+            learning_rate = self.scheduler_model(scale_by_schedule_state.count)
+
+            ## Proximal step
+            model = proximal_reg_model(model, learning_rate)
+
+            return model, contexts, opt_state, loss, aux_data
+
+        if self.learner.context_reg == 'l1':
+            proximal_reg_ctx = prox_l1
+        elif self.learner.context_reg == 'l2':
+            proximal_reg_ctx = prox_l2
+        else:
+            raise NotImplementedError("Invalid context regularizer. Must be either 'l1' or 'l2' for now.")
+
+        @eqx.filter_jit
+        def train_step_ctx(model, contexts, batch, weightings, opt_state, key):
+            print('     ### Compiling function "train_step" for the contexts ...  ')
+
+            def ctx_loss_fn(contexts, model, batch, weightings, key):
+                loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                return loss, aux_data
+
+            partial_loss_fn = eqx.filter_value_and_grad(ctx_loss_fn, has_aux=True)
+            (loss, aux_data), grads = partial_loss_fn(contexts, model, batch, weightings, key)
+
+            # ## TODO Approximate the Lipschitz constant of the gradient wrt contexts
+            # l_ctx = lipschitz_constant_approx(partial_loss_fn, contexts, model, (batch, weightings), nb_samples=5)
+            # jax.debug.print("    Lipschitz constant of the gradient wrt contexts: {}", l_ctx)
+
+            ## Learning rate should be 1/L
+            updates, opt_state = self.opt_ctx.update(grads, opt_state)
+            contexts = eqx.apply_updates(contexts, updates)
+
+            ## Let's retrieve whatever learning the optimiser is using
+            _, scale_by_schedule_state = opt_state
+            learning_rate = self.scheduler_ctx(scale_by_schedule_state.count)
+
+            ## Proximal step
+            contexts = proximal_reg_ctx(contexts, learning_rate)
+
+            return model, contexts, opt_state, loss, aux_data
+
+
+        # if not isinstance(dataloader, DataLoader):
+        #     raise ValueError("The dataloader must be an instance of DataLoader")
+        if val_dataloader is not None:
+            tester = VisualTester(self, key=key)
+
+        print(f"\n\n=== Beginning meta training ... ===")
+        print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
+        print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
+        print(f"    Total number of epochs: {nb_epochs}")
+        print(f"    Number of outer minimizations: {nb_outer_steps}")
+
+        if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:
+            max_train_batches = dataloader.num_batches
+        print(f"    Training on {max_train_batches} batches")
+        if val_dataloader is not None:
+            if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
+                max_val_batches = val_dataloader.num_batches
+            print(f"    Validating on {max_val_batches} batches")
+
+        if isinstance(print_error_every, int):
+            print_error_every = (print_error_every, print_error_every)
+        print_every_batch, print_every_out_step = print_error_every
+
+        start_time = time.time()
+
+        losses_model = []
+        losses_ctx = []
+        if val_dataloader is not None:
+            val_losses = []
+
+        loss_key, _ = jax.random.split(key)
+        early_stopping_count = 0
+
+        for epoch in range(nb_epochs):
+            # print(f"\nEPOCH {epoch} ... ")
+
+            for env_batch, batch in enumerate(dataloader):
+                if env_batch >= max_train_batches:
+                    break
+                # if env_batch%10==0:
+                #     print(f"  Learning on batch {env_batch} ...")
+
+                loss_epochs_model = 0.
+                loss_epochs_ctx = 0.
+                nb_batches = 0
+
+                nb_envs_in_batch = batch[0].shape[0]
+                weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+
+                contexts = self.learner.reset_contexts(nb_envs_in_batch)
+                opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
+
+                for out_step in range(nb_outer_steps):
+                    # print(f"    Staring outer step {out_step} ...")
+
+                    loss_key, _ = jax.random.split(loss_key)
+
+                    model, contexts, opt_state_model, loss_model, (_, term2, term3) = train_step_model(model, contexts, batch, weightings, opt_state_model, loss_key)
+
+
+                    loss_key, _ = jax.random.split(loss_key)
+
+                    model, contexts, opt_state_ctx, loss_ctx, (_, term2, term3) = train_step_ctx(model, contexts, batch, weightings, opt_state_ctx, loss_key)
+
+                    losses_model.append(loss_model)
+                    losses_ctx.append(loss_ctx)
+
+                    if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
+                        if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
+                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
+
+                    if val_dataloader is not None and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
+                        self.learner.model = model
+                        self.learner.contexts = contexts
+                        # print("Setting contexts in the metatrainer: \n", contexts.params)
+
+                        ind_crit,_ = tester.evaluate(val_dataloader,
+                                                    criterion_id=val_criterion_id,
+                                                    max_eval_batches=max_val_batches,
+                                                    nb_epochs=val_nb_epochs,
+                                                    # nb_inner_steps=None,
+                                                    taylor_order=0, 
+                                                    verbose=False)
+                        print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True)
+                        val_losses.append(np.array([out_step, ind_crit]))
+
+                        ## Check if val loss is lowest to save the model
+                        if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
+                            print(f"        Saving best model so far ...")
+                            self.learner.save_learner(save_path)
+                        ## Restore the learner at the last evaluation step
+                        if out_step == nb_outer_steps-1:
+                            self.learner.load_learner(save_path)
+
+                loss_epochs_model += loss_model
+                loss_epochs_ctx += loss_ctx
+                nb_batches += 1
+
+
+        wall_time = time.time() - start_time
+        time_in_hmsecs = seconds_to_hours(wall_time)
+        print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
+
+        self.losses_model.append(jnp.vstack(losses_model))
+        self.losses_ctx.append(jnp.vstack(losses_ctx))
+
+        if val_dataloader is not None:
+            if not hasattr(self, 'val_losses'):
+                self.val_losses = []
+            self.val_losses.append(jnp.vstack(val_losses))
+
+        self.opt_state_model = opt_state_model
+        if val_dataloader is None:
+            self.learner.model = model
+
+        ## DO NOT TRUST. Just for visualisation purposes
+        self.opt_ctx_state = opt_state_ctx
+        self.learner.contexts = contexts
+
+        # Save the model and results
+        if save_path:
+            self.save_trainer(save_path)
 
 
 

@@ -13,6 +13,9 @@ class Learner:
                  pool_filling="NF", 
                  contexts=None, 
                  reuse_contexts=False,
+                 model_reg="l2",
+                 context_reg="l1",
+                 loss_contributors=-1,
                  key=None):
         if key is None:
             raise ValueError("You must provide a key for the learner.")
@@ -23,6 +26,9 @@ class Learner:
         self.context_pool_size = context_pool_size
         self.pool_filling = pool_filling
         self.reuse_contexts = reuse_contexts
+
+        self.model_reg = model_reg
+        self.context_reg = context_reg
 
         if contexts is not None:
             self.contexts = contexts
@@ -57,12 +63,26 @@ class Learner:
 
             return env_loss_fn(model, ctx, Y_new, Y_hat)
 
-        def loss_fn(model, contexts, batch, weightings, key):
-            keys = jax.random.split(key, num=contexts.params.shape[0])
+        if not loss_contributors > 0:
+            print("    Using all environments to estimate the global loss function ...")
+            def loss_fn(model, contexts, batch, weightings, key):
+                keys = jax.random.split(key, num=contexts.params.shape[0])
 
-            losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, batch, contexts.params, contexts.params, keys)
+                losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, batch, contexts.params, contexts.params, keys)
 
-            return jnp.sum(losses*weightings), (term1, terms2, terms3)
+                return jnp.sum(losses*weightings), (term1, terms2, terms3)
+        else:
+            print(f"    Using {loss_contributors} environments to estimate the global loss function ...")
+            def loss_fn(model, contexts, batch, weightings, key):
+                keys = jax.random.split(key, num=loss_contributors)
+
+                indices = jax.random.permutation(key, contexts.params.shape[0])[:loss_contributors]
+                random_contexts = contexts.params[indices, :]
+                random_batch = (batch[0][indices], batch[1][indices])
+
+                losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, random_batch, random_contexts, random_contexts, keys)
+
+                return jnp.sum(losses) / loss_contributors, (term1, terms2, terms3)
 
         self.loss_fn = loss_fn              ## Meta loss function
         self.env_loss_fn = env_loss_fn_      ## Base loss function
