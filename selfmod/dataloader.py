@@ -419,7 +419,7 @@ class SinusoidDataset:
     """
 
     # def __init__(self, meta_tain=True, support_set=True):
-    def __init__(self, num_envs, num_shots):
+    def __init__(self, num_envs, num_shots, adaptation=False):
 
         self.num_inputs = 1
         self.num_outputs = 1
@@ -441,6 +441,8 @@ class SinusoidDataset:
 
         self.num_shots = num_shots
         self.total_envs = num_envs
+
+        self.adaptation = adaptation
 
     def sample_inputs(self, batch_size, *args, **kwargs):
         inputs = torch.rand((batch_size, self.num_inputs))
@@ -477,6 +479,13 @@ class SinusoidDataset:
             return target_functions
 
     def __getitem__(self, idx):     ## Idx doesn't matter here
+        if not self.adaptation:
+            np.random.seed(idx)
+            # torch.manual_seed(idx)
+        else:
+            np.random.seed(np.iinfo(np.int32).max - idx)
+            # torch.manual_seed(np.iinfo(np.int32).max - idx)
+
         target_func = self.sample_tasks(1, return_specs=False)[0]
         inputs = self.sample_inputs(self.num_shots)
         return inputs, target_func(inputs)

@@ -23,7 +23,7 @@ num_shots = (-1, -1)
 num_workers = 0
 
 ## Learner/model hps
-context_pool_size = 5
+context_pool_size = 3
 context_size = 128
 intermediate_size = 32
 taylor_orders = (2, 0)
@@ -280,6 +280,7 @@ learner = Learner(model=model,
                 env_loss_fn=env_loss_fn, 
                 contexts=contexts_,                     ## Optional, but good for saving !
                 reuse_contexts=reuse_contexts,
+                loss_contributors=5,
                 key=model_key)
 
 

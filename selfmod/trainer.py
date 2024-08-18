@@ -489,7 +489,7 @@ class NCFTrainer(Trainer):
             _, scale_by_schedule_state = opt_state
             learning_rate = self.scheduler_ctx(scale_by_schedule_state.count)
 
-            ## Proximal step
+            ## Proximal step    ## TODO This is super hars, it causes the contexts to vanish
             contexts = proximal_reg_ctx(contexts, learning_rate)
 
             return model, contexts, opt_state, loss, aux_data
@@ -635,7 +635,7 @@ class NCFTrainer(Trainer):
 
         key = key if key is not None else self.key
 
-        loss_fn = self.learner.loss_fn
+        loss_fn = self.learner.loss_fn_full
         # model = self.learner.model
 
         if val_dataloader is None:
@@ -643,7 +643,7 @@ class NCFTrainer(Trainer):
 
         if isinstance(print_error_every, int):
             print_error_every = (print_error_every, print_error_every)
-        print_every_epoch, print_every_batch = print_error_every
+        print_every_batch, print_every_epoch = print_error_every
 
         ## This is useful if we want to disable the taylor expansion
         model = self.learner.reset_model(taylor_order, verbose=verbose)
@@ -693,7 +693,7 @@ class NCFTrainer(Trainer):
             batch = next(iter(val_dataloader))
             weightings = jnp.ones(dataloader.batch_size) / dataloader.batch_size
 
-            loss, aux_data = self.learner.loss_fn(model, contexts, batch, weightings, key)
+            loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
             state_data = self.learner.batch_predict(model, contexts, batch)
 
             return jnp.stack(aux_data, axis=1), contexts, state_data
@@ -705,7 +705,7 @@ class NCFTrainer(Trainer):
 
         @eqx.filter_jit
         def adapt_step(model, contexts, batch, weightings, opt_state, key):
-            print('     ### Compiling function "adapt_step" for the contexts ...  ')
+            # print('     ### Compiling function "adapt_step" for the contexts ...  ')
 
             (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
 
@@ -721,6 +721,8 @@ class NCFTrainer(Trainer):
         loss_key, _ = jax.random.split(key)
 
         torch.manual_seed(loss_key[0])  # Ensure the same shuffling order
+        np.random.seed(loss_key[0])
+
         for env_batch, (batch, val_batch) in enumerate(zip(dataloader, val_dataloader)):
             if env_batch >= max_adapt_batches:
                 break
@@ -749,11 +751,11 @@ class NCFTrainer(Trainer):
                     state_data_ = self.learner.batch_predict(model, contexts, val_batch)
                     [state_data[i].append(state_data_[i]) for i in range(3)]
 
+
+                if verbose and (epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_epochs-1):
+                    print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
+
             losses_epochs = jnp.stack(losses_epoch, axis=0)
-
-            if verbose and (epoch%print_every_epoch==0 or epoch<=3 or epoch==max_adapt_batches-1):
-                print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\n")
-
 
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
@@ -1149,7 +1151,7 @@ class CAVIATrainer(Trainer):
             batch = next(iter(val_dataloader))
             weightings = jnp.ones(dataloader.batch_size) / dataloader.batch_size
 
-            loss, aux_data = self.learner.loss_fn(model, contexts, batch, weightings, key)
+            loss, aux_data = self.learner.loss_fn_full(model, contexts, batch, weightings, key)
             state_data = self.learner.batch_predict(model, contexts, batch)
 
             return jnp.stack(aux_data, axis=1), contexts, state_data

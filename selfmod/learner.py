@@ -63,16 +63,16 @@ class Learner:
 
             return env_loss_fn(model, ctx, Y_new, Y_hat)
 
-        if not loss_contributors > 0:
-            print("    Using all environments to estimate the global loss function ...")
-            def loss_fn(model, contexts, batch, weightings, key):
-                keys = jax.random.split(key, num=contexts.params.shape[0])
+        # print("    Using all environments to estimate the global loss function ...")
+        def loss_fn_full(model, contexts, batch, weightings, key):
+            keys = jax.random.split(key, num=contexts.params.shape[0])
 
-                losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, batch, contexts.params, contexts.params, keys)
+            losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, batch, contexts.params, contexts.params, keys)
 
-                return jnp.sum(losses*weightings), (term1, terms2, terms3)
-        else:
-            print(f"    Using {loss_contributors} environments to estimate the global loss function ...")
+            return jnp.sum(losses*weightings), (term1, terms2, terms3)
+
+        if loss_contributors > 0:
+            print(f"    Using {loss_contributors} environments to estimate the global training loss function ...")
             def loss_fn(model, contexts, batch, weightings, key):
                 keys = jax.random.split(key, num=loss_contributors)
 
@@ -83,9 +83,14 @@ class Learner:
                 losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, random_batch, random_contexts, random_contexts, keys)
 
                 return jnp.sum(losses) / loss_contributors, (term1, terms2, terms3)
+        else:
+            print("    Using all environments to estimate the global training loss function ...")
+            loss_fn = loss_fn_full
 
-        self.loss_fn = loss_fn              ## Meta loss function
-        self.env_loss_fn = env_loss_fn_      ## Base loss function
+        self.loss_fn = loss_fn                  ## Meta loss function
+        self.loss_fn_full = loss_fn_full        ## Base loss function in full
+        self.env_loss_fn = env_loss_fn_         ## Base loss function
+
 
     def save_learner(self, path):
         assert path[-1] == "/", "ERROR: Invalid path provided. The path must end with /"
@@ -111,7 +116,7 @@ class Learner:
                 model = NeuralContextFlow(neuralnet=self.model.neuralnet, 
                                             taylor_order=taylor_order,
                                             taylor_scale=self.model.taylor_scale,
-                                            taylor_weight_init=self.model.taylor_weight_init)
+                                            taylor_weight_init=self.model.taylor_weight[0])
             elif isinstance(self.model, NeuralODE):
                 model = NeuralODE(neuralnet=self.model.vectorfield.neuralnet, 
                                     taylor_order=taylor_order,
@@ -302,47 +307,21 @@ class NeuralContextFlow(eqx.Module):
         def point_predict(x):
 
             ############# Without possibility to ignore Taylor expansion #############
-            # vf = lambda xi: self.neuralnet(x, xi)
-
-            # if self.taylor_order==0:
-            #     return vf(ctx)
-
-            # elif self.taylor_order==1:
-            #     gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-            #     return vf(ctx_) + 1.0*gradvf(ctx_)
-
-            # elif self.taylor_order==2:
-            #     gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-            #     scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
-            #     return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
-
-            # else:
-            #     raise NotImplementedError("Higher order terms are not implemented yet.")
-
-
-            ############# With possibility to ignore Taylor expansion #############
             vf = lambda xi: self.neuralnet(x, xi)
-            alpha = jax.nn.sigmoid(self.taylor_scale*self.taylor_weight[0])
 
             if self.taylor_order==0:
-                return (1.-alpha)*vf(ctx)
+                return vf(ctx)
 
             elif self.taylor_order==1:
                 gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
-                taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
-
-                return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
+                return vf(ctx_) + 1.0*gradvf(ctx_)
 
             elif self.taylor_order==2:
                 gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
                 scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
-                taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
-
-                return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
+                return vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
 
             else:
-                # raise NotImplementedError("Higher order terms are not implemented yet.")
-
                 h0 = ctx_
                 h1 = ctx-ctx_
                 h2 = jnp.zeros_like(h0)
@@ -356,7 +335,46 @@ class NeuralContextFlow(eqx.Module):
                 f0, fs = jet(vf, (h0,), (hs,))
                 taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
 
-                return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
+                return taylor_exp
+
+
+            # ############# With possibility to ignore Taylor expansion #############
+            # vf = lambda xi: self.neuralnet(x, xi)
+            # alpha = jax.nn.sigmoid(self.taylor_scale*self.taylor_weight[0])
+
+            # if self.taylor_order==0:
+            #     return (1.-alpha)*vf(ctx)
+
+            # elif self.taylor_order==1:
+            #     gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            #     taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
+
+            #     return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
+
+            # elif self.taylor_order==2:
+            #     gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            #     scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+            #     taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+
+            #     return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
+
+            # else:
+            #     # raise NotImplementedError("Higher order terms are not implemented yet.")
+
+            #     h0 = ctx_
+            #     h1 = ctx-ctx_
+            #     h2 = jnp.zeros_like(h0)
+
+            #     hs = [h1, h2]
+            #     coeffs = [1, 0.5]
+            #     for order in range(2+1, self.taylor_order+1):
+            #         hs.append(jnp.zeros_like(h0))
+            #         coeffs.append(1 / factorial(order))
+
+            #     f0, fs = jet(vf, (h0,), (hs,))
+            #     taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
+
+            #     return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
 
 
         ys = eqx.filter_vmap(point_predict)(xs)
