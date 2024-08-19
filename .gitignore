@@ -77,6 +77,9 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 !examples/celeb-a/runs/240713-134917-GoldenT0/
 # examples/celeb-a/runs/240713-134917-GoldenT0/contexts/
 !examples/celeb-a/runs/240816-182136-3DaysTrain-Awesome/
+!examples/celeb-a/runs/240819-024338-6HoursTrainingNCF/
+!examples/celeb-a/runs/240819-162026-LowDataNCF/
+!examples/celeb-a/runs/240819-171428-LowDataCAVIA/
 
 
 ## Sine experiment runs
@@ -96,3 +99,4 @@ examples/lotka-v/runs/*
 !examples/lotka-v/runs/ContextPoolSizeExperiment/
 
 
+!examples/sine-reg/runs/240818-234103-Awesome/

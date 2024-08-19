@@ -454,8 +454,8 @@ class NCFTrainer(Trainer):
             _, scale_by_schedule_state = opt_state
             learning_rate = self.scheduler_model(scale_by_schedule_state.count)
 
-            # ## TODO Proximal step
-            # model = proximal_reg_model(model, learning_rate)
+            ## Proximal step
+            model = proximal_reg_model(model, learning_rate)
 
             return model, contexts, opt_state, loss, aux_data
 

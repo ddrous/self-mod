@@ -15,7 +15,7 @@ jax.config.update("jax_debug_nans", True)
 seed = 2024
 
 ## Dataloader hps
-k_shots = 1000
+k_shots = 100
 resolution = (32, 32)
 data_folder="./data/" 
 
@@ -23,17 +23,17 @@ data_folder="./data/"
 context_pool_size = 1
 context_size = 128
 taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
-init_lrs = (1e-3, 1e-1)
+init_lrs = (1e-3, 1e-3)
 sched_factor = 1.
-envs_batch_size = 6
+envs_batch_size = 16*16*4*1
 max_train_batches = 1      ## TODO: should be -1
 max_val_batches = 1
 
-nb_train_epochs = 2000
+nb_train_epochs = 500
 nb_inner_steps = 5
 
 print_error_every = 100
-validate_every = 100
+validate_every = 3000
 
 nb_adapt_epochs = 10
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
@@ -95,17 +95,14 @@ if meta_test:
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-# ##### Pytorch dataloading #####
-train_dataset = CelebADataset(data_folder, 
-                            data_split="train",
-                            num_shots=k_shots, 
-                            order_pixels=False, 
-                            seed=seed)
-
 ##### Numpy Loader
-train_dataloader = NumpyLoader(train_dataset, 
+train_dataloader = NumpyLoader(CelebADataset(data_folder, 
+                                            data_split="train",
+                                            num_shots=k_shots, 
+                                            order_pixels=False, 
+                                            seed=seed), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
+                              shuffle=True,
                               num_workers=24,
                               drop_last=False)
 all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder, 
@@ -114,7 +111,7 @@ all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             order_pixels=False, 
                                             seed=seed), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
+                              shuffle=True,
                               num_workers=24,
                               drop_last=False)
 
@@ -124,11 +121,9 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             order_pixels=False, 
                                             seed=seed), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
+                              shuffle=True,
                               num_workers=24,
                               drop_last=False)
-
-
 
 
 
@@ -139,31 +134,28 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
 
 #%%
 
-## Define model and loss function for the learner
-class Swish(eqx.Module):
-    beta: jnp.ndarray
-    def __init__(self, key=None):
-        self.beta = jax.random.uniform(key, shape=(1,), minval=0.01, maxval=1.0)
-    def __call__(self, x):
-        return x * jax.nn.sigmoid(self.beta * x)
 
-class MultiMLP(eqx.Module):     ## TODO CAVIA
-    layers_shared: list
+class MultiMLP(eqx.Module):
     activations: list
+    ctx_utils:any
+    layers_meta: list
 
-    def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
-        keys = jax.random.split(key, 10)
-        self.activations = [Swish(key=key_i) for key_i in keys[:7]]
+    def __init__(self, in_size, out_size, hidden_size, context_size, ctx_utils, key=None):
+        self.ctx_utils = ctx_utils
 
-        self.layers_shared = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
+        keys = jax.random.split(key, 20)
+        self.activations = [jax.nn.softplus for key_i in keys[:10]]
+
+        self.layers_meta = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[3]), self.activations[0], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
 
-    def __call__(self, x, ctx):
-        y = jnp.concatenate([x, ctx], axis=0)
-        for layer in self.layers_shared:
+    def __call__(self, x, ctx_arr):
+
+        y = jnp.concatenate([x, ctx_arr], axis=0)
+        for layer in self.layers_meta:
             y = layer(y)
 
         return y
@@ -190,19 +182,19 @@ def env_loss_fn(model, ctx, y_hat, y):
 input_dim = 2
 output_dim = 3
 
-contexts = ArrayContextParams(context_size=context_size, 
-                              nb_envs=envs_batch_size)
-
-neuralnet = MultiMLP(in_size=input_dim, 
+contexts = ArrayContextParams(nb_envs=envs_batch_size,
+                            context_size=context_size)
+neuralnet = MultiMLP(in_size=input_dim,
                      out_size=output_dim, 
-                     hidden_size=128, 
-                     context_size=context_size, 
-                     key=model_key)
+                     hidden_size=32,
+                     context_size=context_size,
+                     ctx_utils=None,
+                     key=mother_key)
 
 model = NeuralContextFlow(neuralnet=neuralnet, 
                           taylor_order=taylor_orders[0],
                           taylor_scale=100,
-                          taylor_weight_init=0.)      ## TODO : taylor order=2
+                          taylor_weight_init=-1.)      ## TODO : taylor order=2
 
 learner = Learner(model=model, 
                 context_size=context_size, 
@@ -210,16 +202,15 @@ learner = Learner(model=model,
                 contexts=contexts,
                 reuse_contexts=False,
                 env_loss_fn=env_loss_fn, 
-                # loss_contributors=6,
+                loss_contributors=256,
                 key=model_key)
 
 
 
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
-context_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(contexts, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
-print("Total number of parameters in one context:", context_params//envs_batch_size)
+print("Total number of parameters in one context:", contexts.eff_context_size)
 
 
 
@@ -235,11 +226,11 @@ init_lr_model, init_lr_ctx = init_lrs
 
 bd_scales = {nb_train_epochs//3:sched_factor, 2*nb_train_epochs//3:sched_factor}
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
-opt_model = optax.adabelief(sched_model)
+opt_model = optax.adam(sched_model)
 
-opt_ctx = optax.sgd(init_lr_ctx)
+opt_ctx = optax.adam(init_lr_ctx)
 
-trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 
@@ -248,16 +239,17 @@ trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
-    trainer.meta_train(dataloader=train_dataloader,
-                        nb_outer_steps=nb_train_epochs,
-                        nb_inner_steps=nb_inner_steps, 
+    trainer.meta_train_palm(dataloader=train_dataloader,
+                        nb_epochs=1,
+                        nb_outer_steps=4000*4,
                         max_train_batches=max_train_batches,
-                        print_error_every=print_error_every, 
+                        print_error_every=1000, 
                         save_path=trainer_save_path, 
-                        # val_dataloader=all_shots_train_dataloader, 
+                        val_dataloader=all_shots_train_dataloader, 
                         max_val_batches=max_val_batches,
                         val_criterion_id=0,
                         validate_every=validate_every,
+                        val_nb_epochs=10500,
                         key=trainer_key)
 
 else:
@@ -283,7 +275,7 @@ else:
 visualtester = CelebAVisualTester(trainer, key=test_key)
 
 ind_crit, _ = visualtester.evaluate(val_dataloader, 
-                                    nb_epochs=nb_inner_steps,
+                                    nb_epochs=5500,
                                     taylor_order=taylor_orders[1],
                                     print_error_every=print_error_every,
                                     max_eval_batches=max_val_batches,
@@ -291,9 +283,15 @@ ind_crit, _ = visualtester.evaluate(val_dataloader,
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
+# visualtester.visualize_few_shots(few_shots_loader=train_dataloader,
+#                                 all_shots_loader=all_shots_train_dataloader,
+#                                 nb_inner_steps=1500,
+#                                 save_path=run_folder+"few_shots_ind.png",
+#                                 key=jax.random.PRNGKey(time.time_ns())
+#                              );
 visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
                                 all_shots_loader=all_shots_train_dataloader,
-                                nb_inner_steps=nb_inner_steps_eval,
+                                nb_inner_steps=10500,
                                 save_path=run_folder+"few_shots_ind.png",
                                 key=jax.random.PRNGKey(time.time_ns())
                              );
@@ -329,7 +327,7 @@ if meta_test:
                                 drop_last=False)
 
     ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
-                                        nb_epochs=nb_inner_steps_eval,
+                                        nb_epochs=5500,
                                         taylor_order=taylor_orders[1],
                                         max_eval_batches=max_train_batches,
                                         val_dataloader=all_shots_dataloader_test,
@@ -343,9 +341,15 @@ if meta_test:
 if meta_test:
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
+    # visualtester.visualize_few_shots(few_shots_loader=adapt_dataloader,
+    #                                 all_shots_loader=all_shots_dataloader_test,
+    #                                 nb_inner_steps=1500,
+    #                                 save_path=adapt_folder+"few_shots_ood.png",
+    #                                 key=jax.random.PRNGKey(time.time_ns())
+    #                             );
     visualtester.visualize_few_shots_multi(few_shots_loader=adapt_dataloader,
                                     all_shots_loader=all_shots_dataloader_test,
-                                    nb_inner_steps=nb_inner_steps_eval,
+                                    nb_inner_steps=10500,
                                     save_path=adapt_folder+"few_shots_ood.png",
                                     key=jax.random.PRNGKey(time.time_ns())
                                 );

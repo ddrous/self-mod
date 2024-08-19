@@ -15,9 +15,9 @@ jax.config.update("jax_debug_nans", True)
 seed = 2024
 
 ## Dataloader hps
-k_shots = 1000
+k_shots = 100
 resolution = (32, 32)
-data_folder="./data/" 
+data_folder="../../data/" 
 
 ## Train and adapt hps
 context_pool_size = 1
@@ -25,11 +25,11 @@ context_size = 128
 taylor_orders = (0, 0)      ## Expansion orders for meta-training and meta-testing. TODO The same vector field cannot readily be used if increased !
 init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 6
+envs_batch_size = 16*16*4*1
 max_train_batches = 1      ## TODO: should be -1
 max_val_batches = 1
 
-nb_train_epochs = 2000
+nb_train_epochs = 50000
 nb_inner_steps = 5
 
 print_error_every = 100
@@ -38,9 +38,9 @@ validate_every = 100
 nb_adapt_epochs = 10
 nb_inner_steps_eval = 5       ## To use during evaluation and visulisation
 
-meta_train = True
-# run_folder = "./runs/240609-215946-Test/"
-run_folder = None
+meta_train = False
+run_folder = "./"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -105,7 +105,7 @@ train_dataset = CelebADataset(data_folder,
 ##### Numpy Loader
 train_dataloader = NumpyLoader(train_dataset, 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
+                              shuffle=True,
                               num_workers=24,
                               drop_last=False)
 all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder, 
@@ -114,7 +114,7 @@ all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             order_pixels=False, 
                                             seed=seed), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
+                              shuffle=True,
                               num_workers=24,
                               drop_last=False)
 
@@ -124,7 +124,7 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             order_pixels=False, 
                                             seed=seed), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
+                              shuffle=True,
                               num_workers=24,
                               drop_last=False)
 
@@ -210,7 +210,6 @@ learner = Learner(model=model,
                 contexts=contexts,
                 reuse_contexts=False,
                 env_loss_fn=env_loss_fn, 
-                # loss_contributors=6,
                 key=model_key)
 
 
@@ -315,7 +314,7 @@ if meta_test:
                                                 order_pixels=False, 
                                                 seed=seed), 
                                 batch_size=envs_batch_size, 
-                                shuffle=False,
+                                shuffle=True,
                                 num_workers=24,
                                 drop_last=False)
     all_shots_dataloader_test = NumpyLoader(CelebADataset(data_folder, 
@@ -324,7 +323,7 @@ if meta_test:
                                                 order_pixels=False, 
                                                 seed=seed), 
                                 batch_size=envs_batch_size, 
-                                shuffle=False,
+                                shuffle=True,
                                 num_workers=24,
                                 drop_last=False)
 
