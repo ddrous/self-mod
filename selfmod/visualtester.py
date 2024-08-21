@@ -16,12 +16,12 @@ class VisualTester:
     @abstractmethod
     def evaluate(self, 
                  dataloader, 
-                 nb_epochs=500,
+                 nb_steps=500,
                 #  nb_inner_steps=10,
                  print_error_every=(100, 100),
                  loss_criterion=None, 
                  criterion_id=0, 
-                 max_eval_batches=-1, 
+                 max_adapt_batches=-1, 
                  taylor_order=0, 
                  val_dataloader=None,
                  verbose=False):
@@ -33,9 +33,9 @@ class VisualTester:
 
         ## Adapt and extract the losses for each batch of environment
         losses, _, state_data = self.trainer.meta_test(dataloader, 
-                                            nb_epochs=nb_epochs,
+                                            nb_steps=nb_steps,
                                             # nb_inner_steps=nb_inner_steps, 
-                                            max_adapt_batches=max_eval_batches,
+                                            max_adapt_batches=max_adapt_batches,
                                             print_error_every=print_error_every,
                                             taylor_order=taylor_order, 
                                             val_dataloader=val_dataloader,
@@ -63,8 +63,8 @@ class VisualTester:
 
         train_mean = losses_means[criterion_id+1]
         if verbose:
-            print("==  Meta-evaluation ... ==")
-            print(f"    Test loss value: {test_mean:.2e} ± {test_std:.2e}")
+            # print("\n==  Meta-Evaluation ... ==")
+            print(f"\n    Test loss value: {test_mean:.2e} ± {test_std:.2e}")
             print(f"    Train loss value for criterion {criterion_id}: {train_mean:.2e}")
 
         # return mean_loss, None
@@ -87,7 +87,7 @@ class VisualTester:
         ctx_dims_x = jax.random.randint(ctx_x_key, (3,), 1, self.trainer.learner.context_size)-1
         ctx_dims_y = jax.random.randint(ctx_y_key, (3,), 0, self.trainer.learner.context_size-1)+1
 
-        print("==  Begining artefacts visualisation ... ==")
+        print("\n==  Begining artefacts visualisation ... ==")
         print("    Visualized context dimensions along x:", ctx_dims_x)
         print("    Visualized context dimensions along y:", ctx_dims_y)
 
@@ -178,12 +178,12 @@ class CelebAVisualTester(VisualTester):
     def visualize_few_shots(self, 
                         few_shots_loader:DataLoader, 
                         all_shots_loader:DataLoader, 
-                        nb_inner_steps=10,
+                        nb_steps=10,
                         save_path=False, 
                         key=None):
         key = key if key != None else self.key
 
-        print("==  Begining in-domain CelebA visualisation ... ==")
+        print("\n==  Begining in-domain CelebA visualisation ... ==")
 
         ## The contexts are not obtained from a quick adaptation process (hidden in meta-test)
         if isinstance(all_shots_loader, CelebADataLoader):
@@ -199,7 +199,7 @@ class CelebAVisualTester(VisualTester):
         print("    Environment (batch) id:", e)
 
         _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                                     nb_epochs=nb_inner_steps, 
+                                                     nb_epochs=nb_steps, 
                                                      verbose=False)
         X_hat, Y_true, Y_hat = X[0], Y[0], Y_hat[0]
 
@@ -253,13 +253,13 @@ class CelebAVisualTester(VisualTester):
     def visualize_few_shots_multi(self, 
                                 few_shots_loader:DataLoader, 
                                 all_shots_loader:DataLoader, 
-                                nb_inner_steps=10,
+                                nb_steps=10,
                                 num_envs=6,
                                 save_path=False, 
                                 key=None):
         key = key if key != None else self.key
 
-        print("==  Begining in-domain CelebA visualisation ... ==")
+        print("\n==  Begining in-domain CelebA visualisation ... ==")
 
         ## The contexts are not obtained from a quick adaptation process (hidden in meta-test)
         if isinstance(all_shots_loader, CelebADataLoader):
@@ -277,7 +277,7 @@ class CelebAVisualTester(VisualTester):
 
 
         _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                                     nb_epochs=nb_inner_steps, 
+                                                     nb_steps=nb_steps, 
                                                      verbose=False)
         X_hat, Y_true, Y_hat = X, Y, Y_hat
 
@@ -363,9 +363,9 @@ class DynamicsVisualTester(VisualTester):
         batch = next(iter(data_loader))
 
         if data_loader.dataset.adaptation == False:
-            print("==  Begining in-domain dynamics visualisation ... ==")
+            print("\n==  Begining in-domain dynamics visualisation ... ==")
         else:
-            print("==  Begining out-of-distribution dynamics visualisation ... ==")
+            print("\n==  Begining out-of-distribution dynamics visualisation ... ==")
         print("    Trajectory id:", traj)
         print("    Visualized dimensions:", dims)
 

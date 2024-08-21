@@ -3,95 +3,299 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-New run folder created successfuly: ./runs/240819-171428/
+New run folder created successfuly: ./runs/240821-211643/
 Completed copied scripts 
-    Using all environments to estimate the global training loss function ...
+    Using 6 environments to estimate the global training loss function ...
 
 
-Total number of parameters in the model: 66703
+Total number of parameters in the model: 7460
 Total number of parameters in one context: 128
 
 
 === Beginning meta training ... ===
-    Number of examples in a batch: 6
-    Total number of batches : 27129
-    Numbers of inner steps : 5
+    Number of examples in a batch along envs: 1800
+    Maximum number of batches (along envs): 91
+    Total number of epochs: 1
+    Number of outer minimizations: 20000
+    Maximum numbers of inner steps per outer minimizations: (10, 10)
     Training on 1 batches
+    Validating on 1 batches
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Epoch:   0      Batch:   0    Loss: 0.36763263     ContextsNorm: 0.00004289
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.79012752     ContextsNorm: 0.00000000
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:    1
+	-DiffMod:   7.43e-05
+	-DiffCxt:   inf/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-Epoch: 100      Batch:   0    Loss: 0.06635304     ContextsNorm: 0.00518083
-Epoch: 200      Batch:   0    Loss: 0.06588103     ContextsNorm: 0.00507054
-Epoch: 300      Batch:   0    Loss: 0.05861687     ContextsNorm: 0.00712061
-Epoch: 400      Batch:   0    Loss: 0.05314999     ContextsNorm: 0.00640626
-Epoch: 500      Batch:   0    Loss: 0.05141136     ContextsNorm: 0.00707566
-Epoch: 600      Batch:   0    Loss: 0.04965957     ContextsNorm: 0.01209176
-Epoch: 700      Batch:   0    Loss: 0.04989901     ContextsNorm: 0.00543010
-Epoch: 800      Batch:   0    Loss: 0.04760718     ContextsNorm: 0.00603927
-Epoch: 900      Batch:   0    Loss: 0.04437783     ContextsNorm: 0.00893775
-Epoch: 1000      Batch:   0    Loss: 0.04099469     ContextsNorm: 0.01189346
-Epoch: 1100      Batch:   0    Loss: 0.04420029     ContextsNorm: 0.00633316
-Epoch: 1200      Batch:   0    Loss: 0.04110127     ContextsNorm: 0.00725775
-Epoch: 1300      Batch:   0    Loss: 0.03976019     ContextsNorm: 0.00829729
-Epoch: 1400      Batch:   0    Loss: 0.03863889     ContextsNorm: 0.00919324
-Epoch: 1500      Batch:   0    Loss: 0.03782077     ContextsNorm: 0.01045310
-Epoch: 1600      Batch:   0    Loss: 0.03668670     ContextsNorm: 0.01174233
-Epoch: 1700      Batch:   0    Loss: 0.03516686     ContextsNorm: 0.01300436
-Epoch: 1800      Batch:   0    Loss: 0.03355823     ContextsNorm: 0.01450178
-Epoch: 1900      Batch:   0    Loss: 0.03199395     ContextsNorm: 0.01603632
-Epoch: 1999      Batch:   0    Loss: 0.03002671     ContextsNorm: 0.01900574
-Current unnormalised weight of the taylor expansion: 0.00000000       NormalisedWeight: 0.50000000
+        Validation Criterion: 0.28114527
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.06572185     ContextsNorm: 0.06373568
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.19e-07
+	-DiffCxt:   4.69e-06Epoch:   0      Batch:   0      OuterStep: 2000      LossModel: 0.04518354     ContextsNorm: 0.09032112
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.37e-07
+	-DiffCxt:   3.75e-06Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.03510694     ContextsNorm: 0.10620560
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.00e-06
+	-DiffCxt:   1.95e-06/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.13116178
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 4000      LossModel: 0.02882154     ContextsNorm: 0.10405275
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.50e-07
+	-DiffCxt:   2.17e-06Epoch:   0      Batch:   0      OuterStep: 5000      LossModel: 0.01664883     ContextsNorm: 0.11015473
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.60e-07
+	-DiffCxt:   1.39e-06Epoch:   0      Batch:   0      OuterStep: 6000      LossModel: 0.02371047     ContextsNorm: 0.14381884
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.48e-07
+	-DiffCxt:   1.05e-06/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.13841234
+Epoch:   0      Batch:   0      OuterStep: 7000      LossModel: 0.01642527     ContextsNorm: 0.13844128
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.96e-07
+	-DiffCxt:   1.11e-06Epoch:   0      Batch:   0      OuterStep: 8000      LossModel: 0.02394290     ContextsNorm: 0.12892652
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.46e-07
+	-DiffCxt:   1.03e-06Epoch:   0      Batch:   0      OuterStep: 9000      LossModel: 0.01986601     ContextsNorm: 0.13249728
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.36e-07
+	-DiffCxt:   1.10e-06/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.14052853
+Epoch:   0      Batch:   0      OuterStep: 10000      LossModel: 0.01115802     ContextsNorm: 0.14983398
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.49e-07
+	-DiffCxt:   8.17e-07Epoch:   0      Batch:   0      OuterStep: 11000      LossModel: 0.01535588     ContextsNorm: 0.16545162
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.88e-07
+	-DiffCxt:   7.77e-07Epoch:   0      Batch:   0      OuterStep: 12000      LossModel: 0.01448007     ContextsNorm: 0.16909944
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.86e-07
+	-DiffCxt:   8.08e-07/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.14144908
+Epoch:   0      Batch:   0      OuterStep: 13000      LossModel: 0.00835135     ContextsNorm: 0.18623349
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.97e-07
+	-DiffCxt:   8.12e-07Epoch:   0      Batch:   0      OuterStep: 14000      LossModel: 0.01157664     ContextsNorm: 0.17392090
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.17e-07
+	-DiffCxt:   7.58e-07Epoch:   0      Batch:   0      OuterStep: 15000      LossModel: 0.01147847     ContextsNorm: 0.17089300
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.51e-07
+	-DiffCxt:   6.20e-07/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.14203435
+Epoch:   0      Batch:   0      OuterStep: 16000      LossModel: 0.01154557     ContextsNorm: 0.17983715
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.62e-07
+	-DiffCxt:   5.76e-07Epoch:   0      Batch:   0      OuterStep: 17000      LossModel: 0.00942973     ContextsNorm: 0.15901475
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.80e-07
+	-DiffCxt:   5.75e-07Epoch:   0      Batch:   0      OuterStep: 18000      LossModel: 0.01059238     ContextsNorm: 0.17784202
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.24e-07
+	-DiffCxt:   5.01e-07/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.14217690
+Epoch:   0      Batch:   0      OuterStep: 19000      LossModel: 0.00873566     ContextsNorm: 0.19842395
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.54e-07
+	-DiffCxt:   6.84e-07Epoch:   0      Batch:   0      OuterStep: 19999      LossModel: 0.01350984     ContextsNorm: 0.16345465
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.52e-07
+	-DiffCxt:   6.76e-07/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.14221682
 
-
-Total gradient descent training time: 0 hours 16 mins 11 secs
+Total gradient descent training time: 1 hours 13 mins 49 secs
+    Creating a new model with taylor order 0 ...
 Using any previrouly defined optimizer for adapation
 
 
-=== Beginning adaptation ... ===
-    Number of environment batches: 3312
-    Number of envs train steps per batch: 5
-    Total number of training steps: 16560
+=== Beginning meta testing ... ===
+    Number of examples in a batch along envs: 1800
+    Maximum number of batches (along envs): 12
     Adapting on 1 batches
-     ### (Re)Compiling function: adapt_step_cavia ...  
-    Batch:   0     Loss: 0.05456971        OtherNorms: [0.05456971 0.02844614 0.00850626]
-Total gradient descent adaptation time: 0 hours 0 mins 1 secs
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Epoch:   0      Batch:   0      Loss: 0.08248533     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.08170417     ContextsNorm: 0.00098741
+Epoch:   2      Batch:   0      Loss: 0.08093108     ContextsNorm: 0.00197356
+Epoch:   3      Batch:   0      Loss: 0.08016616     ContextsNorm: 0.00295820
+Epoch: 100      Batch:   0      Loss: 0.04091188     ContextsNorm: 0.07397523
+Epoch: 200      Batch:   0      Loss: 0.03339306     ContextsNorm: 0.10575491
+Epoch: 300      Batch:   0      Loss: 0.03167027     ContextsNorm: 0.12104194
+Epoch: 400      Batch:   0      Loss: 0.03092365     ContextsNorm: 0.13127053
+Epoch: 500      Batch:   0      Loss: 0.03045722     ContextsNorm: 0.13970794
+Epoch: 600      Batch:   0      Loss: 0.03011159     ContextsNorm: 0.14734927
+Epoch: 700      Batch:   0      Loss: 0.02984387     ContextsNorm: 0.15454702
+Epoch: 800      Batch:   0      Loss: 0.02962345     ContextsNorm: 0.16145885
+Epoch: 900      Batch:   0      Loss: 0.02943432     ContextsNorm: 0.16819845
+Epoch: 1000      Batch:   0      Loss: 0.02926912     ContextsNorm: 0.17483346
+Epoch: 1100      Batch:   0      Loss: 0.02912252     ContextsNorm: 0.18137170
+Epoch: 1200      Batch:   0      Loss: 0.02899293     ContextsNorm: 0.18783200
+Epoch: 1300      Batch:   0      Loss: 0.02887655     ContextsNorm: 0.19422618
+Epoch: 1400      Batch:   0      Loss: 0.02877053     ContextsNorm: 0.20057659
+Epoch: 1500      Batch:   0      Loss: 0.02867318     ContextsNorm: 0.20690566
+Epoch: 1600      Batch:   0      Loss: 0.02858333     ContextsNorm: 0.21321471
+Epoch: 1700      Batch:   0      Loss: 0.02849990     ContextsNorm: 0.21951766
+Epoch: 1800      Batch:   0      Loss: 0.02842196     ContextsNorm: 0.22583713
+Epoch: 1900      Batch:   0      Loss: 0.02834863     ContextsNorm: 0.23218232
+Epoch: 2000      Batch:   0      Loss: 0.02827904     ContextsNorm: 0.23856452
+Epoch: 2100      Batch:   0      Loss: 0.02821245     ContextsNorm: 0.24499804
+Epoch: 2200      Batch:   0      Loss: 0.02814852     ContextsNorm: 0.25149843
+Epoch: 2300      Batch:   0      Loss: 0.02808708     ContextsNorm: 0.25806266
+Epoch: 2400      Batch:   0      Loss: 0.02802777     ContextsNorm: 0.26470581
+Epoch: 2500      Batch:   0      Loss: 0.02797026     ContextsNorm: 0.27144453
+Epoch: 2600      Batch:   0      Loss: 0.02791430     ContextsNorm: 0.27829483
+Epoch: 2700      Batch:   0      Loss: 0.02785971     ContextsNorm: 0.28524929
+Epoch: 2800      Batch:   0      Loss: 0.02780630     ContextsNorm: 0.29232091
+Epoch: 2900      Batch:   0      Loss: 0.02775407     ContextsNorm: 0.29951379
+Epoch: 3000      Batch:   0      Loss: 0.02770308     ContextsNorm: 0.30682513
+Epoch: 3100      Batch:   0      Loss: 0.02765320     ContextsNorm: 0.31424895
+Epoch: 3200      Batch:   0      Loss: 0.02760429     ContextsNorm: 0.32178697
+Epoch: 3300      Batch:   0      Loss: 0.02755623     ContextsNorm: 0.32944283
+Epoch: 3400      Batch:   0      Loss: 0.02750890     ContextsNorm: 0.33722189
+Epoch: 3500      Batch:   0      Loss: 0.02746222     ContextsNorm: 0.34512466
+Epoch: 3600      Batch:   0      Loss: 0.02741618     ContextsNorm: 0.35314709
+Epoch: 3700      Batch:   0      Loss: 0.02737080     ContextsNorm: 0.36129272
+Epoch: 3800      Batch:   0      Loss: 0.02732610     ContextsNorm: 0.36956409
+Epoch: 3900      Batch:   0      Loss: 0.02728209     ContextsNorm: 0.37795702
+Epoch: 4000      Batch:   0      Loss: 0.02723873     ContextsNorm: 0.38646853
+Epoch: 4100      Batch:   0      Loss: 0.02719598     ContextsNorm: 0.39509353
+Epoch: 4200      Batch:   0      Loss: 0.02715377     ContextsNorm: 0.40383893
+Epoch: 4300      Batch:   0      Loss: 0.02711195     ContextsNorm: 0.41269675
+Epoch: 4400      Batch:   0      Loss: 0.02707074     ContextsNorm: 0.42166367
+Epoch: 4500      Batch:   0      Loss: 0.02703028     ContextsNorm: 0.43074024
+Epoch: 4600      Batch:   0      Loss: 0.02699055     ContextsNorm: 0.43991917
+Epoch: 4700      Batch:   0      Loss: 0.02695149     ContextsNorm: 0.44918904
+Epoch: 4800      Batch:   0      Loss: 0.02691296     ContextsNorm: 0.45854351
+Epoch: 4900      Batch:   0      Loss: 0.02687479     ContextsNorm: 0.46798220
+Epoch: 5000      Batch:   0      Loss: 0.02683735     ContextsNorm: 0.47750929
+Epoch: 5100      Batch:   0      Loss: 0.02680085     ContextsNorm: 0.48712119
+Epoch: 5200      Batch:   0      Loss: 0.02676502     ContextsNorm: 0.49680728
+Epoch: 5300      Batch:   0      Loss: 0.02672970     ContextsNorm: 0.50657493
+Epoch: 5400      Batch:   0      Loss: 0.02669503     ContextsNorm: 0.51641655
+Epoch: 5499      Batch:   0      Loss: 0.02666141     ContextsNorm: 0.52622861
+
+Total gradient descent training time: 0 hours 0 mins 19 secs
 ==  Meta-evaluation ... ==
-    Test loss value: 5.35e-02 ± 1.94e-02
-    Train loss value for criterion 0: 5.46e-02
+    Test loss value: 1.35e-01 ± 7.22e-02
+    Train loss value for criterion 0: 2.67e-02
 ==  Begining artefacts visualisation ... ==
     Visualized context dimensions along x: [64 80 24]
     Visualized context dimensions along y: [ 38 100  62]
-Saving artefacts in: ./runs/240819-171428/artefacts.png
+Saving artefacts in: ./runs/240821-211643/artefacts.png
 ==  Begining in-domain CelebA visualisation ... ==
     Environment ids: range(0, 6)
-     ### (Re)Compiling function: adapt_step_cavia ...  
-Saving visualization in: ./runs/240819-171428/few_shots_ind.png
+Saving visualization in: ./runs/240821-211643/few_shots_ind.png
+    Creating a new model with taylor order 0 ...
 Using any previrouly defined optimizer for adapation
 
 
-=== Beginning adaptation ... ===
-    Number of environment batches: 3327
-    Number of envs train steps per batch: 5
-    Total number of training steps: 16635
+=== Beginning meta testing ... ===
+    Number of examples in a batch along envs: 1800
+    Maximum number of batches (along envs): 12
     Adapting on 1 batches
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
-     ### (Re)Compiling function: adapt_step_cavia ...  
-    Batch:   0     Loss: 0.05458071        OtherNorms: [0.05458071 0.03097738 0.00850626]
-Total gradient descent adaptation time: 0 hours 0 mins 1 secs
+Epoch:   0      Batch:   0      Loss: 0.08341021     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.08261695     ContextsNorm: 0.00098759
+Epoch:   2      Batch:   0      Loss: 0.08183193     ContextsNorm: 0.00197395
+Epoch:   3      Batch:   0      Loss: 0.08105527     ContextsNorm: 0.00295869
+Epoch: 100      Batch:   0      Loss: 0.04121316     ContextsNorm: 0.07393327
+Epoch: 200      Batch:   0      Loss: 0.03351160     ContextsNorm: 0.10578651
+Epoch: 300      Batch:   0      Loss: 0.03179572     ContextsNorm: 0.12087450
+Epoch: 400      Batch:   0      Loss: 0.03105868     ContextsNorm: 0.13081771
+Epoch: 500      Batch:   0      Loss: 0.03060275     ContextsNorm: 0.13893695
+Epoch: 600      Batch:   0      Loss: 0.03027494     ContextsNorm: 0.14622244
+Epoch: 700      Batch:   0      Loss: 0.03001918     ContextsNorm: 0.15307376
+Epoch: 800      Batch:   0      Loss: 0.02980980     ContextsNorm: 0.15966055
+Epoch: 900      Batch:   0      Loss: 0.02963210     ContextsNorm: 0.16608025
+Epoch: 1000      Batch:   0      Loss: 0.02947787     ContextsNorm: 0.17238314
+Epoch: 1100      Batch:   0      Loss: 0.02934157     ContextsNorm: 0.17861232
+Epoch: 1200      Batch:   0      Loss: 0.02921981     ContextsNorm: 0.18478279
+Epoch: 1300      Batch:   0      Loss: 0.02910993     ContextsNorm: 0.19091906
+Epoch: 1400      Batch:   0      Loss: 0.02900982     ContextsNorm: 0.19701970
+Epoch: 1500      Batch:   0      Loss: 0.02891748     ContextsNorm: 0.20310968
+Epoch: 1600      Batch:   0      Loss: 0.02883149     ContextsNorm: 0.20918782
+Epoch: 1700      Batch:   0      Loss: 0.02875193     ContextsNorm: 0.21526398
+Epoch: 1800      Batch:   0      Loss: 0.02867785     ContextsNorm: 0.22135191
+Epoch: 1900      Batch:   0      Loss: 0.02860805     ContextsNorm: 0.22747409
+Epoch: 2000      Batch:   0      Loss: 0.02854165     ContextsNorm: 0.23363735
+Epoch: 2100      Batch:   0      Loss: 0.02847804     ContextsNorm: 0.23985660
+Epoch: 2200      Batch:   0      Loss: 0.02841672     ContextsNorm: 0.24615584
+Epoch: 2300      Batch:   0      Loss: 0.02835717     ContextsNorm: 0.25255129
+Epoch: 2400      Batch:   0      Loss: 0.02829915     ContextsNorm: 0.25904328
+Epoch: 2500      Batch:   0      Loss: 0.02824276     ContextsNorm: 0.26563483
+Epoch: 2600      Batch:   0      Loss: 0.02818780     ContextsNorm: 0.27233589
+Epoch: 2700      Batch:   0      Loss: 0.02813424     ContextsNorm: 0.27915573
+Epoch: 2800      Batch:   0      Loss: 0.02808199     ContextsNorm: 0.28608620
+Epoch: 2900      Batch:   0      Loss: 0.02803078     ContextsNorm: 0.29313585
+Epoch: 3000      Batch:   0      Loss: 0.02798034     ContextsNorm: 0.30031890
+Epoch: 3100      Batch:   0      Loss: 0.02793052     ContextsNorm: 0.30763617
+Epoch: 3200      Batch:   0      Loss: 0.02788129     ContextsNorm: 0.31509170
+Epoch: 3300      Batch:   0      Loss: 0.02783282     ContextsNorm: 0.32269230
+Epoch: 3400      Batch:   0      Loss: 0.02778514     ContextsNorm: 0.33042651
+Epoch: 3500      Batch:   0      Loss: 0.02773825     ContextsNorm: 0.33829466
+Epoch: 3600      Batch:   0      Loss: 0.02769206     ContextsNorm: 0.34630352
+Epoch: 3700      Batch:   0      Loss: 0.02764650     ContextsNorm: 0.35445035
+Epoch: 3800      Batch:   0      Loss: 0.02760145     ContextsNorm: 0.36273697
+Epoch: 3900      Batch:   0      Loss: 0.02755688     ContextsNorm: 0.37116587
+Epoch: 4000      Batch:   0      Loss: 0.02751281     ContextsNorm: 0.37973124
+Epoch: 4100      Batch:   0      Loss: 0.02746923     ContextsNorm: 0.38843834
+Epoch: 4200      Batch:   0      Loss: 0.02742612     ContextsNorm: 0.39728487
+Epoch: 4300      Batch:   0      Loss: 0.02738352     ContextsNorm: 0.40626594
+Epoch: 4400      Batch:   0      Loss: 0.02734141     ContextsNorm: 0.41538283
+Epoch: 4500      Batch:   0      Loss: 0.02729966     ContextsNorm: 0.42463061
+Epoch: 4600      Batch:   0      Loss: 0.02725790     ContextsNorm: 0.43400803
+Epoch: 4700      Batch:   0      Loss: 0.02721631     ContextsNorm: 0.44351116
+Epoch: 4800      Batch:   0      Loss: 0.02717514     ContextsNorm: 0.45313191
+Epoch: 4900      Batch:   0      Loss: 0.02713499     ContextsNorm: 0.46286675
+Epoch: 5000      Batch:   0      Loss: 0.02709586     ContextsNorm: 0.47269472
+Epoch: 5100      Batch:   0      Loss: 0.02705746     ContextsNorm: 0.48261270
+Epoch: 5200      Batch:   0      Loss: 0.02701972     ContextsNorm: 0.49261707
+Epoch: 5300      Batch:   0      Loss: 0.02698258     ContextsNorm: 0.50270563
+Epoch: 5400      Batch:   0      Loss: 0.02694561     ContextsNorm: 0.51288348
+Epoch: 5499      Batch:   0      Loss: 0.02690995     ContextsNorm: 0.52304196
+
+Total gradient descent training time: 0 hours 0 mins 18 secs
 ==  Meta-evaluation ... ==
-    Test loss value: 5.28e-02 ± 1.93e-02
-    Train loss value for criterion 0: 5.46e-02
+    Test loss value: 1.37e-01 ± 7.52e-02
+    Train loss value for criterion 0: 2.69e-02
 ==  Begining artefacts visualisation ... ==
     Visualized context dimensions along x: [64 80 24]
     Visualized context dimensions along y: [ 38 100  62]
 No contexts found. Using zeros.
-Saving artefacts in: ./runs/240819-171428/adapt/artefacts.png
+Saving artefacts in: ./runs/240821-211643/adapt/artefacts.png
 ==  Begining in-domain CelebA visualisation ... ==
     Environment ids: range(0, 6)
-     ### (Re)Compiling function: adapt_step_cavia ...  
-Saving visualization in: ./runs/240819-171428/adapt/few_shots_ood.png
+Saving visualization in: ./runs/240821-211643/adapt/few_shots_ood.png
