@@ -1,0 +1,238 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+New run folder created successfuly: ./NCF/240822-021935/
+Completed copied scripts 
+    Using all environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 7459
+Total number of parameters in one context: 128
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch along envs: 6
+    Maximum number of batches (along envs): 27129
+    Total number of epochs: 1
+    Number of outer minimizations: 20000
+    Maximum numbers of inner steps per outer minimizations: (10, 10)
+    Training on 1 batches
+    Validating on 1 batches
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.66453642     ContextsNorm: 0.00000000      WallTime(s):      3
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:    1
+	-DiffMod:   7.56e-05
+	-DiffCxt:   inf        Validation Criterion: 0.13767195
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.03374695     ContextsNorm: 0.00000000      WallTime(s):     66
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.46e-08
+	-DiffCxt:   2.83e-06        Validation Criterion: 0.03237444
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 2000      LossModel: 0.02413185     ContextsNorm: 0.00000000      WallTime(s):    128
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.32e-09
+	-DiffCxt:   1.47e-08        Validation Criterion: 0.02346187
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.02159852     ContextsNorm: 0.00000000      WallTime(s):    189
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.08e-10
+	-DiffCxt:   2.68e-09        Validation Criterion: 0.02133512
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 4000      LossModel: 0.01788866     ContextsNorm: 0.00000000      WallTime(s):    252
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.08e-10
+	-DiffCxt:   9.52e-10        Validation Criterion: 0.01801601
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 5000      LossModel: 0.01506893     ContextsNorm: 0.00000000      WallTime(s):    314
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.64e-09
+	-DiffCxt:   9.94e-08        Validation Criterion: 0.01724355
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 6000      LossModel: 0.01180348     ContextsNorm: 0.00000000      WallTime(s):    376
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.16e-10
+	-DiffCxt:   2.14e-09        Validation Criterion: 0.01309508
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 7000      LossModel: 0.01099280     ContextsNorm: 0.00000000      WallTime(s):    438
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.73e-08
+	-DiffCxt:   2.35e-06        Validation Criterion: 0.01419252
+Epoch:   0      Batch:   0      OuterStep: 8000      LossModel: 0.00927694     ContextsNorm: 0.00000000      WallTime(s):    501
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.58e-10
+	-DiffCxt:   6.15e-10        Validation Criterion: 0.02410944
+Epoch:   0      Batch:   0      OuterStep: 9000      LossModel: 0.00815815     ContextsNorm: 0.00000000      WallTime(s):    563
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.16e-09
+	-DiffCxt:   2.36e-08        Validation Criterion: 0.01569409
+Epoch:   0      Batch:   0      OuterStep: 10000      LossModel: 0.00733262     ContextsNorm: 0.00000000      WallTime(s):    625
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.31e-10
+	-DiffCxt:   1.30e-09        Validation Criterion: 0.01721668
+Epoch:   0      Batch:   0      OuterStep: 11000      LossModel: 0.00670042     ContextsNorm: 0.00000000      WallTime(s):    687
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.60e-09
+	-DiffCxt:   1.62e-08        Validation Criterion: 0.01528904
+Epoch:   0      Batch:   0      OuterStep: 12000      LossModel: 0.00618259     ContextsNorm: 0.00000000      WallTime(s):    750
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.75e-10
+	-DiffCxt:   1.00e-08        Validation Criterion: 0.01196697
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 13000      LossModel: 0.00763060     ContextsNorm: 0.00000000      WallTime(s):    812
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.57e-07
+	-DiffCxt:   1.31e-06        Validation Criterion: 0.00784939
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 14000      LossModel: 0.00544407     ContextsNorm: 0.00000000      WallTime(s):    875
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.08e-09
+	-DiffCxt:   2.13e-09        Validation Criterion: 0.00752826
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 15000      LossModel: 0.00511946     ContextsNorm: 0.00000000      WallTime(s):    937
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.24e-10
+	-DiffCxt:   2.86e-09        Validation Criterion: 0.01152601
+Epoch:   0      Batch:   0      OuterStep: 16000      LossModel: 0.00485036     ContextsNorm: 0.00000000      WallTime(s):   1000
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.36e-10
+	-DiffCxt:   4.69e-09        Validation Criterion: 0.01382901
+Epoch:   0      Batch:   0      OuterStep: 17000      LossModel: 0.00479942     ContextsNorm: 0.00000000      WallTime(s):   1062
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.04e-09
+	-DiffCxt:   2.70e-08        Validation Criterion: 0.01934547
+Epoch:   0      Batch:   0      OuterStep: 18000      LossModel: 0.00473645     ContextsNorm: 0.00000000      WallTime(s):   1125
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.40e-08
+	-DiffCxt:   4.91e-09        Validation Criterion: 0.01995026
+Epoch:   0      Batch:   0      OuterStep: 19000      LossModel: 0.00736198     ContextsNorm: 0.00000000      WallTime(s):   1188
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.58e-07
+	-DiffCxt:   7.19e-07        Validation Criterion: 0.02211562
+Epoch:   0      Batch:   0      OuterStep: 19999      LossModel: 0.00439557     ContextsNorm: 0.00000000      WallTime(s):   1250
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.79e-08
+	-DiffCxt:   4.11e-08        Validation Criterion: 0.02893130
+
+Total gradient descent training time: 0 hours 21 mins 9 secs
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 6
+    Maximum number of batches (along envs): 27129
+    Adapting on 1 batches
+Epoch:   0      Batch:   0      Loss: 2.50810313     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 2.47241187     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 2.43788242     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 2.40335941     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.10655954     ContextsNorm: 0.00000000
+Epoch: 2000      Batch:   0      Loss: 0.04287131     ContextsNorm: 0.00000000
+Epoch: 3000      Batch:   0      Loss: 0.02604631     ContextsNorm: 0.00000000
+Epoch: 4000      Batch:   0      Loss: 0.01816669     ContextsNorm: 0.00000000
+Epoch: 5000      Batch:   0      Loss: 0.01371154     ContextsNorm: 0.00000000
+Epoch: 6000      Batch:   0      Loss: 0.01230078     ContextsNorm: 0.00000000
+Epoch: 7000      Batch:   0      Loss: 0.01193532     ContextsNorm: 0.00000000
+Epoch: 8000      Batch:   0      Loss: 0.01171763     ContextsNorm: 0.00000000
+Epoch: 9000      Batch:   0      Loss: 0.01152644     ContextsNorm: 0.00000000
+Epoch: 9999      Batch:   0      Loss: 0.01134076     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 18 secs
+
+    Test loss value: 1.19e-02 ± 1.09e-02
+    Train loss value for criterion 0: 1.13e-02
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./NCF/240822-021935/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+Saving visualization in: ./NCF/240822-021935/few_shots_ind.png
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 6
+    Maximum number of batches (along envs): 3312
+    Adapting on 1 batches
+Epoch:   0      Batch:   0      Loss: 2.31264710     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 2.27952123     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 2.24685073     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 2.21502948     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.10890224     ContextsNorm: 0.00000000
+Epoch: 2000      Batch:   0      Loss: 0.05931842     ContextsNorm: 0.00000000
+Epoch: 3000      Batch:   0      Loss: 0.04354125     ContextsNorm: 0.00000000
+Epoch: 4000      Batch:   0      Loss: 0.03524447     ContextsNorm: 0.00000000
+Epoch: 5000      Batch:   0      Loss: 0.03187868     ContextsNorm: 0.00000000
+Epoch: 6000      Batch:   0      Loss: 0.02993846     ContextsNorm: 0.00000000
+Epoch: 7000      Batch:   0      Loss: 0.02848024     ContextsNorm: 0.00000000
+Epoch: 8000      Batch:   0      Loss: 0.02616980     ContextsNorm: 0.00000000
+Epoch: 9000      Batch:   0      Loss: 0.02475820     ContextsNorm: 0.00000000
+Epoch: 9999      Batch:   0      Loss: 0.02424660     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 17 secs
+
+    Test loss value: 2.54e-02 ± 1.06e-02
+    Train loss value for criterion 0: 2.42e-02
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 6
+    Maximum number of batches (along envs): 3327
+    Adapting on 1 batches
+Epoch:   0      Batch:   0      Loss: 2.21299553     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 2.18055844     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 2.14882612     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 2.11777329     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.11000936     ContextsNorm: 0.00000000
+Epoch: 2000      Batch:   0      Loss: 0.04542084     ContextsNorm: 0.00000000
+Epoch: 3000      Batch:   0      Loss: 0.03433644     ContextsNorm: 0.00000000
+Epoch: 4000      Batch:   0      Loss: 0.03085911     ContextsNorm: 0.00000000
+Epoch: 5000      Batch:   0      Loss: 0.02806645     ContextsNorm: 0.00000000
+Epoch: 6000      Batch:   0      Loss: 0.02583067     ContextsNorm: 0.00000000
+Epoch: 7000      Batch:   0      Loss: 0.02436611     ContextsNorm: 0.00000000
+Epoch: 8000      Batch:   0      Loss: 0.02323628     ContextsNorm: 0.00000000
+Epoch: 9000      Batch:   0      Loss: 0.02222773     ContextsNorm: 0.00000000
+Epoch: 9999      Batch:   0      Loss: 0.02139860     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 17 secs
+
+    Test loss value: 2.30e-02 ± 9.70e-03
+    Train loss value for criterion 0: 2.14e-02
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+No contexts found. Using zeros.
+Saving artefacts in: ./NCF/240822-021935/adapt/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+Saving visualization in: ./NCF/240822-021935/adapt/few_shots_ood.png

@@ -351,6 +351,155 @@ class NCFTrainer(Trainer):
 
 
 
+    def meta_train_noalm(self,
+                    dataloader: DataLoader, 
+                    nb_epochs,
+                    nb_outer_steps,
+                    max_train_batches=None,
+                    print_error_every=1, 
+                    validate_every=100,
+                    save_path=False, 
+                    val_dataloader=None, 
+                    val_criterion_id=None, 
+                    max_val_batches=None,
+                    val_nb_steps=10,
+                    key=None):
+        """ Train the model using the proximal gradient descent algorithm (PAM) """
+
+        key = key if key is not None else self.key
+
+
+        loss_fn = self.learner.loss_fn
+        model = self.learner.model
+
+        # if hasattr(self, 'opt_state'):
+        # opt_state_model = self.opt_state_model
+
+        @eqx.filter_jit
+        def train_step(mega_model, batch, weightings, opt_state, key):
+            print('     ### Compiling function "train_step" for both model and contexts ...  ')
+
+            def mega_loss_fn(mega_model, batch, weightings, key):
+                model, contexts = mega_model
+                loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                return loss, aux_data
+
+            (loss, aux_data), grads = eqx.filter_value_and_grad(mega_loss_fn, has_aux=True)(mega_model, batch, weightings, key)
+
+            updates, opt_state = self.opt_model.update(grads, opt_state)
+            mega_model = eqx.apply_updates(mega_model, updates)
+
+            return mega_model, opt_state, loss, aux_data
+
+        if val_dataloader is not None:
+            tester = VisualTester(self, key=key)
+
+        print(f"\n\n=== Beginning Meta-Training ... ===")
+        print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
+        print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
+        print(f"    Total number of epochs: {nb_epochs}")
+        print(f"    Number of outer minimizations: {nb_outer_steps}")
+
+        if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:
+            max_train_batches = dataloader.num_batches
+        print(f"    Training on {max_train_batches} batches")
+        if val_dataloader is not None:
+            if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
+                max_val_batches = val_dataloader.num_batches
+            print(f"    Validating on {max_val_batches} batches")
+
+        if isinstance(print_error_every, int):
+            print_error_every = (print_error_every, print_error_every)
+        print_every_batch, print_every_out_step = print_error_every
+
+        start_time = time.time()
+
+        losses = []
+        if val_dataloader is not None:
+            val_losses = []
+
+        loss_key, _ = jax.random.split(key)
+
+        for epoch in range(nb_epochs):
+            # print(f"\nEPOCH {epoch} ... ")
+
+            for env_batch, batch in enumerate(dataloader):
+                if env_batch >= max_train_batches:
+                    break
+
+                loss_epochs = 0.
+                nb_batches = 0
+
+                nb_envs_in_batch = batch[0].shape[0]
+                weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+
+                contexts = self.learner.reset_contexts(nb_envs_in_batch)
+                mega_model = (model, contexts)
+                opt_state = self.opt_model.init(eqx.filter(mega_model, eqx.is_array))
+
+                for out_step in range(nb_outer_steps):
+                    # print(f"    Staring outer step {out_step} ...")
+
+                    loss_key, _ = jax.random.split(loss_key)
+
+                    mega_model, opt_state, loss, (_, term2, term3) = train_step(mega_model, batch, weightings, opt_state, loss_key)
+
+                    losses.append(loss)
+
+                    if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
+                        if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
+                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime(s): {int(time.time()-start_time):-6d}", flush=True, end="\r")
+
+                    model, contexts = mega_model
+                    if val_dataloader is not None and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
+                        self.learner.model = model
+                        self.learner.contexts = contexts
+
+                        ind_crit,_ = tester.evaluate(val_dataloader,
+                                                    criterion_id=val_criterion_id,
+                                                    max_adapt_batches=max_val_batches,
+                                                    nb_steps=val_nb_steps,
+                                                    taylor_order=0, 
+                                                    verbose=False)
+                        print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True)
+                        val_losses.append(np.array([out_step, ind_crit]))
+
+                        ## Check if val loss is lowest to save the model
+                        if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
+                            print(f"        Saving best model so far ...")
+                            self.learner.save_learner(save_path)
+                        ## Restore the learner at the last evaluation step
+                        if out_step == nb_outer_steps-1:
+                            self.learner.load_learner(save_path)
+
+                loss_epochs += loss
+                nb_batches += 1
+
+        wall_time = time.time() - start_time
+        time_in_hmsecs = seconds_to_hours(wall_time)
+        print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
+
+        self.losses_model.append(jnp.vstack(losses))
+        self.losses_ctx.append(jnp.vstack(losses))
+
+        if val_dataloader is not None:
+            if not hasattr(self, 'val_losses'):
+                self.val_losses = []
+            self.val_losses.append(jnp.vstack(val_losses))
+
+        self.opt_state_model = opt_state[0]
+        if val_dataloader is None:
+            self.learner.model = model
+
+        ## DO NOT TRUST. Just for visualisation purposes
+        self.opt_ctx_state = opt_state[1]
+        self.learner.contexts = contexts
+
+        # Save the model and results
+        if save_path:
+            self.save_trainer(save_path)
+
+
 
 
 

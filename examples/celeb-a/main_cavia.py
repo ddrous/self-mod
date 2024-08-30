@@ -6,7 +6,7 @@ import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 
 from selfmod import *
-jax.config.update("jax_debug_nans", True)
+# jax.config.update("jax_debug_nans", True)
 
 
 #%%

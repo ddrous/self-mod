@@ -316,7 +316,17 @@ class CelebAVisualTester(VisualTester):
             #     ax[e, 1].set_title('Few-shots', fontsize=16)
             #     ax[e, 2].set_title('Predicted', fontsize=16)
 
-        plt.suptitle(f"Sample Predictions", fontsize=20)
+            ## Remove axis
+            ax[e, 0].axis('off')
+            ax[e, 1].axis('off')
+            ax[e, 2].axis('off')
+
+            if e==0:
+                ax[e, 0].set_title('True', fontsize=20)
+                ax[e, 1].set_title('Few-shots', fontsize=20)
+                ax[e, 2].set_title('Predicted', fontsize=20)
+
+        plt.suptitle(f"Sample Predictions", fontsize=30, y=1.003)
 
         plt.tight_layout()
         # plt.show();

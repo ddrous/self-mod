@@ -80,6 +80,7 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 !examples/celeb-a/runs/240819-024338-6HoursTrainingNCF/
 !examples/celeb-a/runs/240819-162026-LowDataNCF/
 !examples/celeb-a/runs/240819-171428-LowDataCAVIA/
+!examples/celeb-a/runs/LowDataRegimeExperiment/
 
 
 ## Sine experiment runs

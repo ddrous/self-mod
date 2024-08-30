@@ -264,3 +264,99 @@ def RK4(fun, t_span, y0, args, *, t_eval=None, subdivisions=1, **kwargs):
 
 def count_params(module):
     return sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(module, eqx.is_array)) if x is not None)
+
+
+
+
+
+
+
+
+
+
+GAUSSIAN_ATTRIBUTE_COUNT_2D = 8         ## Global variable for the number of attributes in a 2D gaussian
+
+def init_gaussian(key, width=32., height=32.) -> jnp.ndarray:
+    """Returns the initial model params."""
+    keys = jax.random.split(key, 6)
+
+    ## Uniformly initialise parameters of a 2D gaussian
+    mean = jax.random.uniform(keys[0], (2,), minval=0, maxval=min(width, height))
+    scaling = jax.random.uniform(keys[1], (2,), minval=0, maxval=min(width, height)/1)
+    rotation = jax.random.uniform(keys[2], (1,), minval=0, maxval=2*jnp.pi)
+    colour = jax.random.uniform(keys[3], (3,), minval=0, maxval=1)
+
+    # opacity = jax.random.uniform(keys[4], (1,), minval=0, maxval=1)
+    # objectness = jax.random.uniform(keys[5], (1,), minval=0, maxval=1)
+    # return jnp.concatenate([mean, scaling, rotation, colour, opacity, objectness])
+
+    return jnp.concatenate([mean, scaling, rotation, colour])
+
+def init_gaussians(key, img_shape, N: int) -> jnp.ndarray:
+    """Returns the initial model params."""
+    keys = jax.random.split(key, N)
+    gaussians = [init_gaussian(keys[i], img_shape[0], img_shape[1]) for i in range(N)]
+    return jnp.stack(gaussians, axis=0)
+
+
+def get_gaussian_density(mean, scaling, rotation, x):
+    """Calculate the density of the gaussian at a given point."""
+
+    def make_rotation_matrix(angle):
+        cos, sin = jnp.cos(angle), jnp.sin(angle)
+        return jnp.array([[cos, -sin], [sin, cos]]).squeeze()
+
+    def get_covariance(scaling, rotation_angle):
+        """Calculate the covariance matrix. """
+        scaling_matrix = jnp.diag(scaling)
+        rotation_matrix = make_rotation_matrix(rotation_angle)
+
+        covariance =  rotation_matrix @ scaling_matrix @ scaling_matrix.T @ rotation_matrix.T 
+
+        # jax.debug.print("Is positive semi-definite: {}", is_positive_semi_definite(covariance))
+
+        # import jax.numpy as jnp
+        # jax.debug.breakpoint()
+        return covariance
+
+    x_ = (x - mean)[:, None]
+
+    den = jnp.exp(-0.5 * x_.T @ jnp.linalg.inv(get_covariance(scaling, rotation)) @ x_).squeeze()
+
+    # return den
+
+    ## Nan to Num
+    return jnp.nan_to_num(den, nan=0.0, posinf=0.0, neginf=0.0)
+
+def render_pixel(gaussians: jnp.ndarray, x: jnp.ndarray):
+    """Render a single pixel coordinates x from multiple gaussians. """
+
+    means = gaussians[:, :2]
+    scalings = gaussians[:, 2:4]
+    rotations = gaussians[:, 4:5]
+    colours = gaussians[:, 5:8]
+    # opacities = gaussians[:, 8:9]
+
+    densities = jax.vmap(get_gaussian_density, in_axes=(0, 0, 0, None))(means, scalings, rotations, x)[:, None]
+    densities = jnp.nan_to_num(densities, nan=0.0, posinf=0.0, neginf=0.0)
+
+    # return jnp.clip(jnp.sum(densities * colours, axis=0), 0., 1.)
+    return jnp.clip(jnp.mean(densities * colours, axis=0), 0., 1.)
+
+
+def render_image(gaussians: jnp.ndarray, img_shape: jnp.ndarray):
+    """
+    Render a complete image.
+    """
+
+    render_pixels_1D = jax.vmap(render_pixel, in_axes=(None, 0), out_axes=0)
+    render_pixels_2D = jax.vmap(render_pixels_1D, in_axes=(None, 1), out_axes=1)
+
+    meshgrid = jnp.meshgrid(jnp.arange(0, img_shape[0]), jnp.arange(0, img_shape[1]))
+    pixels = jnp.stack(meshgrid, axis=0).T
+
+    image = render_pixels_2D(gaussians, pixels)
+
+    # return jnp.nan_to_num(image.squeeze(), nan=0.0, posinf=0.0, neginf=0.0)
+    return image.squeeze()
+

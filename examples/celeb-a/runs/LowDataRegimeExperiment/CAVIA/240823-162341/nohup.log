@@ -1,0 +1,168 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+New run folder created successfuly: ./CAVIA/240823-162341/
+Completed copied scripts 
+    Using all environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 7459
+Total number of parameters in one context: 128
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch: 1020
+    Total number of batches : 160
+    Numbers of inner steps : 5
+    Training on 1 batches
+    Validating on 1 batches
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   0    Loss: 0.58484602     ContextsNorm: 0.00000000      WallTime(s):      3
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.52007866
+        Saving best model so far ...
+Epoch: 100      Batch:   0    Loss: 0.08526798     ContextsNorm: 0.00000000      WallTime(s):    263
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.08504933
+        Saving best model so far ...
+Epoch: 200      Batch:   0    Loss: 0.08493678     ContextsNorm: 0.00000000      WallTime(s):    528
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.08471958
+        Saving best model so far ...
+Epoch: 300      Batch:   0    Loss: 0.06385495     ContextsNorm: 0.00000000      WallTime(s):    795
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06491350
+        Saving best model so far ...
+Epoch: 400      Batch:   0    Loss: 0.06333691     ContextsNorm: 0.00000000      WallTime(s):   1060
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06444696
+        Saving best model so far ...
+Epoch: 500      Batch:   0    Loss: 0.06323291     ContextsNorm: 0.00000000      WallTime(s):   1325
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06432483
+        Saving best model so far ...
+Epoch: 600      Batch:   0    Loss: 0.06314491     ContextsNorm: 0.00000000      WallTime(s):   1588
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06422380
+        Saving best model so far ...
+Epoch: 700      Batch:   0    Loss: 0.06303544     ContextsNorm: 0.00000000      WallTime(s):   1852
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06410361
+        Saving best model so far ...
+Epoch: 800      Batch:   0    Loss: 0.06288019     ContextsNorm: 0.00000000      WallTime(s):   2119
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06394088
+        Saving best model so far ...
+Epoch: 900      Batch:   0    Loss: 0.06265475     ContextsNorm: 0.00000000      WallTime(s):   2386
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06371534
+        Saving best model so far ...
+Epoch: 1000      Batch:   0    Loss: 0.06237589     ContextsNorm: 0.00000000      WallTime(s):   2655
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06345113
+        Saving best model so far ...
+Epoch: 1100      Batch:   0    Loss: 0.06212141     ContextsNorm: 0.00000000      WallTime(s):   2922
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06319446
+        Saving best model so far ...
+Epoch: 1200      Batch:   0    Loss: 0.06186526     ContextsNorm: 0.00000000      WallTime(s):   3191
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06293150
+        Saving best model so far ...
+Epoch: 1300      Batch:   0    Loss: 0.06160247     ContextsNorm: 0.00000000      WallTime(s):   3460
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06265238
+        Saving best model so far ...
+Epoch: 1400      Batch:   0    Loss: 0.06133887     ContextsNorm: 0.00000000      WallTime(s):   3730
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06236029
+        Saving best model so far ...
+Epoch: 1500      Batch:   0    Loss: 0.06113306     ContextsNorm: 0.00000000      WallTime(s):   3995
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06212069
+        Saving best model so far ...
+Epoch: 1600      Batch:   0    Loss: 0.06102824     ContextsNorm: 0.00000000      WallTime(s):   4265
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06198807
+        Saving best model so far ...
+Epoch: 1700      Batch:   0    Loss: 0.06098427     ContextsNorm: 0.00000000      WallTime(s):   4534
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06193044
+        Saving best model so far ...
+Epoch: 1800      Batch:   0    Loss: 0.06094776     ContextsNorm: 0.00000000      WallTime(s):   4801
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06188966
+        Saving best model so far ...
+Epoch: 1900      Batch:   0    Loss: 0.06089420     ContextsNorm: 0.00000000      WallTime(s):   5074
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06183591
+        Saving best model so far ...
+Epoch: 1999      Batch:   0    Loss: 0.06054816     ContextsNorm: 0.00000000      WallTime(s):   5341
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.06165500
+        Saving best model so far ...
+
+Total gradient descent training time: 1 hours 29 mins 8 secs
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of environment batches: 160
+    Number of envs train steps per batch: 5
+    Total number of training steps: 800
+    Adapting on 1 batches
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.06078429        OtherNorms: [0.06078429 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 5 secs
+
+    Test loss value: 6.17e-02 ± 2.35e-02
+    Train loss value for criterion 0: 6.08e-02
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./CAVIA/240823-162341/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+     ### (Re)Compiling function: adapt_step_cavia ...  
+Saving visualization in: ./CAVIA/240823-162341/few_shots_ind.png
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of environment batches: 20
+    Number of envs train steps per batch: 5
+    Total number of training steps: 100
+    Adapting on 1 batches
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.05983565        OtherNorms: [0.05983565 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 2 secs
+
+    Test loss value: 6.09e-02 ± 2.47e-02
+    Train loss value for criterion 0: 5.98e-02
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of environment batches: 20
+    Number of envs train steps per batch: 5
+    Total number of training steps: 100
+    Adapting on 1 batches
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.06151128        OtherNorms: [0.06151128 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 3 secs
+
+    Test loss value: 6.24e-02 ± 2.42e-02
+    Train loss value for criterion 0: 6.15e-02
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+No contexts found. Using zeros.
+Saving artefacts in: ./CAVIA/240823-162341/adapt/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+     ### (Re)Compiling function: adapt_step_cavia ...  
+Saving visualization in: ./CAVIA/240823-162341/adapt/few_shots_ood.png

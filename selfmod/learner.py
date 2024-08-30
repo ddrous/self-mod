@@ -72,7 +72,7 @@ class Learner:
             return jnp.sum(losses*weightings), (term1, terms2, terms3)
 
         if loss_contributors > 0:
-            print(f"    Using {loss_contributors} environments to estimate the global training loss function ...")
+            print(f"\nUsing {loss_contributors} environments to estimate the global training loss function ...")
             def loss_fn(model, contexts, batch, weightings, key):
                 keys = jax.random.split(key, num=loss_contributors)
 
@@ -175,6 +175,11 @@ class Learner:
         elif isinstance(self.contexts, ArrayContextParams):
             contexts = ArrayContextParams(nb_envs=nb_envs, 
                                         context_size=self.context_size)
+        elif isinstance(self.contexts, GaussianContextParams):
+            contexts = GaussianContextParams(nb_envs=nb_envs, 
+                                        nb_gaussians_per_env=self.context_size//GAUSSIAN_ATTRIBUTE_COUNT_2D,
+                                        img_shape=self.contexts.img_shape,
+                                        key=self.contexts.key)
         else:
             raise ValueError("The context type is not supported")
 
@@ -253,6 +258,31 @@ class ArrayContextParams(eqx.Module):
 
     def __call__(self):
         return self.params
+
+
+class GaussianContextParams(eqx.Module):
+    """ A context initialised with gaussian """
+    params: jnp.ndarray
+    eff_context_size: int
+    key: jnp.ndarray        ## If we want the gaussian to be always initialised the same
+    img_shape: tuple
+
+    def __init__(self, nb_envs, nb_gaussians_per_env, img_shape=None, key=None):
+        self.eff_context_size = nb_gaussians_per_env*GAUSSIAN_ATTRIBUTE_COUNT_2D
+        self.key = key
+        self.img_shape = img_shape
+
+        if key is None:
+            self.params = jnp.zeros((nb_envs, self.eff_context_size))
+        else:
+            if img_shape is None:
+                raise ValueError("You must provide the intended rendered image shape to properly initialise the Gaussians.")
+            gaussians = init_gaussians(key, img_shape, nb_envs*nb_gaussians_per_env,)
+            self.params = jnp.reshape(gaussians, (nb_envs, self.eff_context_size))
+
+    def __call__(self):
+        # return jnp.reshape(self.params, (-1, 9))        ## Returns the gaussians
+        return self.params                                ## Returns the flattened gaussians
 
 
 class InfDimContextParams(eqx.Module):

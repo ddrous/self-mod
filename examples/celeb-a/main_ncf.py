@@ -6,7 +6,7 @@ import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 
 from selfmod import *
-jax.config.update("jax_debug_nans", True)
+# jax.config.update("jax_debug_nans", True)
 
 
 #%%
@@ -26,18 +26,18 @@ context_pool_size = 3
 context_size = 128
 taylor_orders = (2, 0)
 init_lrs = (1e-3, 1e-3)
-sched_factor = 1.
-envs_batch_size = 6
+sched_factor = 0.2
+envs_batch_size = 512
 max_train_batches = 1
 max_val_batches = 1
 
-nb_outer_steps = 20000
+nb_outer_steps = 100000
 nb_inner_steps = (10, 10)
 
 print_error_every = 1000
-validate_every = 1000
+validate_every = 10000
 
-nb_adapt_steps = 10000
+nb_adapt_steps = 5000
 
 meta_train = True
 # run_folder = "./runs/240609-215946-Test/"
@@ -181,7 +181,7 @@ learner = Learner(model=model,
                 contexts=contexts,
                 reuse_contexts=False,
                 env_loss_fn=env_loss_fn, 
-                # loss_contributors=6,
+                loss_contributors=6,
                 key=model_key)
 
 
@@ -211,11 +211,24 @@ trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
-    trainer.meta_train(dataloader=train_dataloader,
+    # trainer.meta_train(dataloader=train_dataloader,
+    #                     nb_epochs=1,
+    #                     nb_outer_steps=nb_outer_steps,
+    #                     nb_inner_steps=nb_inner_steps, 
+    #                     inner_tols=(1e-12, 1e-12), 
+    #                     max_train_batches=max_train_batches,
+    #                     print_error_every=(1, print_error_every), 
+    #                     save_path=trainer_save_path, 
+    #                     val_dataloader=all_shots_train_dataloader, 
+    #                     max_val_batches=max_val_batches,
+    #                     val_criterion_id=0,
+    #                     validate_every=validate_every,
+    #                     val_nb_steps=nb_adapt_steps,
+    #                     key=trainer_key)
+
+    trainer.meta_train_noalm(dataloader=train_dataloader,
                         nb_epochs=1,
                         nb_outer_steps=nb_outer_steps,
-                        nb_inner_steps=nb_inner_steps, 
-                        inner_tols=(1e-12, 1e-12), 
                         max_train_batches=max_train_batches,
                         print_error_every=(1, print_error_every), 
                         save_path=trainer_save_path, 
@@ -225,7 +238,6 @@ if meta_train == True:
                         validate_every=validate_every,
                         val_nb_steps=nb_adapt_steps,
                         key=trainer_key)
-
 else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)
