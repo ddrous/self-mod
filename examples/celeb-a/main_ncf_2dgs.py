@@ -15,7 +15,7 @@ from selfmod import *
 seed = 2024
 
 ## Dataloader hps
-k_shots = 100
+k_shots = 10
 resolution = (32, 32)
 data_folder="./data/" 
 input_dim = 2
@@ -24,26 +24,26 @@ output_dim = 3
 ## Train and adapt hps
 context_pool_size = 3
 nb_gaussians_ctx = 16            ## TODO Number of gaussians per context. Multiply by 10 to get the total number of parameters in a context
-nb_gaussians_model = 500
+nb_gaussians_model = 250
 
 taylor_orders = (2, 0)
-init_lrs = (1e-1, 1e-3)
-sched_factor = 1.0
+init_lrs = (1e-2, 1e-3)
+sched_factor = 0.1
 envs_batch_size = 128
 max_train_batches = 1
 max_val_batches = 1
 
-nb_outer_steps = 10000
+nb_outer_steps = 100000
 nb_inner_steps = (10, 10)
 
 print_error_every = 1000
-validate_every = 10000
+validate_every = 100000
 
 nb_adapt_steps = 5000
 
 meta_train = True
-run_folder = "./runs/240609-215946-Test/"
-# run_folder = None
+# run_folder = "./runs/240609-215946-Test/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -136,11 +136,14 @@ class GaussianSplattingModel(eqx.Module):
         ctx_gaussians = jnp.reshape(ctx, (-1, GAUSSIAN_ATTRIBUTE_COUNT_2D))
         all_gaussians = jnp.concat([self.gaussians, ctx_gaussians], axis=0)
 
-        render_pixels = jax.vmap(render_pixel, in_axes=(None, 0))
+        # coords = x * jnp.array(resolution)
 
-        coords = x * jnp.array(resolution)[None, :]      ## TODO check this !
+        # render_pixels = jax.vmap(render_pixel, in_axes=(None, 0))
+        # coords = x * jnp.array(resolution)[None, :]      ## TODO check this !
+        # return render_pixels(all_gaussians, coords).squeeze()
 
-        return render_pixels(all_gaussians, coords).squeeze()
+        # return render_pixel(all_gaussians, coords).squeeze()
+        return render_pixel(all_gaussians, x).squeeze()
 
 
 

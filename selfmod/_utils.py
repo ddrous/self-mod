@@ -281,8 +281,12 @@ def init_gaussian(key, width=32., height=32.) -> jnp.ndarray:
     keys = jax.random.split(key, 6)
 
     ## Uniformly initialise parameters of a 2D gaussian
-    mean = jax.random.uniform(keys[0], (2,), minval=0, maxval=min(width, height))
-    scaling = jax.random.uniform(keys[1], (2,), minval=0, maxval=min(width, height)/1)
+    # mean = jax.random.uniform(keys[0], (2,), minval=0, maxval=min(width, height))
+    # scaling = jax.random.uniform(keys[1], (2,), minval=0, maxval=min(width, height)/1)
+
+    mean = jax.random.uniform(keys[0], (2,), minval=0.1, maxval=0.9)
+    scaling = jax.random.uniform(keys[1], (2,), minval=0.1, maxval=32.0)
+
     rotation = jax.random.uniform(keys[2], (1,), minval=0, maxval=2*jnp.pi)
     colour = jax.random.uniform(keys[3], (3,), minval=0, maxval=1)
 
@@ -311,7 +315,7 @@ def get_gaussian_density(mean, scaling, rotation, x):
         scaling_matrix = jnp.diag(scaling)
         rotation_matrix = make_rotation_matrix(rotation_angle)
 
-        covariance =  rotation_matrix @ scaling_matrix @ scaling_matrix.T @ rotation_matrix.T 
+        covariance = rotation_matrix @ scaling_matrix @ scaling_matrix.T @ rotation_matrix.T 
 
         # jax.debug.print("Is positive semi-definite: {}", is_positive_semi_definite(covariance))
 
@@ -321,11 +325,14 @@ def get_gaussian_density(mean, scaling, rotation, x):
 
     x_ = (x - mean)[:, None]
 
-    den = jnp.exp(-0.5 * x_.T @ jnp.linalg.inv(get_covariance(scaling, rotation)) @ x_).squeeze()
+    ## Compute the inverse covariance matrix
+    # den = jnp.exp(-0.5 * x_.T @ jnp.linalg.inv(get_covariance(scaling, rotation)) @ x_).squeeze()
 
-    # return den
+    ## Compute a more stable inverse of the covariance matrix via linar solve
+    cov_mat = get_covariance(scaling, rotation)
+    # den = jnp.exp(-0.5 * x_.T @ jnp.linalg.solve(cov_mat, x_)).squeeze()
+    den = jnp.exp(-0.5 * x_.T @ jax.scipy.linalg.solve(cov_mat, x_, assume_a="pos")).squeeze()
 
-    ## Nan to Num
     return jnp.nan_to_num(den, nan=0.0, posinf=0.0, neginf=0.0)
 
 def render_pixel(gaussians: jnp.ndarray, x: jnp.ndarray):

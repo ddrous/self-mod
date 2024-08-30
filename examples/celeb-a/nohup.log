@@ -1,47 +1,124 @@
-2024-08-30 21:46:56.290538: E external/xla/xla/stream_executor/cuda/cuda_driver.cc:266] failed call to cuInit: CUDA_ERROR_COMPAT_NOT_SUPPORTED_ON_DEVICE: forward compatibility was attempted on non supported HW
-2024-08-30 21:46:56.290648: E external/xla/xla/stream_executor/cuda/cuda_diagnostics.cc:252] kernel version 550.90.7 does not match DSO version 560.35.3 -- cannot find working devices in this configuration
 
 ############# Contextual Self-Modulation #############
 
 Jax version: 0.4.28
-Traceback (most recent call last):
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 874, in backends
-    backend = _init_backend(platform)
-              ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 965, in _init_backend
-    backend = registration.factory()
-              ^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 663, in factory
-    return xla_client.make_c_api_client(plugin_name, updated_options, None)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jaxlib/xla_client.py", line 199, in make_c_api_client
-    return _xla.get_c_api_client(plugin_name, options, distributed_client)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-jaxlib.xla_extension.XlaRuntimeError: FAILED_PRECONDITION: No visible GPU devices.
+Available devices: [cuda(id=0)]
+Using pre-existing run folder: ./runs/240609-215946-Test/
+Completed copied scripts 
 
-During handling of the above exception, another exception occurred:
+Using 6 environments to estimate the global training loss function ...
 
-Traceback (most recent call last):
-  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/main_ncf_2dgs.py", line 8, in <module>
-    from selfmod import *
-  File "/home/gb21553/Projects/Self-Mod/selfmod/__init__.py", line 4, in <module>
-    from .dataloader import *
-  File "/home/gb21553/Projects/Self-Mod/selfmod/dataloader.py", line 2, in <module>
-    from ._utils import *
-  File "/home/gb21553/Projects/Self-Mod/selfmod/_utils.py", line 3, in <module>
-    from ._config import *
-  File "/home/gb21553/Projects/Self-Mod/selfmod/_config.py", line 8, in <module>
-    print("Available devices:", jax.devices())
-                                ^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 1077, in devices
-    return get_backend(backend).devices()
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 1011, in get_backend
-    return _get_backend_uncached(platform)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 990, in _get_backend_uncached
-    bs = backends()
-         ^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 890, in backends
-    raise RuntimeError(err_msg)
-RuntimeError: Unable to initialize backend 'cuda': FAILED_PRECONDITION: No visible GPU devices. (you may need to uninstall the failing plugin package, or set JAX_PLATFORMS=cpu to skip this backend.)
+
+Total number of parameters in the model: 2000
+Total number of parameters in one context: 128
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch along envs: 128
+    Maximum number of batches (along envs): 1272
+    Total number of epochs: 1
+    Number of outer minimizations: 10000
+    Training on 1 batches
+    Validating on 1 batches
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+     ### Compiling function "train_step" for both model and contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 1.39460754     ContextsNorm: 0.00000000      WallTime(s):      3/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.05974348
+        Saving best model so far ...
+     ### Compiling function "train_step" for both model and contexts ...  
+Epoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.07633024     ContextsNorm: 0.00000000      WallTime(s):    115Epoch:   0      Batch:   0      OuterStep: 2000      LossModel: 0.06337965     ContextsNorm: 0.00000000      WallTime(s):    115Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.05726546     ContextsNorm: 0.00000000      WallTime(s):    116Epoch:   0      Batch:   0      OuterStep: 4000      LossModel: 0.05254314     ContextsNorm: 0.00000000      WallTime(s):    117Epoch:   0      Batch:   0      OuterStep: 5000      LossModel: 0.04799132     ContextsNorm: 0.00000000      WallTime(s):    117Epoch:   0      Batch:   0      OuterStep: 6000      LossModel: 0.05148289     ContextsNorm: 0.00000000      WallTime(s):    118Epoch:   0      Batch:   0      OuterStep: 7000      LossModel: 0.04094919     ContextsNorm: 0.00000000      WallTime(s):    118Epoch:   0      Batch:   0      OuterStep: 8000      LossModel: 0.05803953     ContextsNorm: 0.00000000      WallTime(s):    119Epoch:   0      Batch:   0      OuterStep: 9000      LossModel: 0.04204619     ContextsNorm: 0.00000000      WallTime(s):    120Epoch:   0      Batch:   0      OuterStep: 9999      LossModel: 0.05913299     ContextsNorm: 0.00000000      WallTime(s):    120/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.05498608
+        Saving best model so far ...
+
+Total gradient descent training time: 0 hours 3 mins 52 secs
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 128
+    Maximum number of batches (along envs): 1272
+    Adapting on 1 batches
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Epoch:   0      Batch:   0      Loss: 0.08153569     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.08151960     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.08150351     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.08148744     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.06955911     ContextsNorm: 0.00000000
+Epoch: 2000      Batch:   0      Loss: 0.06174033     ContextsNorm: 0.00000000
+Epoch: 3000      Batch:   0      Loss: 0.05621324     ContextsNorm: 0.00000000
+Epoch: 4000      Batch:   0      Loss: 0.05194447     ContextsNorm: 0.00000000
+Epoch: 4999      Batch:   0      Loss: 0.04835041     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 6 secs
+
+    Test loss value: 6.07e-02 ± 2.02e-02
+    Train loss value for criterion 0: 4.84e-02
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./runs/240609-215946-Test/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+Saving visualization in: ./runs/240609-215946-Test/few_shots_ind.png
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 128
+    Maximum number of batches (along envs): 156
+    Adapting on 1 batches
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Epoch:   0      Batch:   0      Loss: 0.07725275     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.07723548     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.07721821     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.07720096     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.06448001     ContextsNorm: 0.00000000
+Epoch: 2000      Batch:   0      Loss: 0.05617242     ContextsNorm: 0.00000000
+Epoch: 3000      Batch:   0      Loss: 0.05014690     ContextsNorm: 0.00000000
+Epoch: 4000      Batch:   0      Loss: 0.04556266     ContextsNorm: 0.00000000
+Epoch: 4999      Batch:   0      Loss: 0.04184104     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 5 secs
+
+    Test loss value: 5.79e-02 ± 2.55e-02
+    Train loss value for criterion 0: 4.18e-02
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 128
+    Maximum number of batches (along envs): 156
+    Adapting on 1 batches
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Epoch:   0      Batch:   0      Loss: 0.08334509     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.08332625     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.08330741     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.08328858     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.06911509     ContextsNorm: 0.00000000
+Epoch: 2000      Batch:   0      Loss: 0.05970701     ContextsNorm: 0.00000000
+Epoch: 3000      Batch:   0      Loss: 0.05307952     ContextsNorm: 0.00000000
+Epoch: 4000      Batch:   0      Loss: 0.04807081     ContextsNorm: 0.00000000
+Epoch: 4999      Batch:   0      Loss: 0.04402185     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 5 secs
+
+    Test loss value: 6.15e-02 ± 2.63e-02
+    Train loss value for criterion 0: 4.40e-02
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+No contexts found. Using zeros.
+Saving artefacts in: ./runs/240609-215946-Test/adapt/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 6)
+Saving visualization in: ./runs/240609-215946-Test/adapt/few_shots_ood.png
