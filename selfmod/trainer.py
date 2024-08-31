@@ -285,7 +285,7 @@ class NCFTrainer(Trainer):
                             print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime(s): {int(time.time()-start_time):-6d}", flush=True, end="\r")
                             print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
-                    if val_dataloader is not None and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
+                    if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
                         self.learner.model = model
                         self.learner.contexts = contexts
                         # print("Setting contexts in the metatrainer: \n", contexts.params)
@@ -451,7 +451,7 @@ class NCFTrainer(Trainer):
                             print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime(s): {int(time.time()-start_time):-6d}", flush=True, end="\r")
 
                     model, contexts = mega_model
-                    if val_dataloader is not None and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
+                    if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
                         self.learner.model = model
                         self.learner.contexts = contexts
 
@@ -714,7 +714,7 @@ class NCFTrainer(Trainer):
                         if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
                             print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}", flush=True, end="\r")
 
-                    if val_dataloader is not None and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
+                    if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
                         self.learner.model = model
                         self.learner.contexts = contexts
                         # print("Setting contexts in the metatrainer: \n", contexts.params)
@@ -870,7 +870,7 @@ class NCFTrainer(Trainer):
         loss_key, _ = jax.random.split(key)
 
         torch.manual_seed(loss_key[0])  # Ensure the same shuffling order
-        np.random.seed(loss_key[0])
+        # np.random.seed(loss_key[0])
 
         for env_batch, (batch, val_batch) in enumerate(zip(dataloader, val_dataloader)):
             if env_batch >= max_adapt_batches:
@@ -1151,7 +1151,7 @@ class CAVIATrainer(Trainer):
             #     print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\n")
             #     print()
 
-            if val_dataloader is not None and (epoch%validate_every==0 or epoch==nb_epochs-1):
+            if val_dataloader is not None and (epoch!=0 and (epoch%validate_every==0 or epoch==nb_epochs-1)):
                 self.learner.model = model
                 self.learner.contexts = contexts
 

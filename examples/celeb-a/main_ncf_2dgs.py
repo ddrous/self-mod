@@ -8,6 +8,9 @@ os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 from selfmod import *
 # jax.config.update("jax_debug_nans", True)
 
+## Enable 64-bit precision
+jax.config.update("jax_enable_x64", True)
+
 
 #%%
 
@@ -24,26 +27,26 @@ output_dim = 3
 ## Train and adapt hps
 context_pool_size = 3
 nb_gaussians_ctx = 16            ## TODO Number of gaussians per context. Multiply by 10 to get the total number of parameters in a context
-nb_gaussians_model = 250
+nb_gaussians_model = 100
 
 taylor_orders = (2, 0)
-init_lrs = (1e-2, 1e-3)
-sched_factor = 0.1
+init_lrs = (1e-2, 1e-1)
+sched_factor = 0.5
 envs_batch_size = 128
 max_train_batches = 1
 max_val_batches = 1
 
-nb_outer_steps = 100000
+nb_outer_steps = 5000
 nb_inner_steps = (10, 10)
 
 print_error_every = 1000
-validate_every = 100000
+validate_every = 10000000
 
-nb_adapt_steps = 5000
+nb_adapt_steps = 2000
 
 meta_train = True
-# run_folder = "./runs/240609-215946-Test/"
-run_folder = None
+run_folder = "./runs/240831-091752-NEWTEST/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -102,8 +105,8 @@ data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 train_dataloader = NumpyLoader(CelebADataset(data_folder, 
                                             data_split="train",
                                             num_shots=k_shots, 
-                                            order_pixels=False, 
-                                            seed=seed), 
+                                            resolution=resolution,
+                                            order_pixels=False), 
                               batch_size=envs_batch_size, 
                               shuffle=False,
                               num_workers=24,
@@ -111,8 +114,8 @@ train_dataloader = NumpyLoader(CelebADataset(data_folder,
 all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder, 
                                             data_split="train",
                                             num_shots=np.prod(resolution), 
-                                            order_pixels=False, 
-                                            seed=seed), 
+                                            resolution=resolution,
+                                            order_pixels=False), 
                               batch_size=envs_batch_size, 
                               shuffle=False,
                               num_workers=24,
@@ -260,11 +263,13 @@ ind_crit, _ = visualtester.evaluate(train_dataloader,
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
+ind_vis_key, ood_vis_key = jax.random.split(test_key, 2)
+
 visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
                                 all_shots_loader=all_shots_train_dataloader,
                                 nb_steps=nb_adapt_steps,
                                 save_path=run_folder+"few_shots_ind.png",
-                                key=jax.random.PRNGKey(time.time_ns())
+                                key=ind_vis_key
                              );
 
 
@@ -274,8 +279,8 @@ visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
 val_dataloader = NumpyLoader(CelebADataset(data_folder, 
                                             data_split="val",
                                             num_shots=k_shots, 
-                                            order_pixels=False, 
-                                            seed=seed), 
+                                            resolution=resolution,
+                                            order_pixels=False), 
                               batch_size=envs_batch_size, 
                               shuffle=False,
                               num_workers=24,
@@ -283,8 +288,8 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
 all_shots_val_dataloader = NumpyLoader(CelebADataset(data_folder, 
                                             data_split="val",
                                             num_shots=np.prod(resolution), 
-                                            order_pixels=False, 
-                                            seed=seed), 
+                                            resolution=resolution,
+                                            order_pixels=False), 
                               batch_size=envs_batch_size, 
                               shuffle=False,
                               num_workers=24,
@@ -307,8 +312,8 @@ if meta_test:
     adapt_dataloader = NumpyLoader(CelebADataset(data_folder, 
                                                 data_split="test",
                                                 num_shots=k_shots, 
-                                                order_pixels=False, 
-                                                seed=seed), 
+                                                resolution=resolution,
+                                                order_pixels=False), 
                                 batch_size=envs_batch_size, 
                                 shuffle=False,
                                 num_workers=24,
@@ -316,8 +321,8 @@ if meta_test:
     all_shots_dataloader_test = NumpyLoader(CelebADataset(data_folder, 
                                                 data_split="test",
                                                 num_shots=np.prod(resolution),
-                                                order_pixels=False, 
-                                                seed=seed), 
+                                                resolution=resolution,
+                                                order_pixels=False), 
                                 batch_size=envs_batch_size, 
                                 shuffle=False,
                                 num_workers=24,
@@ -342,7 +347,7 @@ if meta_test:
                                     all_shots_loader=all_shots_dataloader_test,
                                     nb_steps=nb_adapt_steps,
                                     save_path=adapt_folder+"few_shots_ood.png",
-                                    key=jax.random.PRNGKey(time.time_ns())
+                                    key=ood_vis_key
                                 );
 
 

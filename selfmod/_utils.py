@@ -11,6 +11,7 @@ np.set_printoptions(suppress=True)
 import torch
 import equinox as eqx
 import diffrax
+# import lineax as lx
 
 # import matplotlib.pyplot as plt
 
@@ -25,7 +26,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set(context='notebook', style='ticks',
         font='sans-serif', font_scale=1, color_codes=True, rc={"lines.linewidth": 2})
-plt.style.use("dark_background")
+# plt.style.use("dark_background")
 
 
 
@@ -73,6 +74,29 @@ def sbplot(*args, ax=None, figsize=(6,3.5), x_label=None, y_label=None, title=No
     if title:
         ax.set_title(title)
     ax.plot(*args, **kwargs)
+    ax.set_xscale(x_scale)
+    ax.set_yscale(y_scale)
+    if "label" in kwargs.keys():
+        ax.legend()
+    if ylim:
+        ax.set_ylim(ylim)
+    if xlim:
+        ax.set_xlim(xlim)
+    plt.tight_layout()
+    return ax
+
+## Wrapper function for matplotlib and seaborn for imshow
+def sbimshow(*args, ax=None, figsize=(6,3.5), x_label=None, y_label=None, title=None, x_scale='linear', y_scale='linear', xlim=None, ylim=None, **kwargs):
+    if ax==None:
+        _, ax = plt.subplots(1, 1, figsize=figsize)
+    # sns.despine(ax=ax)
+    if x_label:
+        ax.set_xlabel(x_label)
+    if y_label:
+        ax.set_ylabel(y_label)
+    if title:
+        ax.set_title(title)
+    ax.imshow(*args, **kwargs)
     ax.set_xscale(x_scale)
     ax.set_yscale(y_scale)
     if "label" in kwargs.keys():
@@ -284,11 +308,18 @@ def init_gaussian(key, width=32., height=32.) -> jnp.ndarray:
     # mean = jax.random.uniform(keys[0], (2,), minval=0, maxval=min(width, height))
     # scaling = jax.random.uniform(keys[1], (2,), minval=0, maxval=min(width, height)/1)
 
-    mean = jax.random.uniform(keys[0], (2,), minval=0.1, maxval=0.9)
-    scaling = jax.random.uniform(keys[1], (2,), minval=0.1, maxval=32.0)
-
-    rotation = jax.random.uniform(keys[2], (1,), minval=0, maxval=2*jnp.pi)
+    # mean = jax.random.uniform(keys[0], (2,), minval=0.1, maxval=0.90)
+    max_side = max(width, height)
+    scaling = jax.random.uniform(keys[1], (2,), minval=1/(max_side*1000), maxval=1/(max_side*5))
+    rotation = jax.random.uniform(keys[2], (1,), minval=0, maxval=1.)
     colour = jax.random.uniform(keys[3], (3,), minval=0, maxval=1)
+
+
+    mean = jnp.array([0.5, 0.5])
+    # scaling = jnp.array([1/(width*20), 1/(height*20)])
+    # rotation = jnp.array([0.5])
+    # colour = jnp.array([0.5, 0.5, 0.5])
+    # # colour = jax.random.uniform(keys[3], (3,), minval=0, maxval=1)
 
     # opacity = jax.random.uniform(keys[4], (1,), minval=0, maxval=1)
     # objectness = jax.random.uniform(keys[5], (1,), minval=0, maxval=1)
@@ -329,14 +360,37 @@ def get_gaussian_density(mean, scaling, rotation, x):
     # den = jnp.exp(-0.5 * x_.T @ jnp.linalg.inv(get_covariance(scaling, rotation)) @ x_).squeeze()
 
     ## Compute a more stable inverse of the covariance matrix via linar solve
-    cov_mat = get_covariance(scaling, rotation)
-    # den = jnp.exp(-0.5 * x_.T @ jnp.linalg.solve(cov_mat, x_)).squeeze()
-    den = jnp.exp(-0.5 * x_.T @ jax.scipy.linalg.solve(cov_mat, x_, assume_a="pos")).squeeze()
+    # cov_mat = get_covariance(scaling, rotation)
+    cov_mat = get_covariance(scaling*32, rotation * 2*jnp.pi)       ## TODO: 32 is stil hardcoded
 
-    return jnp.nan_to_num(den, nan=0.0, posinf=0.0, neginf=0.0)
+    # den = jnp.exp(-0.5 * x_.T @ jnp.linalg.solve(cov_mat, x_)).squeeze()
+
+    # jax.debug.print("Is cov mat: {}\n", cov_mat)
+    # sol = lx.linear_solve(lx.MatrixLinearOperator(cov_mat), x_.squeeze(), solver=lx.LU())
+    # den = jnp.exp(-0.5 * x_.T @ sol.value).squeeze()
+
+    # den = jnp.exp(-0.5 * x_.T @ jax.scipy.linalg.solve(cov_mat, x_, assume_a="pos")).squeeze()
+    # den = jnp.exp(-0.5 * x_.T @ jnp.linalg.pinv(cov_mat, hermitian=True, rcond=1e-4) @ x_).squeeze()
+    den = jnp.exp(-0.5 * x_.T @ jnp.linalg.pinv(cov_mat, hermitian=True) @ x_).squeeze()
+
+    # ## Compute the invrse of this 2x2 matrix after computing the determinant
+    # det = cov_mat[0, 0] * cov_mat[1, 1] - cov_mat[0, 1] * cov_mat[1, 0]
+    # # print("Determinant: ", det)
+    # jax.debug.print("Determinant: ", det)
+    # inv_cov_mat = jnp.array([[cov_mat[1, 1], -cov_mat[0, 1]], [-cov_mat[1, 0], cov_mat[0, 0]]]) / (det * 32**2)
+    # # inv_cov_mat = jnp.linalg.inv(cov_mat) / (32**2)
+
+    # den = jnp.exp(-0.5 * x_.T @ inv_cov_mat @ x_).squeeze()
+    # # jax.debug.print("Is positive semi-definite:\n {}\n {}\n {}", cov_mat, inv_cov_mat, det)
+
+    return den
+    # return jnp.nan_to_num(den, nan=0.0, posinf=0.0, neginf=0.0)
 
 def render_pixel(gaussians: jnp.ndarray, x: jnp.ndarray):
     """Render a single pixel coordinates x from multiple gaussians. """
+
+    ## First, clip all values in the gaussians between 0 and 1
+    # gaussians = jnp.clip(gaussians, 0., 1.)
 
     means = gaussians[:, :2]
     scalings = gaussians[:, 2:4]
@@ -345,10 +399,11 @@ def render_pixel(gaussians: jnp.ndarray, x: jnp.ndarray):
     # opacities = gaussians[:, 8:9]
 
     densities = jax.vmap(get_gaussian_density, in_axes=(0, 0, 0, None))(means, scalings, rotations, x)[:, None]
-    densities = jnp.nan_to_num(densities, nan=0.0, posinf=0.0, neginf=0.0)
+    # densities = jnp.nan_to_num(densities, nan=0.0, posinf=0.0, neginf=0.0)
 
     # return jnp.clip(jnp.sum(densities * colours, axis=0), 0., 1.)
-    return jnp.clip(jnp.mean(densities * colours, axis=0), 0., 1.)
+    # return jnp.clip(jnp.mean(densities*colours, axis=0), 0., 1.)
+    return jnp.mean(densities*colours, axis=0)
 
 
 def render_image(gaussians: jnp.ndarray, img_shape: jnp.ndarray):
@@ -359,7 +414,8 @@ def render_image(gaussians: jnp.ndarray, img_shape: jnp.ndarray):
     render_pixels_1D = jax.vmap(render_pixel, in_axes=(None, 0), out_axes=0)
     render_pixels_2D = jax.vmap(render_pixels_1D, in_axes=(None, 1), out_axes=1)
 
-    meshgrid = jnp.meshgrid(jnp.arange(0, img_shape[0]), jnp.arange(0, img_shape[1]))
+    # meshgrid = jnp.meshgrid(jnp.arange(0, img_shape[0]), jnp.arange(0, img_shape[1]))
+    meshgrid = jnp.meshgrid(jnp.linspace(0, 1, img_shape[0]), jnp.linspace(0, 1, img_shape[1]))
     pixels = jnp.stack(meshgrid, axis=0).T
 
     image = render_pixels_2D(gaussians, pixels)

@@ -271,9 +271,9 @@ class CelebADataset(DataLoader):
                  order_pixels=False,
                  seed=None):
 
-        ## Set seed
-        if seed is not None:
-            np.random.seed(seed)
+        # ## Set seed
+        # if seed is not None:
+        #     np.random.seed(seed)
 
         if num_shots <= 0:
             raise ValueError("Number of shots must be greater than 0.")
@@ -347,6 +347,7 @@ class CelebADataset(DataLoader):
 
     def set_seed_sample_pixels(self, seed, idx):
         np.random.seed(seed)
+        # np.random.set_state(seed)
         img = self.get_image(self.files[idx])
         return self.sample_pixels(img)
 
@@ -478,7 +479,7 @@ class SinusoidDataset:
         else:
             return target_functions
 
-    def __getitem__(self, idx):     ## Idx doesn't matter here
+    def __getitem__(self, idx):     ## TODO Idx doesn't matter here. Check effect of seed as well.
         if not self.adaptation:
             np.random.seed(idx)
             # torch.manual_seed(idx)

@@ -268,7 +268,8 @@ class CelebAVisualTester(VisualTester):
             print("    Environment (batch) id:", e)
         elif isinstance(all_shots_loader, NumpyLoader):
             keys = jax.random.split(key, num=num_envs)
-            batches = [all_shots_loader.dataset.set_seed_sample_pixels(key[e], e) for e in range(num_envs)]
+            batches = [all_shots_loader.dataset.set_seed_sample_pixels(keys[e, 0], e) for e in range(num_envs)]
+            # batches = [all_shots_loader.dataset.__getitem__(e) for e in range(num_envs)]
             X = jnp.stack([b[0] for b in batches])
             Y = jnp.stack([b[1] for b in batches])
             print("    Environment ids:", range(num_envs))
@@ -286,7 +287,9 @@ class CelebAVisualTester(VisualTester):
             X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, num_envs)
         elif isinstance(few_shots_loader, NumpyLoader):
             img_size = few_shots_loader.dataset.img_size
-            batches = [few_shots_loader.dataset.set_seed_sample_pixels(key[e], e) for e in range(num_envs)]
+            keys = jax.random.split(key, num=num_envs)
+            batches = [few_shots_loader.dataset.set_seed_sample_pixels(keys[e, 0], e) for e in range(num_envs)]
+            # batches = [few_shots_loader.dataset.__getitem__(e) for e in range(num_envs)]
             X_few_shots = jnp.stack([b[0] for b in batches])
             Y_few_shots = jnp.stack([b[1] for b in batches])
         else:
