@@ -18,6 +18,8 @@ seed = 2024
 k_shots = 10
 resolution = (32, 32)
 data_folder="./data/" 
+shuffle = False
+num_workers = 0
 input_dim = 2
 output_dim = 3
 
@@ -26,18 +28,18 @@ context_pool_size = 3
 context_size = 128
 taylor_orders = (2, 0)
 init_lrs = (1e-3, 1e-3)
-sched_factor = 0.2
-envs_batch_size = 512
+sched_factor = 1.0
+envs_batch_size = 100000
 max_train_batches = 1
 max_val_batches = 1
 
-nb_outer_steps = 100000
+nb_outer_steps = 100
 nb_inner_steps = (10, 10)
 
-print_error_every = 1000
+print_error_every = 10
 validate_every = 10000
 
-nb_adapt_steps = 5000
+nb_adapt_steps = 5
 
 meta_train = True
 # run_folder = "./runs/240609-215946-Test/"
@@ -101,19 +103,21 @@ train_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             data_split="train",
                                             num_shots=k_shots, 
                                             order_pixels=False, 
-                                            seed=seed), 
+                                            # seed=seed
+                                            ), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
-                              num_workers=24,
+                              shuffle=shuffle,
+                              num_workers=num_workers,
                               drop_last=False)
 all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder, 
                                             data_split="train",
                                             num_shots=np.prod(resolution), 
                                             order_pixels=False, 
-                                            seed=seed), 
+                                            # seed=seed,
+                                            ), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
-                              num_workers=24,
+                              shuffle=shuffle,
+                              num_workers=num_workers,
                               drop_last=False)
 
 
@@ -278,19 +282,21 @@ val_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             data_split="val",
                                             num_shots=k_shots, 
                                             order_pixels=False, 
-                                            seed=seed), 
+                                            # seed=seed
+                                            ), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
-                              num_workers=24,
+                              shuffle=shuffle,
+                              num_workers=num_workers,
                               drop_last=False)
 all_shots_val_dataloader = NumpyLoader(CelebADataset(data_folder, 
                                             data_split="val",
                                             num_shots=np.prod(resolution), 
                                             order_pixels=False, 
-                                            seed=seed), 
+                                            # seed=seed
+                                            ), 
                               batch_size=envs_batch_size, 
-                              shuffle=False,
-                              num_workers=24,
+                              shuffle=shuffle,
+                              num_workers=num_workers,
                               drop_last=False)
 
 ind_crit, _ = visualtester.evaluate(val_dataloader, 
@@ -311,19 +317,21 @@ if meta_test:
                                                 data_split="test",
                                                 num_shots=k_shots, 
                                                 order_pixels=False, 
-                                                seed=seed), 
+                                                # seed=seed
+                                                ), 
                                 batch_size=envs_batch_size, 
-                                shuffle=False,
-                                num_workers=24,
+                                shuffle=shuffle,
+                                num_workers=num_workers,
                                 drop_last=False)
     all_shots_dataloader_test = NumpyLoader(CelebADataset(data_folder, 
                                                 data_split="test",
                                                 num_shots=np.prod(resolution),
                                                 order_pixels=False, 
-                                                seed=seed), 
+                                                # seed=seed
+                                                ), 
                                 batch_size=envs_batch_size, 
-                                shuffle=False,
-                                num_workers=24,
+                                shuffle=shuffle,
+                                num_workers=num_workers,
                                 drop_last=False)
 
     ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
