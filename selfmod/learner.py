@@ -13,6 +13,7 @@ class Learner:
                  pool_filling="NF", 
                  contexts=None, 
                  reuse_contexts=False,
+                 loss_filling="NF", 
                  model_reg="l2",
                  context_reg="l1",
                  loss_contributors=-1,
@@ -26,9 +27,11 @@ class Learner:
         self.context_pool_size = context_pool_size
         self.pool_filling = pool_filling
         self.reuse_contexts = reuse_contexts
+        self.loss_contributors = loss_contributors
 
         self.model_reg = model_reg
         self.context_reg = context_reg
+        self.loss_filling = loss_filling
 
         if contexts is not None:
             self.contexts = contexts
@@ -76,9 +79,18 @@ class Learner:
             def loss_fn(model, contexts, batch, weightings, key):
                 keys = jax.random.split(key, num=loss_contributors)
 
-                indices = jax.random.permutation(key, contexts.params.shape[0])[:loss_contributors]
+                if self.loss_filling=="RA":         ## Randomly pick contributors to the loss function
+                    indices = jax.random.permutation(key, contexts.params.shape[0])[:loss_contributors]
+                elif self.loss_filling=="NF":       ## Pick one at random and then the nearest to it
+                    rnd_env = jax.random.randint(key, (1,), 0, contexts.params.shape[0])[0]
+                    dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
+                    indices = jnp.argsort(dists)[:loss_contributors]
+                else:
+                    raise ValueError("Invalid loss filling strategy provided. Use one of 'RA', 'NF'.")
+
                 random_contexts = contexts.params[indices, :]
                 random_batch = (batch[0][indices], batch[1][indices])
+                keys = keys[indices]
 
                 losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, random_batch, random_contexts, random_contexts, keys)
 
@@ -186,17 +198,86 @@ class Learner:
         return contexts
 
 
-    @eqx.filter_jit
-    def batch_predict(self, model, contexts, batch):
+    # @eqx.filter_jit
+    # def batch_predict(self, model, contexts, batch):
+    #     """ Predict Y_hat for a batch issued from a dataloader
+    #         CSM may or may not be deleted from the model; 
+    #         as this function ensures the deactivation of CSM"""
+    #     X, Y = batch
+    #     Y_hat = eqx.filter_vmap(model, in_axes=(0, 0, 0))(X, contexts.params, contexts.params)
+    #     return X, Y, Y_hat
+
+
+
+    # @eqx.filter_jit
+    def batch_predict(self, model, contexts, batch, max_envs=-1):
         """ Predict Y_hat for a batch issued from a dataloader
             CSM may or may not be deleted from the model; 
             as this function ensures the deactivation of CSM"""
+        ## Predict in in a single batched call if possible, or a maximum sub-batches to avoid OOM
+
         X, Y = batch
-        Y_hat = eqx.filter_vmap(model, in_axes=(0, 0, 0))(X, contexts.params, contexts.params)
+        batched_model = eqx.filter_vmap(model, in_axes=(0, 0, 0))
+
+        if max_envs==-1 or max_envs>=X.shape[0] or self.loss_contributors==-1:
+            Y_hat = batched_model(X, contexts.params, contexts.params)
+
+        elif max_envs == None:
+            sub_batch_size = self.loss_contributors
+            print(f"    Too many environments to predict in a single batch, predicting in {sub_batch_size} environments ...")
+            X_list = []
+            Y_list = []
+            Y_hat = []
+            for i in range(0, X.shape[0], sub_batch_size):
+                contexts_ = contexts.params[i:i+sub_batch_size]
+                Y_hat.append(batched_model(X[i:i+sub_batch_size], contexts_, contexts_))
+
+                X_list.append(X[i:i+sub_batch_size])
+                Y_list.append(Y[i:i+sub_batch_size])
+
+                # break   ## TODO 1 sub-batch is enough ?
+
+            Y_hat = jnp.concatenate(Y_hat, axis=0)
+            X = jnp.concatenate(X_list, axis=0)
+            Y = jnp.concatenate(Y_list, axis=0)
+
+        else:
+            contexts_ = contexts.params[:max_envs]
+            Y_hat = batched_model(X[:max_envs], contexts_, contexts_)
+            X = X[:max_envs]
+            Y = Y[:max_envs]
+
         return X, Y, Y_hat
 
 
 
+    # @eqx.filter_jit
+    def batch_predict_multi(self, model, contexts, batch, max_envs=-1):
+        """ Predict multiple Y_hats for a batch issued from a dataloader
+            CSM should be active in the model; """
+
+        X, Y = batch
+        batched_model = eqx.filter_vmap(model, in_axes=(0, 0, 0))
+
+        if max_envs==-1 or max_envs>=X.shape[0] or self.loss_contributors==-1:
+            Y_hat = []
+            for e in range(contexts.params.shape[0]):
+                X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
+                ctxs = jnp.broadcast_to(contexts.params[e:e+1], contexts.params.shape)
+                Y_hat.append(batched_model(X_ctx, ctxs, contexts.params))
+
+        else:
+            X = X[:max_envs]
+            Y = Y[:max_envs]
+            contexts_ = contexts.params[:max_envs]
+
+            Y_hat = []
+            for e in range(contexts_.shape[0]):
+                X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
+                ctxs = jnp.broadcast_to(contexts_[e:e+1], contexts_.shape)
+                Y_hat.append(batched_model(X_ctx, ctxs, contexts_))
+
+        return X, Y, jnp.stack(Y_hat, axis=0)
 
 
 

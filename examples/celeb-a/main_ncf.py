@@ -19,31 +19,37 @@ k_shots = 10
 resolution = (32, 32)
 data_folder="./data/" 
 shuffle = False
-num_workers = 0
+num_workers = 24
 input_dim = 2
 output_dim = 3
 
 ## Train and adapt hps
-context_pool_size = 3
+context_pool_size = 6
 context_size = 128
+loss_contributors = 64
 taylor_orders = (2, 0)
 init_lrs = (1e-3, 1e-3)
 sched_factor = 1.0
-envs_batch_size = 100000
+envs_batch_size = 162770
+envs_batch_size_val = 100
 max_train_batches = 1
 max_val_batches = 1
 
-nb_outer_steps = 100
-nb_inner_steps = (10, 10)
+pool_filling_strategy = "NF"
+loss_filling_strategy = "NF"
 
-print_error_every = 10
-validate_every = 10000
+nb_outer_steps = int(75e4)
+nb_inner_steps = (20, 20)
 
-nb_adapt_steps = 5
+print_error_every = int(75e2)
+validate_every = 30*5*1000000
 
-meta_train = True
-# run_folder = "./runs/240609-215946-Test/"
-run_folder = None
+nb_adapt_steps = int(75e2)
+
+meta_train = False
+# run_folder = "./runs/240831-091752-NEWTEST/"
+run_folder = "./runs/240901-174340-LC64/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -115,13 +121,10 @@ all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             order_pixels=False, 
                                             # seed=seed,
                                             ), 
-                              batch_size=envs_batch_size, 
+                              batch_size=envs_batch_size_val, 
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
-
-
-
 
 
 #%%
@@ -182,10 +185,12 @@ model = NeuralContextFlow(neuralnet=neuralnet,
 learner = Learner(model=model, 
                 context_size=context_size, 
                 context_pool_size=context_pool_size,
+                pool_filling=pool_filling_strategy,
                 contexts=contexts,
                 reuse_contexts=False,
                 env_loss_fn=env_loss_fn, 
-                loss_contributors=6,
+                loss_contributors=loss_contributors,
+                loss_filling=loss_filling_strategy,
                 key=model_key)
 
 
@@ -223,7 +228,7 @@ if meta_train == True:
     #                     max_train_batches=max_train_batches,
     #                     print_error_every=(1, print_error_every), 
     #                     save_path=trainer_save_path, 
-    #                     val_dataloader=all_shots_train_dataloader, 
+    #                     # val_dataloader=all_shots_train_dataloader, 
     #                     max_val_batches=max_val_batches,
     #                     val_criterion_id=0,
     #                     validate_every=validate_every,
@@ -236,7 +241,7 @@ if meta_train == True:
                         max_train_batches=max_train_batches,
                         print_error_every=(1, print_error_every), 
                         save_path=trainer_save_path, 
-                        val_dataloader=all_shots_train_dataloader, 
+                        # val_dataloader=all_shots_train_dataloader, 
                         max_val_batches=max_val_batches,
                         val_criterion_id=0,
                         validate_every=validate_every,
@@ -257,21 +262,34 @@ else:
 visualtester = CelebAVisualTester(trainer, key=test_key)
 
 ## Evaluation on the full train set with all shots 
-ind_crit, _ = visualtester.evaluate(train_dataloader, 
-                                    nb_steps=nb_adapt_steps,
-                                    taylor_order=taylor_orders[1],
-                                    print_error_every=print_error_every,
-                                    max_adapt_batches=max_val_batches,
-                                    val_dataloader=all_shots_train_dataloader,
-                                    verbose=True)
+if train_dataloader.batch_size == all_shots_train_dataloader.batch_size:
+    ind_crit, _ = visualtester.evaluate(train_dataloader, 
+                                        nb_steps=nb_adapt_steps,
+                                        taylor_order=taylor_orders[1],
+                                        print_error_every=print_error_every,
+                                        max_adapt_batches=max_val_batches,
+                                        val_dataloader=all_shots_train_dataloader,
+                                        verbose=True)
+else:
+    print("Train dataloaders have different batch sizes. Skipping evaluation ...")
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
-visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
+#%%
+
+# visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
+#                                 all_shots_loader=all_shots_train_dataloader,
+#                                 nb_steps=nb_adapt_steps,
+#                                 save_path=run_folder+"few_shots_ind.png",
+#                                 key=jax.random.PRNGKey(time.time_ns())
+#                              );
+visualtester.visualize_few_shots_multi_uq(few_shots_loader=train_dataloader,
                                 all_shots_loader=all_shots_train_dataloader,
                                 nb_steps=nb_adapt_steps,
-                                save_path=run_folder+"few_shots_ind.png",
-                                key=jax.random.PRNGKey(time.time_ns())
+                                save_path=run_folder+"few_shots_ind_uq.png",
+                                taylor_order=taylor_orders[0],
+                                num_envs=16,
+                                key=test_key
                              );
 
 
@@ -294,18 +312,21 @@ all_shots_val_dataloader = NumpyLoader(CelebADataset(data_folder,
                                             order_pixels=False, 
                                             # seed=seed
                                             ), 
-                              batch_size=envs_batch_size, 
+                              batch_size=envs_batch_size_val, 
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-ind_crit, _ = visualtester.evaluate(val_dataloader, 
-                                    nb_steps=nb_adapt_steps,
-                                    taylor_order=taylor_orders[1],
-                                    print_error_every=print_error_every,
-                                    max_adapt_batches=max_val_batches,
-                                    val_dataloader=all_shots_val_dataloader,
-                                    verbose=True)
+if val_dataloader.batch_size == all_shots_val_dataloader.batch_size:
+    ind_crit, _ = visualtester.evaluate(val_dataloader, 
+                                        nb_steps=nb_adapt_steps,
+                                        taylor_order=taylor_orders[1],
+                                        print_error_every=print_error_every,
+                                        max_adapt_batches=max_val_batches,
+                                        val_dataloader=all_shots_val_dataloader,
+                                        verbose=True)
+else:
+    print("Validation dataloaders have different batch sizes. Skipping evaluation ...")
 
 
 #%%
@@ -329,18 +350,21 @@ if meta_test:
                                                 order_pixels=False, 
                                                 # seed=seed
                                                 ), 
-                                batch_size=envs_batch_size, 
+                                batch_size=envs_batch_size_val, 
                                 shuffle=shuffle,
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
-                                        nb_steps=nb_adapt_steps,
-                                        taylor_order=taylor_orders[1],
-                                        max_adapt_batches=max_train_batches,
-                                        val_dataloader=all_shots_dataloader_test,
-                                        print_error_every=print_error_every,
-                                        verbose=True)
+    if adapt_dataloader.batch_size == all_shots_dataloader_test.batch_size:
+        ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
+                                            nb_steps=nb_adapt_steps,
+                                            taylor_order=taylor_orders[1],
+                                            max_adapt_batches=max_train_batches,
+                                            val_dataloader=all_shots_dataloader_test,
+                                            print_error_every=print_error_every,
+                                            verbose=True)
+    else:
+        print("Adaptation dataloaders have different batch sizes. Skipping evaluation ...")
 
 #%%
 
@@ -349,13 +373,19 @@ if meta_test:
 if meta_test:
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
-    visualtester.visualize_few_shots_multi(few_shots_loader=adapt_dataloader,
+    # visualtester.visualize_few_shots_multi(few_shots_loader=adapt_dataloader,
+    #                                 all_shots_loader=all_shots_dataloader_test,
+    #                                 nb_steps=nb_adapt_steps,
+    #                                 save_path=adapt_folder+"few_shots_ood.png",
+    #                                 key=jax.random.PRNGKey(time.time_ns())
+    #                             );
+    visualtester.visualize_few_shots_multi_uq(few_shots_loader=adapt_dataloader,
                                     all_shots_loader=all_shots_dataloader_test,
                                     nb_steps=nb_adapt_steps,
-                                    save_path=adapt_folder+"few_shots_ood.png",
-                                    key=jax.random.PRNGKey(time.time_ns())
+                                    save_path=adapt_folder+"few_shots_ood_uq.png",
+                                    taylor_order=taylor_orders[0],
+                                    key=test_key
                                 );
-
 
 #%%
 ## After training, copy nohup.log to the runfolder

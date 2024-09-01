@@ -295,6 +295,7 @@ class NCFTrainer(Trainer):
                                                     max_adapt_batches=max_val_batches,
                                                     nb_steps=val_nb_steps,
                                                     taylor_order=0, 
+                                                    max_ret_env_states=self.learner.loss_contributors,
                                                     verbose=False)
                         print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True)
                         val_losses.append(np.array([out_step, ind_crit]))
@@ -437,8 +438,10 @@ class NCFTrainer(Trainer):
                 mega_model = (model, contexts)
                 opt_state = self.opt_model.init(eqx.filter(mega_model, eqx.is_array))
 
+
                 for out_step in range(nb_outer_steps):
                     # print(f"    Staring outer step {out_step} ...")
+                    start_time_step = time.perf_counter()
 
                     loss_key, _ = jax.random.split(loss_key)
 
@@ -448,7 +451,7 @@ class NCFTrainer(Trainer):
 
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
                         if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
-                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime(s): {int(time.time()-start_time):-6d}", flush=True, end="\r")
+                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime/Step(s): {int(time.perf_counter()-start_time_step):-.4f}", flush=True, end="\r")
 
                     model, contexts = mega_model
                     if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
@@ -460,6 +463,7 @@ class NCFTrainer(Trainer):
                                                     max_adapt_batches=max_val_batches,
                                                     nb_steps=val_nb_steps,
                                                     taylor_order=0, 
+                                                    max_ret_env_states=self.learner.loss_contributors,
                                                     verbose=False)
                         print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True)
                         val_losses.append(np.array([out_step, ind_crit]))
@@ -769,13 +773,14 @@ class NCFTrainer(Trainer):
 
 
     def meta_test(self, 
-                   dataloader: DataLoader, ## Either a full dataloader or a tuple of batches
+                   dataloader, ## Either a full dataloader or a tuple of batches
                    nb_steps=10, 
                    taylor_order=0,
                    optimizer=None, 
                    print_error_every=(10, 10), 
                    max_adapt_batches=None,
                    val_dataloader=None,
+                   max_ret_env_states=None,
                    verbose=True,
                    save_path=False, 
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
@@ -784,7 +789,8 @@ class NCFTrainer(Trainer):
         key = key if key is not None else self.key
 
         nb_epochs = nb_steps
-        loss_fn = self.learner.loss_fn_full
+        # loss_fn = self.learner.loss_fn_full
+        loss_fn = self.learner.loss_fn
         # model = self.learner.model
 
         if val_dataloader is None:
@@ -827,6 +833,9 @@ class NCFTrainer(Trainer):
         else:
             nb_batches = len(dataloader)    ## A tuple of batches
 
+        if max_ret_env_states is None:
+            max_ret_env_states = self.learner.loss_contributors
+
         if max_adapt_batches is None or max_adapt_batches<1 or max_adapt_batches>dataloader.num_batches:
             max_adapt_batches = nb_batches
         else:
@@ -843,7 +852,7 @@ class NCFTrainer(Trainer):
             weightings = jnp.ones(dataloader.batch_size) / dataloader.batch_size
 
             loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-            state_data = self.learner.batch_predict(model, contexts, batch)
+            state_data = self.learner.batch_predict(model, contexts, batch, max_envs=max_ret_env_states)
 
             return jnp.stack(aux_data, axis=1), contexts, state_data
         ####################
@@ -897,7 +906,7 @@ class NCFTrainer(Trainer):
 
                 if epoch == nb_epochs-1:
                     ## Use the contexts and the val_batch to predict Y_hat
-                    state_data_ = self.learner.batch_predict(model, contexts, val_batch)
+                    state_data_ = self.learner.batch_predict(model, contexts, val_batch, max_envs=max_ret_env_states)
                     [state_data[i].append(state_data_[i]) for i in range(3)]
 
                 if verbose and (epoch%print_every_epoch==0 or epoch<=3 or epoch==nb_epochs-1):
@@ -914,11 +923,13 @@ class NCFTrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        # if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation: 
-        if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation: 
-            self.learner.contexts_adapt = contexts
-        else: 
-            self.learner.contexts = contexts
+        if isinstance(dataloader, DataLoader):
+            if dataloader.dataset.adaptation: 
+                self.learner.contexts_adapt = contexts
+            else: 
+                self.learner.contexts = contexts
+        else:      ## Dealing with a list or generator of batches
+            self.learner.contexts_latest = contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)
@@ -1215,13 +1226,14 @@ class CAVIATrainer(Trainer):
 
 
     def meta_test(self, 
-                   dataloader: DataLoader, ## Either a full dataloader or a tuple of batches
+                   dataloader,
                    nb_steps=10,        ## Number of inner gradient update steps
                    taylor_order=0,
                    optimizer=None, 
                    print_error_every=(1, 1), 
                    max_adapt_batches=None,
                    val_dataloader=None,
+                   max_ret_env_states=None,
                    verbose=True,
                    save_path=False, 
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
@@ -1232,6 +1244,8 @@ class CAVIATrainer(Trainer):
         nb_inner_steps = nb_steps
         if val_dataloader is None:
             val_dataloader = dataloader
+
+        env_loss_fn = self.learner.env_loss_fn
 
         ## This is useful if we want to disable the taylor expansion
         model = self.learner.reset_model(taylor_order, verbose=verbose)
@@ -1248,7 +1262,7 @@ class CAVIATrainer(Trainer):
             self.losses_adapt = []
 
         @eqx.filter_jit
-        def adapt_step_cavia(model, contexts, batch, weightings, opt_state, opt, env_loss_fn, key):
+        def adapt_step_cavia(model, contexts, batch, weightings, opt_state, key):
             print(f'     ### (Re)Compiling function: {adapt_step_cavia.__name__} ...  ')
 
             nb_envs, context_size = contexts.params.shape
@@ -1278,6 +1292,9 @@ class CAVIATrainer(Trainer):
         else:
             nb_batches = len(dataloader)    ## A tuple of batches
 
+        if max_ret_env_states is None:
+            max_ret_env_states = self.learner.loss_contributors
+
         if verbose:
             print(f"\n=== Beginning Meta-Testing ... ===")
             print(f"    Number of environment batches: {nb_batches}")
@@ -1300,7 +1317,7 @@ class CAVIATrainer(Trainer):
             weightings = jnp.ones(dataloader.batch_size) / dataloader.batch_size
 
             loss, aux_data = self.learner.loss_fn_full(model, contexts, batch, weightings, key)
-            state_data = self.learner.batch_predict(model, contexts, batch)
+            state_data = self.learner.batch_predict(model, contexts, batch, max_envs=max_ret_env_states)
 
             return jnp.stack(aux_data, axis=1), contexts, state_data
         ####################
@@ -1333,7 +1350,7 @@ class CAVIATrainer(Trainer):
 
                 # model, contexts, opt_state, loss, aux_losses = adapt_step_proxi(model, contexts, batch, weightings, opt_state, opt, self.learner.loss_fn, loss_key)
 
-                model, contexts, opt_state, loss, aux_losses = adapt_step_cavia(model, contexts, batch, weightings, opt_state, opt, self.learner.env_loss_fn, loss_key)
+                model, contexts, opt_state, loss, aux_losses = adapt_step_cavia(model, contexts, batch, weightings, opt_state, loss_key)
 
                 mean_loss_terms = [jnp.mean(term) for term in aux_losses]
                 losses.append(jnp.stack([loss]+mean_loss_terms))
@@ -1342,7 +1359,7 @@ class CAVIATrainer(Trainer):
                 print(f"    Batch: {env_batch:-3d}     Loss: {loss:-.8f}        OtherNorms: {jnp.stack(mean_loss_terms)}", flush=True, end="\r")
 
             ## Use the contexts and the val_batch to predict Y_hat
-            state_data_ = self.learner.batch_predict(model, contexts, val_batch)
+            state_data_ = self.learner.batch_predict(model, contexts, val_batch, max_envs=max_ret_env_states)
             [state_data[i].append(state_data_[i]) for i in range(3)]
             # all_contexts.append(contexts)
 
@@ -1357,10 +1374,13 @@ class CAVIATrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation: 
-            self.learner.contexts_adapt = contexts
-        else: 
-            self.learner.contexts = contexts
+        if isinstance(dataloader, DataLoader):
+            if dataloader.dataset.adaptation: 
+                self.learner.contexts_adapt = contexts
+            else: 
+                self.learner.contexts = contexts
+        else:      ## Dealing with a list or generator of batches
+            self.learner.contexts_latest = contexts
 
         if save_path:
             self.save_adapted_trainer(save_path)

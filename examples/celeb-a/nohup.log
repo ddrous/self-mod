@@ -3,109 +3,46 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Using pre-existing run folder: ./runs/240831-091752-NEWTEST/
+New run folder created successfuly: ./runs/240901-174340/
 Completed copied scripts 
 
-Using 6 environments to estimate the global training loss function ...
+Using 64 environments to estimate the global training loss function ...
 
 
-Total number of parameters in the model: 800
+Total number of parameters in the model: 7459
 Total number of parameters in one context: 128
 
 
 === Beginning Meta-Training ... ===
-    Number of examples in a batch along envs: 128
-    Maximum number of batches (along envs): 1272
+    Number of examples in a batch along envs: 162770
+    Maximum number of batches (along envs): 1
     Total number of epochs: 1
-    Number of outer minimizations: 5000
+    Number of outer minimizations: 750000
     Training on 1 batches
-    Validating on 1 batches
 /home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
   self.pid = os.fork()
      ### Compiling function "train_step" for both model and contexts ...  
-Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.58005173     ContextsNorm: 0.00000000      WallTime(s):      4     ### Compiling function "train_step" for both model and contexts ...  
-Epoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.10256218     ContextsNorm: 0.00000000      WallTime(s):     16Epoch:   0      Batch:   0      OuterStep: 2000      LossModel: 0.06649886     ContextsNorm: 0.00000000      WallTime(s):     27Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.16587994     ContextsNorm: 0.00000000      WallTime(s):     38Epoch:   0      Batch:   0      OuterStep: 4000      LossModel: 0.13893145     ContextsNorm: 0.00000000      WallTime(s):     49Epoch:   0      Batch:   0      OuterStep: 4999      LossModel: 0.10375781     ContextsNorm: 0.00000000      WallTime(s):     60/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-        Validation Criterion: 0.06329680
-        Saving best model so far ...
-
-Total gradient descent training time: 0 hours 4 mins 35 secs
-    Creating a new model with taylor order 0 ...
-Using any previrouly defined optimizer for adapation
-
-=== Beginning Meta-Testing ... ===
-    Number of examples in a batch along envs: 128
-    Maximum number of batches (along envs): 1272
-    Adapting on 1 batches
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-Epoch:   0      Batch:   0      Loss: 0.19072328     ContextsNorm: 0.00000000
-Epoch:   1      Batch:   0      Loss: 0.15095700     ContextsNorm: 0.00000000
-Epoch:   2      Batch:   0      Loss: 0.14492291     ContextsNorm: 0.00000000
-Epoch:   3      Batch:   0      Loss: 0.13929490     ContextsNorm: 0.00000000
-Epoch: 1000      Batch:   0      Loss: 0.05858778     ContextsNorm: 0.00000000
-Epoch: 1999      Batch:   0      Loss: 0.05864951     ContextsNorm: 0.00000000
-
-Total gradient descent training time: 0 hours 0 mins 22 secs
-
-    Test loss value: 6.95e-02 ± 2.53e-02
-    Train loss value for criterion 0: 5.86e-02
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.59355593     ContextsNorm: 0.00000000      WallTime/Step(s):      2Epoch:   0      Batch:   0      OuterStep: 7500      LossModel: 0.06164864     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 15000      LossModel: 0.04528218     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 22500      LossModel: 0.04120754     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 30000      LossModel: 0.04280040     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 37500      LossModel: 0.03003784     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 45000      LossModel: 0.02284757     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 52500      LossModel: 0.01602633     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 60000      LossModel: 0.01644928     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 67500      LossModel: 0.01439587     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 75000      LossModel: 0.00698631     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 82500      LossModel: 0.01142052     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 90000      LossModel: 0.01176715     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 97500      LossModel: 0.00646902     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 105000      LossModel: 0.00666914     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 112500      LossModel: 0.00866970     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 120000      LossModel: 0.00331732     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 127500      LossModel: 0.00818697     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 135000      LossModel: 0.00388400     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 142500      LossModel: 0.00463244     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 150000      LossModel: 0.00639272     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 157500      LossModel: 0.00462651     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 165000      LossModel: 0.00172616     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 172500      LossModel: 0.00366090     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 180000      LossModel: 0.00590860     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 187500      LossModel: 0.00264864     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 195000      LossModel: 0.00706997     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 202500      LossModel: 0.00239853     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 210000      LossModel: 0.00263828     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 217500      LossModel: 0.00109196     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 225000      LossModel: 0.00251607     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 232500      LossModel: 0.00264328     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 240000      LossModel: 0.00632021     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 247500      LossModel: 0.00198049     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 255000      LossModel: 0.00357238     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 262500      LossModel: 0.00291470     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 270000      LossModel: 0.00178601     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 277500      LossModel: 0.00095749     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 285000      LossModel: 0.00289642     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 292500      LossModel: 0.00155217     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 300000      LossModel: 0.00153770     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 307500      LossModel: 0.00316710     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 315000      LossModel: 0.00087302     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 322500      LossModel: 0.00144608     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 330000      LossModel: 0.00252342     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 337500      LossModel: 0.00344505     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 345000      LossModel: 0.00152031     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 352500      LossModel: 0.00144822     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 360000      LossModel: 0.00130920     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 367500      LossModel: 0.00133617     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 375000      LossModel: 0.00120326     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 382500      LossModel: 0.00246063     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 390000      LossModel: 0.00089398     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 397500      LossModel: 0.00146583     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 405000      LossModel: 0.00117017     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 412500      LossModel: 0.00183675     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 420000      LossModel: 0.00089346     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 427500      LossModel: 0.00297192     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 435000      LossModel: 0.00257884     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 442500      LossModel: 0.00204352     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 450000      LossModel: 0.00100435     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 457500      LossModel: 0.00225966     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 465000      LossModel: 0.00057767     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 472500      LossModel: 0.00270761     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 480000      LossModel: 0.00418249     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 487500      LossModel: 0.00345030     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 495000      LossModel: 0.00148524     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 502500      LossModel: 0.00057555     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 510000      LossModel: 0.00100525     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 517500      LossModel: 0.00079964     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 525000      LossModel: 0.00078112     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 532500      LossModel: 0.00230046     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 540000      LossModel: 0.00143547     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 547500      LossModel: 0.00076214     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 555000      LossModel: 0.00144577     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 562500      LossModel: 0.00281110     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 570000      LossModel: 0.00144870     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 577500      LossModel: 0.00166012     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 585000      LossModel: 0.00197600     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 592500      LossModel: 0.00154727     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 600000      LossModel: 0.00062241     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 607500      LossModel: 0.00133309     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 615000      LossModel: 0.00128522     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 622500      LossModel: 0.00316797     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 630000      LossModel: 0.00174211     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 637500      LossModel: 0.00151524     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 645000      LossModel: 0.00254946     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 652500      LossModel: 0.00164325     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 660000      LossModel: 0.00077165     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 667500      LossModel: 0.00052226     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 675000      LossModel: 0.00089006     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 682500      LossModel: 0.00056889     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 690000      LossModel: 0.00145066     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 697500      LossModel: 0.00152325     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 705000      LossModel: 0.00044020     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 712500      LossModel: 0.00281827     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 720000      LossModel: 0.00054681     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 727500      LossModel: 0.00153903     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 735000      LossModel: 0.00064435     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 742500      LossModel: 0.00142585     ContextsNorm: 0.00000000      WallTime/Step(s):      0Epoch:   0      Batch:   0      OuterStep: 749999      LossModel: 0.00161470     ContextsNorm: 0.00000000      WallTime/Step(s):      0
+Total gradient descent training time: 0 hours 51 mins 34 secs
+Train dataloaders have different batch sizes. Skipping evaluation ...
 
 ==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [ 57  94 122]
-    Visualized context dimensions along y: [121  37 105]
-Saving artefacts in: ./runs/240831-091752-NEWTEST/artefacts.png
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./runs/240901-174340/artefacts.png
 
 ==  Begining in-domain CelebA visualisation ... ==
     Environment ids: range(0, 6)
-Saving visualization in: ./runs/240831-091752-NEWTEST/few_shots_ind.png
-    Creating a new model with taylor order 0 ...
-Using any previrouly defined optimizer for adapation
-
-=== Beginning Meta-Testing ... ===
-    Number of examples in a batch along envs: 128
-    Maximum number of batches (along envs): 156
-    Adapting on 1 batches
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-Epoch:   0      Batch:   0      Loss: 0.17418600     ContextsNorm: 0.00000000
-Epoch:   1      Batch:   0      Loss: 0.13679731     ContextsNorm: 0.00000000
-Epoch:   2      Batch:   0      Loss: 0.13110126     ContextsNorm: 0.00000000
-Epoch:   3      Batch:   0      Loss: 0.12577771     ContextsNorm: 0.00000000
-Epoch: 1000      Batch:   0      Loss: 0.05123201     ContextsNorm: 0.00000000
-Epoch: 1999      Batch:   0      Loss: 0.05134043     ContextsNorm: 0.00000000
-
-Total gradient descent training time: 0 hours 0 mins 22 secs
-
-    Test loss value: 6.64e-02 ± 3.13e-02
-    Train loss value for criterion 0: 5.13e-02
-    Creating a new model with taylor order 0 ...
-Using any previrouly defined optimizer for adapation
-
-=== Beginning Meta-Testing ... ===
-    Number of examples in a batch along envs: 128
-    Maximum number of batches (along envs): 156
-    Adapting on 1 batches
-/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
-  self.pid = os.fork()
-Epoch:   0      Batch:   0      Loss: 0.17174035     ContextsNorm: 0.00000000
-Epoch:   1      Batch:   0      Loss: 0.13618438     ContextsNorm: 0.00000000
-Epoch:   2      Batch:   0      Loss: 0.13072982     ContextsNorm: 0.00000000
-Epoch:   3      Batch:   0      Loss: 0.12572880     ContextsNorm: 0.00000000
-Epoch: 1000      Batch:   0      Loss: 0.05358627     ContextsNorm: 0.00000000
-Epoch: 1999      Batch:   0      Loss: 0.05346420     ContextsNorm: 0.00000000
-
-Total gradient descent training time: 0 hours 0 mins 22 secs
-
-    Test loss value: 6.96e-02 ± 3.25e-02
-    Train loss value for criterion 0: 5.35e-02
+Saving visualization in: ./runs/240901-174340/few_shots_ind.png
+Validation dataloaders have different batch sizes. Skipping evaluation ...
+Adaptation dataloaders have different batch sizes. Skipping evaluation ...
 
 ==  Begining artefacts visualisation ... ==
-    Visualized context dimensions along x: [ 57  94 122]
-    Visualized context dimensions along y: [121  37 105]
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
 No contexts found. Using zeros.
-Saving artefacts in: ./runs/240831-091752-NEWTEST/adapt/artefacts.png
+Saving artefacts in: ./runs/240901-174340/adapt/artefacts.png
 
 ==  Begining in-domain CelebA visualisation ... ==
     Environment ids: range(0, 6)
-Saving visualization in: ./runs/240831-091752-NEWTEST/adapt/few_shots_ood.png
+Saving visualization in: ./runs/240901-174340/adapt/few_shots_ood.png
