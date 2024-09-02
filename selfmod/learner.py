@@ -251,21 +251,77 @@ class Learner:
 
 
 
+    # # @eqx.filter_jit
+    # def batch_predict_multi(self, model, contexts, batch, max_envs=-1):
+    #     """ Predict multiple Y_hats for a batch issued from a dataloader
+    #         CSM should be active in the model;
+    #         max_envs=6 means do not predict more than 6 environments, even if we have more in the batch
+    #         """
+
+    #     X, Y = batch
+    #     batched_model = eqx.filter_vmap(model, in_axes=(0, 0, 0))
+
+    #     if max_envs==-1 or max_envs>=X.shape[0] or self.loss_contributors==-1:
+    #         Y_hat = []
+    #         for e in range(contexts.params.shape[0]):
+    #             X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
+    #             ctxs = jnp.broadcast_to(contexts.params[e:e+1], contexts.params.shape)
+    #             Y_hat.append(batched_model(X_ctx, ctxs, contexts.params))
+
+    #     else:
+    #         X = X[:max_envs]
+    #         Y = Y[:max_envs]
+    #         contexts_ = contexts.params[:max_envs]
+
+    #         Y_hat = []
+    #         for e in range(contexts_.shape[0]):
+    #             X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
+    #             ctxs = jnp.broadcast_to(contexts_[e:e+1], contexts_.shape)
+    #             Y_hat.append(batched_model(X_ctx, ctxs, contexts_))
+
+    #     return X, Y, jnp.stack(Y_hat, axis=0)
+
+
+
     # @eqx.filter_jit
-    def batch_predict_multi(self, model, contexts, batch, max_envs=-1):
+    def batch_predict_multi(self, model, contexts, batch, max_envs=-1, uq_train_contexts=-1):
         """ Predict multiple Y_hats for a batch issued from a dataloader
-            CSM should be active in the model; """
+            CSM should be active in the model;
+            max_envs=6 means do not predict more than 6 environments, even if we have more in the batch
+            uq_train_contexts is the number of training contexts to use for uncertainty quantification later on
+            Upon return, the first result in Y_hat is the prediction for the context itself
+            """
 
         X, Y = batch
         batched_model = eqx.filter_vmap(model, in_axes=(0, 0, 0))
 
+        if uq_train_contexts != -1:
+            train_contexts = self.contexts
+            assert uq_train_contexts <= train_contexts.params.shape[0], "The number of UQ contexts must be less than the number of training contexts."
+            assert uq_train_contexts > 1, "The number of UQ contexts must be greater than 1."
+            ## Select the max_envs closest to each of the given contexts for prediction
+            neighbors = []
+            for e in range(contexts.params.shape[0]):
+                dists = jnp.mean(jnp.abs(train_contexts.params-contexts.params[e]), axis=1)
+                indices = jnp.argsort(dists)[:uq_train_contexts-1]      ## -1 because we will append the context itself
+                # indices = jnp.argsort(dists)[-uq_train_contexts+1:]   ## TODO UQ is much too pronounced if we take the farthest 
+                neigh_e = jnp.concat((contexts.params[e:e+1], train_contexts.params[indices]))
+                neighbors.append(neigh_e)
+        else:
+            ## Reuse the given contexts as the neighbors (rearange so that 0 is the context itself)
+            neighbors = []
+            for e in range(contexts.params.shape[0]):
+                neigh_e = jnp.concatenate((contexts.params[e:e+1], contexts.params[:e], contexts.params[e+1:]))
+                neighbors.append(neigh_e)
+        neighbors = jnp.stack(neighbors, axis=0)
+
+        ### Now the prediction of a maximum of max_envs environments
         if max_envs==-1 or max_envs>=X.shape[0] or self.loss_contributors==-1:
             Y_hat = []
             for e in range(contexts.params.shape[0]):
-                X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
-                ctxs = jnp.broadcast_to(contexts.params[e:e+1], contexts.params.shape)
-                Y_hat.append(batched_model(X_ctx, ctxs, contexts.params))
-
+                X_ctx = jnp.broadcast_to(X[e:e+1], (neighbors[e].shape[0], *X.shape[1:]))
+                ctxs = jnp.broadcast_to(contexts.params[e:e+1], neighbors[e].shape)
+                Y_hat.append(batched_model(X_ctx, ctxs, neighbors[e]))
         else:
             X = X[:max_envs]
             Y = Y[:max_envs]
@@ -273,9 +329,9 @@ class Learner:
 
             Y_hat = []
             for e in range(contexts_.shape[0]):
-                X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
-                ctxs = jnp.broadcast_to(contexts_[e:e+1], contexts_.shape)
-                Y_hat.append(batched_model(X_ctx, ctxs, contexts_))
+                X_ctx = jnp.broadcast_to(X[e:e+1], (neighbors[e].shape[0], *X.shape[1:]))
+                ctxs = jnp.broadcast_to(contexts_[e:e+1], neighbors[e].shape)
+                Y_hat.append(batched_model(X_ctx, ctxs, neighbors[e]))
 
         return X, Y, jnp.stack(Y_hat, axis=0)
 

@@ -6,7 +6,7 @@ import jax.numpy as jnp
 
 import numpy as np
 np.set_printoptions(suppress=True)
-
+from scipy.interpolate import griddata
 
 import torch
 import equinox as eqx
@@ -423,3 +423,30 @@ def render_image(gaussians: jnp.ndarray, img_shape: jnp.ndarray):
     # return jnp.nan_to_num(image.squeeze(), nan=0.0, posinf=0.0, neginf=0.0)
     return image.squeeze()
 
+
+
+
+
+
+
+
+
+
+
+def interpolate_2D_image(known_points, known_pixels, img_size=(32, 32), method="linear"):
+    """ Interpolate a 2D image from known points and pixels using griddata. """
+
+    # Step 1: Prepare coordinates for interpolation
+    grid_y, grid_x = np.meshgrid(np.linspace(0, 1, img_size[0]), np.linspace(0, 1, img_size[1]), indexing='ij')
+
+    # Step 2: Perform interpolation for each RGB channel separately using griddata
+    # Create an empty array to store interpolated RGB values
+    interpolated_image = np.zeros(img_size)
+
+    # Step 3. Interpolate for each channel separately
+    for channel in range(3):
+        # Use griddata to interpolate the known values over the grid
+        interpolated_channel = griddata(known_points, known_pixels[:, channel], (grid_y, grid_x), method=method)
+        interpolated_image[:, :, channel] = interpolated_channel
+
+    return np.clip(interpolated_image, 0, 1)

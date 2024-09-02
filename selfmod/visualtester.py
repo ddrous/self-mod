@@ -354,6 +354,8 @@ class CelebAVisualTester(VisualTester):
                                 nb_steps=10,
                                 num_envs=6,
                                 taylor_order=2,
+                                uq_train_contexts=10,
+                                interp_method='linear',
                                 save_path=False, 
                                 key=None):
         key = key if key != None else self.key
@@ -385,7 +387,8 @@ class CelebAVisualTester(VisualTester):
         model = self.trainer.learner.reset_model(taylor_order, verbose=True)
 
         ## Do a batch predict multi
-        X, Y, Y_hat = self.trainer.learner.batch_predict_multi(model, contexts, (X, Y), max_envs=num_envs)
+        # X, Y, Y_hat = self.trainer.learner.batch_predict_multi(model, contexts, (X, Y), max_envs=num_envs)
+        X, Y, Y_hat = self.trainer.learner.batch_predict_multi(model, contexts, (X, Y), max_envs=num_envs, uq_train_contexts=uq_train_contexts)
 
         X_hat, Y_true, Y_hat = X, Y, Y_hat
 
@@ -402,7 +405,7 @@ class CelebAVisualTester(VisualTester):
         else:
             raise ValueError("Invalid dataloader class instance provided.")
 
-        fig, ax = plt.subplots(num_envs, 4, figsize=(4*4, 3.7*num_envs))
+        fig, ax = plt.subplots(num_envs, 5, figsize=(4*5, 3.7*num_envs))
 
         def make_image(xy_coords, rgb_pixels):
             img = np.zeros(img_size)
@@ -418,11 +421,16 @@ class CelebAVisualTester(VisualTester):
             few_shoot_img = make_image(X_few_shots[e], Y_few_shots[e])
             ax[e, 1].imshow(few_shoot_img)
 
-            pred_img = make_image(X_hat[e], Y_hat[e, e])
+            # pred_img = make_image(X_hat[e], Y_hat[e, e])
+            pred_img = make_image(X_hat[e], Y_hat[e, 0])    ## The perfectest image is always the first
             ax[e, 2].imshow(pred_img)
 
-            uncertainty = make_image(X_hat[e], jnp.var(Y_hat[e], axis=0))
-            ax[e, 3].imshow(uncertainty, cmap="grey")
+            uncertainty = make_image(X_hat[e], jnp.std(Y_hat[e], axis=0))
+            # ax[e, 3].imshow(uncertainty, cmap="grey")
+            ax[e, 3].imshow(uncertainty)
+
+            interpolation = interpolate_2D_image(np.asarray(X_few_shots[e]), np.asarray(Y_few_shots[e]), img_size, method=interp_method)
+            ax[e, 4].imshow(interpolation)
 
             ## Remove ticks
             ax[e, 0].set_xticks([])
@@ -433,12 +441,15 @@ class CelebAVisualTester(VisualTester):
             ax[e, 2].set_yticks([])
             ax[e, 3].set_xticks([])
             ax[e, 3].set_yticks([])
+            ax[e, 4].set_xticks([])
+            ax[e, 4].set_yticks([])
 
             if e==0:
                 ax[e, 0].set_title('True', fontsize=20)
                 ax[e, 1].set_title('Few-shots', fontsize=20)
                 ax[e, 2].set_title('Predicted', fontsize=20)
                 ax[e, 3].set_title('Uncertainty', fontsize=20)
+                ax[e, 4].set_title(interp_method.capitalize()+" Int.", fontsize=20)
 
         plt.suptitle(f"Sample Predictions", fontsize=30, y=1.003)
 
