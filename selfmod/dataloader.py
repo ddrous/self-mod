@@ -297,7 +297,12 @@ class CelebADataset(DataLoader):
         elif data_split in ["val"]:
             self.files = partitions[partitions['partition'] == 1]['filename'].values
         elif data_split in ["test"]:
-            self.files = partitions[partitions['partition'] == 2]['filename'].values
+            # self.files = partitions[partitions['partition'] == 2]['filename'].values
+
+            ## To get the translation-equivariance img in front of the test set (incl. Ellen selfie)
+            self.files = partitions[(partitions['partition'] == 2) | (partitions['partition'] == 3)]['filename'].values
+            self.files = np.concatenate((self.files[-1:], self.files[:-1]))
+
         else:
             raise ValueError(f"Invalid data split provided. Got {data_split}")
 

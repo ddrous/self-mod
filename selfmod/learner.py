@@ -119,7 +119,7 @@ class Learner:
 
 
     def reset_model(self, taylor_order, verbose=True):
-        if taylor_order==self.model.taylor_order:
+        if hasattr(self.model, "taylor_order") and taylor_order==self.model.taylor_order:
             model = self.model
         else:
             if verbose:
@@ -127,6 +127,13 @@ class Learner:
             if isinstance(self.model, NeuralContextFlow):
                 model = NeuralContextFlow(neuralnet=self.model.neuralnet, 
                                             taylor_order=taylor_order)
+            elif isinstance(self.model, NeuralNeuralContextFlow):
+                if taylor_order != 0:
+                    model = NeuralNeuralContextFlow(neuralnet=self.model.neuralnet, 
+                                                    flownet=self.model.flownet)
+                else:
+                    model = NeuralNeuralContextFlow(neuralnet=self.model.neuralnet, 
+                                                    flownet=None)
             elif isinstance(self.model, NeuralContextFlowAdaptiveTaylor):
                 model = NeuralContextFlow(neuralnet=self.model.neuralnet, 
                                             taylor_order=taylor_order,
@@ -138,11 +145,15 @@ class Learner:
                                     taylor_ad_mode=self.model.taylor_ad_mode, 
                                     ivp_args=self.model.ivp_args,
                                     t_eval=self.model.t_eval)
-            elif isinstance(self.model, NonBatchedNeuralContextFlow):
-                model = NonBatchedNeuralContextFlow(neuralnet=self.model.neuralnet, 
+            elif isinstance(self.model, BatchedNeuralContextFlow):
+                if hasattr(self.model, "taylor_scale"):
+                    model = BatchedNeuralContextFlow(neuralnet=self.model.neuralnet, 
                                                     taylor_order=taylor_order,
                                                     taylor_scale=self.model.taylor_scale,
-                                                    taylor_weight_init=self.model.taylor_weight_init)
+                                                    taylor_weight_init=self.model.taylor_weight[0])
+                else:
+                    model = BatchedNeuralContextFlow(neuralnet=self.model.neuralnet, 
+                                                    taylor_order=taylor_order)
             else:
                 raise ValueError("The model type is not supported")
         return model
@@ -192,8 +203,22 @@ class Learner:
                                         nb_gaussians_per_env=self.context_size//GAUSSIAN_ATTRIBUTE_COUNT_2D,
                                         img_shape=self.contexts.img_shape,
                                         key=self.contexts.key)
+        elif isinstance(self.contexts, ConvContextParams):
+            input_chans, output_chans, hidden_chans, kernel_size, depth, activation = self.model.neuralnet.ctx_utils[3]
+            key = self.contexts.key
+            if key is not None:
+                key, _ = jax.random.split(key)
+            contexts = ConvContextParams(nb_envs=nb_envs,
+                                        input_chans=input_chans,
+                                        output_chans=output_chans,
+                                        hidden_chans=hidden_chans,
+                                        kernel_size=kernel_size,
+                                        depth=depth,
+                                        activation=activation,
+                                        key=key)
         else:
-            raise ValueError("The context type is not supported")
+            print("COntexts is", self.contexts)
+            raise ValueError(f"The context type {type(self.contexts)} is not supported")
 
         return contexts
 
@@ -369,6 +394,36 @@ class MLP(eqx.Module):
         return y
 
 
+class ConvNet(eqx.Module):
+    """ An MLP """
+    layers: jnp.ndarray
+
+    def __init__(self, in_channels, out_channels, hidden_channels, kernel_size, depth, activation, key=None):
+        keys = jax.random.split(key, num=depth+1)
+
+        self.layers = []
+
+        for i in range(depth):
+            if i==0:
+                layer = eqx.nn.Conv2d(in_channels, hidden_channels, kernel_size, padding='SAME', key=keys[i])
+            elif i==depth-1:
+                layer = eqx.nn.Conv2d(hidden_channels, out_channels, kernel_size, padding='SAME', key=keys[i])
+            else:
+                layer = eqx.nn.Conv2d(hidden_channels, hidden_channels, kernel_size, padding='SAME', key=keys[i])
+
+            self.layers.append(layer)
+
+            if i != depth-1:
+                self.layers.append(activation)
+
+    def __call__(self, x):
+        """ Returns y such that y = ConvNet(x) """
+        y = x
+        for layer in self.layers:
+            y = layer(y)
+        return y
+
+
 
 
 
@@ -456,6 +511,40 @@ class InfDimContextParams(eqx.Module):
 
 
 
+class ConvContextParams(eqx.Module):
+    params: list
+    ctx_utils: any
+    eff_context_size: int     ## The effective/actual size of a context vector (flattened neural network)
+    key: jnp.ndarray
+
+    def __init__(self, nb_envs, input_chans, output_chans, hidden_chans, kernel_size, depth, activation=jax.nn.relu, key=None):
+
+        if key is None:
+            self.key = None
+            keys = jax.random.split(jax.random.PRNGKey(0), nb_envs)
+        else:
+            self.key = key
+            keys = jax.random.split(key, nb_envs)
+
+        all_contexts = [ConvNet(input_chans, output_chans, hidden_chans, kernel_size, depth, activation, key=keys[i]) for i in range(nb_envs)]
+
+        mlp_utils = (input_chans, output_chans, hidden_chans, kernel_size, depth, activation)
+
+        ex_params, ex_static = eqx.partition(all_contexts[0], eqx.is_array)
+        ex_ravel, ex_shapes, ex_treedef = flatten_pytree(ex_params)
+        self.ctx_utils = (ex_shapes, ex_treedef, ex_static, mlp_utils)
+
+        all_params_1D = [flatten_pytree(eqx.filter(context, eqx.is_array))[0] for context in all_contexts]
+
+        self.eff_context_size = sum(x.size for x in jax.tree_util.tree_leaves(ex_params) if x is not None)
+
+        if key is None:
+            self.params = jnp.zeros_like(jnp.stack(all_params_1D, axis=0))
+        else:
+            self.params = jnp.stack(all_params_1D, axis=0)
+
+
+
 
 class NeuralContextFlow(eqx.Module):
     neuralnet: eqx.Module
@@ -499,6 +588,36 @@ class NeuralContextFlow(eqx.Module):
                 taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
 
                 return taylor_exp
+
+        ys = eqx.filter_vmap(point_predict)(xs)
+
+        return ys
+
+
+
+class NeuralNeuralContextFlow(eqx.Module):
+    neuralnet: eqx.Module
+    flownet: eqx.Module
+
+    def __init__(self, neuralnet, flownet=None):
+        ############# NCF with a flow network instead of Taylor expansion #############
+        self.neuralnet = neuralnet
+        self.flownet = flownet
+
+    def __call__(self, xs, ctx, ctx_):
+
+        def point_predict(x):
+
+            vf = lambda xi: self.neuralnet(x, xi)
+
+            if self.flownet is None:
+                return vf(ctx)
+
+            else:
+                out_main = vf(ctx_)
+                correction = self.flownet(out_main, vf(ctx), ctx_-ctx)
+                # return vf(ctx_) + correction      ## TODO use different variations of the input/outputs to the flow network
+                return out_main + correction
 
         ys = eqx.filter_vmap(point_predict)(xs)
 
@@ -576,8 +695,55 @@ class NeuralContextFlowAdaptiveTaylor(eqx.Module):
 
 
 
+class BatchedNeuralContextFlow(eqx.Module):
+    neuralnet: eqx.Module
+    taylor_order: int
 
-class NonBatchedNeuralContextFlow(eqx.Module):
+    def __init__(self, neuralnet, taylor_order):
+        self.neuralnet = neuralnet
+        self.taylor_order = taylor_order
+
+    def __call__(self, xs, ctx, ctx_):
+
+        vf = lambda xi: self.neuralnet(xs, xi)
+
+        if self.taylor_order==0:
+            return vf(ctx)
+
+        elif self.taylor_order==1:
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
+
+            return taylor_exp
+
+        elif self.taylor_order==2:
+            gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+            scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+            taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+
+            return taylor_exp
+
+        else:
+            # raise NotImplementedError("Higher order terms are not implemented yet.")
+            h0 = ctx_
+            h1 = ctx-ctx_
+            h2 = jnp.zeros_like(h0)
+
+            hs = [h1, h2]
+            coeffs = [1, 0.5]
+            for order in range(2+1, self.taylor_order+1):
+                hs.append(jnp.zeros_like(h0))
+                coeffs.append(1 / factorial(order))
+
+            f0, fs = jet(vf, (h0,), (hs,))
+            taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
+
+            return taylor_exp
+
+
+
+
+class BatchedNeuralContextFlowAdaptiveTaylor(eqx.Module):
     neuralnet: eqx.Module
 
     taylor_order: int
@@ -628,8 +794,6 @@ class NonBatchedNeuralContextFlow(eqx.Module):
             taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
 
             return (1.-alpha)*vf(ctx) + (alpha)*taylor_exp
-
-
 
 
 

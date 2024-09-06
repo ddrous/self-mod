@@ -24,10 +24,10 @@ input_dim = 2
 output_dim = 3
 
 ## Train and adapt hps
-context_pool_size = 4
+context_pool_size = 8
 context_size = 128
-loss_contributors = 4
-taylor_orders = (1, 0)
+loss_contributors = 8
+taylor_orders = (2, 0)
 init_lrs = (1e-3, 1e-3)
 sched_factor = 1.0
 envs_batch_size = 162770 // 1
@@ -39,22 +39,22 @@ pool_filling_strategy = "NF"
 loss_filling_strategy = "NF"
 
 # nb_outer_steps = 8000
-nb_outer_steps = 162000
+nb_outer_steps = 50000
 nb_inner_steps = (10, 10)
 
-print_error_every = 1620
+print_error_every = 1000
 validate_every = 30*5*1000000
 
 nb_adapt_steps = 5000
 
 meta_train = True
 
-run_folder = "./runs/240831-091752-NEWTEST/"
-# run_folder = "./runs/240904-124509-T0-LC32-P32-NOALM/"
+# run_folder = "./runs/240831-091752-NEWTEST/"
+# run_folder = "./runs/240905-165325-NN-Transition/"
 save_prefix = ""
 # save_prefix = "forced_uq_"
 
-# run_folder = None
+run_folder = None
 
 meta_test = True
 
@@ -158,6 +158,28 @@ class MultiMLP(eqx.Module):
         return y
 
 
+class MultiMLP2(eqx.Module):
+    layers_shared: list
+    activations: list
+
+    def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
+        keys = jax.random.split(key, 10)
+        self.activations = [jax.nn.relu for key_i in keys[:5]]
+
+        self.layers_shared = [eqx.nn.Linear(in_size+in_size+context_size, hidden_size, key=keys[5]), self.activations[0], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[6]), self.activations[1], 
+                            #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[2], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[3], 
+                              eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
+
+    def __call__(self, x_, x, diff):
+        y = jnp.concatenate([x_, x, diff], axis=0)
+        for layer in self.layers_shared:
+            y = layer(y)
+
+        return y
+
+
 
 
 
@@ -185,8 +207,14 @@ neuralnet = MultiMLP(in_size=input_dim,
                      context_size=context_size,
                      key=model_key)
 
-model = NeuralContextFlow(neuralnet=neuralnet, 
-                          taylor_order=taylor_orders[0])
+flownet = MultiMLP2(in_size=output_dim,
+                     out_size=output_dim, 
+                     hidden_size=32,
+                     context_size=context_size,
+                     key=model_key)
+
+model = NeuralNeuralContextFlow(neuralnet=neuralnet, 
+                                flownet=flownet)
 
 learner = Learner(model=model, 
                 context_size=context_size, 

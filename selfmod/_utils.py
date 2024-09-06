@@ -450,3 +450,19 @@ def interpolate_2D_image(known_points, known_pixels, img_size=(32, 32), method="
         interpolated_image[:, :, channel] = interpolated_channel
 
     return np.clip(interpolated_image, 0, 1)
+
+
+
+# def make_image(xy_coords, rgb_pixels, img_size=(32, 32)):
+#     img = np.zeros(img_size)
+#     x_coords = (xy_coords[:, 0] * img_size[0]).astype(int)
+#     y_coords = (xy_coords[:, 1] * img_size[1]).astype(int)
+#     img[x_coords, y_coords, :] = np.clip(rgb_pixels, 0., 1.)
+#     return img
+
+def make_image(xy_coords, rgb_pixels, img_size=(32, 32, 3)):
+    img = jnp.zeros(img_size)
+    x_coords = (xy_coords[:, 0] * img_size[0]).astype(int)
+    y_coords = (xy_coords[:, 1] * img_size[1]).astype(int)
+    img = img.at[x_coords, y_coords, :].set(jnp.clip(rgb_pixels, 0., 1.))
+    return img

@@ -407,25 +407,18 @@ class CelebAVisualTester(VisualTester):
 
         fig, ax = plt.subplots(num_envs, 5, figsize=(4*5, 3.7*num_envs))
 
-        def make_image(xy_coords, rgb_pixels):
-            img = np.zeros(img_size)
-            x_coords = (xy_coords[:, 0] * img_size[0]).astype(int)
-            y_coords = (xy_coords[:, 1] * img_size[1]).astype(int)
-            img[x_coords, y_coords, :] = np.clip(rgb_pixels, 0., 1.)
-            return img
-
         for e in range(num_envs):
-            true_img = make_image(X_hat[e], Y_true[e])
+            true_img = make_image(X_hat[e], Y_true[e], img_size)
             ax[e, 0].imshow(true_img)
 
-            few_shoot_img = make_image(X_few_shots[e], Y_few_shots[e])
+            few_shoot_img = make_image(X_few_shots[e], Y_few_shots[e], img_size)
             ax[e, 1].imshow(few_shoot_img)
 
             # pred_img = make_image(X_hat[e], Y_hat[e, e])
-            pred_img = make_image(X_hat[e], Y_hat[e, 0])    ## The perfectest image is always the first
+            pred_img = make_image(X_hat[e], Y_hat[e, 0], img_size)    ## The perfectest image is always the first
             ax[e, 2].imshow(pred_img)
 
-            uncertainty = make_image(X_hat[e], jnp.std(Y_hat[e], axis=0))
+            uncertainty = make_image(X_hat[e], jnp.std(Y_hat[e], axis=0), img_size)
             # ax[e, 3].imshow(uncertainty, cmap="grey")
             ax[e, 3].imshow(uncertainty)
 

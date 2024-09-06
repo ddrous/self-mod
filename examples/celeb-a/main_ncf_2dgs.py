@@ -36,7 +36,7 @@ envs_batch_size = 128
 max_train_batches = 1
 max_val_batches = 1
 
-nb_outer_steps = 5000
+nb_outer_steps = 50000
 nb_inner_steps = (10, 10)
 
 print_error_every = 1000
@@ -45,8 +45,8 @@ validate_every = 10000000
 nb_adapt_steps = 2000
 
 meta_train = True
-run_folder = "./runs/240831-091752-NEWTEST/"
-# run_folder = None
+# run_folder = "./runs/240831-091752-NEWTEST/"
+run_folder = None
 save_trainer = True
 
 meta_test = True

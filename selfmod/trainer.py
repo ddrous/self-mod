@@ -234,6 +234,7 @@ class NCFTrainer(Trainer):
 
                 for out_step in range(nb_outer_steps):
                     # print(f"    Staring outer step {out_step} ...")
+                    start_time_step = time.perf_counter()
 
                     model_old = jax.tree_util.tree_map(lambda x: x, model)
                     contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
@@ -282,7 +283,7 @@ class NCFTrainer(Trainer):
 
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
                         if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
-                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime(s): {int(time.time()-start_time):-6d}", flush=True, end="\r")
+                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
                             print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                     if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
@@ -451,7 +452,7 @@ class NCFTrainer(Trainer):
 
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
                         if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
-                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime/Step(s): {int(time.perf_counter()-start_time_step):-.4f}", flush=True, end="\r")
+                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
 
                     model, contexts = mega_model
                     if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
@@ -789,6 +790,7 @@ class NCFTrainer(Trainer):
         key = key if key is not None else self.key
 
         nb_epochs = nb_steps
+        assert nb_epochs > 0, "Number of epochs must be greater than 0."
         # loss_fn = self.learner.loss_fn_full
         loss_fn = self.learner.loss_fn
         # model = self.learner.model

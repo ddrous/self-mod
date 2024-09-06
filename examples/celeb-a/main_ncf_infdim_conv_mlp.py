@@ -24,10 +24,10 @@ input_dim = 2
 output_dim = 3
 
 ## Train and adapt hps
-context_pool_size = 4
+context_pool_size = 8
 context_size = 128
-loss_contributors = 4
-taylor_orders = (1, 0)
+loss_contributors = 8
+taylor_orders = (2, 0)
 init_lrs = (1e-3, 1e-3)
 sched_factor = 1.0
 envs_batch_size = 162770 // 1
@@ -39,22 +39,22 @@ pool_filling_strategy = "NF"
 loss_filling_strategy = "NF"
 
 # nb_outer_steps = 8000
-nb_outer_steps = 162000
+nb_outer_steps = 360000
 nb_inner_steps = (10, 10)
 
-print_error_every = 1620
+print_error_every = 3600
 validate_every = 30*5*1000000
 
 nb_adapt_steps = 5000
 
 meta_train = True
 
-run_folder = "./runs/240831-091752-NEWTEST/"
-# run_folder = "./runs/240904-124509-T0-LC32-P32-NOALM/"
+# run_folder = "./runs/240831-091752-NEWTEST/"
+# run_folder = "./runs/240905-165325-NN-Transition/"
 save_prefix = ""
 # save_prefix = "forced_uq_"
 
-# run_folder = None
+run_folder = None
 
 meta_test = True
 
@@ -139,10 +139,12 @@ all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder,
 class MultiMLP(eqx.Module):
     layers_shared: list
     activations: list
+    ctx_utils:any
 
-    def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
+    def __init__(self, in_size, out_size, hidden_size, context_size, ctx_utils, key=None):
         keys = jax.random.split(key, 10)
         self.activations = [jax.nn.relu for key_i in keys[:5]]
+        self.ctx_utils = ctx_utils
 
         self.layers_shared = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[5]), self.activations[0], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[6]), self.activations[1], 
@@ -150,12 +152,25 @@ class MultiMLP(eqx.Module):
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[3], 
                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
 
-    def __call__(self, x, ctx):
-        y = jnp.concatenate([x, ctx], axis=0)
-        for layer in self.layers_shared:
-            y = layer(y)
+    def __call__(self, xs, ctx_arr):
+        ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils
+        ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
+        ctx_fun = eqx.combine(ctx_params, ctx_static)
 
-        return y
+        # mask = reconstiture the mask imgs
+        pixels = jnp.ones((xs.shape[0], 3))
+        mask = make_image(xs, pixels, (*resolution, 3)).transpose(2, 0, 1)
+        ctx = ctx_fun(mask).flatten()
+
+        ## batch predict the pixels with the mask
+        def point_predict(x):
+            y = jnp.concatenate([x, ctx], axis=0)
+            for layer in self.layers_shared:
+                y = layer(y)
+            return y
+
+        return jax.vmap(point_predict)(xs)
+
 
 
 
@@ -177,16 +192,23 @@ def env_loss_fn(model, ctx, y_hat, y):
 
 
 
-contexts = ArrayContextParams(nb_envs=envs_batch_size,
-                            context_size=context_size)
+contexts = ConvContextParams(nb_envs=envs_batch_size,
+                             input_chans=3,
+                             output_chans=1,
+                             hidden_chans=3,
+                             kernel_size=3,
+                             depth=2,
+                             activation=jax.nn.relu,
+                            key=model_key)
 neuralnet = MultiMLP(in_size=input_dim,
                      out_size=output_dim, 
                      hidden_size=128,
-                     context_size=context_size,
+                     ctx_utils=contexts.ctx_utils,
+                     context_size=np.prod(resolution),
                      key=model_key)
 
-model = NeuralContextFlow(neuralnet=neuralnet, 
-                          taylor_order=taylor_orders[0])
+model = BatchedNeuralContextFlow(neuralnet=neuralnet, 
+                                taylor_order=taylor_orders[0])
 
 learner = Learner(model=model, 
                 context_size=context_size, 
@@ -294,7 +316,7 @@ visualtester.visualize_few_shots_multi_uq(few_shots_loader=train_dataloader,
                                 save_path=run_folder+save_prefix+"few_shots_ind_uq.png",
                                 taylor_order=taylor_orders[0],
                                 num_envs=16,
-                                uq_train_contexts=1000,
+                                uq_train_contexts=100,
                                 interp_method="cubic", ##  {'linear', 'nearest', 'cubic'}
                                 key=test_key
                              );
@@ -396,7 +418,7 @@ if meta_test:
                                     save_path=adapt_folder+save_prefix+"few_shots_ood_uq.png",
                                     taylor_order=taylor_orders[0],
                                     num_envs=7,
-                                    uq_train_contexts=1000,
+                                    uq_train_contexts=100,
                                     interp_method="cubic",
                                     key=test_key
                                 );
