@@ -70,7 +70,7 @@ class VisualTester:
             print(f"    Train loss value for criterion {criterion_id}: {train_mean:.2e}")
 
         # return mean_loss, None
-        return test_mean, (test_std, train_mean, aux_losses)
+        return test_mean, (test_means, test_std, train_mean, aux_losses)
 
 
     @abstractmethod
@@ -110,6 +110,9 @@ class VisualTester:
             losses_ctx = np.vstack(self.trainer.losses_adapt)
             if hasattr(self.trainer.learner, 'contexts_adapt'):
                 xis = self.trainer.learner.contexts_adapt.params
+            elif hasattr(self.trainer.learner, 'contexts_latest'):
+                print("No adaptation contexts found. Using latest found.")
+                xis = self.trainer.learner.contexts_latest.params
             else:
                 print("No contexts found. Using zeros.")
                 xis = jnp.zeros((10, self.trainer.learner.context_size))

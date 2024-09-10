@@ -184,6 +184,8 @@ class NCFTrainer(Trainer):
         if val_dataloader is not None:
             tester = VisualTester(self, key=key)
 
+        validate_every = validate_every if validate_every > 0 else 1
+
         print(f"\n\n=== Beginning Meta-Training ... ===")
         print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
         print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
@@ -925,11 +927,8 @@ class NCFTrainer(Trainer):
         self.losses_adapt.append(losses)
 
         ## DO NOT TRUST. Just for visualisation purposes
-        if isinstance(dataloader, DataLoader):
-            if dataloader.dataset.adaptation: 
-                self.learner.contexts_adapt = contexts
-            else: 
-                self.learner.contexts = contexts
+        if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation:
+            self.learner.contexts_adapt = contexts
         else:      ## Dealing with a list or generator of batches
             self.learner.contexts_latest = contexts
 
@@ -1078,11 +1077,9 @@ class CAVIATrainer(Trainer):
 
             return model, new_contexts, opt_states, loss, other_loss_terms
 
-
-        # if not isinstance(dataloader, DataLoader):
-        #     raise ValueError("The dataloader must be an instance of DataLoader")
         if val_dataloader is not None:
             tester = VisualTester(self, key=key)
+        validate_every = validate_every if validate_every > 0 else 1
 
         print(f"\n\n=== Beginning Meta-Training ... ===")
         print(f"    Number of examples in a batch: {dataloader.batch_size}")
@@ -1193,13 +1190,6 @@ class CAVIATrainer(Trainer):
                 if epoch == nb_epochs-1:
                     self.learner.load_learner(save_path)
 
-                # ## TODO remember to remove this (stop as soon as we get to 1e-4)
-                # if ind_crit <= 1e-4:
-                #     wall_time = time.time() - start_time
-                #     time_in_hmsecs = seconds_to_hours(wall_time)
-                #     print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
-                #     return
-
             loss_epoch /= nb_batches
 
 
@@ -1219,7 +1209,7 @@ class CAVIATrainer(Trainer):
         if val_dataloader is None:
             self.learner.model = model
 
-        ## DO NOT TRUST. Just for visualisation purposes
+        ## DO NOT TRUST. Mostly for visualisation purposes
         self.opt_ctx_state = opt_state_ctx
         self.learner.contexts = contexts
 
@@ -1288,7 +1278,6 @@ class CAVIATrainer(Trainer):
             # #### =====
 
             return model, contexts, opt_state, jnp.mean(loss), aux_data
-
 
         if isinstance(dataloader, DataLoader):
             nb_batches = dataloader.nb_batches
@@ -1376,12 +1365,9 @@ class CAVIATrainer(Trainer):
             self.losses_adapt = []
         self.losses_adapt.append(losses)
 
-        ## DO NOT TRUST. Just for visualisation purposes
-        if isinstance(dataloader, DataLoader):
-            if dataloader.dataset.adaptation: 
-                self.learner.contexts_adapt = contexts
-            else: 
-                self.learner.contexts = contexts
+        ## DO NOT TRUST. Mostly for visualisation purposes
+        if isinstance(dataloader, DataLoader) and dataloader.dataset.adaptation:
+            self.learner.contexts_adapt = contexts
         else:      ## Dealing with a list or generator of batches
             self.learner.contexts_latest = contexts
 

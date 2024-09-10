@@ -16,26 +16,29 @@ from selfmod import *
 seed = 2026
 
 ## Dataloader hps
-num_envs = (25*10*5, 1000)
+num_envs = (12500, 1000)  ## (meta-train, meta-test) vary for low-high data regime
 num_shots = (10, 100)
 num_workers = 0
+shuffle = False
 
 ## Learner/model hps
-context_pool_size = 10
-context_size = 2
+context_pool_size = 2
+context_size = 2    ## from 2 to 50
 taylor_orders = (2, 0)
-taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
+loss_contributors = 250
+envs_batch_size = num_envs[0]
+
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
 sched_factor = 1.
 max_train_batches = -1
-max_eval_batches = -1
+max_adapt_batches = -1
 
-nb_train_epochs = 10000
-nb_inner_steps = 5
+nb_outer_steps = 10000
+nb_inner_steps = (20, 20)
 
-print_error_every = (1, 1000)   ## every 1000 epochs, every 1 batch
+print_error_every = (100, 100)   ## every 1 epoch, every 1000 batches
 
 nb_adapt_epochs = 5000
 
@@ -45,6 +48,9 @@ run_folder = None
 save_trainer = True
 
 meta_test = True
+
+max_ret_env_states = loss_contributors
+csv_export_path = "./results.csv"   ## Append to this file
 
 
 #%%
@@ -95,14 +101,14 @@ data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 train_dataloader = NumpyLoader(SinusoidDataset(num_envs=num_envs[0],
                                             num_shots=num_shots[0]), 
-                              batch_size=250, 
+                              batch_size=envs_batch_size, 
                               shuffle=False,
                               num_workers=num_workers,
                               drop_last=False)
 
 val_dataloader = NumpyLoader(SinusoidDataset(num_envs=num_envs[0],
                                             num_shots=num_shots[1]), ## TODO make sure the val set has the same environment size as the train set
-                              batch_size=250, 
+                              batch_size=envs_batch_size, 
                               shuffle=False,
                               num_workers=num_workers,
                               drop_last=False)
@@ -136,8 +142,6 @@ class MultiMLP(eqx.Module):
 
         self.layers = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[0]),
                         jax.nn.softplus,
-                        # eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]),
-                        # jax.nn.softplus,
                         eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]),
                         jax.nn.softplus,
                         eqx.nn.Linear(hidden_size, out_size, key=keys[2]),
@@ -168,6 +172,8 @@ def env_loss_fn(model, ctx, y_hat, y):
 
     return loss_val, (term1, 0., 0.)
 
+contexts = ArrayContextParams(nb_envs=envs_batch_size,
+                            context_size=context_size)
 
 neuralnet = MultiMLP(in_size=1,
                      out_size=1,
@@ -177,15 +183,14 @@ neuralnet = MultiMLP(in_size=1,
 
 model = NeuralContextFlow(neuralnet=neuralnet, 
                             taylor_order=taylor_orders[0],
-                            taylor_scale=100,
-                            taylor_weight_init=taylor_weight_init)
+                            )
 
 learner = Learner(model=model,
                 context_size=context_size, 
                 context_pool_size=context_pool_size,
                 env_loss_fn=env_loss_fn, 
                 reuse_contexts=False,
-                loss_contributors=25,
+                loss_contributors=loss_contributors,
                 key=model_key)
 
 
@@ -193,7 +198,7 @@ learner = Learner(model=model,
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
-
+print("Total number of parameters in one context:", contexts.eff_context_size)
 
 
 
@@ -202,8 +207,8 @@ print("\n\nTotal number of parameters in the model:", model_params)
 
 ## Define optimiser and train the model
 init_lr_model, init_lr_ctx = init_lrs
-
-bd_scales = {nb_train_epochs//3:sched_factor, 2*nb_train_epochs//3:sched_factor}
+nb_train_steps = nb_outer_steps*nb_inner_steps[0]*len(train_dataloader)
+bd_scales = {nb_train_steps//3:sched_factor, 2*nb_train_steps//3:sched_factor}
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
 opt_model = optax.adam(sched_model)
 
@@ -220,7 +225,7 @@ trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
     # trainer.meta_train(dataloader=train_dataloader,
-    #                     nb_epochs=nb_train_epochs,
+    #                     nb_outer_steps=nb_train_epochs,
     #                     nb_inner_steps=nb_inner_steps, 
     #                     max_train_batches=max_train_batches,
     #                     print_error_every=print_error_every, 
@@ -232,8 +237,8 @@ if meta_train == True:
     #                     key=trainer_key)
     trainer.meta_train(dataloader=train_dataloader,
                         nb_epochs=1,
-                        nb_outer_steps=nb_train_epochs,
-                        nb_inner_steps=(10,10), 
+                        nb_outer_steps=nb_outer_steps,
+                        nb_inner_steps=nb_inner_steps, 
                         inner_tols=(1e-12, 1e-12), 
                         proximal_betas=(10., 10.), 
                         max_train_batches=max_train_batches,
@@ -241,9 +246,9 @@ if meta_train == True:
                         save_path=trainer_save_path, 
                         val_dataloader=val_dataloader, 
                         max_val_batches=max_train_batches,
-                        validate_every=1000,
+                        validate_every=nb_outer_steps//10,
                         val_criterion_id=0,
-                        val_nb_epochs=nb_adapt_epochs,
+                        val_nb_steps=nb_adapt_epochs,
                         key=trainer_key)
 else:
     restore_folder = run_folder
@@ -267,24 +272,18 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = SineVisualTester(trainer, key=test_key)
 
-ood_crit, _ = visualtester.evaluate(val_dataloader, 
+ind_crit, all_ind_crit = visualtester.evaluate(val_dataloader, 
                                     taylor_order=taylor_orders[1], 
-                                    nb_epochs=nb_adapt_epochs,
+                                    nb_steps=nb_adapt_epochs,
                                     print_error_every=print_error_every, 
                                     criterion_id=0,
                                     verbose=True,
                                     val_dataloader=val_dataloader,
-                                    max_eval_batches=max_eval_batches)
+                                    max_ret_env_states=max_ret_env_states,
+                                    max_adapt_batches=max_adapt_batches)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
-# visualtester.visualizeFewShotsMulti(few_shots_loader=train_dataloader,
-#                                     all_shots_loader=all_shots_dataloader,
-#                                     nb_inner_steps=nb_inner_steps_eval,
-#                                     num_envs=6,
-#                                     save_path=run_folder+"few_shots_multi_ind.png",
-#                                     key=jax.random.PRNGKey(time.time_ns())
-#                              );
 
 #%%
 
@@ -317,22 +316,15 @@ if meta_test:
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    # _, contexts, aux_data = trainer.meta_test(adapt_dataloader,
-    #                                         nb_inner_steps=nb_inner_steps,
-    #                                         taylor_order=taylor_orders[1],
-    #                                         optimizer=opt_adapt,
-    #                                         max_adapt_batches=max_train_batches,     ## JUST to set up adaptation for future tasks
-    #                                         print_error_every=print_error_every, 
-    #                                         save_path=adapt_folder)
-
-    ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
+    ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
                                         taylor_order=taylor_orders[1], 
-                                        nb_epochs=nb_adapt_epochs,
+                                        nb_steps=nb_adapt_epochs,
                                         print_error_every=print_error_every, 
                                         criterion_id=0,
                                         verbose=True,
                                         val_dataloader=all_shots_loader,
-                                        max_eval_batches=max_eval_batches)
+                                        max_ret_env_states=max_ret_env_states,
+                                        max_adapt_batches=max_adapt_batches)
 
 
 #%%
@@ -343,17 +335,6 @@ if meta_test:
 
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
-    # visualtester.visualizeFewShotsMulti(few_shots_loader=adapt_dataloader,
-    #                             all_shots_loader=all_shots_loader,
-    #                             nb_inner_steps=nb_inner_steps_eval,
-    #                             num_envs=6,
-    #                             save_path=adapt_folder+"few_shots_multi_ood.png",
-    #                             key=jax.random.PRNGKey(time.time_ns())
-    #                             );
-
-
-
-
 
 
 
@@ -362,11 +343,31 @@ if meta_test:
 
 
 #%%
-## After training, copy nohup.log to the runfolder
-notebook_mode = True
+
+import scipy.stats as st
+all_ind_crit_ = np.asarray(all_ind_crit[0])
+all_losses_conf_ind = st.t.interval(0.95, len(all_ind_crit_)-1, loc=ind_crit, scale=st.sem(all_ind_crit_))
+losses_conf_ind = np.mean(np.abs(np.array(all_losses_conf_ind) - ind_crit))
+print(f"Losses with 95% confidence interval InD: {ind_crit} ± {losses_conf_ind}")
+
+all_ood_crit_ = np.asarray(all_ood_crit[0])
+all_losses_conf_ood = st.t.interval(0.95, len(all_ood_crit_)-1, loc=ood_crit, scale=st.sem(all_ood_crit_))
+losses_conf_ood = np.mean(np.abs(np.array(all_losses_conf_ood) - ood_crit))
+print(f"Losses with 95% confidence interval OoD: {ood_crit} ± {losses_conf_ood}")
+
+if csv_export_path is not None:
+    ## Export all hyperparamters and results to a csv: method,num_envs,taylor_order,context_size,gradient_updates,mse_ind,ci_ind,mse_ood,ci_ood
+    with open(csv_export_path, 'a') as f:
+        f.write(f"NCF,{num_envs[0]},{taylor_orders[0]},{context_size},{None},{ind_crit},{losses_conf_ind},{ood_crit},{losses_conf_ood}\n")
+
+
+
+#%%
+# ## After training, copy nohup.log to the runfolder
 try:
     __IPYTHON__ ## in a jupyter notebook
 except NameError:
-    if not os.path.exists("nohup.log"):
+    print("Copying nohup.log to the run folder ...")
+    if os.path.exists("nohup.log"):
         os.system(f"cp nohup.log {run_folder}")
 
