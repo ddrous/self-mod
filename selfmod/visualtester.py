@@ -406,6 +406,7 @@ class CelebAVisualTester(VisualTester):
             raise ValueError("Invalid dataloader class instance provided.")
 
         fig, ax = plt.subplots(num_envs, 5, figsize=(4*5, 3.7*num_envs))
+        if num_envs==1: ax = ax[None, ...]
 
         for e in range(num_envs):
             true_img = make_image(X_hat[e], Y_true[e], img_size)

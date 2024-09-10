@@ -27,7 +27,7 @@ output_dim = 3
 context_pool_size = 8
 context_size = 128
 loss_contributors = 8
-taylor_orders = (2, 0)
+taylor_orders = (0, 0)
 init_lrs = (1e-3, 1e-3)
 sched_factor = 1.0
 envs_batch_size = 162770 // 1
@@ -39,7 +39,7 @@ pool_filling_strategy = "NF"
 loss_filling_strategy = "NF"
 
 # nb_outer_steps = 8000
-nb_outer_steps = 360000
+nb_outer_steps = 360000//5
 nb_inner_steps = (10, 10)
 
 print_error_every = 3600
@@ -139,7 +139,7 @@ all_shots_train_dataloader = NumpyLoader(CelebADataset(data_folder,
 class MultiMLP(eqx.Module):
     layers_shared: list
     activations: list
-    ctx_utils:any
+    ctx_utils: any
 
     def __init__(self, in_size, out_size, hidden_size, context_size, ctx_utils, key=None):
         keys = jax.random.split(key, 10)

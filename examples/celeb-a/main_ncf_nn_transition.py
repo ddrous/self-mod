@@ -24,12 +24,12 @@ input_dim = 2
 output_dim = 3
 
 ## Train and adapt hps
-context_pool_size = 8
+context_pool_size = 3
 context_size = 128
 loss_contributors = 8
 taylor_orders = (2, 0)
 init_lrs = (1e-3, 1e-3)
-sched_factor = 1.0
+sched_factor = 0.1
 envs_batch_size = 162770 // 1
 envs_batch_size_val = 100
 max_train_batches = 1
@@ -39,7 +39,7 @@ pool_filling_strategy = "NF"
 loss_filling_strategy = "NF"
 
 # nb_outer_steps = 8000
-nb_outer_steps = 50000
+nb_outer_steps = 200000
 nb_inner_steps = (10, 10)
 
 print_error_every = 1000
@@ -166,14 +166,14 @@ class MultiMLP2(eqx.Module):
         keys = jax.random.split(key, 10)
         self.activations = [jax.nn.relu for key_i in keys[:5]]
 
-        self.layers_shared = [eqx.nn.Linear(in_size+in_size+context_size, hidden_size, key=keys[5]), self.activations[0], 
+        self.layers_shared = [eqx.nn.Linear(in_size+in_size+context_size+context_size, hidden_size, key=keys[5]), self.activations[0], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[6]), self.activations[1], 
-                            #   eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[2], 
+                              eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[2], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[3], 
                               eqx.nn.Linear(hidden_size, out_size, key=keys[9])]
 
-    def __call__(self, x_, x, diff):
-        y = jnp.concatenate([x_, x, diff], axis=0)
+    def __call__(self, x_, ctx_, x, ctx):
+        y = jnp.concatenate([x_, ctx_, x, ctx], axis=0)
         for layer in self.layers_shared:
             y = layer(y)
 

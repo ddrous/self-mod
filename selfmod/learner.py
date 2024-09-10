@@ -615,7 +615,7 @@ class NeuralNeuralContextFlow(eqx.Module):
 
             else:
                 out_main = vf(ctx_)
-                correction = self.flownet(out_main, vf(ctx), ctx_-ctx)
+                correction = self.flownet(out_main, ctx_, vf(ctx), ctx)
                 # return vf(ctx_) + correction      ## TODO use different variations of the input/outputs to the flow network
                 return out_main + correction
 

@@ -15,7 +15,7 @@ from selfmod import *
 seed = 2024
 
 ## Dataloader hps
-k_shots = 100
+k_shots = 10
 resolution = (32, 32)
 data_folder="./data/" 
 input_dim = 2
@@ -27,21 +27,21 @@ context_size = 128
 taylor_orders = (0, 0)
 init_lrs = (1e-3, 1e-1)
 sched_factor = 1.
-envs_batch_size = 500
-max_train_batches = -1
-max_val_batches = 10
+envs_batch_size = 6
+max_train_batches = 1
+max_val_batches = 1
 
-nb_train_epochs = 500
+nb_train_epochs = 2000
 nb_inner_steps = 5
 
 print_error_every = 100
 validate_every = 100
 
+
 meta_train = True
 # run_folder = "./runs/240609-215946-Test/"
 run_folder = None
 save_trainer = True
-save_prefix = ""
 
 meta_test = True
 
@@ -128,7 +128,7 @@ class MultiMLP(eqx.Module):
 
     def __init__(self, in_size, out_size, hidden_size, context_size, key=None):
         keys = jax.random.split(key, 10)
-        self.activations = [jax.nn.relu for key_i in keys[:5]]
+        self.activations = [jax.nn.softplus for key_i in keys[:5]]
 
         self.layers_shared = [eqx.nn.Linear(in_size+context_size, hidden_size, key=keys[5]), self.activations[0], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[6]), self.activations[1], 
@@ -167,7 +167,7 @@ contexts = ArrayContextParams(context_size=context_size,
 
 neuralnet = MultiMLP(in_size=input_dim, 
                      out_size=output_dim, 
-                     hidden_size=128,
+                     hidden_size=32,
                      context_size=context_size, 
                      key=model_key)
 
@@ -180,7 +180,7 @@ learner = Learner(model=model,
                 contexts=contexts,
                 reuse_contexts=False,
                 env_loss_fn=env_loss_fn, 
-                # loss_contributors=32,
+                # loss_contributors=6,
                 key=model_key)
 
 
@@ -251,21 +251,11 @@ ind_crit, _ = visualtester.evaluate(train_dataloader,
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
-# visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
-#                                 all_shots_loader=all_shots_train_dataloader,
-#                                 nb_steps=nb_inner_steps,
-#                                 save_path=run_folder+"few_shots_ind.png",
-#                                 key=jax.random.PRNGKey(time.time_ns())
-#                              );
-visualtester.visualize_few_shots_multi_uq(few_shots_loader=train_dataloader,
+visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
                                 all_shots_loader=all_shots_train_dataloader,
                                 nb_steps=nb_inner_steps,
-                                save_path=run_folder+save_prefix+"few_shots_ind_uq.png",
-                                taylor_order=taylor_orders[0],
-                                num_envs=16,
-                                uq_train_contexts=6,
-                                interp_method="cubic", ##  {'linear', 'nearest', 'cubic'}
-                                key=test_key
+                                save_path=run_folder+"few_shots_ind.png",
+                                key=jax.random.PRNGKey(time.time_ns())
                              );
 
 #%%
@@ -336,21 +326,11 @@ if meta_test:
 if meta_test:
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
-    # visualtester.visualize_few_shots_multi(few_shots_loader=adapt_dataloader,
-    #                                 all_shots_loader=all_shots_dataloader_test,
-    #                                 nb_steps=nb_inner_steps,
-    #                                 save_path=adapt_folder+"few_shots_ood.png",
-    #                                 key=jax.random.PRNGKey(time.time_ns())
-    #                             );
-    visualtester.visualize_few_shots_multi_uq(few_shots_loader=adapt_dataloader,
+    visualtester.visualize_few_shots_multi(few_shots_loader=adapt_dataloader,
                                     all_shots_loader=all_shots_dataloader_test,
                                     nb_steps=nb_inner_steps,
-                                    save_path=adapt_folder+save_prefix+"few_shots_ood_uq.png",
-                                    taylor_order=taylor_orders[0],
-                                    num_envs=7,
-                                    uq_train_contexts=6,
-                                    interp_method="cubic",
-                                    key=test_key
+                                    save_path=adapt_folder+"few_shots_ood.png",
+                                    key=jax.random.PRNGKey(time.time_ns())
                                 );
 
 #%%

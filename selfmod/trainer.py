@@ -1121,6 +1121,7 @@ class CAVIATrainer(Trainer):
             for env_batch, batch in enumerate(dataloader):
                 if env_batch >= max_train_batches:
                     break
+                start_time_step = time.perf_counter()
 
                 nb_envs_in_batch = batch[0].shape[0]
                 weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
@@ -1145,7 +1146,7 @@ class CAVIATrainer(Trainer):
 
                 if epoch%print_every_epoch==0 or epoch==nb_epochs-1:
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
-                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      WallTime(s): {int(time.time()-start_time):-6d}", flush=True, end="\n")
+                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
 
                         # alpha = model.taylor_weight[0]
                         # print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")

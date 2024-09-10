@@ -24,10 +24,10 @@ input_dim = 2
 output_dim = 3
 
 ## Train and adapt hps
-context_pool_size = 4
+context_pool_size = 2
 context_size = 128
-loss_contributors = 4
-taylor_orders = (1, 0)
+loss_contributors = 32
+taylor_orders = (2, 0)
 init_lrs = (1e-3, 1e-3)
 sched_factor = 1.0
 envs_batch_size = 162770 // 1
@@ -49,12 +49,12 @@ nb_adapt_steps = 5000
 
 meta_train = True
 
-run_folder = "./runs/240831-091752-NEWTEST/"
+# run_folder = "./runs/240831-091752-NEWTEST/"
 # run_folder = "./runs/240904-124509-T0-LC32-P32-NOALM/"
 save_prefix = ""
 # save_prefix = "forced_uq_"
 
-# run_folder = None
+run_folder = None
 
 meta_test = True
 
