@@ -12,21 +12,25 @@ from selfmod import *
 
 #%%
 
-## For reproducibility
+## For the experiment
 seed = 2026
+# num_envs = (12500, 1000)
+# taylor_orders = (0, 0)
+# context_size = 2    ## from 2 to 50
+csv_export_path = "results.csv"
 
 ## Dataloader hps
-num_envs = (12500, 1000)  ## (meta-train, meta-test) vary for low-high data regime
+# num_envs = (12500, 1000)  ## (meta-train, meta-test) vary for low-high data regime
 num_shots = (10, 100)
 num_workers = 0
 shuffle = False
 
 ## Learner/model hps
-context_pool_size = 1
-context_size = 2    ## from 2 to 50
-taylor_orders = (0, 0)
-loss_contributors = -1
-envs_batch_size = 250
+context_pool_size = 1 if taylor_orders[0] == 0 else 2
+# context_size = 2    ## from 2 to 50
+# taylor_orders = (2, 0)
+loss_contributors = 250
+envs_batch_size = num_envs[0]
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -34,12 +38,12 @@ sched_factor = 1.
 max_train_batches = -1
 max_adapt_batches = -1
 
-nb_train_epochs = 1000
-nb_inner_steps = 5
+nb_outer_steps = 10000
+nb_inner_steps = (20, 20)
 
 print_error_every = (100, 100)   ## every 1 epoch, every 1000 batches
 
-# nb_adapt_epochs = 50
+nb_adapt_epochs = 5000
 
 meta_train = True
 # run_folder = "./runs/240715-025946-Test/"
@@ -48,8 +52,7 @@ save_trainer = True
 
 meta_test = True
 
-max_ret_env_states = envs_batch_size
-csv_export_path = "results.csv"
+max_ret_env_states = 250
 
 
 #%%
@@ -58,12 +61,12 @@ mother_key = jax.random.PRNGKey(seed)
 #%%
 
 if meta_train == True:
-    if not os.path.exists('./runs'):
-        os.mkdir('./runs')
+    if not os.path.exists('./NCF'):
+        os.mkdir('./NCF')
 
     # Run folder to store the result of this run
     if run_folder == None:
-        run_folder = './runs/'+time.strftime("%y%m%d-%H%M%S")+'/'
+        run_folder = './NCF/'+time.strftime("%y%m%d-%H%M%S")+'/'
     else:
         print("Using user-defined run folder:", run_folder)
     if not os.path.exists(run_folder):
@@ -75,7 +78,7 @@ if meta_train == True:
     os.system(f"cp {script_name} {run_folder}")
 
     # Save the selfmod module files as well
-    os.system(f"cp -r ../../selfmod {run_folder}")
+    os.system(f"cp -r ../../../../selfmod {run_folder}")
     print("Completed copied scripts ")
 else:
     print("No training. Loading model and results from:", run_folder)
@@ -206,15 +209,15 @@ print("Total number of parameters in one context:", contexts.eff_context_size)
 
 ## Define optimiser and train the model
 init_lr_model, init_lr_ctx = init_lrs
-total_steps = nb_train_epochs*len(train_dataloader)
-bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
+nb_train_steps = nb_outer_steps*nb_inner_steps[0]*len(train_dataloader)
+bd_scales = {nb_train_steps//3:sched_factor, 2*nb_train_steps//3:sched_factor}
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
 opt_model = optax.adam(sched_model)
 
 opt_ctx = optax.adam(init_lr_ctx)
 
-trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
-# trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+# trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 
@@ -223,32 +226,32 @@ trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 ## Meta-training
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
-    trainer.meta_train(dataloader=train_dataloader,
-                        nb_outer_steps=nb_train_epochs,
-                        nb_inner_steps=nb_inner_steps, 
-                        max_train_batches=max_train_batches,
-                        print_error_every=print_error_every, 
-                        save_path=trainer_save_path, 
-                        val_dataloader=val_dataloader, 
-                        val_criterion_id=0,
-                        validate_every=nb_train_epochs//10,
-                        backup_contexts=False,
-                        key=trainer_key)
     # trainer.meta_train(dataloader=train_dataloader,
-    #                     nb_epochs=1,
     #                     nb_outer_steps=nb_train_epochs,
-    #                     nb_inner_steps=(10,10), 
-    #                     inner_tols=(1e-12, 1e-12), 
-    #                     proximal_betas=(10., 10.), 
+    #                     nb_inner_steps=nb_inner_steps, 
     #                     max_train_batches=max_train_batches,
     #                     print_error_every=print_error_every, 
     #                     save_path=trainer_save_path, 
     #                     val_dataloader=val_dataloader, 
-    #                     max_val_batches=max_train_batches,
-    #                     validate_every=1000,
     #                     val_criterion_id=0,
-    #                     val_nb_epochs=nb_adapt_epochs,
+    #                     validate_every=nb_train_epochs//10,
+    #                     backup_contexts=True,
     #                     key=trainer_key)
+    trainer.meta_train(dataloader=train_dataloader,
+                        nb_epochs=1,
+                        nb_outer_steps=nb_outer_steps,
+                        nb_inner_steps=nb_inner_steps, 
+                        inner_tols=(1e-12, 1e-12), 
+                        proximal_betas=(10., 10.), 
+                        max_train_batches=max_train_batches,
+                        print_error_every=print_error_every, 
+                        save_path=trainer_save_path, 
+                        val_dataloader=val_dataloader, 
+                        max_val_batches=max_train_batches,
+                        validate_every=nb_outer_steps//10,
+                        val_criterion_id=0,
+                        val_nb_steps=nb_adapt_epochs,
+                        key=trainer_key)
 else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)
@@ -273,11 +276,12 @@ visualtester = SineVisualTester(trainer, key=test_key)
 
 ind_crit, all_ind_crit = visualtester.evaluate(val_dataloader, 
                                     taylor_order=taylor_orders[1], 
-                                    nb_steps=nb_inner_steps,
+                                    nb_steps=nb_adapt_epochs,
                                     print_error_every=print_error_every, 
                                     criterion_id=0,
                                     verbose=True,
                                     val_dataloader=val_dataloader,
+                                    max_ret_env_states=max_ret_env_states,
                                     max_adapt_batches=max_adapt_batches)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
@@ -316,12 +320,12 @@ if meta_test:
 
     ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
                                         taylor_order=taylor_orders[1], 
-                                        nb_steps=nb_inner_steps,
+                                        nb_steps=nb_adapt_epochs,
                                         print_error_every=print_error_every, 
                                         criterion_id=0,
                                         verbose=True,
                                         val_dataloader=all_shots_loader,
-                                        max_ret_env_states=250,
+                                        max_ret_env_states=max_ret_env_states,
                                         max_adapt_batches=max_adapt_batches)
 
 
@@ -332,6 +336,7 @@ if meta_test:
 if meta_test:
 
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
+
 
 
 
@@ -355,14 +360,13 @@ print(f"Losses with 95% confidence interval OoD: {ood_crit} ± {losses_conf_ood}
 if csv_export_path is not None:
     ## Export all hyperparamters and results to a csv: method,num_envs,taylor_order,context_size,gradient_updates,mse_ind,ci_ind,mse_ood,ci_ood
     with open(csv_export_path, 'a') as f:
-        f.write(f"NCF,{num_envs[0]},{taylor_orders[0]},{context_size},{None},{ind_crit},{losses_conf_ind},{ood_crit},{losses_conf_ood}\n")
-
-
+        f.write(f"NCF,{num_envs[0]},{taylor_orders[0]},{context_size},{nb_inner_steps[0]},{nb_outer_steps},{ind_crit},{losses_conf_ind},{ood_crit},{losses_conf_ood}\n")
 
 
 
 #%%
 ## After training, copy nohup.log to the runfolder
+notebook_mode = True
 try:
     __IPYTHON__ ## in a jupyter notebook
 except NameError:

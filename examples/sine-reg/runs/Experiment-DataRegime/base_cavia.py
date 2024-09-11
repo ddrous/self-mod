@@ -12,19 +12,24 @@ from selfmod import *
 
 #%%
 
-## For reproducibility
+## For the experiment
 seed = 2026
+# num_envs = (12500, 1000)  ## (meta-train, meta-test) vary for low-high data regime
+# taylor_orders = (0, 0)
+# context_size = 2    ## from 2 to 50
+# nb_inner_steps = 5
+csv_export_path = "results.csv"
 
 ## Dataloader hps
-num_envs = (12500, 1000)  ## (meta-train, meta-test) vary for low-high data regime
+# num_envs = (12500, 1000)  ## (meta-train, meta-test) vary for low-high data regime
 num_shots = (10, 100)
 num_workers = 0
 shuffle = False
 
 ## Learner/model hps
-context_pool_size = 1
-context_size = 2    ## from 2 to 50
-taylor_orders = (0, 0)
+context_pool_size = 1 if taylor_orders[0] == 0 else 2
+# context_size = 2    ## from 2 to 50
+# taylor_orders = (0, 0)
 loss_contributors = -1
 envs_batch_size = 250
 
@@ -34,12 +39,10 @@ sched_factor = 1.
 max_train_batches = -1
 max_adapt_batches = -1
 
-nb_train_epochs = 1000
-nb_inner_steps = 5
+nb_train_epochs = 1000 * (50*envs_batch_size//num_envs[0])
+# nb_inner_steps = 5
 
-print_error_every = (100, 100)   ## every 1 epoch, every 1000 batches
-
-# nb_adapt_epochs = 50
+print_error_every = (nb_train_epochs//(500*envs_batch_size//num_envs[0]), 100)
 
 meta_train = True
 # run_folder = "./runs/240715-025946-Test/"
@@ -48,9 +51,7 @@ save_trainer = True
 
 meta_test = True
 
-max_ret_env_states = envs_batch_size
-csv_export_path = "results.csv"
-
+max_ret_env_states = 250
 
 #%%
 mother_key = jax.random.PRNGKey(seed)
@@ -58,12 +59,12 @@ mother_key = jax.random.PRNGKey(seed)
 #%%
 
 if meta_train == True:
-    if not os.path.exists('./runs'):
-        os.mkdir('./runs')
+    if not os.path.exists('./CAVIA'):
+        os.mkdir('./CAVIA')
 
     # Run folder to store the result of this run
     if run_folder == None:
-        run_folder = './runs/'+time.strftime("%y%m%d-%H%M%S")+'/'
+        run_folder = './CAVIA/'+time.strftime("%y%m%d-%H%M%S")+'/'
     else:
         print("Using user-defined run folder:", run_folder)
     if not os.path.exists(run_folder):
@@ -75,7 +76,7 @@ if meta_train == True:
     os.system(f"cp {script_name} {run_folder}")
 
     # Save the selfmod module files as well
-    os.system(f"cp -r ../../selfmod {run_folder}")
+    os.system(f"cp -r ../../../../selfmod {run_folder}")
     print("Completed copied scripts ")
 else:
     print("No training. Loading model and results from:", run_folder)
@@ -355,7 +356,7 @@ print(f"Losses with 95% confidence interval OoD: {ood_crit} ± {losses_conf_ood}
 if csv_export_path is not None:
     ## Export all hyperparamters and results to a csv: method,num_envs,taylor_order,context_size,gradient_updates,mse_ind,ci_ind,mse_ood,ci_ood
     with open(csv_export_path, 'a') as f:
-        f.write(f"NCF,{num_envs[0]},{taylor_orders[0]},{context_size},{None},{ind_crit},{losses_conf_ind},{ood_crit},{losses_conf_ood}\n")
+        f.write(f"CAVIA,{num_envs[0]},{taylor_orders[0]},{context_size},{nb_inner_steps},{nb_train_epochs},{ind_crit},{losses_conf_ind},{ood_crit},{losses_conf_ood}\n")
 
 
 

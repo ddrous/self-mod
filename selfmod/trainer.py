@@ -1084,6 +1084,7 @@ class CAVIATrainer(Trainer):
         print(f"\n\n=== Beginning Meta-Training ... ===")
         print(f"    Number of examples in a batch: {dataloader.batch_size}")
         print(f"    Total number of batches : {dataloader.num_batches}")
+        print(f"    Number of outer steps: {nb_outer_steps}")
         print(f"    Numbers of inner steps : {nb_inner_steps}")
 
         if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:

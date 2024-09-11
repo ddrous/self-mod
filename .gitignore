@@ -86,6 +86,8 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 
 ## Sine experiment runs
 examples/sine-reg/runs/*
+!examples/sine-reg/runs/240818-234103-Awesome/
+!examples/sine-reg/runs/Experiment-DataRegime/
 
 
 ## Forced oscillator experiment runs
@@ -100,5 +102,3 @@ examples/lotka-v/runs/*
 !examples/lotka-v/runs/ContextPoolSizeExperiment/
 !examples/lotka-v/runs/ContextPoolSizeExperiment/
 
-
-!examples/sine-reg/runs/240818-234103-Awesome/

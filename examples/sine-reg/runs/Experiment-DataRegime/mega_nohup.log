@@ -1,0 +1,491 @@
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:21: SyntaxWarning: invalid escape sequence '\('
+  os.system("echo num_envs=\("+str(num_envs)+", 1000\)" + " > " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:21: SyntaxWarning: invalid escape sequence '\)'
+  os.system("echo num_envs=\("+str(num_envs)+", 1000\)" + " > " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:22: SyntaxWarning: invalid escape sequence '\('
+  os.system("echo taylor_orders=\("+str(taylor_orders) + ", 0\)" + " >> " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:22: SyntaxWarning: invalid escape sequence '\)'
+  os.system("echo taylor_orders=\("+str(taylor_orders) + ", 0\)" + " >> " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:32: SyntaxWarning: invalid escape sequence '\('
+  os.system("echo num_envs=\("+str(num_envs)+", 1000\)" + " > " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:32: SyntaxWarning: invalid escape sequence '\)'
+  os.system("echo num_envs=\("+str(num_envs)+", 1000\)" + " > " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:33: SyntaxWarning: invalid escape sequence '\('
+  os.system("echo taylor_orders=\("+str(taylor_orders) + ", 0\)" + " >> " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/run_experiment.py:33: SyntaxWarning: invalid escape sequence '\)'
+  os.system("echo taylor_orders=\("+str(taylor_orders) + ", 0\)" + " >> " + current_file)
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=2, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=250 envs, TO=0, CS=2, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=2, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=3, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=250 envs, TO=0, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=3, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=50, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=250 envs, TO=0, CS=50, GU=1 ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/NCF-NE250-TO0-CS50.py", line 366, in <module>
+    f.write(f"NCF,{num_envs[0]},{taylor_orders[0]},{context_size},{nb_inner_steps},{nb_outer_steps[0]},{ind_crit},{losses_conf_ind},{ood_crit},{losses_conf_ood}\n")
+                                                                                    ~~~~~~~~~~~~~~^^^
+TypeError: 'int' object is not subscriptable
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=50, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=0, CS=50, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=2, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=250 envs, TO=2, CS=2, GU=1 ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/NCF-NE250-TO2-CS2.py", line 366, in <module>
+    f.write(f"NCF,{num_envs[0]},{taylor_orders[0]},{context_size},{nb_inner_steps},{nb_outer_steps[0]},{ind_crit},{losses_conf_ind},{ood_crit},{losses_conf_ood}\n")
+                                                                                    ~~~~~~~~~~~~~~^^^
+TypeError: 'int' object is not subscriptable
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=2, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=3, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=250 envs, TO=2, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=3, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=50, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=250 envs, TO=2, CS=50, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=50, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=250 envs, TO=2, CS=50, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=2, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=1000 envs, TO=0, CS=2, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=2, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=3, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=1000 envs, TO=0, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=3, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=50, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=1000 envs, TO=0, CS=50, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=50, GU=5 ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/CAVIA-NE1000-TO0-CS50-GU5.py", line 231, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1192, in meta_train
+    self.learner.load_learner(save_path)
+  File "/home/gb21553/Projects/Self-Mod/selfmod/learner.py", line 115, in load_learner
+    self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 319, in tree_deserialise_leaves
+    with _maybe_open(path_or_file, "rb") as f:
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 156, in _maybe_open
+    file = open(_with_suffix(path_or_file), mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'CAVIA/240911-021225/model.eqx'
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=0, CS=50, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=2, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=1000 envs, TO=2, CS=2, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=2, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=3, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=1000 envs, TO=2, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=3, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=50, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=1000 envs, TO=2, CS=50, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=50, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=1000 envs, TO=2, CS=50, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=2, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=12500 envs, TO=0, CS=2, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=2, GU=100 ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/CAVIA-NE12500-TO0-CS2-GU100.py", line 231, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1192, in meta_train
+    self.learner.load_learner(save_path)
+  File "/home/gb21553/Projects/Self-Mod/selfmod/learner.py", line 115, in load_learner
+    self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 319, in tree_deserialise_leaves
+    with _maybe_open(path_or_file, "rb") as f:
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 156, in _maybe_open
+    file = open(_with_suffix(path_or_file), mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'CAVIA/240911-073127/model.eqx'
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=3, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=12500 envs, TO=0, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=3, GU=5 ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/CAVIA-NE12500-TO0-CS3-GU5.py", line 231, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1192, in meta_train
+    self.learner.load_learner(save_path)
+  File "/home/gb21553/Projects/Self-Mod/selfmod/learner.py", line 115, in load_learner
+    self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 319, in tree_deserialise_leaves
+    with _maybe_open(path_or_file, "rb") as f:
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 156, in _maybe_open
+    file = open(_with_suffix(path_or_file), mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'CAVIA/240911-080312/model.eqx'
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=50, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=12500 envs, TO=0, CS=50, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=50, GU=5 ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/CAVIA-NE12500-TO0-CS50-GU5.py", line 231, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1192, in meta_train
+    self.learner.load_learner(save_path)
+  File "/home/gb21553/Projects/Self-Mod/selfmod/learner.py", line 115, in load_learner
+    self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 319, in tree_deserialise_leaves
+    with _maybe_open(path_or_file, "rb") as f:
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 156, in _maybe_open
+    file = open(_with_suffix(path_or_file), mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'CAVIA/240911-084031/model.eqx'           ### TODO - NAN
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=50, GU=100 ...
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime/CAVIA-NE12500-TO0-CS50-GU100.py", line 231, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1192, in meta_train
+    self.learner.load_learner(save_path)
+  File "/home/gb21553/Projects/Self-Mod/selfmod/learner.py", line 115, in load_learner
+    self.model = eqx.tree_deserialise_leaves(path+"model.eqx", self.model)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 319, in tree_deserialise_leaves
+    with _maybe_open(path_or_file, "rb") as f:
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_serialisation.py", line 156, in _maybe_open
+    file = open(_with_suffix(path_or_file), mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'CAVIA/240911-084527/model.eqx'
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=2, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=12500 envs, TO=2, CS=2, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=2, GU=100 ...
+Killed
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=3, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=12500 envs, TO=2, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=3, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=50, GU=1 ...
+
+
+Currently running DataRegime-NCF with N=12500 envs, TO=2, CS=50, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=50, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=50, GU=100 ...
+Killed
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
