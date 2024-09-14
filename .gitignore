@@ -88,6 +88,7 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 examples/sine-reg/runs/*
 !examples/sine-reg/runs/240818-234103-Awesome/
 !examples/sine-reg/runs/Experiment-DataRegime/
+!examples/sine-reg/runs/Experiment-DataRegime-SmallCAVIA/
 
 
 ## Forced oscillator experiment runs

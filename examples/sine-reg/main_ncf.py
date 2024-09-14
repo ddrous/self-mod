@@ -19,7 +19,7 @@ seed = 2026
 num_envs = (12500, 1000)  ## (meta-train, meta-test) vary for low-high data regime
 num_shots = (10, 100)
 num_workers = 0
-shuffle = False
+# shuffle = False
 
 ## Learner/model hps
 context_pool_size = 2
@@ -305,14 +305,14 @@ if meta_test:
                                                 num_shots=num_shots[0],
                                                 adaptation=True), 
                                 batch_size=num_envs[1], 
-                                shuffle=True,
+                                shuffle=False,
                                 num_workers=num_workers,
                                 drop_last=False)
     all_shots_loader = NumpyLoader(SinusoidDataset(num_envs=num_envs[1],
                                                 num_shots=num_shots[1],
                                                 adaptation=True), 
                                 batch_size=num_envs[1], 
-                                shuffle=True,
+                                shuffle=False,
                                 num_workers=num_workers,
                                 drop_last=False)
 

@@ -31,7 +31,7 @@ context_pool_size = 1 if taylor_orders[0] == 0 else 2
 # context_size = 2    ## from 2 to 50
 # taylor_orders = (0, 0)
 loss_contributors = -1
-envs_batch_size = 250
+envs_batch_size = 25
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -39,10 +39,11 @@ sched_factor = 1.
 max_train_batches = -1
 max_adapt_batches = -1
 
-nb_train_epochs = 1000 * (50*envs_batch_size//num_envs[0])
+nb_train_epochs = 2000 * (500*envs_batch_size//num_envs[0]) // 6 # divide by 5 cuz T2 was taking too long on 100 gupdates. We started doing this at NE250-TO2-CS50-GU100
 # nb_inner_steps = 5
 
-print_error_every = (nb_train_epochs//(500*envs_batch_size//num_envs[0]), 100)
+# print_error_every = (nb_train_epochs//(500*envs_batch_size//num_envs[0]), 100)
+print_error_every = (10, 1000)
 
 meta_train = True
 # run_folder = "./runs/240715-025946-Test/"

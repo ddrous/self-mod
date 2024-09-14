@@ -1,0 +1,175 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+Created a new run folder at: ./CAVIA/240914-160022/
+Completed copied scripts 
+    No context template provides, using arrays ...
+    Using all environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 3761
+Total number of parameters in one context: 50
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch: 25
+    Total number of batches : 500
+    Number of outer steps: 333
+    Numbers of inner steps : 100
+    Training on 500 batches
+    Validating on 500 batches
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   0    Loss: 4.18038368     ContextsNorm: 0.00000000      Time/Step(s): 2.9219
+Epoch:   0      Batch: 499    Loss: 2.60365057     ContextsNorm: 0.00000000      Time/Step(s): 0.0540
+Epoch:  10      Batch:   0    Loss: 0.01181887     ContextsNorm: 0.00000000      Time/Step(s): 0.0542
+Epoch:  10      Batch: 499    Loss: 0.01130132     ContextsNorm: 0.00000000      Time/Step(s): 0.0538
+Epoch:  20      Batch:   0    Loss: 0.00830432     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch:  20      Batch: 499    Loss: 0.00295189     ContextsNorm: 0.00000000      Time/Step(s): 0.0538
+Epoch:  30      Batch:   0    Loss: 0.00231198     ContextsNorm: 0.00000000      Time/Step(s): 0.0544
+Epoch:  30      Batch: 499    Loss: 0.00101285     ContextsNorm: 0.00000000      Time/Step(s): 0.0533
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.01124991
+        Saving best model so far ...
+Epoch:  40      Batch:   0    Loss: 0.00198681     ContextsNorm: 0.00000000      Time/Step(s): 0.0540
+Epoch:  40      Batch: 499    Loss: 0.00073232     ContextsNorm: 0.00000000      Time/Step(s): 0.0538
+Epoch:  50      Batch:   0    Loss: 0.00033296     ContextsNorm: 0.00000000      Time/Step(s): 0.0542
+Epoch:  50      Batch: 499    Loss: 0.00039554     ContextsNorm: 0.00000000      Time/Step(s): 0.0550
+Epoch:  60      Batch:   0    Loss: 0.00059177     ContextsNorm: 0.00000000      Time/Step(s): 0.0540
+Epoch:  60      Batch: 499    Loss: 0.00024137     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00570604
+        Saving best model so far ...
+Epoch:  70      Batch:   0    Loss: 0.00021584     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch:  70      Batch: 499    Loss: 0.00029418     ContextsNorm: 0.00000000      Time/Step(s): 0.0539
+Epoch:  80      Batch:   0    Loss: 0.00053591     ContextsNorm: 0.00000000      Time/Step(s): 0.0542
+Epoch:  80      Batch: 499    Loss: 0.00014019     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+Epoch:  90      Batch:   0    Loss: 0.00039843     ContextsNorm: 0.00000000      Time/Step(s): 0.0540
+Epoch:  90      Batch: 499    Loss: 0.00013001     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00991800
+Epoch: 100      Batch:   0    Loss: 0.00032729     ContextsNorm: 0.00000000      Time/Step(s): 0.0557
+Epoch: 100      Batch: 499    Loss: 0.00014861     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 110      Batch:   0    Loss: 0.00018598     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 110      Batch: 499    Loss: 0.00024080     ContextsNorm: 0.00000000      Time/Step(s): 0.0537
+Epoch: 120      Batch:   0    Loss: 0.00033183     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 120      Batch: 499    Loss: 0.00009610     ContextsNorm: 0.00000000      Time/Step(s): 0.0537
+Epoch: 130      Batch:   0    Loss: 0.00018721     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 130      Batch: 499    Loss: 0.00014338     ContextsNorm: 0.00000000      Time/Step(s): 0.0539
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00446320
+        Saving best model so far ...
+Epoch: 140      Batch:   0    Loss: 0.00014614     ContextsNorm: 0.00000000      Time/Step(s): 0.0539
+Epoch: 140      Batch: 499    Loss: 0.00011099     ContextsNorm: 0.00000000      Time/Step(s): 0.0545
+Epoch: 150      Batch:   0    Loss: 0.00019763     ContextsNorm: 0.00000000      Time/Step(s): 0.0538
+Epoch: 150      Batch: 499    Loss: 0.00010207     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 160      Batch:   0    Loss: 0.00012245     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+Epoch: 160      Batch: 499    Loss: 0.00012273     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00622498
+Epoch: 170      Batch:   0    Loss: 0.00014006     ContextsNorm: 0.00000000      Time/Step(s): 0.0538
+Epoch: 170      Batch: 499    Loss: 0.00011836     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 180      Batch:   0    Loss: 0.00013170     ContextsNorm: 0.00000000      Time/Step(s): 0.0538
+Epoch: 180      Batch: 499    Loss: 0.00009830     ContextsNorm: 0.00000000      Time/Step(s): 0.0541
+Epoch: 190      Batch:   0    Loss: 0.00009034     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+Epoch: 190      Batch: 499    Loss: 0.00068630     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00524847
+Epoch: 200      Batch:   0    Loss: 0.00016125     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 200      Batch: 499    Loss: 0.00006945     ContextsNorm: 0.00000000      Time/Step(s): 0.0532
+Epoch: 210      Batch:   0    Loss: 0.00010390     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 210      Batch: 499    Loss: 0.00006659     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 220      Batch:   0    Loss: 0.00009809     ContextsNorm: 0.00000000      Time/Step(s): 0.0539
+Epoch: 220      Batch: 499    Loss: 0.00008563     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 230      Batch:   0    Loss: 0.00012524     ContextsNorm: 0.00000000      Time/Step(s): 0.0537
+Epoch: 230      Batch: 499    Loss: 0.00010261     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.01830844
+Epoch: 240      Batch:   0    Loss: 0.00012243     ContextsNorm: 0.00000000      Time/Step(s): 0.0532
+Epoch: 240      Batch: 499    Loss: 0.00006271     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+Epoch: 250      Batch:   0    Loss: 0.00064765     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 250      Batch: 499    Loss: 0.00040051     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 260      Batch:   0    Loss: 0.00014827     ContextsNorm: 0.00000000      Time/Step(s): 0.0538
+Epoch: 260      Batch: 499    Loss: 0.00006514     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00378110
+        Saving best model so far ...
+Epoch: 270      Batch:   0    Loss: 0.00007755     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 270      Batch: 499    Loss: 0.00016019     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 280      Batch:   0    Loss: 0.00009256     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+Epoch: 280      Batch: 499    Loss: 0.00012633     ContextsNorm: 0.00000000      Time/Step(s): 0.0539
+Epoch: 290      Batch:   0    Loss: 0.00011061     ContextsNorm: 0.00000000      Time/Step(s): 0.0540
+Epoch: 290      Batch: 499    Loss: 0.00008600     ContextsNorm: 0.00000000      Time/Step(s): 0.0537
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00322064
+        Saving best model so far ...
+Epoch: 300      Batch:   0    Loss: 0.00009826     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 300      Batch: 499    Loss: 0.00008431     ContextsNorm: 0.00000000      Time/Step(s): 0.0540
+Epoch: 310      Batch:   0    Loss: 0.00007633     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+Epoch: 310      Batch: 499    Loss: 0.00006156     ContextsNorm: 0.00000000      Time/Step(s): 0.0533
+Epoch: 320      Batch:   0    Loss: 0.00008780     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+Epoch: 320      Batch: 499    Loss: 0.00006404     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 330      Batch:   0    Loss: 0.00008584     ContextsNorm: 0.00000000      Time/Step(s): 0.0536
+Epoch: 330      Batch: 499    Loss: 0.00008658     ContextsNorm: 0.00000000      Time/Step(s): 0.0543
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00500045
+Epoch: 332      Batch:   0    Loss: 0.00035873     ContextsNorm: 0.00000000      Time/Step(s): 0.0534
+Epoch: 332      Batch: 499    Loss: 0.00007653     ContextsNorm: 0.00000000      Time/Step(s): 0.0535
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+        Validation Criterion: 0.00640363
+
+Total gradient descent training time: 2 hours 35 mins 18 secs
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of environment batches: 500
+    Number of envs train steps per batch: 100
+    Total number of training steps: 50000
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.00008637        OtherNorms: [0.00008637 0.         0.        ]    Batch:   1     Loss: 0.00007793        OtherNorms: [0.00007793 0.         0.        ]    Batch:   2     Loss: 0.00010563        OtherNorms: [0.00010563 0.         0.        ]    Batch:   3     Loss: 0.00007156        OtherNorms: [0.00007156 0.         0.        ]    Batch:  10     Loss: 0.00006028        OtherNorms: [0.00006028 0.         0.        ]    Batch:  20     Loss: 0.00006905        OtherNorms: [0.00006905 0.         0.        ]    Batch:  30     Loss: 0.00007686        OtherNorms: [0.00007686 0.         0.        ]    Batch:  40     Loss: 0.00007209        OtherNorms: [0.00007209 0.         0.        ]    Batch:  50     Loss: 0.00009469        OtherNorms: [0.00009469 0.         0.        ]    Batch:  60     Loss: 0.00010148        OtherNorms: [0.00010148 0.         0.        ]    Batch:  70     Loss: 0.00008827        OtherNorms: [0.00008827 0.         0.        ]    Batch:  80     Loss: 0.00008076        OtherNorms: [0.00008076 0.         0.        ]    Batch:  90     Loss: 0.00006819        OtherNorms: [0.00006819 0.         0.        ]    Batch: 100     Loss: 0.00011078        OtherNorms: [0.00011078 0.         0.        ]    Batch: 110     Loss: 0.00011903        OtherNorms: [0.00011903 0.         0.        ]    Batch: 120     Loss: 0.00007103        OtherNorms: [0.00007103 0.         0.        ]    Batch: 130     Loss: 0.00010629        OtherNorms: [0.00010629 0.         0.        ]    Batch: 140     Loss: 0.00007534        OtherNorms: [0.00007534 0.         0.        ]    Batch: 150     Loss: 0.00012023        OtherNorms: [0.00012023 0.         0.        ]    Batch: 160     Loss: 0.00007377        OtherNorms: [0.00007377 0.         0.        ]    Batch: 170     Loss: 0.00010254        OtherNorms: [0.00010254 0.         0.        ]    Batch: 180     Loss: 0.00007029        OtherNorms: [0.00007029 0.         0.        ]    Batch: 190     Loss: 0.00008285        OtherNorms: [0.00008285 0.         0.        ]    Batch: 200     Loss: 0.00008623        OtherNorms: [0.00008623 0.         0.        ]    Batch: 210     Loss: 0.00011913        OtherNorms: [0.00011913 0.         0.        ]    Batch: 220     Loss: 0.00007776        OtherNorms: [0.00007776 0.         0.        ]    Batch: 230     Loss: 0.00010074        OtherNorms: [0.00010074 0.         0.        ]    Batch: 240     Loss: 0.00008886        OtherNorms: [0.00008886 0.         0.        ]    Batch: 250     Loss: 0.00010881        OtherNorms: [0.00010881 0.         0.        ]    Batch: 260     Loss: 0.00007857        OtherNorms: [0.00007857 0.         0.        ]    Batch: 270     Loss: 0.00011564        OtherNorms: [0.00011564 0.         0.        ]    Batch: 280     Loss: 0.00010848        OtherNorms: [0.00010848 0.         0.        ]    Batch: 290     Loss: 0.00008166        OtherNorms: [0.00008166 0.         0.        ]    Batch: 300     Loss: 0.00007572        OtherNorms: [0.00007572 0.         0.        ]    Batch: 310     Loss: 0.00007867        OtherNorms: [0.00007867 0.         0.        ]    Batch: 320     Loss: 0.00008735        OtherNorms: [0.00008735 0.         0.        ]    Batch: 330     Loss: 0.00008558        OtherNorms: [0.00008558 0.         0.        ]    Batch: 340     Loss: 0.00007167        OtherNorms: [0.00007167 0.         0.        ]    Batch: 350     Loss: 0.00010442        OtherNorms: [0.00010442 0.         0.        ]    Batch: 360     Loss: 0.00006688        OtherNorms: [0.00006688 0.         0.        ]    Batch: 370     Loss: 0.00008687        OtherNorms: [0.00008687 0.         0.        ]    Batch: 380     Loss: 0.00013021        OtherNorms: [0.00013021 0.         0.        ]    Batch: 390     Loss: 0.00007022        OtherNorms: [0.00007022 0.         0.        ]    Batch: 400     Loss: 0.00009685        OtherNorms: [0.00009685 0.         0.        ]    Batch: 410     Loss: 0.00010706        OtherNorms: [0.00010706 0.         0.        ]    Batch: 420     Loss: 0.00008361        OtherNorms: [0.00008361 0.         0.        ]    Batch: 430     Loss: 0.00009959        OtherNorms: [0.00009959 0.         0.        ]    Batch: 440     Loss: 0.00005600        OtherNorms: [0.000056 0.       0.      ]    Batch: 450     Loss: 0.00009992        OtherNorms: [0.00009992 0.         0.        ]    Batch: 460     Loss: 0.00007762        OtherNorms: [0.00007762 0.         0.        ]    Batch: 470     Loss: 0.00007499        OtherNorms: [0.00007499 0.         0.        ]    Batch: 480     Loss: 0.00008995        OtherNorms: [0.00008995 0.         0.        ]    Batch: 490     Loss: 0.00008438        OtherNorms: [0.00008438 0.         0.        ]    Batch: 499     Loss: 0.00007782        OtherNorms: [0.00007782 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 32 secs
+
+    Test loss value: 9.64e-05 ± 1.17e-04
+    Train loss value for criterion 0: 7.78e-05
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [9 4 8]
+    Visualized context dimensions along y: [40 10 18]
+Saving artefacts in: ./CAVIA/240914-160022/artefacts.png
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of environment batches: 1
+    Number of envs train steps per batch: 100
+    Total number of training steps: 100
+     ### (Re)Compiling function: adapt_step_cavia ...  
+     ### (Re)Compiling function: adapt_step_cavia ...  
+    Batch:   0     Loss: 0.00008409        OtherNorms: [0.00008409 0.         0.        ]
+Total gradient descent adaptation time: 0 hours 0 mins 0 secs
+
+    Test loss value: 2.69e-03 ± 1.76e-02
+    Train loss value for criterion 0: 8.41e-05
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [9 4 8]
+    Visualized context dimensions along y: [40 10 18]
+No adaptation contexts found. Using latest found.
+Saving artefacts in: ./CAVIA/240914-160022/adapt/artefacts.png
+Losses with 95% confidence interval InD: 9.637452603783458e-05 ± 2.0445077097974718e-06
+Losses with 95% confidence interval OoD: 0.002686535008251667 ± 0.001090355683118105

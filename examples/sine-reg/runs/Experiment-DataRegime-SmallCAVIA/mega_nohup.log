@@ -1,0 +1,117 @@
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime-SmallCAVIA/run_experiment.py:22: SyntaxWarning: invalid escape sequence '\('
+  os.system("echo num_envs=\("+str(num_envs)+", 1000\)" + " > " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime-SmallCAVIA/run_experiment.py:22: SyntaxWarning: invalid escape sequence '\)'
+  os.system("echo num_envs=\("+str(num_envs)+", 1000\)" + " > " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime-SmallCAVIA/run_experiment.py:23: SyntaxWarning: invalid escape sequence '\('
+  os.system("echo taylor_orders=\("+str(taylor_orders) + ", 0\)" + " >> " + current_file)
+/home/gb21553/Projects/Self-Mod/examples/sine-reg/runs/Experiment-DataRegime-SmallCAVIA/run_experiment.py:23: SyntaxWarning: invalid escape sequence '\)'
+  os.system("echo taylor_orders=\("+str(taylor_orders) + ", 0\)" + " >> " + current_file)
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=2, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=50, GU=1 ...
+Killed
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=2, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=3, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=50, GU=1 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=3, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=50, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=2, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=3, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=50, GU=5 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=2, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=0, CS=50, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=2, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=3, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
+
+
+Currently running DataRegime-CAVIA with N=12500 envs, TO=2, CS=50, GU=100 ...
+
+============ SWITCHING TO NEXT HYPERPARAMETER SET ... ============
+
