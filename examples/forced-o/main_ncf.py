@@ -17,38 +17,40 @@ from selfmod import *
 seed = 2024
 
 ## Dataloader hps
-num_envs = (8, 1)
+num_envs = (8, 6)
 num_shots = (-1, -1)
 num_workers = 0
+shuffle = False
 
 ## Learner/model hps
-context_pool_size = 1
+context_pool_size = 2
 context_size = 128
-taylor_orders = (0, 0)
-taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
+taylor_orders = (2, 0)
+# taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 # ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} 
 ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "max_steps":4096*1, "dt_init":1e-2}
 skip_steps = 1
+loss_contributors = 4
+max_ret_env_states = 8
 
 ## Train and adapt hps
 init_lrs = (5e-4, 1e-1)
 sched_factor = 1.
 max_train_batches = -1
-max_eval_batches = -1
+max_adapt_batches = -1
 
 nb_train_epochs = 1
-nb_outer_steps = 2500
-nb_inner_steps = (10, 10)
+nb_outer_steps = 2
+nb_inner_steps = (20, 20)
 
-print_error_every = (10, 100)   ## every 1000 epochs, every 1 batch
+print_error_every = (100, 100)   ## every 1000 epochs, every 1 batch
 validate_every = 100
 
 # nb_adapt_epochs = 7500
-nb_inner_steps_eval = 2500       ## To use during evaluation and visulisation
+nb_adapt_epochs = 1500       ## To use during evaluation and visulisation
 
 meta_train = True
-# run_folder = "./runs/240719-113446-Test/"
-# run_folder = "./runs/240719-205911/"
+# run_folder = "./runs/240720-012322-T3-MoreTestEnvs/"
 run_folder = None
 save_trainer = True
 
@@ -105,7 +107,7 @@ train_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/train_data.npz",
                                                num_shots=num_shots[0], 
                                                skip_steps=skip_steps), 
                               batch_size=num_envs[0],
-                              shuffle=True,
+                              shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
@@ -113,7 +115,7 @@ val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz",
                                              num_shots=num_shots[1], 
                                              skip_steps=skip_steps),
                               batch_size=num_envs[0],
-                              shuffle=True,
+                              shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
@@ -137,31 +139,8 @@ val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz",
 
 
 # ## Define model and loss function for the learner
-# class MultiMLP(eqx.Module):
-#     layers: list
-
-#     def __init__(self, in_size, out_size, context_size, hidden_size, key=None):
-#         keys = jax.random.split(key, num=4)
-
-#         self.layers = [eqx.nn.Linear(in_size+context_size+ivp_args["y0_pad_size"], hidden_size, key=keys[0]),
-#                         jax.nn.softplus,
-#                         eqx.nn.Linear(hidden_size, hidden_size, key=keys[1]),
-#                         jax.nn.softplus,
-#                         eqx.nn.Linear(hidden_size, out_size, key=keys[2]),
-#                         ]
-
-#     def __call__(self, x, ctx):
-
-#         y = jnp.concatenate((x, ctx))
-#         for layer in self.layers:
-#             y = layer(y)
-
-#         return y
-
-
-
 class MultiMLP(eqx.Module):
-    layers_data: list
+    # layers_data: list
     layers_shared: list
     activations: list
     ctx_utils:any
@@ -172,11 +151,11 @@ class MultiMLP(eqx.Module):
         keys = jax.random.split(key, num=12)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
 
-        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
-                            eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
-                            eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
+        # self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[3]), self.activations[2], 
+        #                     eqx.nn.Linear(hidden_size, hidden_size, key=keys[4]), self.activations[3], 
+        #                     eqx.nn.Linear(hidden_size, int_size, key=keys[5])]
 
-        self.layers_shared = [eqx.nn.Linear(int_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
+        self.layers_shared = [eqx.nn.Linear(1+data_size+context_size, hidden_size, key=keys[6]), self.activations[4], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[7]), self.activations[5], 
                               eqx.nn.Linear(hidden_size, hidden_size, key=keys[8]), self.activations[6], 
                               eqx.nn.Linear(hidden_size, data_size, key=keys[9])]
@@ -193,11 +172,12 @@ class MultiMLP(eqx.Module):
         # for layer in self.layers_context:
         #     ctx = layer(ctx)
 
-        y = jnp.concatenate([t_arr, y], axis=0)
-        for layer in self.layers_data:
-            y = layer(y)
+        # y = jnp.concatenate([t_arr, y], axis=0)
+        # for layer in self.layers_data:
+        #     y = layer(y)
 
-        y = jnp.concatenate([y, ctx], axis=0)
+        # y = jnp.concatenate([y, ctx], axis=0)
+        y = jnp.concatenate([t_arr, y, ctx], axis=0)
         for layer in self.layers_shared:
             y = layer(y)
 
@@ -220,37 +200,33 @@ def env_loss_fn(model, ctx, y_hat, y):
 
     return loss_val, (term1, 0., 0.)
 
-
-# neuralnet = MultiMLP(in_size=2,
-#                      out_size=2,
-#                      context_size=context_size,
-#                      hidden_size=40, 
-#                      key=model_key)
-
-
 ## Just so the model knows the kind of context to use
-contexts_ = InfDimContextParams(nb_envs=num_envs[0], 
-                            context_size=context_size, 
+contexts = InfDimContextParams(nb_envs=num_envs[0], 
+                                input_dim=1,
+                                output_dim=context_size,
                             hidden_size=32, 
                             depth=3, 
+                            activation=Swish(key=model_key),
                             key=None)
 neuralnet = MultiMLP(data_size=2,
-                     int_size=128,
+                     int_size=None,
                      hidden_size=128, 
                      context_size=context_size,
-                     ctx_utils=contexts_.ctx_utils,
-                     key=mother_key)
+                     ctx_utils=contexts.ctx_utils,
+                     key=model_key)
 
 model = NeuralODE(neuralnet=neuralnet,
                     taylor_order=taylor_orders[0],
                     ivp_args=ivp_args,
-                    t_eval=train_dataloader.dataset.t_eval.tolist())
+                    t_eval=train_dataloader.dataset.t_eval.tolist(),
+                    taylor_ad_mode="forward")
 
 learner = Learner(model=model,
                 context_size=context_size, 
                 context_pool_size=context_pool_size,
                 env_loss_fn=env_loss_fn, 
-                contexts=contexts_,     ## Optional, but good for saving !
+                contexts=contexts,     ## Optional, but good for saving !
+                loss_contributors=loss_contributors,
                 key=model_key)
 
 
@@ -258,6 +234,7 @@ learner = Learner(model=model,
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
+print("Total number of parameters in one context:", contexts.eff_context_size)
 
 
 
@@ -268,9 +245,9 @@ init_lr_model, init_lr_ctx = init_lrs
 
 bd_scales = {nb_train_epochs//3:sched_factor, 2*nb_train_epochs//3:sched_factor}
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
-opt_model = optax.adabelief(sched_model)
+opt_model = optax.adam(sched_model)
 
-opt_ctx = optax.sgd(init_lr_ctx)
+opt_ctx = optax.adam(init_lr_ctx)
 
 # trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
@@ -294,7 +271,7 @@ if meta_train == True:
     #                     backup_contexts=True,
     #                     key=trainer_key)
     trainer.meta_train(dataloader=train_dataloader, 
-                        nb_epochs=nb_train_epochs, 
+                        nb_epochs=1, 
                         nb_outer_steps=nb_outer_steps,
                         nb_inner_steps=nb_inner_steps, 
                         inner_tols=(1e-12, 1e-12), 
@@ -304,8 +281,9 @@ if meta_train == True:
                         validate_every=validate_every, 
                         save_path=trainer_save_path, 
                         val_dataloader=val_dataloader, 
+                        val_nb_steps=nb_adapt_epochs,
                         val_criterion_id=0,
-                        max_val_batches=5,
+                        max_val_batches=max_train_batches,
                         key=trainer_key)
 else:
     restore_folder = run_folder
@@ -329,30 +307,20 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
-# ind_crit, _ = visualtester.evaluate(val_dataloader, 
-#                                     nb_inner_steps=nb_inner_steps,
-#                                     max_eval_batches=max_eval_batches)
-
-# all_shots_dataloader = NumpyLoader(CelebADataset(data_folder, 
-#                                             data_split="train",
-#                                             num_shots=np.prod(resolution), 
-#                                             order_pixels=False, 
-#                                             seed=seed), 
-#                               batch_size=envs_batch_size, 
-#                               shuffle=True,
-#                               num_workers=24,
-#                               drop_last=False)
-
+ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
+                                    taylor_order=taylor_orders[1], 
+                                    nb_steps=nb_adapt_epochs,
+                                    print_error_every=print_error_every, 
+                                    criterion_id=0,
+                                    verbose=True,
+                                    val_dataloader=val_dataloader,
+                                    max_ret_env_states=max_ret_env_states,
+                                    max_adapt_batches=max_adapt_batches)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
-# visualtester.visualizeFewShotsMulti(few_shots_loader=train_dataloader,
-#                                     all_shots_loader=all_shots_dataloader,
-#                                     nb_inner_steps=nb_inner_steps_eval,
-#                                     num_envs=6,
-#                                     save_path=run_folder+"few_shots_multi_ind.png",
-#                                     key=jax.random.PRNGKey(time.time_ns())
-#                              );
+print("Loss per InD environment:", all_ind_crit[0].tolist())
+
 
 #%%
 
@@ -374,49 +342,33 @@ if meta_test:
                                                    num_shots=num_shots[0], 
                                                    skip_steps=skip_steps),
                                 batch_size=num_envs[1], 
-                                shuffle=True,
+                                shuffle=shuffle,
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    # opt_adapt = optax.sgd(init_lr_ctx)
-    # _, contexts, aux_data = trainer.meta_test(adapt_dataloader,
-    #                                         nb_inner_steps=nb_inner_steps[1],
-    #                                         taylor_order=taylor_orders[1],
-    #                                         optimizer=opt_adapt,
-    #                                         max_adapt_batches=max_train_batches,     ## JUST to set up adaptation for future tasks
-    #                                         print_error_every=print_error_every, 
-    #                                         save_path=adapt_folder)
-
-    ood_crit, _ = visualtester.evaluate(adapt_dataloader, 
-                                        taylor_order=taylor_orders[1], 
-                                        nb_inner_steps=nb_inner_steps_eval,
-                                        print_error_every=print_error_every,
-                                        max_eval_batches=max_eval_batches,
-                                        verbose=True)
-
-
-#%%
-
-## Visualise the adaptation results
-
-if meta_test:
     all_shots_loader = NumpyLoader(DynamicsDataset(data_dir="./data/adapt_test.npz", 
                                                    num_shots=num_shots[0], 
                                                    skip_steps=skip_steps),
                                 batch_size=num_envs[1],
-                                shuffle=True,
+                                shuffle=shuffle,
                                 num_workers=num_workers,
                                 drop_last=False)
 
+    ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
+                                        taylor_order=taylor_orders[1], 
+                                        nb_steps=nb_adapt_epochs,
+                                        print_error_every=print_error_every, 
+                                        criterion_id=0,
+                                        verbose=True,
+                                        val_dataloader=all_shots_loader,
+                                        max_ret_env_states=max_ret_env_states,
+                                        max_adapt_batches=max_adapt_batches)
+
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
-    # visualtester.visualizeFewShotsMulti(few_shots_loader=adapt_dataloader,
-    #                             all_shots_loader=all_shots_loader,
-    #                             nb_inner_steps=nb_inner_steps_eval,
-    #                             num_envs=6,
-    #                             save_path=adapt_folder+"few_shots_multi_ood.png",
-    #                             key=jax.random.PRNGKey(time.time_ns())
-    #                             );
+    print("Loss per OoD environment:", all_ood_crit[0].tolist())
+
+
 
 
 
