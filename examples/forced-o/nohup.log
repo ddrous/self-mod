@@ -1,240 +1,1202 @@
-2024-07-20 15:18:01.706688: W external/xla/xla/service/hlo_rematerialization.cc:2948] Can't reduce memory use below 11.17GiB (11998923472 bytes) by rematerialization; only reduced to 20.91GiB (22453397096 bytes), down from 20.91GiB (22454944060 bytes) originally
-2024-07-20 15:18:32.918761: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 20.91GiB (rounded to 22451718144)requested by op 
-2024-07-20 15:18:32.919225: W external/tsl/tsl/framework/bfc_allocator.cc:494] _________________________________________________________________________________________________**_
-E0720 15:18:32.976784 2592429 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 22451717904 bytes.
-BufferAssignment OOM Debugging.
-BufferAssignment stats:
-             parameter allocation:    1.32MiB
-              constant allocation:     3.3KiB
-        maybe_live_out allocation:    1.30MiB
-     preallocated temp allocation:   20.91GiB
-                 total allocation:   20.91GiB
-Peak buffers:
-	Buffer 1:
-		Size: 448.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,128,32]
-		==========================
-
-	Buffer 2:
-		Size: 448.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,128,32]
-		==========================
-
-	Buffer 3:
-		Size: 448.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,128,32]
-		==========================
-
-	Buffer 4:
-		Size: 224.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,256]
-		==========================
-
-	Buffer 5:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,32,32]
-		==========================
-
-	Buffer 6:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,32,32]
-		==========================
-
-	Buffer 7:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,32,32]
-		==========================
-
-	Buffer 8:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-	Buffer 9:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-	Buffer 10:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-	Buffer 11:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,128]
-		==========================
-
-	Buffer 12:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,128]
-		==========================
-
-	Buffer 13:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,128]
-		==========================
-
-	Buffer 14:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-	Buffer 15:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-
 
 ############# Contextual Self-Modulation #############
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/240720-151557/
+Created a new run folder at: ./runs/240915-171829/
 Completed copied scripts 
 
+Using 6 environments to estimate the global training loss function ...
 
-Total number of parameters in the model: 99726
+
+Total number of parameters in the model: 149006
+Total number of parameters in one context: 256
 
 
-=== Beginning meta training ... ===
-    Number of examples in a batch: 8
-    Total number of batches : 1
-    Numbers of inner steps : 5
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch along envs: 8
+    Maximum number of batches (along envs): 1
+    Total number of epochs: 1
+    Number of outer minimizations: 2000
+    Maximum numbers of inner steps per outer minimizations: (10, 10)
     Training on 1 batches
     Validating on 1 batches
-     ### (Re)Compiling function: outer_train_step ...  
-     ### (Re)Compiling function: inner_train_step ...  
-Traceback (most recent call last):
-  File "/home/gb21553/Projects/Self-Mod/examples/forced-o/main_cavia.py", line 252, in <module>
-    trainer.meta_train(dataloader=train_dataloader,
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 673, in meta_train
-    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
-                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
-    return self._call(False, args, kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
-    return self.__func__(self.__self__, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
-    out = self._cached(dynamic_donate, dynamic_nodonate, static)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 22451717904 bytes.
-BufferAssignment OOM Debugging.
-BufferAssignment stats:
-             parameter allocation:    1.32MiB
-              constant allocation:     3.3KiB
-        maybe_live_out allocation:    1.30MiB
-     preallocated temp allocation:   20.91GiB
-                 total allocation:   20.91GiB
-Peak buffers:
-	Buffer 1:
-		Size: 448.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,128,32]
-		==========================
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 11.26281166     ContextsNorm: 0.00000000      Time/Step(s): 22.7070
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:    1
+	-DiffMod:   9.05e-05
+	-DiffCxt:   infEpoch:   0      Batch:   0      OuterStep:  10      LossModel: 5.92364597     ContextsNorm: 0.00000000      Time/Step(s): 0.8402
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.56e-06
+	-DiffCxt:   4.52e-05Epoch:   0      Batch:   0      OuterStep:  20      LossModel: 7.67823601     ContextsNorm: 0.00000000      Time/Step(s): 1.1735
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.38e-06
+	-DiffCxt:   1.42e-03Epoch:   0      Batch:   0      OuterStep:  30      LossModel: 7.18868208     ContextsNorm: 0.00000000      Time/Step(s): 1.2159
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.41e-06
+	-DiffCxt:   2.49e-05Epoch:   0      Batch:   0      OuterStep:  40      LossModel: 3.89269495     ContextsNorm: 0.00000000      Time/Step(s): 1.8645
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.60e-06
+	-DiffCxt:   1.49e-05Epoch:   0      Batch:   0      OuterStep:  50      LossModel: 4.97615099     ContextsNorm: 0.00000000      Time/Step(s): 2.1434
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.41e-06
+	-DiffCxt:   7.30e-05Epoch:   0      Batch:   0      OuterStep:  60      LossModel: 5.38577366     ContextsNorm: 0.00000000      Time/Step(s): 2.3571
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.69e-06
+	-DiffCxt:   1.89e-04Epoch:   0      Batch:   0      OuterStep:  70      LossModel: 4.02709532     ContextsNorm: 0.00000000      Time/Step(s): 2.5222
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.73e-06
+	-DiffCxt:   4.25e-05Epoch:   0      Batch:   0      OuterStep:  80      LossModel: 4.62767553     ContextsNorm: 0.00000000      Time/Step(s): 2.6746
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.08e-07
+	-DiffCxt:   1.46e-05Epoch:   0      Batch:   0      OuterStep:  90      LossModel: 2.97889686     ContextsNorm: 0.00000000      Time/Step(s): 2.6293
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.77e-07
+	-DiffCxt:   3.96e-05Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.83726287     ContextsNorm: 0.00000000      Time/Step(s): 2.5977
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.17e-06
+	-DiffCxt:   2.46e-05        Validation Criterion: 0.60264486
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 110      LossModel: 0.19698571     ContextsNorm: 0.00000000      Time/Step(s): 2.7943
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.88e-08
+	-DiffCxt:   2.24e-06Epoch:   0      Batch:   0      OuterStep: 120      LossModel: 0.14424041     ContextsNorm: 0.00000000      Time/Step(s): 2.7411
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.69e-08
+	-DiffCxt:   9.98e-07Epoch:   0      Batch:   0      OuterStep: 130      LossModel: 0.11799023     ContextsNorm: 0.00000000      Time/Step(s): 2.7064
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.21e-07
+	-DiffCxt:   1.96e-06Epoch:   0      Batch:   0      OuterStep: 140      LossModel: 0.08411741     ContextsNorm: 0.00000000      Time/Step(s): 2.6329
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.90e-08
+	-DiffCxt:   1.08e-05Epoch:   0      Batch:   0      OuterStep: 150      LossModel: 0.06690102     ContextsNorm: 0.00000000      Time/Step(s): 2.5165
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.04e-07
+	-DiffCxt:   2.28e-06Epoch:   0      Batch:   0      OuterStep: 160      LossModel: 0.07775886     ContextsNorm: 0.00000000      Time/Step(s): 2.5259
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.57e-08
+	-DiffCxt:   1.01e-06Epoch:   0      Batch:   0      OuterStep: 170      LossModel: 0.05261078     ContextsNorm: 0.00000000      Time/Step(s): 2.4683
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.61e-08
+	-DiffCxt:   3.67e-07Epoch:   0      Batch:   0      OuterStep: 180      LossModel: 0.03747879     ContextsNorm: 0.00000000      Time/Step(s): 2.3343
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.40e-08
+	-DiffCxt:   7.61e-07Epoch:   0      Batch:   0      OuterStep: 190      LossModel: 0.04427063     ContextsNorm: 0.00000000      Time/Step(s): 2.2795
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.77e-08
+	-DiffCxt:   6.56e-07Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.04260195     ContextsNorm: 0.00000000      Time/Step(s): 2.2725
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.15e-09
+	-DiffCxt:   4.75e-08        Validation Criterion: 0.03771242
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 210      LossModel: 0.03623133     ContextsNorm: 0.00000000      Time/Step(s): 2.2047
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.66e-08
+	-DiffCxt:   1.16e-06Epoch:   0      Batch:   0      OuterStep: 220      LossModel: 0.04306031     ContextsNorm: 0.00000000      Time/Step(s): 2.2167
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.54e-07
+	-DiffCxt:   1.14e-06Epoch:   0      Batch:   0      OuterStep: 230      LossModel: 0.05353544     ContextsNorm: 0.00000000      Time/Step(s): 2.1440
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.86e-07
+	-DiffCxt:   1.20e-06Epoch:   0      Batch:   0      OuterStep: 240      LossModel: 0.02425236     ContextsNorm: 0.00000000      Time/Step(s): 2.1289
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.21e-08
+	-DiffCxt:   9.16e-08Epoch:   0      Batch:   0      OuterStep: 250      LossModel: 0.03084572     ContextsNorm: 0.00000000      Time/Step(s): 2.1708
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.32e-07
+	-DiffCxt:   3.30e-06Epoch:   0      Batch:   0      OuterStep: 260      LossModel: 0.02056255     ContextsNorm: 0.00000000      Time/Step(s): 2.1742
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.07e-08
+	-DiffCxt:   2.82e-06Epoch:   0      Batch:   0      OuterStep: 270      LossModel: 0.02179076     ContextsNorm: 0.00000000      Time/Step(s): 2.1081
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.39e-08
+	-DiffCxt:   9.73e-08Epoch:   0      Batch:   0      OuterStep: 280      LossModel: 0.02408338     ContextsNorm: 0.00000000      Time/Step(s): 2.1551
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.08e-08
+	-DiffCxt:   6.34e-06Epoch:   0      Batch:   0      OuterStep: 290      LossModel: 0.04010453     ContextsNorm: 0.00000000      Time/Step(s): 2.1504
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.99e-07
+	-DiffCxt:   3.69e-06Epoch:   0      Batch:   0      OuterStep: 300      LossModel: 0.01923368     ContextsNorm: 0.00000000      Time/Step(s): 2.1439
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.15e-08
+	-DiffCxt:   3.41e-07        Validation Criterion: 0.02024434
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 310      LossModel: 0.04141150     ContextsNorm: 0.00000000      Time/Step(s): 2.0851
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.02e-07
+	-DiffCxt:   4.93e-06Epoch:   0      Batch:   0      OuterStep: 320      LossModel: 0.01303678     ContextsNorm: 0.00000000      Time/Step(s): 2.1599
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.05e-08
+	-DiffCxt:   4.23e-08Epoch:   0      Batch:   0      OuterStep: 330      LossModel: 0.13165213     ContextsNorm: 0.00000000      Time/Step(s): 2.1216
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.06e-06
+	-DiffCxt:   3.63e-05Epoch:   0      Batch:   0      OuterStep: 340      LossModel: 0.10486228     ContextsNorm: 0.00000000      Time/Step(s): 2.1590
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.30e-06
+	-DiffCxt:   4.92e-05Epoch:   0      Batch:   0      OuterStep: 350      LossModel: 0.01139087     ContextsNorm: 0.00000000      Time/Step(s): 2.0716
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.97e-09
+	-DiffCxt:   1.01e-07Epoch:   0      Batch:   0      OuterStep: 360      LossModel: 0.00980308     ContextsNorm: 0.00000000      Time/Step(s): 2.0761
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.60e-09
+	-DiffCxt:   2.13e-08Epoch:   0      Batch:   0      OuterStep: 370      LossModel: 0.01796746     ContextsNorm: 0.00000000      Time/Step(s): 2.0412
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.13e-08
+	-DiffCxt:   3.73e-06Epoch:   0      Batch:   0      OuterStep: 380      LossModel: 0.01909416     ContextsNorm: 0.00000000      Time/Step(s): 2.0899
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.63e-07
+	-DiffCxt:   3.55e-06Epoch:   0      Batch:   0      OuterStep: 390      LossModel: 0.00958818     ContextsNorm: 0.00000000      Time/Step(s): 2.0889
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.78e-09
+	-DiffCxt:   9.94e-08Epoch:   0      Batch:   0      OuterStep: 400      LossModel: 0.00859188     ContextsNorm: 0.00000000      Time/Step(s): 2.0743
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.02e-09
+	-DiffCxt:   1.59e-07        Validation Criterion: 0.01514604
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 410      LossModel: 0.02282363     ContextsNorm: 0.00000000      Time/Step(s): 2.0960
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.60e-07
+	-DiffCxt:   5.12e-06Epoch:   0      Batch:   0      OuterStep: 420      LossModel: 0.09777870     ContextsNorm: 0.00000000      Time/Step(s): 2.1403
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.55e-06
+	-DiffCxt:   1.76e-05Epoch:   0      Batch:   0      OuterStep: 430      LossModel: 0.00952610     ContextsNorm: 0.00000000      Time/Step(s): 2.0804
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.94e-08
+	-DiffCxt:   2.55e-07Epoch:   0      Batch:   0      OuterStep: 440      LossModel: 0.00775817     ContextsNorm: 0.00000000      Time/Step(s): 2.0854
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.03e-09
+	-DiffCxt:   3.53e-08Epoch:   0      Batch:   0      OuterStep: 450      LossModel: 0.00723170     ContextsNorm: 0.00000000      Time/Step(s): 2.0137
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.73e-09
+	-DiffCxt:   2.76e-08Epoch:   0      Batch:   0      OuterStep: 460      LossModel: 0.93200314     ContextsNorm: 0.00000000      Time/Step(s): 2.1033
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.43e-06
+	-DiffCxt:   3.04e-05Epoch:   0      Batch:   0      OuterStep: 470      LossModel: 0.00846286     ContextsNorm: 0.00000000      Time/Step(s): 2.0772
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.53e-08
+	-DiffCxt:   1.51e-07Epoch:   0      Batch:   0      OuterStep: 480      LossModel: 0.00782422     ContextsNorm: 0.00000000      Time/Step(s): 1.9972
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.56e-09
+	-DiffCxt:   1.73e-08Epoch:   0      Batch:   0      OuterStep: 490      LossModel: 0.00677805     ContextsNorm: 0.00000000      Time/Step(s): 2.0008
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.86e-09
+	-DiffCxt:   8.45e-09Epoch:   0      Batch:   0      OuterStep: 500      LossModel: 0.01392626     ContextsNorm: 0.00000000      Time/Step(s): 1.9834
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.33e-07
+	-DiffCxt:   3.98e-06        Validation Criterion: 0.01494429
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 510      LossModel: 0.04407940     ContextsNorm: 0.00000000      Time/Step(s): 1.9719
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.08e-07
+	-DiffCxt:   2.42e-06Epoch:   0      Batch:   0      OuterStep: 520      LossModel: 0.00756844     ContextsNorm: 0.00000000      Time/Step(s): 1.9947
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.08e-08
+	-DiffCxt:   2.49e-06Epoch:   0      Batch:   0      OuterStep: 530      LossModel: 0.02506891     ContextsNorm: 0.00000000      Time/Step(s): 2.0557
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.51e-07
+	-DiffCxt:   6.98e-07Epoch:   0      Batch:   0      OuterStep: 540      LossModel: 0.03092989     ContextsNorm: 0.00000000      Time/Step(s): 2.0046
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.58e-07
+	-DiffCxt:   5.18e-06Epoch:   0      Batch:   0      OuterStep: 550      LossModel: 0.16006763     ContextsNorm: 0.00000000      Time/Step(s): 1.9962
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.19e-06
+	-DiffCxt:   9.98e-06Epoch:   0      Batch:   0      OuterStep: 560      LossModel: 0.00676849     ContextsNorm: 0.00000000      Time/Step(s): 1.9837
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.36e-08
+	-DiffCxt:   1.72e-07Epoch:   0      Batch:   0      OuterStep: 570      LossModel: 0.00573865     ContextsNorm: 0.00000000      Time/Step(s): 2.0431
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.14e-09
+	-DiffCxt:   3.76e-08Epoch:   0      Batch:   0      OuterStep: 580      LossModel: 0.00614173     ContextsNorm: 0.00000000      Time/Step(s): 2.0015
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.29e-08
+	-DiffCxt:   2.13e-07Epoch:   0      Batch:   0      OuterStep: 590      LossModel: 0.02795346     ContextsNorm: 0.00000000      Time/Step(s): 2.0008
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.99e-07
+	-DiffCxt:   7.80e-06Epoch:   0      Batch:   0      OuterStep: 600      LossModel: 0.00547051     ContextsNorm: 0.00000000      Time/Step(s): 1.9789
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.03e-08
+	-DiffCxt:   2.71e-07        Validation Criterion: 0.01524435
+Epoch:   0      Batch:   0      OuterStep: 610      LossModel: 0.02256964     ContextsNorm: 0.00000000      Time/Step(s): 1.9825
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.74e-07
+	-DiffCxt:   9.08e-07Epoch:   0      Batch:   0      OuterStep: 620      LossModel: 0.00500570     ContextsNorm: 0.00000000      Time/Step(s): 1.9540
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.09e-09
+	-DiffCxt:   2.41e-08Epoch:   0      Batch:   0      OuterStep: 630      LossModel: 0.01832262     ContextsNorm: 0.00000000      Time/Step(s): 1.9194
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.50e-06
+	-DiffCxt:   2.95e-05Epoch:   0      Batch:   0      OuterStep: 640      LossModel: 0.00792605     ContextsNorm: 0.00000000      Time/Step(s): 1.9175
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.45e-08
+	-DiffCxt:   1.71e-07Epoch:   0      Batch:   0      OuterStep: 650      LossModel: 0.00606808     ContextsNorm: 0.00000000      Time/Step(s): 1.9375
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.56e-08
+	-DiffCxt:   9.47e-08Epoch:   0      Batch:   0      OuterStep: 660      LossModel: 0.00551337     ContextsNorm: 0.00000000      Time/Step(s): 1.9260
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.11e-08
+	-DiffCxt:   1.51e-07Epoch:   0      Batch:   0      OuterStep: 670      LossModel: 0.00598901     ContextsNorm: 0.00000000      Time/Step(s): 1.8874
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.80e-08
+	-DiffCxt:   6.22e-07Epoch:   0      Batch:   0      OuterStep: 680      LossModel: 0.05665194     ContextsNorm: 0.00000000      Time/Step(s): 1.9592
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.41e-06
+	-DiffCxt:   1.42e-05Epoch:   0      Batch:   0      OuterStep: 690      LossModel: 0.00843016     ContextsNorm: 0.00000000      Time/Step(s): 2.4934
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.07e-08
+	-DiffCxt:   1.86e-07Epoch:   0      Batch:   0      OuterStep: 700      LossModel: 0.03654432     ContextsNorm: 0.00000000      Time/Step(s): 2.5148
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.53e-07
+	-DiffCxt:   2.48e-06        Validation Criterion: 0.01716682
+Epoch:   0      Batch:   0      OuterStep: 710      LossModel: 0.06004686     ContextsNorm: 0.00000000      Time/Step(s): 2.3597
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.36e-07
+	-DiffCxt:   2.84e-06Epoch:   0      Batch:   0      OuterStep: 720      LossModel: 0.00543018     ContextsNorm: 0.00000000      Time/Step(s): 2.1995
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.77e-09
+	-DiffCxt:   2.46e-08Epoch:   0      Batch:   0      OuterStep: 730      LossModel: 0.00433521     ContextsNorm: 0.00000000      Time/Step(s): 2.2133
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.89e-09
+	-DiffCxt:   1.12e-08Epoch:   0      Batch:   0      OuterStep: 740      LossModel: 0.01141359     ContextsNorm: 0.00000000      Time/Step(s): 2.0949
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.38e-07
+	-DiffCxt:   3.32e-06Epoch:   0      Batch:   0      OuterStep: 750      LossModel: 0.00426584     ContextsNorm: 0.00000000      Time/Step(s): 2.2234
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.45e-09
+	-DiffCxt:   1.57e-08Epoch:   0      Batch:   0      OuterStep: 760      LossModel: 0.00423584     ContextsNorm: 0.00000000      Time/Step(s): 2.0253
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.41e-08
+	-DiffCxt:   6.62e-08Epoch:   0      Batch:   0      OuterStep: 770      LossModel: 0.00601023     ContextsNorm: 0.00000000      Time/Step(s): 2.1144
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.18e-08
+	-DiffCxt:   7.61e-08Epoch:   0      Batch:   0      OuterStep: 780      LossModel: 0.02569628     ContextsNorm: 0.00000000      Time/Step(s): 2.1282
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.54e-07
+	-DiffCxt:   6.17e-07Epoch:   0      Batch:   0      OuterStep: 790      LossModel: 0.00461389     ContextsNorm: 0.00000000      Time/Step(s): 2.0416
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.85e-08
+	-DiffCxt:   2.80e-07Epoch:   0      Batch:   0      OuterStep: 800      LossModel: 1.22819543     ContextsNorm: 0.00000000      Time/Step(s): 2.0635
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.97e-05
+	-DiffCxt:   9.12e-05        Validation Criterion: 0.07070089
+Epoch:   0      Batch:   0      OuterStep: 810      LossModel: 0.03395281     ContextsNorm: 0.00000000      Time/Step(s): 2.1432
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.72e-07
+	-DiffCxt:   4.16e-06Epoch:   0      Batch:   0      OuterStep: 820      LossModel: 0.00872291     ContextsNorm: 0.00000000      Time/Step(s): 2.0833
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.54e-08
+	-DiffCxt:   2.54e-07Epoch:   0      Batch:   0      OuterStep: 830      LossModel: 0.00629559     ContextsNorm: 0.00000000      Time/Step(s): 2.0848
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.75e-08
+	-DiffCxt:   1.20e-08Epoch:   0      Batch:   0      OuterStep: 840      LossModel: 0.00553339     ContextsNorm: 0.00000000      Time/Step(s): 2.0247
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.90e-09
+	-DiffCxt:   1.89e-08Epoch:   0      Batch:   0      OuterStep: 850      LossModel: 0.00521870     ContextsNorm: 0.00000000      Time/Step(s): 2.0444
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.89e-09
+	-DiffCxt:   3.28e-08Epoch:   0      Batch:   0      OuterStep: 860      LossModel: 0.00499448     ContextsNorm: 0.00000000      Time/Step(s): 1.9785
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.65e-09
+	-DiffCxt:   8.37e-08Epoch:   0      Batch:   0      OuterStep: 870      LossModel: 0.00462570     ContextsNorm: 0.00000000      Time/Step(s): 1.9200
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.25e-08
+	-DiffCxt:   1.36e-07Epoch:   0      Batch:   0      OuterStep: 880      LossModel: 0.00426083     ContextsNorm: 0.00000000      Time/Step(s): 1.9193
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.51e-09
+	-DiffCxt:   4.84e-08Epoch:   0      Batch:   0      OuterStep: 890      LossModel: 0.00698753     ContextsNorm: 0.00000000      Time/Step(s): 1.9261
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.82e-07
+	-DiffCxt:   1.19e-06Epoch:   0      Batch:   0      OuterStep: 900      LossModel: 0.00897703     ContextsNorm: 0.00000000      Time/Step(s): 1.9131
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.43e-08
+	-DiffCxt:   1.37e-06        Validation Criterion: 0.01403862
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 910      LossModel: 0.00361627     ContextsNorm: 0.00000000      Time/Step(s): 1.9108
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.12e-09
+	-DiffCxt:   2.49e-08Epoch:   0      Batch:   0      OuterStep: 920      LossModel: 0.00340009     ContextsNorm: 0.00000000      Time/Step(s): 1.8547
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.76e-09
+	-DiffCxt:   1.08e-08Epoch:   0      Batch:   0      OuterStep: 930      LossModel: 0.00326994     ContextsNorm: 0.00000000      Time/Step(s): 1.8426
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.42e-09
+	-DiffCxt:   1.46e-07Epoch:   0      Batch:   0      OuterStep: 940      LossModel: 0.00432048     ContextsNorm: 0.00000000      Time/Step(s): 1.8327
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.82e-08
+	-DiffCxt:   5.00e-07Epoch:   0      Batch:   0      OuterStep: 950      LossModel: 0.19492109     ContextsNorm: 0.00000000      Time/Step(s): 1.8405
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.73e-06
+	-DiffCxt:   2.04e-06Epoch:   0      Batch:   0      OuterStep: 960      LossModel: 0.00503651     ContextsNorm: 0.00000000      Time/Step(s): 1.8893
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.45e-08
+	-DiffCxt:   5.25e-07Epoch:   0      Batch:   0      OuterStep: 970      LossModel: 0.00276407     ContextsNorm: 0.00000000      Time/Step(s): 1.8549
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.87e-08
+	-DiffCxt:   9.43e-08Epoch:   0      Batch:   0      OuterStep: 980      LossModel: 0.00399014     ContextsNorm: 0.00000000      Time/Step(s): 1.8229
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.24e-07
+	-DiffCxt:   3.71e-07Epoch:   0      Batch:   0      OuterStep: 990      LossModel: 0.00421515     ContextsNorm: 0.00000000      Time/Step(s): 1.8185
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.43e-08
+	-DiffCxt:   1.81e-07Epoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.00277570     ContextsNorm: 0.00000000      Time/Step(s): 1.8224
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.58e-08
+	-DiffCxt:   2.59e-07        Validation Criterion: 0.01139623
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 1010      LossModel: 0.99333763     ContextsNorm: 0.00000000      Time/Step(s): 1.9893
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.20e-05
+	-DiffCxt:   5.45e-05Epoch:   0      Batch:   0      OuterStep: 1020      LossModel: 0.00806411     ContextsNorm: 0.00000000      Time/Step(s): 2.0705
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.52e-08
+	-DiffCxt:   1.55e-06Epoch:   0      Batch:   0      OuterStep: 1030      LossModel: 0.00575650     ContextsNorm: 0.00000000      Time/Step(s): 2.0600
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.94e-08
+	-DiffCxt:   2.95e-08Epoch:   0      Batch:   0      OuterStep: 1040      LossModel: 0.00460890     ContextsNorm: 0.00000000      Time/Step(s): 2.0414
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.59e-09
+	-DiffCxt:   1.44e-08Epoch:   0      Batch:   0      OuterStep: 1050      LossModel: 0.00446427     ContextsNorm: 0.00000000      Time/Step(s): 2.0605
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.21e-08
+	-DiffCxt:   6.96e-08Epoch:   0      Batch:   0      OuterStep: 1060      LossModel: 0.00316174     ContextsNorm: 0.00000000      Time/Step(s): 2.0276
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.21e-08
+	-DiffCxt:   3.87e-07Epoch:   0      Batch:   0      OuterStep: 1070      LossModel: 0.00366589     ContextsNorm: 0.00000000      Time/Step(s): 1.9203
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.39e-08
+	-DiffCxt:   1.95e-07Epoch:   0      Batch:   0      OuterStep: 1080      LossModel: 0.00328251     ContextsNorm: 0.00000000      Time/Step(s): 1.8600
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.39e-09
+	-DiffCxt:   8.55e-08Epoch:   0      Batch:   0      OuterStep: 1090      LossModel: 0.00308507     ContextsNorm: 0.00000000      Time/Step(s): 1.8894
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.21e-08
+	-DiffCxt:   4.27e-07Epoch:   0      Batch:   0      OuterStep: 1100      LossModel: 0.00605224     ContextsNorm: 0.00000000      Time/Step(s): 1.8954
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.73e-07
+	-DiffCxt:   1.83e-06        Validation Criterion: 0.01001704
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 1110      LossModel: 0.00383092     ContextsNorm: 0.00000000      Time/Step(s): 1.9140
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.81e-08
+	-DiffCxt:   9.23e-08Epoch:   0      Batch:   0      OuterStep: 1120      LossModel: 0.08518047     ContextsNorm: 0.00000000      Time/Step(s): 1.8757
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.09e-06
+	-DiffCxt:   2.90e-05Epoch:   0      Batch:   0      OuterStep: 1130      LossModel: 0.00977412     ContextsNorm: 0.00000000      Time/Step(s): 1.8318
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.18e-07
+	-DiffCxt:   1.38e-06Epoch:   0      Batch:   0      OuterStep: 1140      LossModel: 0.00900152     ContextsNorm: 0.00000000      Time/Step(s): 1.8439
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.04e-06
+	-DiffCxt:   1.29e-05Epoch:   0      Batch:   0      OuterStep: 1150      LossModel: 0.02438836     ContextsNorm: 0.00000000      Time/Step(s): 1.9730
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.14e-07
+	-DiffCxt:   2.51e-06Epoch:   0      Batch:   0      OuterStep: 1160      LossModel: 0.00350857     ContextsNorm: 0.00000000      Time/Step(s): 1.9094
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.73e-08
+	-DiffCxt:   6.39e-08Epoch:   0      Batch:   0      OuterStep: 1170      LossModel: 0.00264542     ContextsNorm: 0.00000000      Time/Step(s): 1.9001
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.32e-09
+	-DiffCxt:   3.13e-08Epoch:   0      Batch:   0      OuterStep: 1180      LossModel: 0.00236443     ContextsNorm: 0.00000000      Time/Step(s): 1.8717
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.24e-09
+	-DiffCxt:   9.87e-09Epoch:   0      Batch:   0      OuterStep: 1190      LossModel: 0.01920029     ContextsNorm: 0.00000000      Time/Step(s): 1.8500
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.39e-07
+	-DiffCxt:   1.57e-05Epoch:   0      Batch:   0      OuterStep: 1200      LossModel: 0.00534420     ContextsNorm: 0.00000000      Time/Step(s): 1.8740
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.57e-08
+	-DiffCxt:   2.93e-08        Validation Criterion: 0.01013932
+Epoch:   0      Batch:   0      OuterStep: 1210      LossModel: 0.00184713     ContextsNorm: 0.00000000      Time/Step(s): 1.8729
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.33e-09
+	-DiffCxt:   1.26e-08Epoch:   0      Batch:   0      OuterStep: 1220      LossModel: 0.00188724     ContextsNorm: 0.00000000      Time/Step(s): 1.8556
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.51e-08
+	-DiffCxt:   4.53e-08Epoch:   0      Batch:   0      OuterStep: 1230      LossModel: 0.02871973     ContextsNorm: 0.00000000      Time/Step(s): 1.8119
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.56e-07
+	-DiffCxt:   9.95e-07Epoch:   0      Batch:   0      OuterStep: 1240      LossModel: 0.00660493     ContextsNorm: 0.00000000      Time/Step(s): 1.8574
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.76e-07
+	-DiffCxt:   9.00e-07Epoch:   0      Batch:   0      OuterStep: 1250      LossModel: 0.00836514     ContextsNorm: 0.00000000      Time/Step(s): 1.8922
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.93e-07
+	-DiffCxt:   9.39e-07Epoch:   0      Batch:   0      OuterStep: 1260      LossModel: 0.02821712     ContextsNorm: 0.00000000      Time/Step(s): 1.8685
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.61e-07
+	-DiffCxt:   3.05e-06Epoch:   0      Batch:   0      OuterStep: 1270      LossModel: 0.00219171     ContextsNorm: 0.00000000      Time/Step(s): 1.8417
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.13e-09
+	-DiffCxt:   1.27e-08Epoch:   0      Batch:   0      OuterStep: 1280      LossModel: 0.00197667     ContextsNorm: 0.00000000      Time/Step(s): 1.8277
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.23e-09
+	-DiffCxt:   1.25e-08Epoch:   0      Batch:   0      OuterStep: 1290      LossModel: 0.00159112     ContextsNorm: 0.00000000      Time/Step(s): 1.8195
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.37e-09
+	-DiffCxt:   1.19e-08Epoch:   0      Batch:   0      OuterStep: 1300      LossModel: 0.00215835     ContextsNorm: 0.00000000      Time/Step(s): 1.8028
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.51e-08
+	-DiffCxt:   6.31e-08        Validation Criterion: 0.01002388
+Epoch:   0      Batch:   0      OuterStep: 1310      LossModel: 0.41177538     ContextsNorm: 0.00000000      Time/Step(s): 1.9878
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.23e-06
+	-DiffCxt:   7.05e-05Epoch:   0      Batch:   0      OuterStep: 1320      LossModel: 0.00378842     ContextsNorm: 0.00000000      Time/Step(s): 1.9312
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.79e-08
+	-DiffCxt:   1.75e-08Epoch:   0      Batch:   0      OuterStep: 1330      LossModel: 0.00353942     ContextsNorm: 0.00000000      Time/Step(s): 1.9213
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.86e-09
+	-DiffCxt:   1.44e-08Epoch:   0      Batch:   0      OuterStep: 1340      LossModel: 0.00379366     ContextsNorm: 0.00000000      Time/Step(s): 1.9039
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.02e-08
+	-DiffCxt:   4.47e-08Epoch:   0      Batch:   0      OuterStep: 1350      LossModel: 0.00246949     ContextsNorm: 0.00000000      Time/Step(s): 1.9064
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.46e-09
+	-DiffCxt:   1.35e-08Epoch:   0      Batch:   0      OuterStep: 1360      LossModel: 0.00250081     ContextsNorm: 0.00000000      Time/Step(s): 1.8655
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.05e-08
+	-DiffCxt:   4.24e-08Epoch:   0      Batch:   0      OuterStep: 1370      LossModel: 0.00182686     ContextsNorm: 0.00000000      Time/Step(s): 1.8706
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.36e-08
+	-DiffCxt:   3.77e-08Epoch:   0      Batch:   0      OuterStep: 1380      LossModel: 0.00614376     ContextsNorm: 0.00000000      Time/Step(s): 1.8822
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.53e-07
+	-DiffCxt:   1.85e-06Epoch:   0      Batch:   0      OuterStep: 1390      LossModel: 0.44682360     ContextsNorm: 0.00000000      Time/Step(s): 1.8617
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.98e-06
+	-DiffCxt:   2.16e-05Epoch:   0      Batch:   0      OuterStep: 1400      LossModel: 0.00249236     ContextsNorm: 0.00000000      Time/Step(s): 1.8601
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.52e-08
+	-DiffCxt:   7.16e-08        Validation Criterion: 0.01147073
+Epoch:   0      Batch:   0      OuterStep: 1410      LossModel: 0.00337066     ContextsNorm: 0.00000000      Time/Step(s): 1.8526
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.44e-08
+	-DiffCxt:   1.21e-07Epoch:   0      Batch:   0      OuterStep: 1420      LossModel: 0.00211643     ContextsNorm: 0.00000000      Time/Step(s): 1.8307
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.01e-08
+	-DiffCxt:   1.98e-07Epoch:   0      Batch:   0      OuterStep: 1430      LossModel: 0.00289345     ContextsNorm: 0.00000000      Time/Step(s): 1.8110
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.60e-08
+	-DiffCxt:   1.79e-07Epoch:   0      Batch:   0      OuterStep: 1440      LossModel: 0.00174987     ContextsNorm: 0.00000000      Time/Step(s): 1.8258
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.06e-09
+	-DiffCxt:   5.61e-09Epoch:   0      Batch:   0      OuterStep: 1450      LossModel: 0.00188955     ContextsNorm: 0.00000000      Time/Step(s): 1.8052
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.62e-08
+	-DiffCxt:   8.32e-08Epoch:   0      Batch:   0      OuterStep: 1460      LossModel: 0.01414826     ContextsNorm: 0.00000000      Time/Step(s): 1.8162
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.14e-07
+	-DiffCxt:   1.53e-06Epoch:   0      Batch:   0      OuterStep: 1470      LossModel: 0.00221370     ContextsNorm: 0.00000000      Time/Step(s): 1.7918
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.98e-08
+	-DiffCxt:   7.54e-08Epoch:   0      Batch:   0      OuterStep: 1480      LossModel: 0.00148352     ContextsNorm: 0.00000000      Time/Step(s): 1.7478
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.85e-09
+	-DiffCxt:   2.75e-08Epoch:   0      Batch:   0      OuterStep: 1490      LossModel: 0.00171965     ContextsNorm: 0.00000000      Time/Step(s): 1.7354
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.08e-08
+	-DiffCxt:   8.80e-08Epoch:   0      Batch:   0      OuterStep: 1500      LossModel: 0.00462440     ContextsNorm: 0.00000000      Time/Step(s): 1.9056
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.63e-08
+	-DiffCxt:   6.48e-08        Validation Criterion: 0.01218739
+Epoch:   0      Batch:   0      OuterStep: 1510      LossModel: 0.00258804     ContextsNorm: 0.00000000      Time/Step(s): 1.8646
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.70e-08
+	-DiffCxt:   7.36e-08Epoch:   0      Batch:   0      OuterStep: 1520      LossModel: 0.00236288     ContextsNorm: 0.00000000      Time/Step(s): 1.7917
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.70e-08
+	-DiffCxt:   1.99e-08Epoch:   0      Batch:   0      OuterStep: 1530      LossModel: 0.00203390     ContextsNorm: 0.00000000      Time/Step(s): 1.8042
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.45e-08
+	-DiffCxt:   5.84e-08Epoch:   0      Batch:   0      OuterStep: 1540      LossModel: 0.00310158     ContextsNorm: 0.00000000      Time/Step(s): 1.7952
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-07
+	-DiffCxt:   5.66e-07Epoch:   0      Batch:   0      OuterStep: 1550      LossModel: 0.01078913     ContextsNorm: 0.00000000      Time/Step(s): 1.7948
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.27e-07
+	-DiffCxt:   2.67e-06Epoch:   0      Batch:   0      OuterStep: 1560      LossModel: 0.00388591     ContextsNorm: 0.00000000      Time/Step(s): 1.7932
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.70e-08
+	-DiffCxt:   1.63e-07Epoch:   0      Batch:   0      OuterStep: 1570      LossModel: 0.01053933     ContextsNorm: 0.00000000      Time/Step(s): 1.8329
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.17e-07
+	-DiffCxt:   1.15e-06Epoch:   0      Batch:   0      OuterStep: 1580      LossModel: 0.00244950     ContextsNorm: 0.00000000      Time/Step(s): 1.7789
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.40e-08
+	-DiffCxt:   1.02e-07Epoch:   0      Batch:   0      OuterStep: 1590      LossModel: 0.00152641     ContextsNorm: 0.00000000      Time/Step(s): 1.7885
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.17e-09
+	-DiffCxt:   2.10e-08Epoch:   0      Batch:   0      OuterStep: 1600      LossModel: 0.00169508     ContextsNorm: 0.00000000      Time/Step(s): 1.7668
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.09e-08
+	-DiffCxt:   3.92e-08        Validation Criterion: 0.01437328
+Epoch:   0      Batch:   0      OuterStep: 1610      LossModel: 0.07644023     ContextsNorm: 0.00000000      Time/Step(s): 1.7255
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.21e-06
+	-DiffCxt:   1.44e-06Epoch:   0      Batch:   0      OuterStep: 1620      LossModel: 0.00759431     ContextsNorm: 0.00000000      Time/Step(s): 1.8134
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.18e-07
+	-DiffCxt:   1.03e-07Epoch:   0      Batch:   0      OuterStep: 1630      LossModel: 0.00839368     ContextsNorm: 0.00000000      Time/Step(s): 1.9194
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.34e-07
+	-DiffCxt:   1.51e-06Epoch:   0      Batch:   0      OuterStep: 1640      LossModel: 0.00225825     ContextsNorm: 0.00000000      Time/Step(s): 1.8065
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.71e-08
+	-DiffCxt:   1.56e-08Epoch:   0      Batch:   0      OuterStep: 1650      LossModel: 0.00162085     ContextsNorm: 0.00000000      Time/Step(s): 1.7832
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.75e-09
+	-DiffCxt:   1.06e-08Epoch:   0      Batch:   0      OuterStep: 1660      LossModel: 0.00128620     ContextsNorm: 0.00000000      Time/Step(s): 1.7654
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.81e-09
+	-DiffCxt:   7.42e-09Epoch:   0      Batch:   0      OuterStep: 1670      LossModel: 0.00151605     ContextsNorm: 0.00000000      Time/Step(s): 1.7875
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.29e-08
+	-DiffCxt:   3.82e-08Epoch:   0      Batch:   0      OuterStep: 1680      LossModel: 0.00121463     ContextsNorm: 0.00000000      Time/Step(s): 1.7840
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.09e-08
+	-DiffCxt:   1.64e-08Epoch:   0      Batch:   0      OuterStep: 1690      LossModel: 0.00173055     ContextsNorm: 0.00000000      Time/Step(s): 1.7843
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.55e-08
+	-DiffCxt:   3.58e-07Epoch:   0      Batch:   0      OuterStep: 1700      LossModel: 0.00555383     ContextsNorm: 0.00000000      Time/Step(s): 1.7420
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.30e-07
+	-DiffCxt:   2.38e-07        Validation Criterion: 0.01359006
+Epoch:   0      Batch:   0      OuterStep: 1710      LossModel: 0.02988287     ContextsNorm: 0.00000000      Time/Step(s): 1.8741
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.56e-07
+	-DiffCxt:   1.13e-06Epoch:   0      Batch:   0      OuterStep: 1720      LossModel: 0.00198954     ContextsNorm: 0.00000000      Time/Step(s): 1.7809
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.51e-08
+	-DiffCxt:   2.27e-08Epoch:   0      Batch:   0      OuterStep: 1730      LossModel: 0.00166119     ContextsNorm: 0.00000000      Time/Step(s): 1.7920
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.04e-09
+	-DiffCxt:   1.23e-08Epoch:   0      Batch:   0      OuterStep: 1740      LossModel: 0.00152298     ContextsNorm: 0.00000000      Time/Step(s): 1.8264
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.07e-08
+	-DiffCxt:   6.26e-08Epoch:   0      Batch:   0      OuterStep: 1750      LossModel: 0.00174799     ContextsNorm: 0.00000000      Time/Step(s): 1.8308
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.44e-08
+	-DiffCxt:   1.15e-07Epoch:   0      Batch:   0      OuterStep: 1760      LossModel: 0.00148777     ContextsNorm: 0.00000000      Time/Step(s): 1.7612
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.68e-08
+	-DiffCxt:   2.76e-08Epoch:   0      Batch:   0      OuterStep: 1770      LossModel: 0.02477320     ContextsNorm: 0.00000000      Time/Step(s): 1.7386
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.24e-07
+	-DiffCxt:   1.04e-06Epoch:   0      Batch:   0      OuterStep: 1780      LossModel: 0.00409051     ContextsNorm: 0.00000000      Time/Step(s): 1.8771
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.44e-08
+	-DiffCxt:   1.71e-07Epoch:   0      Batch:   0      OuterStep: 1790      LossModel: 0.00157814     ContextsNorm: 0.00000000      Time/Step(s): 1.8045
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.34e-09
+	-DiffCxt:   1.29e-08Epoch:   0      Batch:   0      OuterStep: 1800      LossModel: 0.00167185     ContextsNorm: 0.00000000      Time/Step(s): 1.7773
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.87e-09
+	-DiffCxt:   1.41e-08        Validation Criterion: 0.01169092
+Epoch:   0      Batch:   0      OuterStep: 1810      LossModel: 0.00128428     ContextsNorm: 0.00000000      Time/Step(s): 1.7470
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.73e-08
+	-DiffCxt:   4.82e-08Epoch:   0      Batch:   0      OuterStep: 1820      LossModel: 0.00119458     ContextsNorm: 0.00000000      Time/Step(s): 1.7597
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.11e-08
+	-DiffCxt:   4.05e-08Epoch:   0      Batch:   0      OuterStep: 1830      LossModel: 0.08886085     ContextsNorm: 0.00000000      Time/Step(s): 1.7639
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.03e-05
+	-DiffCxt:   1.01e-05Epoch:   0      Batch:   0      OuterStep: 1840      LossModel: 0.00295901     ContextsNorm: 0.00000000      Time/Step(s): 1.8024
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.17e-08
+	-DiffCxt:   4.82e-08Epoch:   0      Batch:   0      OuterStep: 1850      LossModel: 0.00183661     ContextsNorm: 0.00000000      Time/Step(s): 1.8201
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.95e-08
+	-DiffCxt:   1.84e-08Epoch:   0      Batch:   0      OuterStep: 1860      LossModel: 0.00160311     ContextsNorm: 0.00000000      Time/Step(s): 1.7567
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.88e-09
+	-DiffCxt:   1.31e-08Epoch:   0      Batch:   0      OuterStep: 1870      LossModel: 0.00528537     ContextsNorm: 0.00000000      Time/Step(s): 1.7496
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.13e-08
+	-DiffCxt:   2.49e-07Epoch:   0      Batch:   0      OuterStep: 1880      LossModel: 0.01658576     ContextsNorm: 0.00000000      Time/Step(s): 1.7756
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-06
+	-DiffCxt:   4.83e-06Epoch:   0      Batch:   0      OuterStep: 1890      LossModel: 0.00185930     ContextsNorm: 0.00000000      Time/Step(s): 1.7687
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.48e-08
+	-DiffCxt:   7.25e-09Epoch:   0      Batch:   0      OuterStep: 1900      LossModel: 0.00135814     ContextsNorm: 0.00000000      Time/Step(s): 1.7631
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.86e-09
+	-DiffCxt:   6.51e-09        Validation Criterion: 0.01250587
+Epoch:   0      Batch:   0      OuterStep: 1910      LossModel: 0.00294760     ContextsNorm: 0.00000000      Time/Step(s): 1.7678
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-07
+	-DiffCxt:   1.63e-07Epoch:   0      Batch:   0      OuterStep: 1920      LossModel: 0.00126810     ContextsNorm: 0.00000000      Time/Step(s): 1.7421
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.17e-09
+	-DiffCxt:   2.57e-08Epoch:   0      Batch:   0      OuterStep: 1930      LossModel: 0.00135081     ContextsNorm: 0.00000000      Time/Step(s): 1.7212
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.78e-09
+	-DiffCxt:   1.43e-08Epoch:   0      Batch:   0      OuterStep: 1940      LossModel: 0.07351846     ContextsNorm: 0.00000000      Time/Step(s): 1.7837
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.76e-06
+	-DiffCxt:   1.23e-05Epoch:   0      Batch:   0      OuterStep: 1950      LossModel: 0.00178060     ContextsNorm: 0.00000000      Time/Step(s): 1.7934
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.50e-08
+	-DiffCxt:   1.12e-08Epoch:   0      Batch:   0      OuterStep: 1960      LossModel: 0.00129110     ContextsNorm: 0.00000000      Time/Step(s): 1.7619
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.06e-09
+	-DiffCxt:   1.77e-08Epoch:   0      Batch:   0      OuterStep: 1970      LossModel: 0.00132317     ContextsNorm: 0.00000000      Time/Step(s): 1.7531
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.60e-08
+	-DiffCxt:   5.00e-08Epoch:   0      Batch:   0      OuterStep: 1980      LossModel: 0.00282359     ContextsNorm: 0.00000000      Time/Step(s): 1.7771
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.03e-08
+	-DiffCxt:   3.59e-08Epoch:   0      Batch:   0      OuterStep: 1990      LossModel: 0.00444852     ContextsNorm: 0.00000000      Time/Step(s): 1.7748
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.75e-07
+	-DiffCxt:   1.93e-07Epoch:   0      Batch:   0      OuterStep: 1999      LossModel: 0.00419050     ContextsNorm: 0.00000000      Time/Step(s): 1.7814
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.65e-07
+	-DiffCxt:   6.07e-07        Validation Criterion: 0.01419146
 
-	Buffer 2:
-		Size: 448.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,128,32]
-		==========================
+Total gradient descent training time: 1 hours 46 mins 55 secs
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
 
-	Buffer 3:
-		Size: 448.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,128,32]
-		==========================
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 8
+    Maximum number of batches (along envs): 1
+Epoch:   0      Batch:   0      Loss: 10.52405930     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 11.67242718     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 10.13646317     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 9.94868660     ContextsNorm: 0.00000000
+Epoch:  10      Batch:   0      Loss: 8.73210335     ContextsNorm: 0.00000000
+Epoch:  20      Batch:   0      Loss: 7.25919724     ContextsNorm: 0.00000000
+Epoch:  30      Batch:   0      Loss: 6.09761333     ContextsNorm: 0.00000000
+Epoch:  40      Batch:   0      Loss: 8.05366421     ContextsNorm: 0.00000000
+Epoch:  50      Batch:   0      Loss: 7.23995686     ContextsNorm: 0.00000000
+Epoch:  60      Batch:   0      Loss: 4.97564840     ContextsNorm: 0.00000000
+Epoch:  70      Batch:   0      Loss: 3.29386759     ContextsNorm: 0.00000000
+Epoch:  80      Batch:   0      Loss: 3.84669924     ContextsNorm: 0.00000000
+Epoch:  90      Batch:   0      Loss: 2.83644557     ContextsNorm: 0.00000000
+Epoch: 100      Batch:   0      Loss: 2.90979004     ContextsNorm: 0.00000000
+Epoch: 110      Batch:   0      Loss: 2.56416297     ContextsNorm: 0.00000000
+Epoch: 120      Batch:   0      Loss: 2.08503675     ContextsNorm: 0.00000000
+Epoch: 130      Batch:   0      Loss: 2.26245189     ContextsNorm: 0.00000000
+Epoch: 140      Batch:   0      Loss: 1.48038459     ContextsNorm: 0.00000000
+Epoch: 150      Batch:   0      Loss: 1.65565491     ContextsNorm: 0.00000000
+Epoch: 160      Batch:   0      Loss: 1.40938878     ContextsNorm: 0.00000000
+Epoch: 170      Batch:   0      Loss: 0.89853513     ContextsNorm: 0.00000000
+Epoch: 180      Batch:   0      Loss: 1.44466102     ContextsNorm: 0.00000000
+Epoch: 190      Batch:   0      Loss: 1.10342026     ContextsNorm: 0.00000000
+Epoch: 200      Batch:   0      Loss: 0.96824324     ContextsNorm: 0.00000000
+Epoch: 210      Batch:   0      Loss: 0.66775095     ContextsNorm: 0.00000000
+Epoch: 220      Batch:   0      Loss: 0.42711300     ContextsNorm: 0.00000000
+Epoch: 230      Batch:   0      Loss: 0.49679571     ContextsNorm: 0.00000000
+Epoch: 240      Batch:   0      Loss: 0.32358682     ContextsNorm: 0.00000000
+Epoch: 250      Batch:   0      Loss: 0.57337129     ContextsNorm: 0.00000000
+Epoch: 260      Batch:   0      Loss: 0.45647010     ContextsNorm: 0.00000000
+Epoch: 270      Batch:   0      Loss: 0.21148786     ContextsNorm: 0.00000000
+Epoch: 280      Batch:   0      Loss: 0.37405309     ContextsNorm: 0.00000000
+Epoch: 290      Batch:   0      Loss: 0.33540928     ContextsNorm: 0.00000000
+Epoch: 300      Batch:   0      Loss: 0.30246007     ContextsNorm: 0.00000000
+Epoch: 310      Batch:   0      Loss: 0.12966655     ContextsNorm: 0.00000000
+Epoch: 320      Batch:   0      Loss: 0.25493819     ContextsNorm: 0.00000000
+Epoch: 330      Batch:   0      Loss: 0.16236499     ContextsNorm: 0.00000000
+Epoch: 340      Batch:   0      Loss: 0.15697107     ContextsNorm: 0.00000000
+Epoch: 350      Batch:   0      Loss: 0.08194248     ContextsNorm: 0.00000000
+Epoch: 360      Batch:   0      Loss: 0.07359322     ContextsNorm: 0.00000000
+Epoch: 370      Batch:   0      Loss: 0.11105587     ContextsNorm: 0.00000000
+Epoch: 380      Batch:   0      Loss: 0.06162941     ContextsNorm: 0.00000000
+Epoch: 390      Batch:   0      Loss: 0.09426650     ContextsNorm: 0.00000000
+Epoch: 400      Batch:   0      Loss: 0.05070440     ContextsNorm: 0.00000000
+Epoch: 410      Batch:   0      Loss: 0.11840108     ContextsNorm: 0.00000000
+Epoch: 420      Batch:   0      Loss: 0.10907972     ContextsNorm: 0.00000000
+Epoch: 430      Batch:   0      Loss: 0.03981664     ContextsNorm: 0.00000000
+Epoch: 440      Batch:   0      Loss: 0.09398260     ContextsNorm: 0.00000000
+Epoch: 450      Batch:   0      Loss: 0.08690003     ContextsNorm: 0.00000000
+Epoch: 460      Batch:   0      Loss: 0.08114818     ContextsNorm: 0.00000000
+Epoch: 470      Batch:   0      Loss: 0.07652668     ContextsNorm: 0.00000000
+Epoch: 480      Batch:   0      Loss: 0.07160132     ContextsNorm: 0.00000000
+Epoch: 490      Batch:   0      Loss: 0.04785348     ContextsNorm: 0.00000000
+Epoch: 500      Batch:   0      Loss: 0.02622201     ContextsNorm: 0.00000000
+Epoch: 510      Batch:   0      Loss: 0.02478950     ContextsNorm: 0.00000000
+Epoch: 520      Batch:   0      Loss: 0.02348943     ContextsNorm: 0.00000000
+Epoch: 530      Batch:   0      Loss: 0.02224826     ContextsNorm: 0.00000000
+Epoch: 540      Batch:   0      Loss: 0.04998550     ContextsNorm: 0.00000000
+Epoch: 550      Batch:   0      Loss: 0.03442007     ContextsNorm: 0.00000000
+Epoch: 560      Batch:   0      Loss: 0.01955361     ContextsNorm: 0.00000000
+Epoch: 570      Batch:   0      Loss: 0.04332984     ContextsNorm: 0.00000000
+Epoch: 580      Batch:   0      Loss: 0.01786308     ContextsNorm: 0.00000000
+Epoch: 590      Batch:   0      Loss: 0.03914031     ContextsNorm: 0.00000000
+Epoch: 600      Batch:   0      Loss: 0.01667556     ContextsNorm: 0.00000000
+Epoch: 610      Batch:   0      Loss: 0.01597819     ContextsNorm: 0.00000000
+Epoch: 620      Batch:   0      Loss: 0.01568187     ContextsNorm: 0.00000000
+Epoch: 630      Batch:   0      Loss: 0.03365542     ContextsNorm: 0.00000000
+Epoch: 640      Batch:   0      Loss: 0.01485348     ContextsNorm: 0.00000000
+Epoch: 650      Batch:   0      Loss: 0.01416125     ContextsNorm: 0.00000000
+Epoch: 660      Batch:   0      Loss: 0.03037920     ContextsNorm: 0.00000000
+Epoch: 670      Batch:   0      Loss: 0.01321659     ContextsNorm: 0.00000000
+Epoch: 680      Batch:   0      Loss: 0.02785621     ContextsNorm: 0.00000000
+Epoch: 690      Batch:   0      Loss: 0.02643012     ContextsNorm: 0.00000000
+Epoch: 700      Batch:   0      Loss: 0.02584988     ContextsNorm: 0.00000000
+Epoch: 710      Batch:   0      Loss: 0.02464879     ContextsNorm: 0.00000000
+Epoch: 720      Batch:   0      Loss: 0.02338330     ContextsNorm: 0.00000000
+Epoch: 730      Batch:   0      Loss: 0.01163397     ContextsNorm: 0.00000000
+Epoch: 740      Batch:   0      Loss: 0.01134550     ContextsNorm: 0.00000000
+Epoch: 750      Batch:   0      Loss: 0.02100397     ContextsNorm: 0.00000000
+Epoch: 760      Batch:   0      Loss: 0.01084420     ContextsNorm: 0.00000000
+Epoch: 770      Batch:   0      Loss: 0.01055419     ContextsNorm: 0.00000000
+Epoch: 780      Batch:   0      Loss: 0.01058995     ContextsNorm: 0.00000000
+Epoch: 790      Batch:   0      Loss: 0.01819406     ContextsNorm: 0.00000000
+Epoch: 800      Batch:   0      Loss: 0.01767537     ContextsNorm: 0.00000000
+Epoch: 810      Batch:   0      Loss: 0.01706253     ContextsNorm: 0.00000000
+Epoch: 820      Batch:   0      Loss: 0.00946209     ContextsNorm: 0.00000000
+Epoch: 830      Batch:   0      Loss: 0.00944005     ContextsNorm: 0.00000000
+Epoch: 840      Batch:   0      Loss: 0.00935144     ContextsNorm: 0.00000000
+Epoch: 850      Batch:   0      Loss: 0.00921683     ContextsNorm: 0.00000000
+Epoch: 860      Batch:   0      Loss: 0.00890341     ContextsNorm: 0.00000000
+Epoch: 870      Batch:   0      Loss: 0.00871149     ContextsNorm: 0.00000000
+Epoch: 880      Batch:   0      Loss: 0.00875833     ContextsNorm: 0.00000000
+Epoch: 890      Batch:   0      Loss: 0.01419223     ContextsNorm: 0.00000000
+Epoch: 900      Batch:   0      Loss: 0.00832452     ContextsNorm: 0.00000000
+Epoch: 910      Batch:   0      Loss: 0.01353213     ContextsNorm: 0.00000000
+Epoch: 920      Batch:   0      Loss: 0.00807718     ContextsNorm: 0.00000000
+Epoch: 930      Batch:   0      Loss: 0.00795084     ContextsNorm: 0.00000000
+Epoch: 940      Batch:   0      Loss: 0.01247019     ContextsNorm: 0.00000000
+Epoch: 950      Batch:   0      Loss: 0.01212644     ContextsNorm: 0.00000000
+Epoch: 960      Batch:   0      Loss: 0.00762597     ContextsNorm: 0.00000000
+Epoch: 970      Batch:   0      Loss: 0.01163970     ContextsNorm: 0.00000000
+Epoch: 980      Batch:   0      Loss: 0.00735718     ContextsNorm: 0.00000000
+Epoch: 990      Batch:   0      Loss: 0.00743853     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.00729875     ContextsNorm: 0.00000000
+Epoch: 1010      Batch:   0      Loss: 0.00731629     ContextsNorm: 0.00000000
+Epoch: 1020      Batch:   0      Loss: 0.00712294     ContextsNorm: 0.00000000
+Epoch: 1030      Batch:   0      Loss: 0.01006784     ContextsNorm: 0.00000000
+Epoch: 1040      Batch:   0      Loss: 0.00708385     ContextsNorm: 0.00000000
+Epoch: 1050      Batch:   0      Loss: 0.00686374     ContextsNorm: 0.00000000
+Epoch: 1060      Batch:   0      Loss: 0.00675469     ContextsNorm: 0.00000000
+Epoch: 1070      Batch:   0      Loss: 0.00686283     ContextsNorm: 0.00000000
+Epoch: 1080      Batch:   0      Loss: 0.00663205     ContextsNorm: 0.00000000
+Epoch: 1090      Batch:   0      Loss: 0.00667780     ContextsNorm: 0.00000000
+Epoch: 1100      Batch:   0      Loss: 0.00895000     ContextsNorm: 0.00000000
+Epoch: 1110      Batch:   0      Loss: 0.00655935     ContextsNorm: 0.00000000
+Epoch: 1120      Batch:   0      Loss: 0.00642384     ContextsNorm: 0.00000000
+Epoch: 1130      Batch:   0      Loss: 0.00856902     ContextsNorm: 0.00000000
+Epoch: 1140      Batch:   0      Loss: 0.00639466     ContextsNorm: 0.00000000
+Epoch: 1150      Batch:   0      Loss: 0.00834948     ContextsNorm: 0.00000000
+Epoch: 1160      Batch:   0      Loss: 0.00825056     ContextsNorm: 0.00000000
+Epoch: 1170      Batch:   0      Loss: 0.00620570     ContextsNorm: 0.00000000
+Epoch: 1180      Batch:   0      Loss: 0.00797684     ContextsNorm: 0.00000000
+Epoch: 1190      Batch:   0      Loss: 0.00616287     ContextsNorm: 0.00000000
+Epoch: 1200      Batch:   0      Loss: 0.00786743     ContextsNorm: 0.00000000
+Epoch: 1210      Batch:   0      Loss: 0.00604685     ContextsNorm: 0.00000000
+Epoch: 1220      Batch:   0      Loss: 0.00762472     ContextsNorm: 0.00000000
+Epoch: 1230      Batch:   0      Loss: 0.00590225     ContextsNorm: 0.00000000
+Epoch: 1240      Batch:   0      Loss: 0.00738537     ContextsNorm: 0.00000000
+Epoch: 1250      Batch:   0      Loss: 0.00584393     ContextsNorm: 0.00000000
+Epoch: 1260      Batch:   0      Loss: 0.00575423     ContextsNorm: 0.00000000
+Epoch: 1270      Batch:   0      Loss: 0.00643358     ContextsNorm: 0.00000000
+Epoch: 1280      Batch:   0      Loss: 0.00699105     ContextsNorm: 0.00000000
+Epoch: 1290      Batch:   0      Loss: 0.00577702     ContextsNorm: 0.00000000
+Epoch: 1300      Batch:   0      Loss: 0.00681454     ContextsNorm: 0.00000000
+Epoch: 1310      Batch:   0      Loss: 0.00558852     ContextsNorm: 0.00000000
+Epoch: 1320      Batch:   0      Loss: 0.00558765     ContextsNorm: 0.00000000
+Epoch: 1330      Batch:   0      Loss: 0.00665486     ContextsNorm: 0.00000000
+Epoch: 1340      Batch:   0      Loss: 0.00558273     ContextsNorm: 0.00000000
+Epoch: 1350      Batch:   0      Loss: 0.00553417     ContextsNorm: 0.00000000
+Epoch: 1360      Batch:   0      Loss: 0.00570967     ContextsNorm: 0.00000000
+Epoch: 1370      Batch:   0      Loss: 0.00585937     ContextsNorm: 0.00000000
+Epoch: 1380      Batch:   0      Loss: 0.00553535     ContextsNorm: 0.00000000
+Epoch: 1390      Batch:   0      Loss: 0.00621456     ContextsNorm: 0.00000000
+Epoch: 1400      Batch:   0      Loss: 0.00612883     ContextsNorm: 0.00000000
+Epoch: 1410      Batch:   0      Loss: 0.00611052     ContextsNorm: 0.00000000
+Epoch: 1420      Batch:   0      Loss: 0.00611258     ContextsNorm: 0.00000000
+Epoch: 1430      Batch:   0      Loss: 0.00600333     ContextsNorm: 0.00000000
+Epoch: 1440      Batch:   0      Loss: 0.00535075     ContextsNorm: 0.00000000
+Epoch: 1450      Batch:   0      Loss: 0.00535721     ContextsNorm: 0.00000000
+Epoch: 1460      Batch:   0      Loss: 0.00610698     ContextsNorm: 0.00000000
+Epoch: 1470      Batch:   0      Loss: 0.00547961     ContextsNorm: 0.00000000
+Epoch: 1480      Batch:   0      Loss: 0.00524060     ContextsNorm: 0.00000000
+Epoch: 1490      Batch:   0      Loss: 0.00607395     ContextsNorm: 0.00000000
+Epoch: 1499      Batch:   0      Loss: 0.00529971     ContextsNorm: 0.00000000
 
-	Buffer 4:
-		Size: 224.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,256]
-		==========================
+Total gradient descent training time: 0 hours 2 mins 1 secs
 
-	Buffer 5:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,32,32]
-		==========================
+    Test loss value: 1.25e-02 ± 5.32e-03
+    Train loss value for criterion 0: 5.30e-03
 
-	Buffer 6:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,32,32]
-		==========================
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [99 84 64]
+    Visualized context dimensions along y: [214 175 233]
+Saving artefacts in: ./runs/240915-171829/artefacts.png
+Loss per InD environment: [0.017361031845211983, 0.0066885254345834255, 0.010309280827641487, 0.011508502066135406, 0.007592246867716312, 0.009681967087090015, 0.013250426389276981, 0.02393827587366104]
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
 
-	Buffer 7:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,32,32]
-		==========================
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 6
+    Maximum number of batches (along envs): 1
+Epoch:   0      Batch:   0      Loss: 10.32314968     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 10.15266991     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 9.98430538     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 9.81766605     ContextsNorm: 0.00000000
+Epoch:  10      Batch:   0      Loss: 8.78400326     ContextsNorm: 0.00000000
+Epoch:  20      Batch:   0      Loss: 7.56349945     ContextsNorm: 0.00000000
+Epoch:  30      Batch:   0      Loss: 6.53396225     ContextsNorm: 0.00000000
+Epoch:  40      Batch:   0      Loss: 5.66137218     ContextsNorm: 0.00000000
+Epoch:  50      Batch:   0      Loss: 4.90061665     ContextsNorm: 0.00000000
+Epoch:  60      Batch:   0      Loss: 4.25621796     ContextsNorm: 0.00000000
+Epoch:  70      Batch:   0      Loss: 3.69483280     ContextsNorm: 0.00000000
+Epoch:  80      Batch:   0      Loss: 3.20181727     ContextsNorm: 0.00000000
+Epoch:  90      Batch:   0      Loss: 2.76224971     ContextsNorm: 0.00000000
+Epoch: 100      Batch:   0      Loss: 2.37858462     ContextsNorm: 0.00000000
+Epoch: 110      Batch:   0      Loss: 2.02924442     ContextsNorm: 0.00000000
+Epoch: 120      Batch:   0      Loss: 1.72763824     ContextsNorm: 0.00000000
+Epoch: 130      Batch:   0      Loss: 1.46486509     ContextsNorm: 0.00000000
+Epoch: 140      Batch:   0      Loss: 1.24229670     ContextsNorm: 0.00000000
+Epoch: 150      Batch:   0      Loss: 1.05158854     ContextsNorm: 0.00000000
+Epoch: 160      Batch:   0      Loss: 0.89079231     ContextsNorm: 0.00000000
+Epoch: 170      Batch:   0      Loss: 0.75743747     ContextsNorm: 0.00000000
+Epoch: 180      Batch:   0      Loss: 0.64671230     ContextsNorm: 0.00000000
+Epoch: 190      Batch:   0      Loss: 0.55540144     ContextsNorm: 0.00000000
+Epoch: 200      Batch:   0      Loss: 0.48081768     ContextsNorm: 0.00000000
+Epoch: 210      Batch:   0      Loss: 0.41962618     ContextsNorm: 0.00000000
+Epoch: 220      Batch:   0      Loss: 0.36740074     ContextsNorm: 0.00000000
+Epoch: 230      Batch:   0      Loss: 0.32511088     ContextsNorm: 0.00000000
+Epoch: 240      Batch:   0      Loss: 0.28932786     ContextsNorm: 0.00000000
+Epoch: 250      Batch:   0      Loss: 0.25903437     ContextsNorm: 0.00000000
+Epoch: 260      Batch:   0      Loss: 0.23301330     ContextsNorm: 0.00000000
+Epoch: 270      Batch:   0      Loss: 0.21225643     ContextsNorm: 0.00000000
+Epoch: 280      Batch:   0      Loss: 0.19358486     ContextsNorm: 0.00000000
+Epoch: 290      Batch:   0      Loss: 0.17691700     ContextsNorm: 0.00000000
+Epoch: 300      Batch:   0      Loss: 0.16216266     ContextsNorm: 0.00000000
+Epoch: 310      Batch:   0      Loss: 0.14878556     ContextsNorm: 0.00000000
+Epoch: 320      Batch:   0      Loss: 0.13796470     ContextsNorm: 0.00000000
+Epoch: 330      Batch:   0      Loss: 0.12780583     ContextsNorm: 0.00000000
+Epoch: 340      Batch:   0      Loss: 0.11888438     ContextsNorm: 0.00000000
+Epoch: 350      Batch:   0      Loss: 0.11074664     ContextsNorm: 0.00000000
+Epoch: 360      Batch:   0      Loss: 0.10369395     ContextsNorm: 0.00000000
+Epoch: 370      Batch:   0      Loss: 0.09619306     ContextsNorm: 0.00000000
+Epoch: 380      Batch:   0      Loss: 0.08987769     ContextsNorm: 0.00000000
+Epoch: 390      Batch:   0      Loss: 0.08434086     ContextsNorm: 0.00000000
+Epoch: 400      Batch:   0      Loss: 0.07958216     ContextsNorm: 0.00000000
+Epoch: 410      Batch:   0      Loss: 0.07489806     ContextsNorm: 0.00000000
+Epoch: 420      Batch:   0      Loss: 0.07043268     ContextsNorm: 0.00000000
+Epoch: 430      Batch:   0      Loss: 0.06721321     ContextsNorm: 0.00000000
+Epoch: 440      Batch:   0      Loss: 0.06378265     ContextsNorm: 0.00000000
+Epoch: 450      Batch:   0      Loss: 0.06032857     ContextsNorm: 0.00000000
+Epoch: 460      Batch:   0      Loss: 0.05745888     ContextsNorm: 0.00000000
+Epoch: 470      Batch:   0      Loss: 0.05420370     ContextsNorm: 0.00000000
+Epoch: 480      Batch:   0      Loss: 0.05177496     ContextsNorm: 0.00000000
+Epoch: 490      Batch:   0      Loss: 0.05003801     ContextsNorm: 0.00000000
+Epoch: 500      Batch:   0      Loss: 0.04812251     ContextsNorm: 0.00000000
+Epoch: 510      Batch:   0      Loss: 0.04559051     ContextsNorm: 0.00000000
+Epoch: 520      Batch:   0      Loss: 0.04431334     ContextsNorm: 0.00000000
+Epoch: 530      Batch:   0      Loss: 0.04198226     ContextsNorm: 0.00000000
+Epoch: 540      Batch:   0      Loss: 0.04076250     ContextsNorm: 0.00000000
+Epoch: 550      Batch:   0      Loss: 0.03940754     ContextsNorm: 0.00000000
+Epoch: 560      Batch:   0      Loss: 0.03784704     ContextsNorm: 0.00000000
+Epoch: 570      Batch:   0      Loss: 0.03660477     ContextsNorm: 0.00000000
+Epoch: 580      Batch:   0      Loss: 0.03547310     ContextsNorm: 0.00000000
+Epoch: 590      Batch:   0      Loss: 0.03434754     ContextsNorm: 0.00000000
+Epoch: 600      Batch:   0      Loss: 0.03314231     ContextsNorm: 0.00000000
+Epoch: 610      Batch:   0      Loss: 0.03208081     ContextsNorm: 0.00000000
+Epoch: 620      Batch:   0      Loss: 0.03129121     ContextsNorm: 0.00000000
+Epoch: 630      Batch:   0      Loss: 0.03024959     ContextsNorm: 0.00000000
+Epoch: 640      Batch:   0      Loss: 0.02949251     ContextsNorm: 0.00000000
+Epoch: 650      Batch:   0      Loss: 0.02860488     ContextsNorm: 0.00000000
+Epoch: 660      Batch:   0      Loss: 0.02793099     ContextsNorm: 0.00000000
+Epoch: 670      Batch:   0      Loss: 0.02721795     ContextsNorm: 0.00000000
+Epoch: 680      Batch:   0      Loss: 0.02677996     ContextsNorm: 0.00000000
+Epoch: 690      Batch:   0      Loss: 0.02626119     ContextsNorm: 0.00000000
+Epoch: 700      Batch:   0      Loss: 0.02539851     ContextsNorm: 0.00000000
+Epoch: 710      Batch:   0      Loss: 0.02473630     ContextsNorm: 0.00000000
+Epoch: 720      Batch:   0      Loss: 0.02431441     ContextsNorm: 0.00000000
+Epoch: 730      Batch:   0      Loss: 0.02377210     ContextsNorm: 0.00000000
+Epoch: 740      Batch:   0      Loss: 0.02317923     ContextsNorm: 0.00000000
+Epoch: 750      Batch:   0      Loss: 0.02259911     ContextsNorm: 0.00000000
+Epoch: 760      Batch:   0      Loss: 0.02217240     ContextsNorm: 0.00000000
+Epoch: 770      Batch:   0      Loss: 0.02184409     ContextsNorm: 0.00000000
+Epoch: 780      Batch:   0      Loss: 0.02129440     ContextsNorm: 0.00000000
+Epoch: 790      Batch:   0      Loss: 0.02090152     ContextsNorm: 0.00000000
+Epoch: 800      Batch:   0      Loss: 0.02055346     ContextsNorm: 0.00000000
+Epoch: 810      Batch:   0      Loss: 0.02015865     ContextsNorm: 0.00000000
+Epoch: 820      Batch:   0      Loss: 0.01969115     ContextsNorm: 0.00000000
+Epoch: 830      Batch:   0      Loss: 0.01931321     ContextsNorm: 0.00000000
+Epoch: 840      Batch:   0      Loss: 0.01887659     ContextsNorm: 0.00000000
+Epoch: 850      Batch:   0      Loss: 0.01868710     ContextsNorm: 0.00000000
+Epoch: 860      Batch:   0      Loss: 0.01827659     ContextsNorm: 0.00000000
+Epoch: 870      Batch:   0      Loss: 0.01788732     ContextsNorm: 0.00000000
+Epoch: 880      Batch:   0      Loss: 0.01935331     ContextsNorm: 0.00000000
+Epoch: 890      Batch:   0      Loss: 0.01877932     ContextsNorm: 0.00000000
+Epoch: 900      Batch:   0      Loss: 0.01735944     ContextsNorm: 0.00000000
+Epoch: 910      Batch:   0      Loss: 0.01670085     ContextsNorm: 0.00000000
+Epoch: 920      Batch:   0      Loss: 0.01851027     ContextsNorm: 0.00000000
+Epoch: 930      Batch:   0      Loss: 0.01646002     ContextsNorm: 0.00000000
+Epoch: 940      Batch:   0      Loss: 0.01587809     ContextsNorm: 0.00000000
+Epoch: 950      Batch:   0      Loss: 0.01561828     ContextsNorm: 0.00000000
+Epoch: 960      Batch:   0      Loss: 0.01534683     ContextsNorm: 0.00000000
+Epoch: 970      Batch:   0      Loss: 0.01517712     ContextsNorm: 0.00000000
+Epoch: 980      Batch:   0      Loss: 0.01502063     ContextsNorm: 0.00000000
+Epoch: 990      Batch:   0      Loss: 0.01476577     ContextsNorm: 0.00000000
+Epoch: 1000      Batch:   0      Loss: 0.01444812     ContextsNorm: 0.00000000
+Epoch: 1010      Batch:   0      Loss: 0.01439956     ContextsNorm: 0.00000000
+Epoch: 1020      Batch:   0      Loss: 0.01405344     ContextsNorm: 0.00000000
+Epoch: 1030      Batch:   0      Loss: 0.01368869     ContextsNorm: 0.00000000
+Epoch: 1040      Batch:   0      Loss: 0.01383080     ContextsNorm: 0.00000000
+Epoch: 1050      Batch:   0      Loss: 0.01332505     ContextsNorm: 0.00000000
+Epoch: 1060      Batch:   0      Loss: 0.01316104     ContextsNorm: 0.00000000
+Epoch: 1070      Batch:   0      Loss: 0.01300936     ContextsNorm: 0.00000000
+Epoch: 1080      Batch:   0      Loss: 0.01285817     ContextsNorm: 0.00000000
+Epoch: 1090      Batch:   0      Loss: 0.01248110     ContextsNorm: 0.00000000
+Epoch: 1100      Batch:   0      Loss: 0.01237123     ContextsNorm: 0.00000000
+Epoch: 1110      Batch:   0      Loss: 0.01241350     ContextsNorm: 0.00000000
+Epoch: 1120      Batch:   0      Loss: 0.01211951     ContextsNorm: 0.00000000
+Epoch: 1130      Batch:   0      Loss: 0.01188722     ContextsNorm: 0.00000000
+Epoch: 1140      Batch:   0      Loss: 0.01163499     ContextsNorm: 0.00000000
+Epoch: 1150      Batch:   0      Loss: 0.01144574     ContextsNorm: 0.00000000
+Epoch: 1160      Batch:   0      Loss: 0.01136295     ContextsNorm: 0.00000000
+Epoch: 1170      Batch:   0      Loss: 0.01133649     ContextsNorm: 0.00000000
+Epoch: 1180      Batch:   0      Loss: 0.01411012     ContextsNorm: 0.00000000
+Epoch: 1190      Batch:   0      Loss: 0.01096184     ContextsNorm: 0.00000000
+Epoch: 1200      Batch:   0      Loss: 0.01091759     ContextsNorm: 0.00000000
+Epoch: 1210      Batch:   0      Loss: 0.01072275     ContextsNorm: 0.00000000
+Epoch: 1220      Batch:   0      Loss: 0.01063597     ContextsNorm: 0.00000000
+Epoch: 1230      Batch:   0      Loss: 0.01048483     ContextsNorm: 0.00000000
+Epoch: 1240      Batch:   0      Loss: 0.01021905     ContextsNorm: 0.00000000
+Epoch: 1250      Batch:   0      Loss: 0.01019763     ContextsNorm: 0.00000000
+Epoch: 1260      Batch:   0      Loss: 0.00997248     ContextsNorm: 0.00000000
+Epoch: 1270      Batch:   0      Loss: 0.00986557     ContextsNorm: 0.00000000
+Epoch: 1280      Batch:   0      Loss: 0.00976938     ContextsNorm: 0.00000000
+Epoch: 1290      Batch:   0      Loss: 0.00979245     ContextsNorm: 0.00000000
+Epoch: 1300      Batch:   0      Loss: 0.00980911     ContextsNorm: 0.00000000
+Epoch: 1310      Batch:   0      Loss: 0.00947480     ContextsNorm: 0.00000000
+Epoch: 1320      Batch:   0      Loss: 0.00935360     ContextsNorm: 0.00000000
+Epoch: 1330      Batch:   0      Loss: 0.00922530     ContextsNorm: 0.00000000
+Epoch: 1340      Batch:   0      Loss: 0.00908672     ContextsNorm: 0.00000000
+Epoch: 1350      Batch:   0      Loss: 0.00904146     ContextsNorm: 0.00000000
+Epoch: 1360      Batch:   0      Loss: 0.00893527     ContextsNorm: 0.00000000
+Epoch: 1370      Batch:   0      Loss: 0.00877840     ContextsNorm: 0.00000000
+Epoch: 1380      Batch:   0      Loss: 0.00880264     ContextsNorm: 0.00000000
+Epoch: 1390      Batch:   0      Loss: 0.00870268     ContextsNorm: 0.00000000
+Epoch: 1400      Batch:   0      Loss: 0.00850342     ContextsNorm: 0.00000000
+Epoch: 1410      Batch:   0      Loss: 0.00857614     ContextsNorm: 0.00000000
+Epoch: 1420      Batch:   0      Loss: 0.00840473     ContextsNorm: 0.00000000
+Epoch: 1430      Batch:   0      Loss: 0.00840065     ContextsNorm: 0.00000000
+Epoch: 1440      Batch:   0      Loss: 0.00820660     ContextsNorm: 0.00000000
+Epoch: 1450      Batch:   0      Loss: 0.00825980     ContextsNorm: 0.00000000
+Epoch: 1460      Batch:   0      Loss: 0.00808784     ContextsNorm: 0.00000000
+Epoch: 1470      Batch:   0      Loss: 0.00801891     ContextsNorm: 0.00000000
+Epoch: 1480      Batch:   0      Loss: 0.00789372     ContextsNorm: 0.00000000
+Epoch: 1490      Batch:   0      Loss: 0.00781369     ContextsNorm: 0.00000000
+Epoch: 1499      Batch:   0      Loss: 0.01070293     ContextsNorm: 0.00000000
 
-	Buffer 8:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
+Total gradient descent training time: 0 hours 1 mins 49 secs
 
-	Buffer 9:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
+    Test loss value: 2.12e-02 ± 8.98e-03
+    Train loss value for criterion 0: 1.07e-02
 
-	Buffer 10:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-	Buffer 11:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,128]
-		==========================
-
-	Buffer 12:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,128]
-		==========================
-
-	Buffer 13:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,128,128]
-		==========================
-
-	Buffer 14:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-	Buffer 15:
-		Size: 112.00MiB
-		XLA Label: fusion
-		Shape: f32[16,16,7,8,2,4,256]
-		==========================
-
-
---------------------
-For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [99 84 64]
+    Visualized context dimensions along y: [214 175 233]
+No adaptation contexts found. Using latest found.
+Saving artefacts in: ./runs/240915-171829/adapt/artefacts.png
+Loss per OoD environment: [0.009827240370213985, 0.01334977988153696, 0.017784329131245613, 0.029575541615486145, 0.0357261560857296, 0.02109987661242485]

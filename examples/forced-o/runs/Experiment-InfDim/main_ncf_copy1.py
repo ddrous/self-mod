@@ -25,12 +25,12 @@ shuffle = False
 ## Learner/model hps
 context_pool_size = 2
 context_size = 256
-taylor_orders = (3, 0)
+taylor_orders = (1, 0)
 # taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 # ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} 
 ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "max_steps":4096*1, "dt_init":1e-2}
 skip_steps = 1
-loss_contributors = -1
+loss_contributors = 6
 max_ret_env_states = 8
 
 ## Train and adapt hps

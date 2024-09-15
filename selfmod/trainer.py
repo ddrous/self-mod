@@ -122,7 +122,7 @@ class NCFTrainer(Trainer):
                     proximal_betas=(100., 100.), 
                     max_train_batches=None,
                     patience=None, 
-                    print_error_every=1, 
+                    print_error_every=(1,1), 
                     validate_every=100,
                     save_path=False, 
                     val_dataloader=None, 
@@ -203,7 +203,7 @@ class NCFTrainer(Trainer):
 
         if isinstance(print_error_every, int):
             print_error_every = (print_error_every, print_error_every)
-        print_every_batch, print_every_out_step = print_error_every
+        print_every_out_step, print_every_batch = print_error_every
 
         start_time = time.time()
 

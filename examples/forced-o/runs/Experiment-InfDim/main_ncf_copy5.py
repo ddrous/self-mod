@@ -25,12 +25,12 @@ shuffle = False
 ## Learner/model hps
 context_pool_size = 2
 context_size = 256
-taylor_orders = (3, 0)
+taylor_orders = (1, 0)
 # taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 # ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} 
 ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "max_steps":4096*1, "dt_init":1e-2}
 skip_steps = 1
-loss_contributors = -1
+loss_contributors = 6
 max_ret_env_states = 8
 
 ## Train and adapt hps
@@ -143,10 +143,10 @@ class MultiMLP(eqx.Module):
     layers_data: list
     layers_shared: list
     activations: list
-    ctx_utils:any
+    # ctx_utils:any
 
-    def __init__(self, data_size, hidden_size, int_size, context_size, ctx_utils, key=None):
-        self.ctx_utils = ctx_utils
+    def __init__(self, data_size, hidden_size, int_size, context_size, key=None):
+        # self.ctx_utils = ctx_utils
 
         keys = jax.random.split(key, num=12)
         self.activations = [Swish(key=key_i) for key_i in keys[:7]]
@@ -163,12 +163,12 @@ class MultiMLP(eqx.Module):
 
     def __call__(self, t, y, ctx_arr):
 
-        ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils
-        ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
-        ctx_fun = eqx.combine(ctx_params, ctx_static)
+        # ctx_shapes, ctx_treedef, ctx_static, _ = self.ctx_utils
+        # ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
+        # ctx_fun = eqx.combine(ctx_params, ctx_static)
 
         t_arr = jnp.array([t])
-        ctx = ctx_fun(t_arr)
+        ctx = ctx_arr
 
         y = jnp.concatenate([t_arr, y], axis=0)
         for layer in self.layers_data:
@@ -199,18 +199,20 @@ def env_loss_fn(model, ctx, y_hat, y):
     return loss_val, (term1, 0., 0.)
 
 ## Just so the model knows the kind of context to use
-contexts = InfDimContextParams(nb_envs=num_envs[0], 
-                                input_dim=1,
-                                output_dim=context_size,
-                            hidden_size=32, 
-                            depth=2, 
-                            activation=Swish(key=model_key),
-                            key=None)
+# contexts = InfDimContextParams(nb_envs=num_envs[0], 
+#                                 input_dim=1,
+#                                 output_dim=context_size,
+#                             hidden_size=32, 
+#                             depth=2, 
+#                             activation=Swish(key=model_key),
+#                             key=None)
+contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size)
+
 neuralnet = MultiMLP(data_size=2,
                      int_size=context_size,
                      hidden_size=128, 
                      context_size=context_size,
-                     ctx_utils=contexts.ctx_utils,
+                    #  ctx_utils=contexts.ctx_utils,
                      key=model_key) 
 
 model = NeuralODE(neuralnet=neuralnet,

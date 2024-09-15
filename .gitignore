@@ -93,6 +93,7 @@ examples/sine-reg/runs/*
 
 ## Forced oscillator experiment runs
 examples/forced-o/runs/*
+!examples/forced-o/runs/Experiment-InfDim
 
 
 
