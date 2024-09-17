@@ -14,7 +14,7 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2024
+seed = 2028
 
 ## Dataloader hps
 num_envs = (8, 6)
@@ -25,13 +25,12 @@ shuffle = False
 ## Learner/model hps
 context_pool_size = 2
 context_size = 256
-taylor_orders = (0, 0)
+taylor_orders = (3, 0)
 # taylor_weight_init = 10.        ## Pos for all Taylor, neg for no-Taylor, 0 for equal chances at the start
 # ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "adjoint":diffrax.DirectAdjoint()} 
-# ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "max_steps":4096*1, "dt_init":1e-2, "integrator":RK4}
-ivp_args = {"y0_pad_size":0, "return_traj":True, "max_steps":4096*10, "dt_init":1e-2, "adjoint":diffrax.DirectAdjoint()}
+ivp_args = {"T":1.0, "y0_pad_size":0, "return_traj":True, "max_steps":4096*1, "dt_init":1e-2}
 skip_steps = 1
-loss_contributors = -1
+loss_contributors = 6
 max_ret_env_states = 8
 
 ## Train and adapt hps
@@ -40,18 +39,19 @@ sched_factor = 1.
 max_train_batches = -1
 max_adapt_batches = -1
 
-nb_train_epochs = 2000
-nb_inner_steps = 2
+nb_train_epochs = 1
+nb_outer_steps = 1000
+nb_inner_steps = (10, 10)
 
 print_error_every = (10, 10)
-validate_every = nb_train_epochs//20
+validate_every = nb_outer_steps//10
 
 # nb_adapt_epochs = 7500
-nb_adapt_epochs = nb_inner_steps       ## To use during evaluation and visulisation
+nb_adapt_epochs = 1500       ## To use during evaluation and visulisation
 
 meta_train = True
-run_folder = "./runs/240719-113446-Test/"
-# run_folder = None
+# run_folder = "./runs/240915-003956/"
+run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -217,7 +217,7 @@ model = NeuralODE(neuralnet=neuralnet,
                     taylor_order=taylor_orders[0],
                     ivp_args=ivp_args,
                     t_eval=train_dataloader.dataset.t_eval.tolist(),
-                    taylor_ad_mode="reverse")
+                    taylor_ad_mode="forward")
 
 learner = Learner(model=model,
                 context_size=contexts.eff_context_size, 
@@ -248,8 +248,8 @@ opt_model = optax.adam(sched_model)
 
 opt_ctx = optax.adam(init_lr_ctx)
 
-trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
-# trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+# trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
+trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 
@@ -258,32 +258,32 @@ trainer = CAVIATrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 ## Meta-training
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
-    trainer.meta_train(dataloader=train_dataloader,
-                        nb_outer_steps=nb_train_epochs,
+    # trainer.meta_train(dataloader=train_dataloader,
+    #                     nb_epochs=nb_train_epochs,
+    #                     nb_inner_steps=nb_inner_steps, 
+    #                     max_train_batches=max_train_batches,
+    #                     print_error_every=print_error_every, 
+    #                     save_path=trainer_save_path, 
+    #                     val_dataloader=val_dataloader, 
+    #                     val_criterion_id=0,
+    #                     validate_every=nb_train_epochs//10,
+    #                     backup_contexts=True,
+    #                     key=trainer_key)
+    trainer.meta_train(dataloader=train_dataloader, 
+                        nb_epochs=1, 
+                        nb_outer_steps=nb_outer_steps,
                         nb_inner_steps=nb_inner_steps, 
-                        max_train_batches=max_train_batches,
+                        inner_tols=(1e-16, 1e-16), 
+                        proximal_betas=(10., 10.), 
+                        max_train_batches=max_train_batches, 
                         print_error_every=print_error_every, 
-                        val_dataloader=val_dataloader, 
                         validate_every=validate_every, 
                         save_path=trainer_save_path, 
+                        val_dataloader=val_dataloader, 
+                        val_nb_steps=nb_adapt_epochs,
                         val_criterion_id=0,
                         max_val_batches=max_train_batches,
                         key=trainer_key)
-    # trainer.meta_train(dataloader=train_dataloader, 
-    #                     nb_epochs=1, 
-    #                     nb_outer_steps=nb_outer_steps,
-    #                     nb_inner_steps=nb_inner_steps, 
-    #                     inner_tols=(1e-16, 1e-16), 
-    #                     proximal_betas=(10., 10.), 
-    #                     max_train_batches=max_train_batches, 
-    #                     print_error_every=print_error_every, 
-    #                     validate_every=validate_every, 
-    #                     save_path=trainer_save_path, 
-    #                     val_dataloader=val_dataloader, 
-    #                     val_nb_steps=nb_adapt_epochs,
-    #                     val_criterion_id=0,
-    #                     max_val_batches=max_train_batches,
-    #                     key=trainer_key)
 else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)

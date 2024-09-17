@@ -1,0 +1,120 @@
+Currently running main_ncf_copy0.py
+Currently running main_ncf_copy8.py
+Currently running main_ncf_copy1.py
+Currently running main_ncf_copy9.py
+Currently running main_ncf_copy2.py
+Currently running main_ncf_copy10.py
+jax.pure_callback failed
+Traceback (most recent call last):
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 79, in pure_callback_impl
+    return tree_util.tree_map(np.asarray, callback(*args))
+                                          ^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+    return tree_util.tree_leaves(self.callback_func(*args, **kwargs))
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+    raise EqxRuntimeError(msgs[_index.item()])
+equinox._errors.EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+E0916 06:00:54.112257 2883223 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: INTERNAL: CustomCall failed: CpuCallback error: Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/forced-o/main_ncf_copy10.py", line 272, in <module>
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/traceback_util.py", line 179, in reraise_with_filtered_traceback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 304, in cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 181, in _python_pjit_helper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 2789, in bind
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 391, in bind_with_trace
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 879, in process_primitive
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1525, in _pjit_call_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1508, in call_impl_cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1462, in _pjit_call_impl_python
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/profiler.py", line 335, in wrapper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/pxla.py", line 1177, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/mlir.py", line 2483, in _wrapped_callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 221, in _callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 82, in pure_callback_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/forced-o/main_ncf_copy10.py", line 272, in <module>
+    trainer.meta_train(dataloader=train_dataloader, 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
+    model, contexts, opt_state_model, loss_model, (_, term2, term3, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
+                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+-------
+This error occurred during the runtime of your JAX program. Setting the environment
+variable `EQX_ON_ERROR=breakpoint` is usually the most useful way to debug such errors.
+(This can be navigated using most of the usual commands for the Python debugger:
+`u` and `d` to move through stack frames, the name of a variable to print its value,
+etc.) See also `https://docs.kidger.site/equinox/api/errors/#equinox.error_if` for more
+information.
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+Currently running main_ncf_copy3.py
+Currently running main_ncf_copy11.py
+Currently running main_ncf_copy4.py
+Currently running main_ncf_copy12.py
+Currently running main_ncf_copy5.py
+Currently running main_ncf_copy13.py
+Currently running main_ncf_copy6.py
+Currently running main_ncf_copy14.py
+Currently running main_ncf_copy7.py
+Currently running main_ncf_copy15.py
+jax.pure_callback failed
+Traceback (most recent call last):
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 79, in pure_callback_impl
+    return tree_util.tree_map(np.asarray, callback(*args))
+                                          ^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+    return tree_util.tree_leaves(self.callback_func(*args, **kwargs))
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+    raise EqxRuntimeError(msgs[_index.item()])
+equinox._errors.EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+E0916 15:55:38.510044 3059765 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: INTERNAL: CustomCall failed: CpuCallback error: Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/forced-o/main_ncf_copy15.py", line 274, in <module>
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/traceback_util.py", line 179, in reraise_with_filtered_traceback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 304, in cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 181, in _python_pjit_helper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 2789, in bind
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 391, in bind_with_trace
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 879, in process_primitive
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1525, in _pjit_call_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1508, in call_impl_cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1462, in _pjit_call_impl_python
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/profiler.py", line 335, in wrapper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/pxla.py", line 1177, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/mlir.py", line 2483, in _wrapped_callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 221, in _callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 82, in pure_callback_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/forced-o/main_ncf_copy15.py", line 274, in <module>
+    trainer.meta_train(dataloader=train_dataloader, 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
+    model, contexts, opt_state_model, loss_model, (_, term2, term3, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
+                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+-------
+This error occurred during the runtime of your JAX program. Setting the environment
+variable `EQX_ON_ERROR=breakpoint` is usually the most useful way to debug such errors.
+(This can be navigated using most of the usual commands for the Python debugger:
+`u` and `d` to move through stack frames, the name of a variable to print its value,
+etc.) See also `https://docs.kidger.site/equinox/api/errors/#equinox.error_if` for more
+information.
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.

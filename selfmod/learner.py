@@ -897,7 +897,7 @@ class NeuralODE(eqx.Module):
                         t0=self.t_eval[0],
                         t1=self.t_eval[-1],
                         dt0=self.ivp_args.get("dt_init", 1e-2),
-                        y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 1),))], axis=0),
+                        y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 0),))], axis=0),
                         stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
                                                                     atol=self.ivp_args.get("atol", 1e-6)),
                         saveat=diffrax.SaveAt(ts=jnp.array(self.t_eval)),
