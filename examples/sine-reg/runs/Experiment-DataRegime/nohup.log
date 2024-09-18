@@ -1,0 +1,25 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+Created a new run folder at: ./CAVIA/240918-162424/
+Completed copied scripts 
+    No context template provides, using arrays ...
+    Using all environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 1841
+Total number of parameters in one context: 2
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch: 250
+    Total number of batches : 1
+    Number of outer steps: 50000
+    Numbers of inner steps : 1
+    Training on 1 batches
+    Validating on 1 batches
+     ### (Re)Compiling function: outer_train_step ...  
+     ### (Re)Compiling function: inner_train_step ...  
+Epoch:   0      Batch:   0    Loss: 4.18267345     ContextsNorm: 0.00000000      Time/Step(s): 0.6637
