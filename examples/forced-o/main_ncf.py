@@ -50,8 +50,8 @@ validate_every = nb_outer_steps//20
 nb_adapt_epochs = 1500       ## To use during evaluation and visulisation
 
 meta_train = True
-# run_folder = "./runs/240915-003956/"
-run_folder = None
+run_folder = "./runs/240915-003956/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -231,8 +231,8 @@ learner = Learner(model=model,
 
 
 
-model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
-print("\n\nTotal number of parameters in the model:", model_params)
+# model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
+print("\n\nTotal number of parameters in the model:", count_params(neuralnet.layers_shared) + count_params(neuralnet.layers_data))
 print("Total number of parameters in one context:", contexts.eff_context_size)
 
 

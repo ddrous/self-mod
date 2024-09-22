@@ -51,11 +51,12 @@ hps_range = {'num_envs': [250, 1000, 12500], 'taylor_order': [0, 2], 'context_si
 ylim = [5e-5, 2e+1]
 plot_orig = True
 error_mult = 2.0
+gradient_updates = [100, 5, 1]
 
-metric = 'mse_ood'
-ci_metric = 'ci_ood'
+metric = 'mse_ind'
+ci_metric = 'ci_ind'
 extension = 'svg'
-save_folder = "Analysis/OOD_SVG"
+save_folder = "Analysis/IND_SVG"
 
 ## Make Analysis and IND folders
 if not os.path.exists(save_folder):
@@ -100,7 +101,8 @@ for j, param in enumerate(hps[:2]):
             colors_orig = ['crimson', 'teal', 'royalblue']
 
             ## Extract 3 sub tables, for each gradient_updates value
-            for gu_id, gu in enumerate(cavia_results['gradient_updates'].unique()):
+            # for gu_id, gu in enumerate(cavia_results['gradient_updates'].unique()):
+            for gu_id, gu in enumerate(gradient_updates):
                 cavia_results_gu = cavia_results[cavia_results['gradient_updates'] == gu]
                 cavia_results_zg_gu = cavia_results_zg[cavia_results_zg['gradient_updates'] == gu]
                 maml_results_zg_gu = maml_results_zg[maml_results_zg['gradient_updates'] == gu]
