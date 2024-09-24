@@ -549,11 +549,18 @@ class ConvContextParams(eqx.Module):
 class NeuralContextFlow(eqx.Module):
     neuralnet: eqx.Module
     taylor_order: int
+    taylor_weight: jnp.ndarray
+    taylor_scale: int
 
-    def __init__(self, neuralnet, taylor_order):
+    def __init__(self, neuralnet, taylor_order, taylor_weight_init=0., taylor_scale=100):
         ############# NCF without the possibility to ignore Taylor expansion #############
         self.neuralnet = neuralnet
         self.taylor_order = taylor_order
+
+        ## Taylor weight and scale are only included for backward compatibility
+        self.taylor_weight = jnp.array([taylor_weight_init]).squeeze()
+        self.taylor_scale = taylor_scale
+
 
     def __call__(self, xs, ctx, ctx_):
 
@@ -630,8 +637,9 @@ class NeuralNeuralContextFlow(eqx.Module):
 
 class NeuralContextFlowAdaptiveTaylor(eqx.Module):
     neuralnet: eqx.Module
-
     taylor_order: int
+    taylor_weight: jnp.ndarray
+    taylor_scale: int
 
     def __init__(self, neuralnet, taylor_order, taylor_weight_init=0., taylor_scale=100):
         """ Neural Context Flow with an additional parameter to select the weight of the Taylor expansion """

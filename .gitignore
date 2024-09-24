@@ -83,6 +83,7 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 !examples/celeb-a/runs/LowDataRegimeExperiment/
 # !examples/celeb-a/runs/240901-174340-LC64/
 # !examples/celeb-a/runs/240901-220317-LC32-CP3-SuperLong/
+!examples/celeb-a/runs/DataTaylorExperiment/
 
 ## Sine experiment runs
 examples/sine-reg/runs/*

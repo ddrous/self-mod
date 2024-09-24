@@ -201,14 +201,6 @@ class CelebAVisualTester(VisualTester):
         else:
             raise ValueError("Invalid dataloader class instance provided.")
 
-        print("    Environment (batch) id:", e)
-
-        _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                                     nb_epochs=nb_steps, 
-                                                     max_ret_env_states=1,
-                                                     verbose=False)
-        X_hat, Y_true, Y_hat = X[0], Y[0], Y_hat[0]
-
         if isinstance(few_shots_loader, CelebADataLoader):
             img_size = few_shots_loader.img_size
             X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, 1)
@@ -219,6 +211,14 @@ class CelebAVisualTester(VisualTester):
         else:
             raise ValueError("Invalid dataloader class instance provided.")
 
+        print("    Environment (batch) id:", e)
+
+        _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X_few_shots, Y_few_shots)], 
+                                                     nb_steps=nb_steps, 
+                                                     max_ret_env_states=1,
+                                                     val_dataloader=[(X, Y)],
+                                                     verbose=False)
+        X_hat, Y_true, Y_hat = X[0], Y[0], Y_hat[0]
         X_few_shots, Y_few_shots = X_few_shots[0], Y_few_shots[0]
 
         fig, ax = plt.subplot_mosaic('ABC', figsize=(4*3, 3.7*1))
@@ -282,13 +282,6 @@ class CelebAVisualTester(VisualTester):
         else:
             raise ValueError("Invalid dataloader class instance provided.")
 
-
-        _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                                     nb_steps=nb_steps, 
-                                                     max_ret_env_states=num_envs,
-                                                     verbose=False)
-        X_hat, Y_true, Y_hat = X, Y, Y_hat
-
         if isinstance(few_shots_loader, CelebADataLoader):
             img_size = few_shots_loader.img_size
             X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, num_envs)
@@ -302,6 +295,12 @@ class CelebAVisualTester(VisualTester):
         else:
             raise ValueError("Invalid dataloader class instance provided.")
 
+        _, _, (X_hat, _, Y_hat) = self.trainer.meta_test(dataloader=[(X_few_shots, Y_few_shots)], 
+                                                     nb_steps=nb_steps, 
+                                                     max_ret_env_states=num_envs,
+                                                     val_dataloader=[(X, Y)],
+                                                     verbose=False)
+
         fig, ax = plt.subplots(num_envs, 3, figsize=(4*3, 3.7*num_envs))
 
         def make_image(xy_coords, rgb_pixels):
@@ -312,7 +311,7 @@ class CelebAVisualTester(VisualTester):
             return img
 
         for e in range(num_envs):
-            true_img = make_image(X_hat[e], Y_true[e])
+            true_img = make_image(X[e], Y[e])
             ax[e, 0].imshow(true_img)
 
             few_shoot_img = make_image(X_few_shots[e], Y_few_shots[e])
@@ -380,21 +379,6 @@ class CelebAVisualTester(VisualTester):
         else:
             raise ValueError("Invalid dataloader class instance provided.")
 
-        _, _, _ = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                        nb_steps=nb_steps, 
-                                        max_ret_env_states=1,
-                                        verbose=False)
-        contexts = self.trainer.learner.contexts_latest
-
-        ## Reset the model to taylor_oder
-        model = self.trainer.learner.reset_model(taylor_order, verbose=True)
-
-        ## Do a batch predict multi
-        # X, Y, Y_hat = self.trainer.learner.batch_predict_multi(model, contexts, (X, Y), max_envs=num_envs)
-        X, Y, Y_hat = self.trainer.learner.batch_predict_multi(model, contexts, (X, Y), max_envs=num_envs, uq_train_contexts=uq_train_contexts)
-
-        X_hat, Y_true, Y_hat = X, Y, Y_hat
-
         if isinstance(few_shots_loader, CelebADataLoader):
             img_size = few_shots_loader.img_size
             X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, num_envs)
@@ -407,6 +391,25 @@ class CelebAVisualTester(VisualTester):
             Y_few_shots = jnp.stack([b[1] for b in batches])
         else:
             raise ValueError("Invalid dataloader class instance provided.")
+
+        _, _, _ = self.trainer.meta_test(dataloader=[(X_few_shots, Y_few_shots)], 
+                                        nb_steps=nb_steps, 
+                                        max_ret_env_states=1,
+                                        verbose=False)
+        contexts = self.trainer.learner.contexts_latest     ## A bit dangerous, but it's fine for now !
+
+        ## Reset the model to taylor_oder
+        model = self.trainer.learner.reset_model(taylor_order, verbose=True)
+
+        ## Do a batch predict multi
+        # X, Y, Y_hat = self.trainer.learner.batch_predict_multi(model, contexts, (X, Y), max_envs=num_envs)
+        X, Y, Y_hat = self.trainer.learner.batch_predict_multi(model, 
+                                                               contexts, 
+                                                               (X, Y), 
+                                                               max_envs=num_envs, 
+                                                               uq_train_contexts=uq_train_contexts)
+
+        X_hat, Y_true, Y_hat = X, Y, Y_hat
 
         fig, ax = plt.subplots(num_envs, 5, figsize=(4*5, 3.7*num_envs))
         if num_envs==1: ax = ax[None, ...]
