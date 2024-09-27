@@ -1,0 +1,1446 @@
+/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/run_experiment.py:13: SyntaxWarning: invalid escape sequence '\('
+  os.system(f"echo taylor_orders=\({to},0\) >> {current_file}")
+/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/run_experiment.py:13: SyntaxWarning: invalid escape sequence '\)'
+  os.system(f"echo taylor_orders=\({to},0\) >> {current_file}")
+/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/run_experiment.py:20: SyntaxWarning: invalid escape sequence '\('
+  os.system(f"echo taylor_orders=\({to},0\) >> {current_file}")
+/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/run_experiment.py:20: SyntaxWarning: invalid escape sequence '\)'
+  os.system(f"echo taylor_orders=\({to},0\) >> {current_file}")
+/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/run_experiment.py:27: SyntaxWarning: invalid escape sequence '\('
+  os.system(f"echo taylor_orders=\({to},0\) >> {current_file}")
+/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/run_experiment.py:27: SyntaxWarning: invalid escape sequence '\)'
+  os.system(f"echo taylor_orders=\({to},0\) >> {current_file}")
+
+
+Currently running CAVIA with taylor_order=0 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running NCF_PAML with taylor_order=0 envs and K=10 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=0 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=0 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running NCF_PAML with taylor_order=0 envs and K=100 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=0 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=0 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+2024-09-25 02:11:03.732711: W external/xla/xla/service/hlo_rematerialization.cc:2948] Can't reduce memory use below 11.10GiB (11916522356 bytes) by rematerialization; only reduced to 13.75GiB (14762060320 bytes), down from 14.25GiB (15306045936 bytes) originally
+2024-09-25 02:11:15.007343: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 17.66GiB (rounded to 18965371136)requested by op 
+2024-09-25 02:11:15.007718: W external/tsl/tsl/framework/bfc_allocator.cc:494] _________________________________________________**________________________________________________*
+E0925 02:11:15.016642 2892333 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18965370928 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:         8B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   17.66GiB
+                 total allocation:   17.67GiB
+Peak buffers:
+	Buffer 1:
+		Size: 1015.62MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 3:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 4:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 5:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 6:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 23.44MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000]
+		==========================
+
+	Buffer 15:
+		Size: 23.44MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1,1000,3]
+		==========================
+
+
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/CAVIA-TO0-K1000.py", line 246, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1133, in meta_train
+    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+    return self._call(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+    return self.__func__(self.__self__, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+    out = self._cached(dynamic_donate, dynamic_nodonate, static)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18965370928 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:         8B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   17.66GiB
+                 total allocation:   17.67GiB
+Peak buffers:
+	Buffer 1:
+		Size: 1015.62MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 3:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 4:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 5:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,1000]
+		==========================
+
+	Buffer 6:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 1000.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 250.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 23.44MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000]
+		==========================
+
+	Buffer 15:
+		Size: 23.44MiB
+		XLA Label: fusion
+		Shape: f32[4,512,1,1000,3]
+		==========================
+
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+
+Currently running NCF_PAML with taylor_order=0 envs and K=1000 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=0 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=1 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running NCF_PAML with taylor_order=1 envs and K=10 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=1 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=1 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running NCF_PAML with taylor_order=1 envs and K=100 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=1 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=1 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+2024-09-25 10:10:25.537593: W external/xla/xla/service/hlo_rematerialization.cc:2948] Can't reduce memory use below 11.10GiB (11916522356 bytes) by rematerialization; only reduced to 59.37GiB (63744355376 bytes), down from 59.55GiB (63943298208 bytes) originally
+2024-09-25 10:10:37.341821: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 67.65GiB (rounded to 72639808512)requested by op 
+2024-09-25 10:10:37.342189: W external/tsl/tsl/framework/bfc_allocator.cc:494] _________________________________________________**________________________________________________*
+E0925 10:10:37.343108 3414161 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 72639808464 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:        24B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   67.65GiB
+                 total allocation:   67.66GiB
+Peak buffers:
+	Buffer 1:
+		Size: 2.97GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 3:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 4:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 5:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 6:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 750.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,3,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 750.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,3,1000,128]
+		==========================
+
+	Buffer 15:
+		Size: 750.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,3,1000,128]
+		==========================
+
+
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/CAVIA-TO1-K1000.py", line 246, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1133, in meta_train
+    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+    return self._call(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+    return self.__func__(self.__self__, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+    out = self._cached(dynamic_donate, dynamic_nodonate, static)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 72639808464 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:        24B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   67.65GiB
+                 total allocation:   67.66GiB
+Peak buffers:
+	Buffer 1:
+		Size: 2.97GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 3:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 4:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 5:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 6:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 750.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,3,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 750.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,3,1000,128]
+		==========================
+
+	Buffer 15:
+		Size: 750.00MiB
+		XLA Label: fusion
+		Shape: pred[4,512,3,1000,128]
+		==========================
+
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+
+Currently running NCF_PAML with taylor_order=1 envs and K=1000 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=1 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=2 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running NCF_PAML with taylor_order=2 envs and K=10 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=2 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=2 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running NCF_PAML with taylor_order=2 envs and K=100 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=2 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=2 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+2024-09-25 19:55:18.256006: W external/xla/xla/service/hlo_rematerialization.cc:2948] Can't reduce memory use below 11.10GiB (11916522356 bytes) by rematerialization; only reduced to 80.34GiB (86265198208 bytes), down from 84.60GiB (90839336904 bytes) originally
+2024-09-25 19:55:30.637780: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 83.83GiB (rounded to 90017809920)requested by op 
+2024-09-25 19:55:30.638205: W external/tsl/tsl/framework/bfc_allocator.cc:494] __________________________________________________________________________________________________**
+E0925 19:55:30.639671 4020655 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 90017809800 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:        24B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   83.83GiB
+                 total allocation:   83.85GiB
+Peak buffers:
+	Buffer 1:
+		Size: 2.97GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 3:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 4:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 5:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 6:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 15:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/CAVIA-TO2-K1000.py", line 247, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1133, in meta_train
+    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+    return self._call(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+    return self.__func__(self.__self__, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+    out = self._cached(dynamic_donate, dynamic_nodonate, static)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 90017809800 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:        24B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   83.83GiB
+                 total allocation:   83.85GiB
+Peak buffers:
+	Buffer 1:
+		Size: 2.97GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 3:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 4:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,128,3,1000]
+		==========================
+
+	Buffer 5:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 6:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 15:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+
+Currently running NCF_PAML with taylor_order=2 envs and K=1000 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=2 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=3 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running NCF_PAML with taylor_order=3 envs and K=10 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=3 envs and K=10 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=3 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+2024-09-25 22:54:56.731653: W external/xla/xla/service/hlo_rematerialization.cc:2948] Can't reduce memory use below 11.11GiB (11925277556 bytes) by rematerialization; only reduced to 12.23GiB (13129755584 bytes), down from 12.47GiB (13391882876 bytes) originally
+2024-09-25 22:55:10.393475: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 15.27GiB (rounded to 16395747840)requested by op 
+2024-09-25 22:55:10.393864: W external/tsl/tsl/framework/bfc_allocator.cc:494] _____________________________________________________________________________________________**____*
+E0925 22:55:10.395744 4124023 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 16395747832 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:    1.99MiB
+              constant allocation:        60B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   15.27GiB
+                 total allocation:   15.27GiB
+Peak buffers:
+	Buffer 1:
+		Size: 304.69MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,130]
+		==========================
+
+	Buffer 2:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 3:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 4:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 5:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 6:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 7:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 8:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 9:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 10:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 11:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 12:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 13:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 14:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 15:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/CAVIA-TO3-K100.py", line 247, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1133, in meta_train
+    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+    return self._call(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+    return self.__func__(self.__self__, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+    out = self._cached(dynamic_donate, dynamic_nodonate, static)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 16395747832 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:    1.99MiB
+              constant allocation:        60B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:   15.27GiB
+                 total allocation:   15.27GiB
+Peak buffers:
+	Buffer 1:
+		Size: 304.69MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,130]
+		==========================
+
+	Buffer 2:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 3:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 4:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 5:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 6:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 7:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 8:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 9:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 10:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 11:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 12:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 13:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 14:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+	Buffer 15:
+		Size: 300.00MiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,100,128]
+		==========================
+
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+
+Currently running NCF_PAML with taylor_order=3 envs and K=100 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=3 envs and K=100 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+
+
+Currently running CAVIA with taylor_order=3 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+2024-09-26 00:23:37.998910: W external/xla/xla/service/hlo_rematerialization.cc:2948] Can't reduce memory use below 11.10GiB (11916522356 bytes) by rematerialization; only reduced to 123.42GiB (132526629576 bytes), down from 124.26GiB (133419068012 bytes) originally
+2024-09-26 00:23:52.320374: W external/tsl/tsl/framework/bfc_allocator.cc:482] Allocator (GPU_0_bfc) ran out of memory trying to allocate 151.36GiB (rounded to 162519337984)requested by op 
+2024-09-26 00:23:52.320740: W external/tsl/tsl/framework/bfc_allocator.cc:494] _________________________________________________**________________________________________________*
+E0926 00:23:52.322733 4154013 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 162519337848 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:        60B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:  151.36GiB
+                 total allocation:  151.37GiB
+Peak buffers:
+	Buffer 1:
+		Size: 2.97GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 3:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 4:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 5:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 6:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 15:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/celeb-a/runs/DataTaylorExperiment/CAVIA-TO3-K1000.py", line 247, in <module>
+    trainer.meta_train(dataloader=train_dataloader,
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 1133, in meta_train
+    model, contexts, opt_states, loss, (term1, term2, term3) = outer_train_step(model, contexts, batch, weightings, opt_states, loss_key)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+    return self._call(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+    return self.__func__(self.__self__, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+    out = self._cached(dynamic_donate, dynamic_nodonate, static)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 162519337848 bytes.
+BufferAssignment OOM Debugging.
+BufferAssignment stats:
+             parameter allocation:   10.78MiB
+              constant allocation:        60B
+        maybe_live_out allocation:    1.01MiB
+     preallocated temp allocation:  151.36GiB
+                 total allocation:  151.37GiB
+Peak buffers:
+	Buffer 1:
+		Size: 2.97GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,130]
+		==========================
+
+	Buffer 2:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 3:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 4:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 5:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 6:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 7:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 8:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 9:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 10:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 11:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 12:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 13:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 14:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+	Buffer 15:
+		Size: 2.93GiB
+		XLA Label: fusion
+		Shape: f32[4,512,3,1000,128]
+		==========================
+
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
+
+
+Currently running NCF_PAML with taylor_order=3 envs and K=1000 shots ...
+cat: base_ncf_paml.py: No such file or directory
+
+
+Currently running NCF_NOALM with taylor_order=3 envs and K=1000 shots ...
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/matplotlib/cm.py:494: RuntimeWarning: invalid value encountered in cast
+  xx = (xx * 255).astype(np.uint8)

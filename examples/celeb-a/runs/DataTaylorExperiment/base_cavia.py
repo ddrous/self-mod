@@ -34,7 +34,9 @@ max_val_batches = 1
 pool_filling_strategy = "NF"
 loss_filling_strategy = "NF"
 
-nb_train_epochs = int(400 * 100 / k_shots)
+# nb_train_epochs = int(300 * 100 / k_shots)
+# nb_train_epochs = 300 ## Was used up to to=2 and k=100
+nb_train_epochs = 60
 nb_inner_steps = 4
 
 print_error_every = (1, 100)

@@ -1,0 +1,1886 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+New run folder created successfuly: ./runs/240927-025512/
+Completed copied scripts 
+
+Using 32 environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 66692
+Total number of parameters in one context: 128
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch along envs: 162770
+    Maximum number of batches (along envs): 1
+    Total number of epochs: 1
+    Number of outer minimizations: 450
+    Maximum numbers of inner steps per outer minimizations: (10, 10)
+    Training on 1 batches
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.33369625     ContextsNorm: 0.00000000      Time/Step(s): 14.0191
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:    1
+	-DiffMod:   1.00e-04
+	-DiffCxt:   infEpoch:   0      Batch:   0      OuterStep:   1      LossModel: 0.17691553     ContextsNorm: 0.00000000      Time/Step(s): 10.1434
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.74e-05
+	-DiffCxt:   1.75e-02Epoch:   0      Batch:   0      OuterStep:   2      LossModel: 0.09501943     ContextsNorm: 0.00000000      Time/Step(s): 10.1363
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.01e-05
+	-DiffCxt:   6.20e-03Epoch:   0      Batch:   0      OuterStep:   3      LossModel: 0.08326620     ContextsNorm: 0.00000000      Time/Step(s): 10.2114
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.77e-05
+	-DiffCxt:   3.76e-03Epoch:   0      Batch:   0      OuterStep:   4      LossModel: 0.09241546     ContextsNorm: 0.00000000      Time/Step(s): 10.0796
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.27e-06
+	-DiffCxt:   2.77e-03Epoch:   0      Batch:   0      OuterStep:   5      LossModel: 0.08289546     ContextsNorm: 0.00000000      Time/Step(s): 10.1581
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.09e-06
+	-DiffCxt:   2.22e-03Epoch:   0      Batch:   0      OuterStep:   6      LossModel: 0.08226060     ContextsNorm: 0.00000000      Time/Step(s): 10.0245
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.82e-07
+	-DiffCxt:   1.85e-03Epoch:   0      Batch:   0      OuterStep:   7      LossModel: 0.07871911     ContextsNorm: 0.00000000      Time/Step(s): 10.0398
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.29e-06
+	-DiffCxt:   1.58e-03Epoch:   0      Batch:   0      OuterStep:   8      LossModel: 0.08088287     ContextsNorm: 0.00000000      Time/Step(s): 10.0014
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.07e-06
+	-DiffCxt:   1.38e-03Epoch:   0      Batch:   0      OuterStep:   9      LossModel: 0.08185345     ContextsNorm: 0.00000000      Time/Step(s): 10.2105
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.09e-05
+	-DiffCxt:   1.23e-03Epoch:   0      Batch:   0      OuterStep:  10      LossModel: 0.09117562     ContextsNorm: 0.00000000      Time/Step(s): 10.2042
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.58e-06
+	-DiffCxt:   1.11e-03Epoch:   0      Batch:   0      OuterStep:  11      LossModel: 0.08315124     ContextsNorm: 0.00000000      Time/Step(s): 10.1573
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.01e-06
+	-DiffCxt:   1.01e-03Epoch:   0      Batch:   0      OuterStep:  12      LossModel: 0.08617917     ContextsNorm: 0.00000000      Time/Step(s): 9.9759
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.82e-05
+	-DiffCxt:   9.16e-04Epoch:   0      Batch:   0      OuterStep:  13      LossModel: 0.07839324     ContextsNorm: 0.00000000      Time/Step(s): 10.0311
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.51e-06
+	-DiffCxt:   8.44e-04Epoch:   0      Batch:   0      OuterStep:  14      LossModel: 0.07978404     ContextsNorm: 0.00000000      Time/Step(s): 10.0701
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.04e-06
+	-DiffCxt:   7.78e-04Epoch:   0      Batch:   0      OuterStep:  15      LossModel: 0.09123467     ContextsNorm: 0.00000000      Time/Step(s): 10.0198
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.44e-06
+	-DiffCxt:   7.02e-04Epoch:   0      Batch:   0      OuterStep:  16      LossModel: 0.09642268     ContextsNorm: 0.00000000      Time/Step(s): 10.1025
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.63e-07
+	-DiffCxt:   6.70e-04Epoch:   0      Batch:   0      OuterStep:  17      LossModel: 0.10156543     ContextsNorm: 0.00000000      Time/Step(s): 10.2257
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.29e-05
+	-DiffCxt:   6.33e-04Epoch:   0      Batch:   0      OuterStep:  18      LossModel: 0.05858643     ContextsNorm: 0.00000000      Time/Step(s): 10.0934
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.38e-06
+	-DiffCxt:   5.87e-04Epoch:   0      Batch:   0      OuterStep:  19      LossModel: 0.08032902     ContextsNorm: 0.00000000      Time/Step(s): 10.2639
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.65e-06
+	-DiffCxt:   5.61e-04Epoch:   0      Batch:   0      OuterStep:  20      LossModel: 0.08834107     ContextsNorm: 0.00000000      Time/Step(s): 10.2307
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.65e-06
+	-DiffCxt:   5.32e-04Epoch:   0      Batch:   0      OuterStep:  21      LossModel: 0.08387581     ContextsNorm: 0.00000000      Time/Step(s): 10.1940
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.93e-07
+	-DiffCxt:   4.96e-04Epoch:   0      Batch:   0      OuterStep:  22      LossModel: 0.08154106     ContextsNorm: 0.00000000      Time/Step(s): 10.2201
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.84e-07
+	-DiffCxt:   4.77e-04Epoch:   0      Batch:   0      OuterStep:  23      LossModel: 0.08484574     ContextsNorm: 0.00000000      Time/Step(s): 10.1751
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.17e-06
+	-DiffCxt:   4.33e-04Epoch:   0      Batch:   0      OuterStep:  24      LossModel: 0.07938855     ContextsNorm: 0.00000000      Time/Step(s): 10.2448
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.39e-06
+	-DiffCxt:   4.24e-04Epoch:   0      Batch:   0      OuterStep:  25      LossModel: 0.07279588     ContextsNorm: 0.00000000      Time/Step(s): 10.2132
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.87e-05
+	-DiffCxt:   4.08e-04Epoch:   0      Batch:   0      OuterStep:  26      LossModel: 0.07499458     ContextsNorm: 0.00000000      Time/Step(s): 10.0674
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.10e-06
+	-DiffCxt:   3.94e-04Epoch:   0      Batch:   0      OuterStep:  27      LossModel: 0.08151086     ContextsNorm: 0.00000000      Time/Step(s): 10.0716
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.07e-06
+	-DiffCxt:   3.71e-04Epoch:   0      Batch:   0      OuterStep:  28      LossModel: 0.08445247     ContextsNorm: 0.00000000      Time/Step(s): 10.0821
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.53e-06
+	-DiffCxt:   3.58e-04Epoch:   0      Batch:   0      OuterStep:  29      LossModel: 0.08647708     ContextsNorm: 0.00000000      Time/Step(s): 10.2086
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.57e-07
+	-DiffCxt:   3.51e-04Epoch:   0      Batch:   0      OuterStep:  30      LossModel: 0.08582909     ContextsNorm: 0.00000000      Time/Step(s): 10.2049
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.94e-05
+	-DiffCxt:   3.40e-04Epoch:   0      Batch:   0      OuterStep:  31      LossModel: 0.08252374     ContextsNorm: 0.00000000      Time/Step(s): 10.2440
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.16e-06
+	-DiffCxt:   3.27e-04Epoch:   0      Batch:   0      OuterStep:  32      LossModel: 0.08858825     ContextsNorm: 0.00000000      Time/Step(s): 10.1962
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.64e-06
+	-DiffCxt:   3.10e-04Epoch:   0      Batch:   0      OuterStep:  33      LossModel: 0.06442219     ContextsNorm: 0.00000000      Time/Step(s): 10.2345
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.76e-05
+	-DiffCxt:   2.99e-04Epoch:   0      Batch:   0      OuterStep:  34      LossModel: 0.07370376     ContextsNorm: 0.00000000      Time/Step(s): 10.2299
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.23e-06
+	-DiffCxt:   2.97e-04Epoch:   0      Batch:   0      OuterStep:  35      LossModel: 0.09432267     ContextsNorm: 0.00000000      Time/Step(s): 10.1649
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.86e-06
+	-DiffCxt:   2.89e-04Epoch:   0      Batch:   0      OuterStep:  36      LossModel: 0.08331371     ContextsNorm: 0.00000000      Time/Step(s): 10.0344
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.79e-05
+	-DiffCxt:   2.70e-04Epoch:   0      Batch:   0      OuterStep:  37      LossModel: 0.09369047     ContextsNorm: 0.00000000      Time/Step(s): 9.9949
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.76e-05
+	-DiffCxt:   2.55e-04Epoch:   0      Batch:   0      OuterStep:  38      LossModel: 0.08043075     ContextsNorm: 0.00000000      Time/Step(s): 10.1316
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.85e-06
+	-DiffCxt:   2.65e-04Epoch:   0      Batch:   0      OuterStep:  39      LossModel: 0.08448314     ContextsNorm: 0.00000000      Time/Step(s): 10.2097
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.54e-06
+	-DiffCxt:   2.55e-04Epoch:   0      Batch:   0      OuterStep:  40      LossModel: 0.08610704     ContextsNorm: 0.00000000      Time/Step(s): 10.2359
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.30e-07
+	-DiffCxt:   2.52e-04Epoch:   0      Batch:   0      OuterStep:  41      LossModel: 0.08995347     ContextsNorm: 0.00000000      Time/Step(s): 10.1683
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.85e-06
+	-DiffCxt:   2.36e-04Epoch:   0      Batch:   0      OuterStep:  42      LossModel: 0.09053843     ContextsNorm: 0.00000000      Time/Step(s): 10.2754
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.66e-07
+	-DiffCxt:   2.38e-04Epoch:   0      Batch:   0      OuterStep:  43      LossModel: 0.08723164     ContextsNorm: 0.00000000      Time/Step(s): 10.0143
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.75e-07
+	-DiffCxt:   2.29e-04Epoch:   0      Batch:   0      OuterStep:  44      LossModel: 0.08142592     ContextsNorm: 0.00000000      Time/Step(s): 10.0431
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.41e-06
+	-DiffCxt:   2.06e-04Epoch:   0      Batch:   0      OuterStep:  45      LossModel: 0.09380271     ContextsNorm: 0.00000000      Time/Step(s): 10.1153
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.35e-06
+	-DiffCxt:   2.19e-04Epoch:   0      Batch:   0      OuterStep:  46      LossModel: 0.09290438     ContextsNorm: 0.00000000      Time/Step(s): 10.2195
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.40e-06
+	-DiffCxt:   2.16e-04Epoch:   0      Batch:   0      OuterStep:  47      LossModel: 0.09253762     ContextsNorm: 0.00000000      Time/Step(s): 10.1292
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.63e-06
+	-DiffCxt:   2.11e-04Epoch:   0      Batch:   0      OuterStep:  48      LossModel: 0.07763042     ContextsNorm: 0.00000000      Time/Step(s): 10.0351
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.02e-06
+	-DiffCxt:   1.99e-04Epoch:   0      Batch:   0      OuterStep:  49      LossModel: 0.07543694     ContextsNorm: 0.00000000      Time/Step(s): 10.2088
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.82e-06
+	-DiffCxt:   2.00e-04Epoch:   0      Batch:   0      OuterStep:  50      LossModel: 0.08808769     ContextsNorm: 0.00000000      Time/Step(s): 10.2813
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.40e-05
+	-DiffCxt:   1.98e-04Epoch:   0      Batch:   0      OuterStep:  51      LossModel: 0.09635522     ContextsNorm: 0.00000000      Time/Step(s): 10.2056
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.02e-06
+	-DiffCxt:   1.94e-04Epoch:   0      Batch:   0      OuterStep:  52      LossModel: 0.08375728     ContextsNorm: 0.00000000      Time/Step(s): 10.2347
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.10e-06
+	-DiffCxt:   1.90e-04Epoch:   0      Batch:   0      OuterStep:  53      LossModel: 0.07893248     ContextsNorm: 0.00000000      Time/Step(s): 10.1549
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.67e-06
+	-DiffCxt:   1.86e-04Epoch:   0      Batch:   0      OuterStep:  54      LossModel: 0.08468132     ContextsNorm: 0.00000000      Time/Step(s): 10.0082
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.43e-06
+	-DiffCxt:   1.82e-04Epoch:   0      Batch:   0      OuterStep:  55      LossModel: 0.07916179     ContextsNorm: 0.00000000      Time/Step(s): 10.0735
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.69e-05
+	-DiffCxt:   1.60e-04Epoch:   0      Batch:   0      OuterStep:  56      LossModel: 0.08321308     ContextsNorm: 0.00000000      Time/Step(s): 10.2778
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.13e-05
+	-DiffCxt:   1.73e-04Epoch:   0      Batch:   0      OuterStep:  57      LossModel: 0.09111405     ContextsNorm: 0.00000000      Time/Step(s): 10.1715
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.68e-05
+	-DiffCxt:   1.71e-04Epoch:   0      Batch:   0      OuterStep:  58      LossModel: 0.07771358     ContextsNorm: 0.00000000      Time/Step(s): 10.0775
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.62e-06
+	-DiffCxt:   1.64e-04Epoch:   0      Batch:   0      OuterStep:  59      LossModel: 0.07303035     ContextsNorm: 0.00000000      Time/Step(s): 10.1144
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.17e-05
+	-DiffCxt:   1.59e-04Epoch:   0      Batch:   0      OuterStep:  60      LossModel: 0.07553107     ContextsNorm: 0.00000000      Time/Step(s): 10.2484
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.99e-06
+	-DiffCxt:   1.53e-04Epoch:   0      Batch:   0      OuterStep:  61      LossModel: 0.08489650     ContextsNorm: 0.00000000      Time/Step(s): 10.0847
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.35e-05
+	-DiffCxt:   1.38e-04Epoch:   0      Batch:   0      OuterStep:  62      LossModel: 0.08554234     ContextsNorm: 0.00000000      Time/Step(s): 10.0710
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.96e-06
+	-DiffCxt:   1.41e-04Epoch:   0      Batch:   0      OuterStep:  63      LossModel: 0.07719003     ContextsNorm: 0.00000000      Time/Step(s): 9.9974
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.12e-05
+	-DiffCxt:   1.38e-04Epoch:   0      Batch:   0      OuterStep:  64      LossModel: 0.08945018     ContextsNorm: 0.00000000      Time/Step(s): 9.9982
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.99e-06
+	-DiffCxt:   1.49e-04Epoch:   0      Batch:   0      OuterStep:  65      LossModel: 0.08211193     ContextsNorm: 0.00000000      Time/Step(s): 10.2437
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.10e-06
+	-DiffCxt:   9.81e-05Epoch:   0      Batch:   0      OuterStep:  66      LossModel: 0.09183339     ContextsNorm: 0.00000000      Time/Step(s): 10.1875
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.69e-06
+	-DiffCxt:   1.40e-04Epoch:   0      Batch:   0      OuterStep:  67      LossModel: 0.09083980     ContextsNorm: 0.00000000      Time/Step(s): 10.1572
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.90e-06
+	-DiffCxt:   1.43e-04Epoch:   0      Batch:   0      OuterStep:  68      LossModel: 0.06123567     ContextsNorm: 0.00000000      Time/Step(s): 10.2293
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.05e-05
+	-DiffCxt:   1.28e-04Epoch:   0      Batch:   0      OuterStep:  69      LossModel: 0.09962564     ContextsNorm: 0.00000000      Time/Step(s): 10.1974
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.25e-05
+	-DiffCxt:   1.31e-04Epoch:   0      Batch:   0      OuterStep:  70      LossModel: 0.08465827     ContextsNorm: 0.00000000      Time/Step(s): 10.0711
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.56e-05
+	-DiffCxt:   1.21e-04Epoch:   0      Batch:   0      OuterStep:  71      LossModel: 0.08452357     ContextsNorm: 0.00000000      Time/Step(s): 10.0360
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.67e-06
+	-DiffCxt:   1.11e-04Epoch:   0      Batch:   0      OuterStep:  72      LossModel: 0.08193895     ContextsNorm: 0.00000000      Time/Step(s): 9.9493
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.25e-06
+	-DiffCxt:   1.09e-04Epoch:   0      Batch:   0      OuterStep:  73      LossModel: 0.09069774     ContextsNorm: 0.00000000      Time/Step(s): 10.0989
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.10e-06
+	-DiffCxt:   1.04e-04Epoch:   0      Batch:   0      OuterStep:  74      LossModel: 0.08999448     ContextsNorm: 0.00000000      Time/Step(s): 10.2216
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.88e-06
+	-DiffCxt:   1.25e-04Epoch:   0      Batch:   0      OuterStep:  75      LossModel: 0.08118129     ContextsNorm: 0.00000000      Time/Step(s): 10.2527
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.63e-06
+	-DiffCxt:   1.28e-04Epoch:   0      Batch:   0      OuterStep:  76      LossModel: 0.08761809     ContextsNorm: 0.00000000      Time/Step(s): 10.2403
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.16e-06
+	-DiffCxt:   1.09e-04Epoch:   0      Batch:   0      OuterStep:  77      LossModel: 0.08792211     ContextsNorm: 0.00000000      Time/Step(s): 10.1673
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.15e-06
+	-DiffCxt:   1.26e-04Epoch:   0      Batch:   0      OuterStep:  78      LossModel: 0.08282872     ContextsNorm: 0.00000000      Time/Step(s): 10.0708
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.09e-06
+	-DiffCxt:   1.11e-04Epoch:   0      Batch:   0      OuterStep:  79      LossModel: 0.05818509     ContextsNorm: 0.00000000      Time/Step(s): 10.2480
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.50e-05
+	-DiffCxt:   1.18e-04Epoch:   0      Batch:   0      OuterStep:  80      LossModel: 0.08001894     ContextsNorm: 0.00000000      Time/Step(s): 10.2009
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.73e-05
+	-DiffCxt:   1.23e-04Epoch:   0      Batch:   0      OuterStep:  81      LossModel: 0.08861746     ContextsNorm: 0.00000000      Time/Step(s): 10.0776
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.11e-05
+	-DiffCxt:   1.19e-04Epoch:   0      Batch:   0      OuterStep:  82      LossModel: 0.07846734     ContextsNorm: 0.00000000      Time/Step(s): 10.0282
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.20e-05
+	-DiffCxt:   1.05e-04Epoch:   0      Batch:   0      OuterStep:  83      LossModel: 0.07980077     ContextsNorm: 0.00000000      Time/Step(s): 10.1752
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.91e-06
+	-DiffCxt:   1.17e-04Epoch:   0      Batch:   0      OuterStep:  84      LossModel: 0.08317728     ContextsNorm: 0.00000000      Time/Step(s): 10.2945
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.58e-06
+	-DiffCxt:   1.17e-04Epoch:   0      Batch:   0      OuterStep:  85      LossModel: 0.07683657     ContextsNorm: 0.00000000      Time/Step(s): 10.2513
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.38e-06
+	-DiffCxt:   9.95e-05Epoch:   0      Batch:   0      OuterStep:  86      LossModel: 0.09552343     ContextsNorm: 0.00000000      Time/Step(s): 10.2197
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.36e-06
+	-DiffCxt:   1.02e-04Epoch:   0      Batch:   0      OuterStep:  87      LossModel: 0.06728236     ContextsNorm: 0.00000000      Time/Step(s): 10.2515
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.67e-06
+	-DiffCxt:   1.01e-04Epoch:   0      Batch:   0      OuterStep:  88      LossModel: 0.07988279     ContextsNorm: 0.00000000      Time/Step(s): 10.2565
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.94e-06
+	-DiffCxt:   8.05e-05Epoch:   0      Batch:   0      OuterStep:  89      LossModel: 0.08793139     ContextsNorm: 0.00000000      Time/Step(s): 10.2504
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.53e-06
+	-DiffCxt:   8.58e-05Epoch:   0      Batch:   0      OuterStep:  90      LossModel: 0.08118406     ContextsNorm: 0.00000000      Time/Step(s): 10.2509
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.50e-06
+	-DiffCxt:   8.09e-05Epoch:   0      Batch:   0      OuterStep:  91      LossModel: 0.09400129     ContextsNorm: 0.00000000      Time/Step(s): 10.2421
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.30e-05
+	-DiffCxt:   8.17e-05Epoch:   0      Batch:   0      OuterStep:  92      LossModel: 0.08018691     ContextsNorm: 0.00000000      Time/Step(s): 10.2314
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.55e-05
+	-DiffCxt:   1.04e-04Epoch:   0      Batch:   0      OuterStep:  93      LossModel: 0.07565635     ContextsNorm: 0.00000000      Time/Step(s): 10.2792
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.00e-06
+	-DiffCxt:   8.76e-05Epoch:   0      Batch:   0      OuterStep:  94      LossModel: 0.07842284     ContextsNorm: 0.00000000      Time/Step(s): 10.2276
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.75e-06
+	-DiffCxt:   9.32e-05Epoch:   0      Batch:   0      OuterStep:  95      LossModel: 0.07767182     ContextsNorm: 0.00000000      Time/Step(s): 10.2278
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.07e-06
+	-DiffCxt:   8.65e-05Epoch:   0      Batch:   0      OuterStep:  96      LossModel: 0.08417353     ContextsNorm: 0.00000000      Time/Step(s): 10.2779
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.92e-06
+	-DiffCxt:   8.60e-05Epoch:   0      Batch:   0      OuterStep:  97      LossModel: 0.06660584     ContextsNorm: 0.00000000      Time/Step(s): 10.2573
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.08e-05
+	-DiffCxt:   9.04e-05Epoch:   0      Batch:   0      OuterStep:  98      LossModel: 0.08694082     ContextsNorm: 0.00000000      Time/Step(s): 10.2402
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.79e-06
+	-DiffCxt:   9.68e-05Epoch:   0      Batch:   0      OuterStep:  99      LossModel: 0.07501296     ContextsNorm: 0.00000000      Time/Step(s): 10.2405
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.03e-06
+	-DiffCxt:   8.45e-05Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.07642774     ContextsNorm: 0.00000000      Time/Step(s): 10.2784
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.26e-06
+	-DiffCxt:   6.13e-05Epoch:   0      Batch:   0      OuterStep: 101      LossModel: 0.07673325     ContextsNorm: 0.00000000      Time/Step(s): 10.2620
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.55e-06
+	-DiffCxt:   8.82e-05Epoch:   0      Batch:   0      OuterStep: 102      LossModel: 0.08195971     ContextsNorm: 0.00000000      Time/Step(s): 10.2726
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.72e-06
+	-DiffCxt:   7.86e-05Epoch:   0      Batch:   0      OuterStep: 103      LossModel: 0.07713576     ContextsNorm: 0.00000000      Time/Step(s): 10.2203
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.49e-06
+	-DiffCxt:   9.24e-05Epoch:   0      Batch:   0      OuterStep: 104      LossModel: 0.07784785     ContextsNorm: 0.00000000      Time/Step(s): 10.1999
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.37e-06
+	-DiffCxt:   7.45e-05Epoch:   0      Batch:   0      OuterStep: 105      LossModel: 0.06137555     ContextsNorm: 0.00000000      Time/Step(s): 10.2470
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.11e-05
+	-DiffCxt:   9.11e-05Epoch:   0      Batch:   0      OuterStep: 106      LossModel: 0.07708319     ContextsNorm: 0.00000000      Time/Step(s): 10.2549
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.29e-06
+	-DiffCxt:   9.02e-05Epoch:   0      Batch:   0      OuterStep: 107      LossModel: 0.08054761     ContextsNorm: 0.00000000      Time/Step(s): 10.2222
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.62e-06
+	-DiffCxt:   7.43e-05Epoch:   0      Batch:   0      OuterStep: 108      LossModel: 0.08597795     ContextsNorm: 0.00000000      Time/Step(s): 10.2441
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.02e-05
+	-DiffCxt:   7.77e-05Epoch:   0      Batch:   0      OuterStep: 109      LossModel: 0.07245330     ContextsNorm: 0.00000000      Time/Step(s): 10.2058
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.09e-05
+	-DiffCxt:   8.57e-05Epoch:   0      Batch:   0      OuterStep: 110      LossModel: 0.09090468     ContextsNorm: 0.00000000      Time/Step(s): 10.2428
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.10e-05
+	-DiffCxt:   8.31e-05Epoch:   0      Batch:   0      OuterStep: 111      LossModel: 0.08052950     ContextsNorm: 0.00000000      Time/Step(s): 10.1996
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.55e-06
+	-DiffCxt:   7.53e-05Epoch:   0      Batch:   0      OuterStep: 112      LossModel: 0.08050861     ContextsNorm: 0.00000000      Time/Step(s): 10.2699
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.49e-06
+	-DiffCxt:   7.42e-05Epoch:   0      Batch:   0      OuterStep: 113      LossModel: 0.07256500     ContextsNorm: 0.00000000      Time/Step(s): 10.2482
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.62e-06
+	-DiffCxt:   8.18e-05Epoch:   0      Batch:   0      OuterStep: 114      LossModel: 0.08268065     ContextsNorm: 0.00000000      Time/Step(s): 10.2479
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.37e-06
+	-DiffCxt:   7.04e-05Epoch:   0      Batch:   0      OuterStep: 115      LossModel: 0.06635912     ContextsNorm: 0.00000000      Time/Step(s): 10.2544
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.96e-05
+	-DiffCxt:   7.73e-05Epoch:   0      Batch:   0      OuterStep: 116      LossModel: 0.07790311     ContextsNorm: 0.00000000      Time/Step(s): 10.2534
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.01e-06
+	-DiffCxt:   8.08e-05Epoch:   0      Batch:   0      OuterStep: 117      LossModel: 0.08744014     ContextsNorm: 0.00000000      Time/Step(s): 10.1340
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.26e-06
+	-DiffCxt:   8.05e-05Epoch:   0      Batch:   0      OuterStep: 118      LossModel: 0.08709928     ContextsNorm: 0.00000000      Time/Step(s): 10.2609
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.75e-05
+	-DiffCxt:   7.51e-05Epoch:   0      Batch:   0      OuterStep: 119      LossModel: 0.06674726     ContextsNorm: 0.00000000      Time/Step(s): 10.2793
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.48e-05
+	-DiffCxt:   7.74e-05Epoch:   0      Batch:   0      OuterStep: 120      LossModel: 0.08712539     ContextsNorm: 0.00000000      Time/Step(s): 10.2372
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.61e-06
+	-DiffCxt:   5.31e-05Epoch:   0      Batch:   0      OuterStep: 121      LossModel: 0.07123525     ContextsNorm: 0.00000000      Time/Step(s): 10.2951
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.76e-06
+	-DiffCxt:   7.35e-05Epoch:   0      Batch:   0      OuterStep: 122      LossModel: 0.07265737     ContextsNorm: 0.00000000      Time/Step(s): 10.1651
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.97e-06
+	-DiffCxt:   7.01e-05Epoch:   0      Batch:   0      OuterStep: 123      LossModel: 0.08231574     ContextsNorm: 0.00000000      Time/Step(s): 10.2072
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.19e-06
+	-DiffCxt:   7.78e-05Epoch:   0      Batch:   0      OuterStep: 124      LossModel: 0.07389479     ContextsNorm: 0.00000000      Time/Step(s): 10.2482
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.34e-06
+	-DiffCxt:   7.47e-05Epoch:   0      Batch:   0      OuterStep: 125      LossModel: 0.04452959     ContextsNorm: 0.00000000      Time/Step(s): 10.2704
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.29e-05
+	-DiffCxt:   7.05e-05Epoch:   0      Batch:   0      OuterStep: 126      LossModel: 0.07723362     ContextsNorm: 0.00000000      Time/Step(s): 10.2099
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.08e-05
+	-DiffCxt:   7.33e-05Epoch:   0      Batch:   0      OuterStep: 127      LossModel: 0.07819305     ContextsNorm: 0.00000000      Time/Step(s): 10.2215
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.83e-06
+	-DiffCxt:   7.27e-05Epoch:   0      Batch:   0      OuterStep: 128      LossModel: 0.09460375     ContextsNorm: 0.00000000      Time/Step(s): 10.2647
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.48e-06
+	-DiffCxt:   7.46e-05Epoch:   0      Batch:   0      OuterStep: 129      LossModel: 0.06101397     ContextsNorm: 0.00000000      Time/Step(s): 10.2580
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.81e-05
+	-DiffCxt:   6.57e-05Epoch:   0      Batch:   0      OuterStep: 130      LossModel: 0.08407632     ContextsNorm: 0.00000000      Time/Step(s): 10.2592
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.80e-06
+	-DiffCxt:   7.27e-05Epoch:   0      Batch:   0      OuterStep: 131      LossModel: 0.07543555     ContextsNorm: 0.00000000      Time/Step(s): 10.2476
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.85e-06
+	-DiffCxt:   5.98e-05Epoch:   0      Batch:   0      OuterStep: 132      LossModel: 0.11275242     ContextsNorm: 0.00000000      Time/Step(s): 10.2645
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.12e-05
+	-DiffCxt:   6.59e-05Epoch:   0      Batch:   0      OuterStep: 133      LossModel: 0.08049430     ContextsNorm: 0.00000000      Time/Step(s): 10.2012
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.20e-06
+	-DiffCxt:   6.40e-05Epoch:   0      Batch:   0      OuterStep: 134      LossModel: 0.09175669     ContextsNorm: 0.00000000      Time/Step(s): 10.2655
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-05
+	-DiffCxt:   5.52e-05Epoch:   0      Batch:   0      OuterStep: 135      LossModel: 0.08352956     ContextsNorm: 0.00000000      Time/Step(s): 10.2456
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.40e-06
+	-DiffCxt:   5.57e-05Epoch:   0      Batch:   0      OuterStep: 136      LossModel: 0.09079637     ContextsNorm: 0.00000000      Time/Step(s): 10.2457
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.53e-06
+	-DiffCxt:   5.20e-05Epoch:   0      Batch:   0      OuterStep: 137      LossModel: 0.06119100     ContextsNorm: 0.00000000      Time/Step(s): 10.2652
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.12e-05
+	-DiffCxt:   6.25e-05Epoch:   0      Batch:   0      OuterStep: 138      LossModel: 0.07395841     ContextsNorm: 0.00000000      Time/Step(s): 10.2544
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.05e-06
+	-DiffCxt:   6.25e-05Epoch:   0      Batch:   0      OuterStep: 139      LossModel: 0.08011184     ContextsNorm: 0.00000000      Time/Step(s): 10.2528
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.39e-05
+	-DiffCxt:   5.41e-05Epoch:   0      Batch:   0      OuterStep: 140      LossModel: 0.07434426     ContextsNorm: 0.00000000      Time/Step(s): 10.2581
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.17e-06
+	-DiffCxt:   6.26e-05Epoch:   0      Batch:   0      OuterStep: 141      LossModel: 0.07245187     ContextsNorm: 0.00000000      Time/Step(s): 10.0760
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.89e-06
+	-DiffCxt:   4.78e-05Epoch:   0      Batch:   0      OuterStep: 142      LossModel: 0.08539099     ContextsNorm: 0.00000000      Time/Step(s): 10.2311
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.65e-05
+	-DiffCxt:   5.56e-05Epoch:   0      Batch:   0      OuterStep: 143      LossModel: 0.07640254     ContextsNorm: 0.00000000      Time/Step(s): 10.2566
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.14e-06
+	-DiffCxt:   6.51e-05Epoch:   0      Batch:   0      OuterStep: 144      LossModel: 0.09022467     ContextsNorm: 0.00000000      Time/Step(s): 10.2804
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.01e-06
+	-DiffCxt:   5.19e-05Epoch:   0      Batch:   0      OuterStep: 145      LossModel: 0.05691451     ContextsNorm: 0.00000000      Time/Step(s): 10.2388
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.88e-05
+	-DiffCxt:   5.23e-05Epoch:   0      Batch:   0      OuterStep: 146      LossModel: 0.07424283     ContextsNorm: 0.00000000      Time/Step(s): 10.2568
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.29e-05
+	-DiffCxt:   4.96e-05Epoch:   0      Batch:   0      OuterStep: 147      LossModel: 0.07775798     ContextsNorm: 0.00000000      Time/Step(s): 10.2413
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.22e-06
+	-DiffCxt:   5.67e-05Epoch:   0      Batch:   0      OuterStep: 148      LossModel: 0.07927361     ContextsNorm: 0.00000000      Time/Step(s): 10.2423
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.54e-06
+	-DiffCxt:   5.88e-05Epoch:   0      Batch:   0      OuterStep: 149      LossModel: 0.07717695     ContextsNorm: 0.00000000      Time/Step(s): 10.2700
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.65e-07
+	-DiffCxt:   4.82e-05Epoch:   0      Batch:   0      OuterStep: 150      LossModel: 0.08322290     ContextsNorm: 0.00000000      Time/Step(s): 10.2460
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.79e-05
+	-DiffCxt:   4.98e-05Epoch:   0      Batch:   0      OuterStep: 151      LossModel: 0.07902822     ContextsNorm: 0.00000000      Time/Step(s): 10.2251
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.42e-05
+	-DiffCxt:   6.11e-05Epoch:   0      Batch:   0      OuterStep: 152      LossModel: 0.09043918     ContextsNorm: 0.00000000      Time/Step(s): 10.2151
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.16e-06
+	-DiffCxt:   5.20e-05Epoch:   0      Batch:   0      OuterStep: 153      LossModel: 0.09102360     ContextsNorm: 0.00000000      Time/Step(s): 10.2508
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.05e-05
+	-DiffCxt:   4.71e-05Epoch:   0      Batch:   0      OuterStep: 154      LossModel: 0.06105227     ContextsNorm: 0.00000000      Time/Step(s): 10.2047
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.24e-06
+	-DiffCxt:   5.80e-05Epoch:   0      Batch:   0      OuterStep: 155      LossModel: 0.08489393     ContextsNorm: 0.00000000      Time/Step(s): 10.2518
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.17e-06
+	-DiffCxt:   5.78e-05Epoch:   0      Batch:   0      OuterStep: 156      LossModel: 0.07889413     ContextsNorm: 0.00000000      Time/Step(s): 10.2493
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.04e-06
+	-DiffCxt:   4.69e-05Epoch:   0      Batch:   0      OuterStep: 157      LossModel: 0.04355733     ContextsNorm: 0.00000000      Time/Step(s): 10.2623
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.77e-06
+	-DiffCxt:   4.72e-05Epoch:   0      Batch:   0      OuterStep: 158      LossModel: 0.08415946     ContextsNorm: 0.00000000      Time/Step(s): 10.2245
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.64e-06
+	-DiffCxt:   4.90e-05Epoch:   0      Batch:   0      OuterStep: 159      LossModel: 0.06548391     ContextsNorm: 0.00000000      Time/Step(s): 10.2254
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.06e-06
+	-DiffCxt:   5.14e-05Epoch:   0      Batch:   0      OuterStep: 160      LossModel: 0.06482410     ContextsNorm: 0.00000000      Time/Step(s): 10.2661
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.57e-05
+	-DiffCxt:   5.05e-05Epoch:   0      Batch:   0      OuterStep: 161      LossModel: 0.05100197     ContextsNorm: 0.00000000      Time/Step(s): 10.2562
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.51e-06
+	-DiffCxt:   5.24e-05Epoch:   0      Batch:   0      OuterStep: 162      LossModel: 0.08865438     ContextsNorm: 0.00000000      Time/Step(s): 10.2683
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.26e-06
+	-DiffCxt:   5.73e-05Epoch:   0      Batch:   0      OuterStep: 163      LossModel: 0.07663407     ContextsNorm: 0.00000000      Time/Step(s): 10.2522
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.40e-06
+	-DiffCxt:   4.30e-05Epoch:   0      Batch:   0      OuterStep: 164      LossModel: 0.08339373     ContextsNorm: 0.00000000      Time/Step(s): 10.2239
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.46e-06
+	-DiffCxt:   4.65e-05Epoch:   0      Batch:   0      OuterStep: 165      LossModel: 0.07233512     ContextsNorm: 0.00000000      Time/Step(s): 10.2727
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.04e-06
+	-DiffCxt:   5.37e-05Epoch:   0      Batch:   0      OuterStep: 166      LossModel: 0.08328103     ContextsNorm: 0.00000000      Time/Step(s): 10.3147
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.22e-06
+	-DiffCxt:   4.40e-05Epoch:   0      Batch:   0      OuterStep: 167      LossModel: 0.07383072     ContextsNorm: 0.00000000      Time/Step(s): 10.2142
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.99e-06
+	-DiffCxt:   4.99e-05Epoch:   0      Batch:   0      OuterStep: 168      LossModel: 0.05552026     ContextsNorm: 0.00000000      Time/Step(s): 10.2887
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.77e-06
+	-DiffCxt:   4.36e-05Epoch:   0      Batch:   0      OuterStep: 169      LossModel: 0.08200885     ContextsNorm: 0.00000000      Time/Step(s): 10.2621
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-05
+	-DiffCxt:   5.01e-05Epoch:   0      Batch:   0      OuterStep: 170      LossModel: 0.06856794     ContextsNorm: 0.00000000      Time/Step(s): 10.2204
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.35e-05
+	-DiffCxt:   3.62e-05Epoch:   0      Batch:   0      OuterStep: 171      LossModel: 0.05592791     ContextsNorm: 0.00000000      Time/Step(s): 10.2435
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.56e-06
+	-DiffCxt:   4.84e-05Epoch:   0      Batch:   0      OuterStep: 172      LossModel: 0.07506926     ContextsNorm: 0.00000000      Time/Step(s): 10.2911
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.65e-06
+	-DiffCxt:   4.42e-05Epoch:   0      Batch:   0      OuterStep: 173      LossModel: 0.08498632     ContextsNorm: 0.00000000      Time/Step(s): 10.2522
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.63e-06
+	-DiffCxt:   4.88e-05Epoch:   0      Batch:   0      OuterStep: 174      LossModel: 0.07796798     ContextsNorm: 0.00000000      Time/Step(s): 10.2617
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.52e-06
+	-DiffCxt:   4.05e-05Epoch:   0      Batch:   0      OuterStep: 175      LossModel: 0.08284248     ContextsNorm: 0.00000000      Time/Step(s): 10.2328
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.92e-06
+	-DiffCxt:   5.11e-05Epoch:   0      Batch:   0      OuterStep: 176      LossModel: 0.08435462     ContextsNorm: 0.00000000      Time/Step(s): 10.2152
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.74e-06
+	-DiffCxt:   3.93e-05Epoch:   0      Batch:   0      OuterStep: 177      LossModel: 0.08218091     ContextsNorm: 0.00000000      Time/Step(s): 10.2248
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.31e-06
+	-DiffCxt:   4.21e-05Epoch:   0      Batch:   0      OuterStep: 178      LossModel: 0.06885565     ContextsNorm: 0.00000000      Time/Step(s): 10.2536
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.76e-05
+	-DiffCxt:   4.78e-05Epoch:   0      Batch:   0      OuterStep: 179      LossModel: 0.07863260     ContextsNorm: 0.00000000      Time/Step(s): 10.2247
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.94e-06
+	-DiffCxt:   4.40e-05Epoch:   0      Batch:   0      OuterStep: 180      LossModel: 0.08162633     ContextsNorm: 0.00000000      Time/Step(s): 10.2596
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.02e-06
+	-DiffCxt:   4.53e-05Epoch:   0      Batch:   0      OuterStep: 181      LossModel: 0.08227792     ContextsNorm: 0.00000000      Time/Step(s): 10.2276
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.51e-05
+	-DiffCxt:   4.66e-05Epoch:   0      Batch:   0      OuterStep: 182      LossModel: 0.04271496     ContextsNorm: 0.00000000      Time/Step(s): 10.2130
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.99e-06
+	-DiffCxt:   4.09e-05Epoch:   0      Batch:   0      OuterStep: 183      LossModel: 0.06097783     ContextsNorm: 0.00000000      Time/Step(s): 10.2658
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.20e-05
+	-DiffCxt:   4.05e-05Epoch:   0      Batch:   0      OuterStep: 184      LossModel: 0.09060852     ContextsNorm: 0.00000000      Time/Step(s): 10.2006
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.71e-06
+	-DiffCxt:   3.74e-05Epoch:   0      Batch:   0      OuterStep: 185      LossModel: 0.07800569     ContextsNorm: 0.00000000      Time/Step(s): 10.2579
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.68e-06
+	-DiffCxt:   4.17e-05Epoch:   0      Batch:   0      OuterStep: 186      LossModel: 0.07873207     ContextsNorm: 0.00000000      Time/Step(s): 10.2271
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.41e-06
+	-DiffCxt:   2.40e-05Epoch:   0      Batch:   0      OuterStep: 187      LossModel: 0.08009275     ContextsNorm: 0.00000000      Time/Step(s): 10.2759
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.15e-05
+	-DiffCxt:   3.86e-05Epoch:   0      Batch:   0      OuterStep: 188      LossModel: 0.07372873     ContextsNorm: 0.00000000      Time/Step(s): 10.2459
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.76e-06
+	-DiffCxt:   3.65e-05Epoch:   0      Batch:   0      OuterStep: 189      LossModel: 0.07594435     ContextsNorm: 0.00000000      Time/Step(s): 10.2631
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.86e-06
+	-DiffCxt:   4.26e-05Epoch:   0      Batch:   0      OuterStep: 190      LossModel: 0.06377162     ContextsNorm: 0.00000000      Time/Step(s): 10.2254
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.44e-06
+	-DiffCxt:   4.13e-05Epoch:   0      Batch:   0      OuterStep: 191      LossModel: 0.09400349     ContextsNorm: 0.00000000      Time/Step(s): 10.2342
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.65e-06
+	-DiffCxt:   4.58e-05Epoch:   0      Batch:   0      OuterStep: 192      LossModel: 0.08201404     ContextsNorm: 0.00000000      Time/Step(s): 10.2501
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.43e-05
+	-DiffCxt:   4.17e-05Epoch:   0      Batch:   0      OuterStep: 193      LossModel: 0.07247570     ContextsNorm: 0.00000000      Time/Step(s): 10.2595
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.99e-06
+	-DiffCxt:   4.22e-05Epoch:   0      Batch:   0      OuterStep: 194      LossModel: 0.07780122     ContextsNorm: 0.00000000      Time/Step(s): 10.2646
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.73e-06
+	-DiffCxt:   3.88e-05Epoch:   0      Batch:   0      OuterStep: 195      LossModel: 0.07228444     ContextsNorm: 0.00000000      Time/Step(s): 10.1505
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.21e-05
+	-DiffCxt:   3.33e-05Epoch:   0      Batch:   0      OuterStep: 196      LossModel: 0.07869286     ContextsNorm: 0.00000000      Time/Step(s): 10.2473
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.84e-06
+	-DiffCxt:   4.31e-05Epoch:   0      Batch:   0      OuterStep: 197      LossModel: 0.09415177     ContextsNorm: 0.00000000      Time/Step(s): 10.2221
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.43e-05
+	-DiffCxt:   3.93e-05Epoch:   0      Batch:   0      OuterStep: 198      LossModel: 0.08000150     ContextsNorm: 0.00000000      Time/Step(s): 10.2230
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.41e-06
+	-DiffCxt:   4.45e-05Epoch:   0      Batch:   0      OuterStep: 199      LossModel: 0.06133499     ContextsNorm: 0.00000000      Time/Step(s): 10.2771
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.47e-06
+	-DiffCxt:   4.16e-05Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.07421447     ContextsNorm: 0.00000000      Time/Step(s): 10.2898
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.07e-06
+	-DiffCxt:   4.12e-05Epoch:   0      Batch:   0      OuterStep: 201      LossModel: 0.08236969     ContextsNorm: 0.00000000      Time/Step(s): 10.2671
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.99e-06
+	-DiffCxt:   3.75e-05Epoch:   0      Batch:   0      OuterStep: 202      LossModel: 0.07373571     ContextsNorm: 0.00000000      Time/Step(s): 10.2605
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.53e-06
+	-DiffCxt:   2.98e-05Epoch:   0      Batch:   0      OuterStep: 203      LossModel: 0.07425544     ContextsNorm: 0.00000000      Time/Step(s): 10.2332
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.37e-05
+	-DiffCxt:   3.53e-05Epoch:   0      Batch:   0      OuterStep: 204      LossModel: 0.08743513     ContextsNorm: 0.00000000      Time/Step(s): 10.2559
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.04e-05
+	-DiffCxt:   3.55e-05Epoch:   0      Batch:   0      OuterStep: 205      LossModel: 0.05114024     ContextsNorm: 0.00000000      Time/Step(s): 10.2786
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.83e-06
+	-DiffCxt:   3.62e-05Epoch:   0      Batch:   0      OuterStep: 206      LossModel: 0.05879846     ContextsNorm: 0.00000000      Time/Step(s): 10.2830
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.85e-06
+	-DiffCxt:   3.55e-05Epoch:   0      Batch:   0      OuterStep: 207      LossModel: 0.05603656     ContextsNorm: 0.00000000      Time/Step(s): 10.2365
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.61e-06
+	-DiffCxt:   3.35e-05Epoch:   0      Batch:   0      OuterStep: 208      LossModel: 0.05251165     ContextsNorm: 0.00000000      Time/Step(s): 10.2504
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.92e-06
+	-DiffCxt:   3.29e-05Epoch:   0      Batch:   0      OuterStep: 209      LossModel: 0.08457029     ContextsNorm: 0.00000000      Time/Step(s): 10.2450
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.86e-06
+	-DiffCxt:   3.85e-05Epoch:   0      Batch:   0      OuterStep: 210      LossModel: 0.04968301     ContextsNorm: 0.00000000      Time/Step(s): 10.2590
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.82e-06
+	-DiffCxt:   3.34e-05Epoch:   0      Batch:   0      OuterStep: 211      LossModel: 0.07361761     ContextsNorm: 0.00000000      Time/Step(s): 10.2263
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.51e-06
+	-DiffCxt:   3.72e-05Epoch:   0      Batch:   0      OuterStep: 212      LossModel: 0.07870468     ContextsNorm: 0.00000000      Time/Step(s): 10.2409
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.98e-06
+	-DiffCxt:   3.86e-05Epoch:   0      Batch:   0      OuterStep: 213      LossModel: 0.08504300     ContextsNorm: 0.00000000      Time/Step(s): 10.2570
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.08e-06
+	-DiffCxt:   4.27e-05Epoch:   0      Batch:   0      OuterStep: 214      LossModel: 0.08547372     ContextsNorm: 0.00000000      Time/Step(s): 10.2687
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.17e-06
+	-DiffCxt:   2.71e-05Epoch:   0      Batch:   0      OuterStep: 215      LossModel: 0.04453534     ContextsNorm: 0.00000000      Time/Step(s): 10.2283
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.69e-06
+	-DiffCxt:   3.09e-05Epoch:   0      Batch:   0      OuterStep: 216      LossModel: 0.07666544     ContextsNorm: 0.00000000      Time/Step(s): 10.2079
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.45e-06
+	-DiffCxt:   3.30e-05Epoch:   0      Batch:   0      OuterStep: 217      LossModel: 0.07354623     ContextsNorm: 0.00000000      Time/Step(s): 10.2515
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.04e-06
+	-DiffCxt:   3.62e-05Epoch:   0      Batch:   0      OuterStep: 218      LossModel: 0.07318613     ContextsNorm: 0.00000000      Time/Step(s): 10.2221
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.11e-06
+	-DiffCxt:   3.50e-05Epoch:   0      Batch:   0      OuterStep: 219      LossModel: 0.07085421     ContextsNorm: 0.00000000      Time/Step(s): 10.2627
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.79e-06
+	-DiffCxt:   3.52e-05Epoch:   0      Batch:   0      OuterStep: 220      LossModel: 0.08175785     ContextsNorm: 0.00000000      Time/Step(s): 10.2385
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.42e-06
+	-DiffCxt:   2.72e-05Epoch:   0      Batch:   0      OuterStep: 221      LossModel: 0.08383246     ContextsNorm: 0.00000000      Time/Step(s): 10.2608
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.18e-06
+	-DiffCxt:   2.92e-05Epoch:   0      Batch:   0      OuterStep: 222      LossModel: 0.08443295     ContextsNorm: 0.00000000      Time/Step(s): 10.2359
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.80e-06
+	-DiffCxt:   3.06e-05Epoch:   0      Batch:   0      OuterStep: 223      LossModel: 0.08541921     ContextsNorm: 0.00000000      Time/Step(s): 10.2370
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.17e-06
+	-DiffCxt:   3.62e-05Epoch:   0      Batch:   0      OuterStep: 224      LossModel: 0.10190319     ContextsNorm: 0.00000000      Time/Step(s): 10.2726
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-05
+	-DiffCxt:   3.51e-05Epoch:   0      Batch:   0      OuterStep: 225      LossModel: 0.04376982     ContextsNorm: 0.00000000      Time/Step(s): 10.3256
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.84e-05
+	-DiffCxt:   3.28e-05Epoch:   0      Batch:   0      OuterStep: 226      LossModel: 0.07523945     ContextsNorm: 0.00000000      Time/Step(s): 10.2710
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.18e-06
+	-DiffCxt:   2.39e-05Epoch:   0      Batch:   0      OuterStep: 227      LossModel: 0.08718853     ContextsNorm: 0.00000000      Time/Step(s): 10.2381
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.12e-06
+	-DiffCxt:   3.71e-05Epoch:   0      Batch:   0      OuterStep: 228      LossModel: 0.09914629     ContextsNorm: 0.00000000      Time/Step(s): 10.2731
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.36e-06
+	-DiffCxt:   3.60e-05Epoch:   0      Batch:   0      OuterStep: 229      LossModel: 0.08756443     ContextsNorm: 0.00000000      Time/Step(s): 10.2400
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.78e-06
+	-DiffCxt:   3.23e-05Epoch:   0      Batch:   0      OuterStep: 230      LossModel: 0.07164171     ContextsNorm: 0.00000000      Time/Step(s): 10.2178
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.39e-06
+	-DiffCxt:   3.31e-05Epoch:   0      Batch:   0      OuterStep: 231      LossModel: 0.07695941     ContextsNorm: 0.00000000      Time/Step(s): 10.2424
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.21e-06
+	-DiffCxt:   2.86e-05Epoch:   0      Batch:   0      OuterStep: 232      LossModel: 0.04250463     ContextsNorm: 0.00000000      Time/Step(s): 10.2905
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.84e-06
+	-DiffCxt:   3.37e-05Epoch:   0      Batch:   0      OuterStep: 233      LossModel: 0.04566903     ContextsNorm: 0.00000000      Time/Step(s): 10.2479
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.09e-06
+	-DiffCxt:   3.15e-05Epoch:   0      Batch:   0      OuterStep: 234      LossModel: 0.06946537     ContextsNorm: 0.00000000      Time/Step(s): 10.2609
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.75e-06
+	-DiffCxt:   3.40e-05Epoch:   0      Batch:   0      OuterStep: 235      LossModel: 0.06074889     ContextsNorm: 0.00000000      Time/Step(s): 10.2310
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.33e-06
+	-DiffCxt:   3.85e-05Epoch:   0      Batch:   0      OuterStep: 236      LossModel: 0.07623554     ContextsNorm: 0.00000000      Time/Step(s): 10.2459
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.12e-05
+	-DiffCxt:   2.79e-05Epoch:   0      Batch:   0      OuterStep: 237      LossModel: 0.08426335     ContextsNorm: 0.00000000      Time/Step(s): 10.2370
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.88e-06
+	-DiffCxt:   2.51e-05Epoch:   0      Batch:   0      OuterStep: 238      LossModel: 0.03823789     ContextsNorm: 0.00000000      Time/Step(s): 10.2647
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.22e-06
+	-DiffCxt:   3.22e-05Epoch:   0      Batch:   0      OuterStep: 239      LossModel: 0.09070902     ContextsNorm: 0.00000000      Time/Step(s): 10.2425
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.57e-06
+	-DiffCxt:   3.38e-05Epoch:   0      Batch:   0      OuterStep: 240      LossModel: 0.05747684     ContextsNorm: 0.00000000      Time/Step(s): 10.2412
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.95e-06
+	-DiffCxt:   2.95e-05Epoch:   0      Batch:   0      OuterStep: 241      LossModel: 0.08023383     ContextsNorm: 0.00000000      Time/Step(s): 10.2168
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.01e-06
+	-DiffCxt:   2.34e-05Epoch:   0      Batch:   0      OuterStep: 242      LossModel: 0.07813318     ContextsNorm: 0.00000000      Time/Step(s): 10.2558
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.46e-06
+	-DiffCxt:   3.61e-05Epoch:   0      Batch:   0      OuterStep: 243      LossModel: 0.08685260     ContextsNorm: 0.00000000      Time/Step(s): 10.2624
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.97e-06
+	-DiffCxt:   3.17e-05Epoch:   0      Batch:   0      OuterStep: 244      LossModel: 0.08262077     ContextsNorm: 0.00000000      Time/Step(s): 10.2615
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.80e-06
+	-DiffCxt:   2.98e-05Epoch:   0      Batch:   0      OuterStep: 245      LossModel: 0.07881303     ContextsNorm: 0.00000000      Time/Step(s): 10.2336
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.05e-06
+	-DiffCxt:   2.99e-05Epoch:   0      Batch:   0      OuterStep: 246      LossModel: 0.07472111     ContextsNorm: 0.00000000      Time/Step(s): 10.2409
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.10e-06
+	-DiffCxt:   3.07e-05Epoch:   0      Batch:   0      OuterStep: 247      LossModel: 0.08055368     ContextsNorm: 0.00000000      Time/Step(s): 10.2748
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.32e-05
+	-DiffCxt:   3.56e-05Epoch:   0      Batch:   0      OuterStep: 248      LossModel: 0.08010598     ContextsNorm: 0.00000000      Time/Step(s): 10.2846
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.76e-06
+	-DiffCxt:   2.69e-05Epoch:   0      Batch:   0      OuterStep: 249      LossModel: 0.06065132     ContextsNorm: 0.00000000      Time/Step(s): 10.2714
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.12e-06
+	-DiffCxt:   3.22e-05Epoch:   0      Batch:   0      OuterStep: 250      LossModel: 0.08207243     ContextsNorm: 0.00000000      Time/Step(s): 10.2808
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.00e-05
+	-DiffCxt:   2.95e-05Epoch:   0      Batch:   0      OuterStep: 251      LossModel: 0.06506358     ContextsNorm: 0.00000000      Time/Step(s): 10.2309
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.32e-06
+	-DiffCxt:   3.26e-05Epoch:   0      Batch:   0      OuterStep: 252      LossModel: 0.04895186     ContextsNorm: 0.00000000      Time/Step(s): 10.2252
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.22e-05
+	-DiffCxt:   2.75e-05Epoch:   0      Batch:   0      OuterStep: 253      LossModel: 0.06651841     ContextsNorm: 0.00000000      Time/Step(s): 10.2574
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.21e-06
+	-DiffCxt:   2.62e-05Epoch:   0      Batch:   0      OuterStep: 254      LossModel: 0.06014552     ContextsNorm: 0.00000000      Time/Step(s): 10.2723
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.36e-06
+	-DiffCxt:   2.92e-05Epoch:   0      Batch:   0      OuterStep: 255      LossModel: 0.07825287     ContextsNorm: 0.00000000      Time/Step(s): 10.2481
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.08e-06
+	-DiffCxt:   2.25e-05Epoch:   0      Batch:   0      OuterStep: 256      LossModel: 0.06761240     ContextsNorm: 0.00000000      Time/Step(s): 10.2416
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.38e-06
+	-DiffCxt:   3.23e-05Epoch:   0      Batch:   0      OuterStep: 257      LossModel: 0.08004777     ContextsNorm: 0.00000000      Time/Step(s): 10.2515
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.07e-06
+	-DiffCxt:   2.63e-05Epoch:   0      Batch:   0      OuterStep: 258      LossModel: 0.07343759     ContextsNorm: 0.00000000      Time/Step(s): 10.2489
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.63e-06
+	-DiffCxt:   3.30e-05Epoch:   0      Batch:   0      OuterStep: 259      LossModel: 0.07473896     ContextsNorm: 0.00000000      Time/Step(s): 10.2425
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.30e-06
+	-DiffCxt:   1.58e-05Epoch:   0      Batch:   0      OuterStep: 260      LossModel: 0.07701243     ContextsNorm: 0.00000000      Time/Step(s): 10.3055
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.40e-06
+	-DiffCxt:   2.77e-05Epoch:   0      Batch:   0      OuterStep: 261      LossModel: 0.07441018     ContextsNorm: 0.00000000      Time/Step(s): 10.2297
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.08e-07
+	-DiffCxt:   2.55e-05Epoch:   0      Batch:   0      OuterStep: 262      LossModel: 0.08304100     ContextsNorm: 0.00000000      Time/Step(s): 10.2631
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.25e-06
+	-DiffCxt:   2.49e-05Epoch:   0      Batch:   0      OuterStep: 263      LossModel: 0.07022680     ContextsNorm: 0.00000000      Time/Step(s): 10.2852
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.99e-06
+	-DiffCxt:   2.64e-05Epoch:   0      Batch:   0      OuterStep: 264      LossModel: 0.06986053     ContextsNorm: 0.00000000      Time/Step(s): 10.2316
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.16e-06
+	-DiffCxt:   2.51e-05Epoch:   0      Batch:   0      OuterStep: 265      LossModel: 0.04204030     ContextsNorm: 0.00000000      Time/Step(s): 10.2551
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.37e-06
+	-DiffCxt:   3.14e-05Epoch:   0      Batch:   0      OuterStep: 266      LossModel: 0.07387666     ContextsNorm: 0.00000000      Time/Step(s): 10.2711
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.50e-06
+	-DiffCxt:   2.33e-05Epoch:   0      Batch:   0      OuterStep: 267      LossModel: 0.08043457     ContextsNorm: 0.00000000      Time/Step(s): 10.2627
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.20e-06
+	-DiffCxt:   2.36e-05Epoch:   0      Batch:   0      OuterStep: 268      LossModel: 0.05231652     ContextsNorm: 0.00000000      Time/Step(s): 10.2663
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.90e-06
+	-DiffCxt:   2.43e-05Epoch:   0      Batch:   0      OuterStep: 269      LossModel: 0.05534477     ContextsNorm: 0.00000000      Time/Step(s): 10.2645
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-05
+	-DiffCxt:   1.84e-05Epoch:   0      Batch:   0      OuterStep: 270      LossModel: 0.07527033     ContextsNorm: 0.00000000      Time/Step(s): 10.2283
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.46e-06
+	-DiffCxt:   2.06e-05Epoch:   0      Batch:   0      OuterStep: 271      LossModel: 0.07118371     ContextsNorm: 0.00000000      Time/Step(s): 10.2470
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.06e-06
+	-DiffCxt:   2.55e-05Epoch:   0      Batch:   0      OuterStep: 272      LossModel: 0.04947302     ContextsNorm: 0.00000000      Time/Step(s): 10.2697
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.38e-06
+	-DiffCxt:   2.59e-05Epoch:   0      Batch:   0      OuterStep: 273      LossModel: 0.07630984     ContextsNorm: 0.00000000      Time/Step(s): 10.2805
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.26e-06
+	-DiffCxt:   2.45e-05Epoch:   0      Batch:   0      OuterStep: 274      LossModel: 0.07625599     ContextsNorm: 0.00000000      Time/Step(s): 10.2534
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.57e-06
+	-DiffCxt:   2.96e-05Epoch:   0      Batch:   0      OuterStep: 275      LossModel: 0.06928911     ContextsNorm: 0.00000000      Time/Step(s): 10.2967
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.22e-06
+	-DiffCxt:   2.84e-05Epoch:   0      Batch:   0      OuterStep: 276      LossModel: 0.07453614     ContextsNorm: 0.00000000      Time/Step(s): 10.2657
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.25e-06
+	-DiffCxt:   2.63e-05Epoch:   0      Batch:   0      OuterStep: 277      LossModel: 0.08319434     ContextsNorm: 0.00000000      Time/Step(s): 10.2766
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.15e-06
+	-DiffCxt:   2.32e-05Epoch:   0      Batch:   0      OuterStep: 278      LossModel: 0.07198977     ContextsNorm: 0.00000000      Time/Step(s): 10.2232
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.65e-06
+	-DiffCxt:   2.07e-05Epoch:   0      Batch:   0      OuterStep: 279      LossModel: 0.04984329     ContextsNorm: 0.00000000      Time/Step(s): 10.2445
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.63e-06
+	-DiffCxt:   2.67e-05Epoch:   0      Batch:   0      OuterStep: 280      LossModel: 0.05568513     ContextsNorm: 0.00000000      Time/Step(s): 10.2603
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.10e-05
+	-DiffCxt:   2.88e-05Epoch:   0      Batch:   0      OuterStep: 281      LossModel: 0.07286070     ContextsNorm: 0.00000000      Time/Step(s): 10.2907
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.29e-06
+	-DiffCxt:   2.80e-05Epoch:   0      Batch:   0      OuterStep: 282      LossModel: 0.08323785     ContextsNorm: 0.00000000      Time/Step(s): 10.2661
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.78e-06
+	-DiffCxt:   3.00e-05Epoch:   0      Batch:   0      OuterStep: 283      LossModel: 0.03464358     ContextsNorm: 0.00000000      Time/Step(s): 10.2904
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.90e-06
+	-DiffCxt:   2.19e-05Epoch:   0      Batch:   0      OuterStep: 284      LossModel: 0.06811073     ContextsNorm: 0.00000000      Time/Step(s): 10.2595
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.55e-06
+	-DiffCxt:   1.84e-05Epoch:   0      Batch:   0      OuterStep: 285      LossModel: 0.08666924     ContextsNorm: 0.00000000      Time/Step(s): 10.2228
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.49e-06
+	-DiffCxt:   2.01e-05Epoch:   0      Batch:   0      OuterStep: 286      LossModel: 0.06385611     ContextsNorm: 0.00000000      Time/Step(s): 10.2925
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.22e-06
+	-DiffCxt:   2.56e-05Epoch:   0      Batch:   0      OuterStep: 287      LossModel: 0.07529663     ContextsNorm: 0.00000000      Time/Step(s): 10.2647
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.94e-06
+	-DiffCxt:   2.49e-05Epoch:   0      Batch:   0      OuterStep: 288      LossModel: 0.08350357     ContextsNorm: 0.00000000      Time/Step(s): 10.2735
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.93e-06
+	-DiffCxt:   1.58e-05Epoch:   0      Batch:   0      OuterStep: 289      LossModel: 0.04351995     ContextsNorm: 0.00000000      Time/Step(s): 10.2521
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.93e-06
+	-DiffCxt:   2.77e-05Epoch:   0      Batch:   0      OuterStep: 290      LossModel: 0.07535927     ContextsNorm: 0.00000000      Time/Step(s): 10.2995
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.71e-06
+	-DiffCxt:   2.45e-05Epoch:   0      Batch:   0      OuterStep: 291      LossModel: 0.07222654     ContextsNorm: 0.00000000      Time/Step(s): 10.2182
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.02e-06
+	-DiffCxt:   2.27e-05Epoch:   0      Batch:   0      OuterStep: 292      LossModel: 0.07542561     ContextsNorm: 0.00000000      Time/Step(s): 10.2578
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.44e-06
+	-DiffCxt:   1.97e-05Epoch:   0      Batch:   0      OuterStep: 293      LossModel: 0.07724416     ContextsNorm: 0.00000000      Time/Step(s): 10.2747
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.47e-06
+	-DiffCxt:   2.31e-05Epoch:   0      Batch:   0      OuterStep: 294      LossModel: 0.07008294     ContextsNorm: 0.00000000      Time/Step(s): 10.2466
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.26e-06
+	-DiffCxt:   1.83e-05Epoch:   0      Batch:   0      OuterStep: 295      LossModel: 0.05606785     ContextsNorm: 0.00000000      Time/Step(s): 10.2848
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.45e-06
+	-DiffCxt:   2.40e-05Epoch:   0      Batch:   0      OuterStep: 296      LossModel: 0.07777870     ContextsNorm: 0.00000000      Time/Step(s): 10.2912
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.73e-06
+	-DiffCxt:   2.74e-05Epoch:   0      Batch:   0      OuterStep: 297      LossModel: 0.06227142     ContextsNorm: 0.00000000      Time/Step(s): 10.2501
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.93e-06
+	-DiffCxt:   2.49e-05Epoch:   0      Batch:   0      OuterStep: 298      LossModel: 0.08821268     ContextsNorm: 0.00000000      Time/Step(s): 10.2214
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.69e-06
+	-DiffCxt:   2.07e-05Epoch:   0      Batch:   0      OuterStep: 299      LossModel: 0.04906277     ContextsNorm: 0.00000000      Time/Step(s): 10.2754
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.36e-06
+	-DiffCxt:   2.66e-05Epoch:   0      Batch:   0      OuterStep: 300      LossModel: 0.07640013     ContextsNorm: 0.00000000      Time/Step(s): 10.3001
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.06e-06
+	-DiffCxt:   2.00e-05Epoch:   0      Batch:   0      OuterStep: 301      LossModel: 0.08465374     ContextsNorm: 0.00000000      Time/Step(s): 10.2829
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.21e-06
+	-DiffCxt:   2.46e-05Epoch:   0      Batch:   0      OuterStep: 302      LossModel: 0.07799263     ContextsNorm: 0.00000000      Time/Step(s): 10.2739
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.52e-06
+	-DiffCxt:   2.49e-05Epoch:   0      Batch:   0      OuterStep: 303      LossModel: 0.04221197     ContextsNorm: 0.00000000      Time/Step(s): 10.2781
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.70e-06
+	-DiffCxt:   2.07e-05Epoch:   0      Batch:   0      OuterStep: 304      LossModel: 0.07473291     ContextsNorm: 0.00000000      Time/Step(s): 10.2832
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.75e-06
+	-DiffCxt:   2.24e-05Epoch:   0      Batch:   0      OuterStep: 305      LossModel: 0.05067889     ContextsNorm: 0.00000000      Time/Step(s): 10.2972
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.46e-06
+	-DiffCxt:   2.68e-05Epoch:   0      Batch:   0      OuterStep: 306      LossModel: 0.07980654     ContextsNorm: 0.00000000      Time/Step(s): 10.2282
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.45e-06
+	-DiffCxt:   2.78e-05Epoch:   0      Batch:   0      OuterStep: 307      LossModel: 0.08711316     ContextsNorm: 0.00000000      Time/Step(s): 10.2896
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.15e-06
+	-DiffCxt:   2.38e-05Epoch:   0      Batch:   0      OuterStep: 308      LossModel: 0.07090109     ContextsNorm: 0.00000000      Time/Step(s): 10.2523
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.10e-06
+	-DiffCxt:   2.11e-05Epoch:   0      Batch:   0      OuterStep: 309      LossModel: 0.03405351     ContextsNorm: 0.00000000      Time/Step(s): 10.2891
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.95e-06
+	-DiffCxt:   2.28e-05Epoch:   0      Batch:   0      OuterStep: 310      LossModel: 0.09188472     ContextsNorm: 0.00000000      Time/Step(s): 10.2727
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.97e-06
+	-DiffCxt:   2.46e-05Epoch:   0      Batch:   0      OuterStep: 311      LossModel: 0.08577789     ContextsNorm: 0.00000000      Time/Step(s): 10.2236
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.73e-06
+	-DiffCxt:   2.21e-05Epoch:   0      Batch:   0      OuterStep: 312      LossModel: 0.05727045     ContextsNorm: 0.00000000      Time/Step(s): 10.2184
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.64e-06
+	-DiffCxt:   2.30e-05Epoch:   0      Batch:   0      OuterStep: 313      LossModel: 0.08149953     ContextsNorm: 0.00000000      Time/Step(s): 10.2855
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.81e-06
+	-DiffCxt:   1.35e-05Epoch:   0      Batch:   0      OuterStep: 314      LossModel: 0.06646946     ContextsNorm: 0.00000000      Time/Step(s): 10.2595
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.74e-06
+	-DiffCxt:   2.17e-05Epoch:   0      Batch:   0      OuterStep: 315      LossModel: 0.07243650     ContextsNorm: 0.00000000      Time/Step(s): 10.2536
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.06e-06
+	-DiffCxt:   2.28e-05Epoch:   0      Batch:   0      OuterStep: 316      LossModel: 0.04784552     ContextsNorm: 0.00000000      Time/Step(s): 10.2198
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.85e-06
+	-DiffCxt:   1.84e-05Epoch:   0      Batch:   0      OuterStep: 317      LossModel: 0.06598540     ContextsNorm: 0.00000000      Time/Step(s): 10.2710
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.57e-06
+	-DiffCxt:   2.06e-05Epoch:   0      Batch:   0      OuterStep: 318      LossModel: 0.08410231     ContextsNorm: 0.00000000      Time/Step(s): 10.2502
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.24e-06
+	-DiffCxt:   2.18e-05Epoch:   0      Batch:   0      OuterStep: 319      LossModel: 0.08928124     ContextsNorm: 0.00000000      Time/Step(s): 10.2539
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.81e-06
+	-DiffCxt:   1.90e-05Epoch:   0      Batch:   0      OuterStep: 320      LossModel: 0.05888819     ContextsNorm: 0.00000000      Time/Step(s): 10.2992
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.87e-06
+	-DiffCxt:   2.43e-05Epoch:   0      Batch:   0      OuterStep: 321      LossModel: 0.08450912     ContextsNorm: 0.00000000      Time/Step(s): 10.2361
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.30e-06
+	-DiffCxt:   2.02e-05Epoch:   0      Batch:   0      OuterStep: 322      LossModel: 0.04694090     ContextsNorm: 0.00000000      Time/Step(s): 10.2656
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.74e-06
+	-DiffCxt:   1.75e-05Epoch:   0      Batch:   0      OuterStep: 323      LossModel: 0.07260571     ContextsNorm: 0.00000000      Time/Step(s): 10.2698
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.61e-06
+	-DiffCxt:   1.73e-05Epoch:   0      Batch:   0      OuterStep: 324      LossModel: 0.08433516     ContextsNorm: 0.00000000      Time/Step(s): 10.2827
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.30e-06
+	-DiffCxt:   1.38e-05Epoch:   0      Batch:   0      OuterStep: 325      LossModel: 0.08164642     ContextsNorm: 0.00000000      Time/Step(s): 10.2632
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.55e-06
+	-DiffCxt:   2.38e-05Epoch:   0      Batch:   0      OuterStep: 326      LossModel: 0.09892615     ContextsNorm: 0.00000000      Time/Step(s): 10.2747
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.30e-06
+	-DiffCxt:   2.47e-05Epoch:   0      Batch:   0      OuterStep: 327      LossModel: 0.07492549     ContextsNorm: 0.00000000      Time/Step(s): 10.2788
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.14e-06
+	-DiffCxt:   2.38e-05Epoch:   0      Batch:   0      OuterStep: 328      LossModel: 0.08719345     ContextsNorm: 0.00000000      Time/Step(s): 10.2841
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.91e-06
+	-DiffCxt:   2.29e-05Epoch:   0      Batch:   0      OuterStep: 329      LossModel: 0.06237994     ContextsNorm: 0.00000000      Time/Step(s): 10.3139
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.14e-06
+	-DiffCxt:   2.02e-05Epoch:   0      Batch:   0      OuterStep: 330      LossModel: 0.05677493     ContextsNorm: 0.00000000      Time/Step(s): 10.2758
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.19e-05
+	-DiffCxt:   1.93e-05Epoch:   0      Batch:   0      OuterStep: 331      LossModel: 0.08244333     ContextsNorm: 0.00000000      Time/Step(s): 10.3019
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.56e-06
+	-DiffCxt:   2.12e-05Epoch:   0      Batch:   0      OuterStep: 332      LossModel: 0.07944979     ContextsNorm: 0.00000000      Time/Step(s): 10.2480
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.22e-06
+	-DiffCxt:   1.99e-05Epoch:   0      Batch:   0      OuterStep: 333      LossModel: 0.07943042     ContextsNorm: 0.00000000      Time/Step(s): 10.2502
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.08e-06
+	-DiffCxt:   1.98e-05Epoch:   0      Batch:   0      OuterStep: 334      LossModel: 0.05419575     ContextsNorm: 0.00000000      Time/Step(s): 10.2514
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.47e-06
+	-DiffCxt:   2.40e-05Epoch:   0      Batch:   0      OuterStep: 335      LossModel: 0.06515230     ContextsNorm: 0.00000000      Time/Step(s): 10.3099
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.83e-06
+	-DiffCxt:   1.88e-05Epoch:   0      Batch:   0      OuterStep: 336      LossModel: 0.06057557     ContextsNorm: 0.00000000      Time/Step(s): 10.2845
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.47e-06
+	-DiffCxt:   2.28e-05Epoch:   0      Batch:   0      OuterStep: 337      LossModel: 0.03603227     ContextsNorm: 0.00000000      Time/Step(s): 10.2914
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.64e-06
+	-DiffCxt:   1.84e-05Epoch:   0      Batch:   0      OuterStep: 338      LossModel: 0.05849091     ContextsNorm: 0.00000000      Time/Step(s): 10.2699
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.75e-06
+	-DiffCxt:   1.98e-05Epoch:   0      Batch:   0      OuterStep: 339      LossModel: 0.06859189     ContextsNorm: 0.00000000      Time/Step(s): 10.2919
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.60e-06
+	-DiffCxt:   1.73e-05Epoch:   0      Batch:   0      OuterStep: 340      LossModel: 0.06267215     ContextsNorm: 0.00000000      Time/Step(s): 10.2705
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.48e-06
+	-DiffCxt:   1.84e-05Epoch:   0      Batch:   0      OuterStep: 341      LossModel: 0.05205436     ContextsNorm: 0.00000000      Time/Step(s): 10.2384
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.40e-06
+	-DiffCxt:   2.09e-05Epoch:   0      Batch:   0      OuterStep: 342      LossModel: 0.03776727     ContextsNorm: 0.00000000      Time/Step(s): 10.3404
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.64e-06
+	-DiffCxt:   1.90e-05Epoch:   0      Batch:   0      OuterStep: 343      LossModel: 0.07367750     ContextsNorm: 0.00000000      Time/Step(s): 10.2735
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.77e-06
+	-DiffCxt:   1.75e-05Epoch:   0      Batch:   0      OuterStep: 344      LossModel: 0.07258247     ContextsNorm: 0.00000000      Time/Step(s): 10.2867
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.79e-06
+	-DiffCxt:   2.01e-05Epoch:   0      Batch:   0      OuterStep: 345      LossModel: 0.05582778     ContextsNorm: 0.00000000      Time/Step(s): 10.2630
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.69e-06
+	-DiffCxt:   1.86e-05Epoch:   0      Batch:   0      OuterStep: 346      LossModel: 0.05386609     ContextsNorm: 0.00000000      Time/Step(s): 10.2106
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.61e-05
+	-DiffCxt:   1.43e-05Epoch:   0      Batch:   0      OuterStep: 347      LossModel: 0.04626763     ContextsNorm: 0.00000000      Time/Step(s): 10.2845
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.23e-05
+	-DiffCxt:   1.53e-05Epoch:   0      Batch:   0      OuterStep: 348      LossModel: 0.07780381     ContextsNorm: 0.00000000      Time/Step(s): 10.2642
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.50e-06
+	-DiffCxt:   1.48e-05Epoch:   0      Batch:   0      OuterStep: 349      LossModel: 0.05973224     ContextsNorm: 0.00000000      Time/Step(s): 10.2668
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.80e-06
+	-DiffCxt:   1.87e-05Epoch:   0      Batch:   0      OuterStep: 350      LossModel: 0.06574981     ContextsNorm: 0.00000000      Time/Step(s): 10.2507
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.63e-06
+	-DiffCxt:   1.57e-05Epoch:   0      Batch:   0      OuterStep: 351      LossModel: 0.07299049     ContextsNorm: 0.00000000      Time/Step(s): 10.2654
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.41e-06
+	-DiffCxt:   1.91e-05Epoch:   0      Batch:   0      OuterStep: 352      LossModel: 0.06740259     ContextsNorm: 0.00000000      Time/Step(s): 10.2688
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.72e-06
+	-DiffCxt:   2.17e-05Epoch:   0      Batch:   0      OuterStep: 353      LossModel: 0.07294202     ContextsNorm: 0.00000000      Time/Step(s): 10.2866
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.10e-06
+	-DiffCxt:   2.00e-05Epoch:   0      Batch:   0      OuterStep: 354      LossModel: 0.07657715     ContextsNorm: 0.00000000      Time/Step(s): 10.2579
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.82e-06
+	-DiffCxt:   2.07e-05Epoch:   0      Batch:   0      OuterStep: 355      LossModel: 0.07023855     ContextsNorm: 0.00000000      Time/Step(s): 10.2627
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.20e-06
+	-DiffCxt:   1.98e-05Epoch:   0      Batch:   0      OuterStep: 356      LossModel: 0.07803047     ContextsNorm: 0.00000000      Time/Step(s): 10.2194
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.99e-07
+	-DiffCxt:   2.06e-05Epoch:   0      Batch:   0      OuterStep: 357      LossModel: 0.07489013     ContextsNorm: 0.00000000      Time/Step(s): 10.2968
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.52e-06
+	-DiffCxt:   1.58e-05Epoch:   0      Batch:   0      OuterStep: 358      LossModel: 0.08592875     ContextsNorm: 0.00000000      Time/Step(s): 10.2662
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.76e-06
+	-DiffCxt:   1.56e-05Epoch:   0      Batch:   0      OuterStep: 359      LossModel: 0.07920475     ContextsNorm: 0.00000000      Time/Step(s): 10.2326
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.90e-06
+	-DiffCxt:   1.63e-05Epoch:   0      Batch:   0      OuterStep: 360      LossModel: 0.07939845     ContextsNorm: 0.00000000      Time/Step(s): 10.2794
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.79e-06
+	-DiffCxt:   1.54e-05Epoch:   0      Batch:   0      OuterStep: 361      LossModel: 0.04570527     ContextsNorm: 0.00000000      Time/Step(s): 10.2813
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.26e-05
+	-DiffCxt:   2.10e-05Epoch:   0      Batch:   0      OuterStep: 362      LossModel: 0.07602948     ContextsNorm: 0.00000000      Time/Step(s): 10.2704
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.57e-05
+	-DiffCxt:   1.85e-05Epoch:   0      Batch:   0      OuterStep: 363      LossModel: 0.05959387     ContextsNorm: 0.00000000      Time/Step(s): 10.2841
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.61e-06
+	-DiffCxt:   1.82e-05Epoch:   0      Batch:   0      OuterStep: 364      LossModel: 0.06504697     ContextsNorm: 0.00000000      Time/Step(s): 10.2634
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.80e-06
+	-DiffCxt:   2.21e-05Epoch:   0      Batch:   0      OuterStep: 365      LossModel: 0.06318741     ContextsNorm: 0.00000000      Time/Step(s): 10.2748
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.80e-06
+	-DiffCxt:   1.39e-05Epoch:   0      Batch:   0      OuterStep: 366      LossModel: 0.07896439     ContextsNorm: 0.00000000      Time/Step(s): 10.3068
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.18e-06
+	-DiffCxt:   1.83e-05Epoch:   0      Batch:   0      OuterStep: 367      LossModel: 0.09218959     ContextsNorm: 0.00000000      Time/Step(s): 10.2507
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.97e-06
+	-DiffCxt:   1.82e-05Epoch:   0      Batch:   0      OuterStep: 368      LossModel: 0.02889317     ContextsNorm: 0.00000000      Time/Step(s): 10.2797
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.74e-06
+	-DiffCxt:   1.45e-05Epoch:   0      Batch:   0      OuterStep: 369      LossModel: 0.09052932     ContextsNorm: 0.00000000      Time/Step(s): 10.2715
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.57e-06
+	-DiffCxt:   1.78e-05Epoch:   0      Batch:   0      OuterStep: 370      LossModel: 0.07745238     ContextsNorm: 0.00000000      Time/Step(s): 10.2682
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.14e-06
+	-DiffCxt:   2.11e-05Epoch:   0      Batch:   0      OuterStep: 371      LossModel: 0.08386578     ContextsNorm: 0.00000000      Time/Step(s): 10.2713
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.85e-06
+	-DiffCxt:   1.79e-05Epoch:   0      Batch:   0      OuterStep: 372      LossModel: 0.05309094     ContextsNorm: 0.00000000      Time/Step(s): 10.2852
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.45e-06
+	-DiffCxt:   1.63e-05Epoch:   0      Batch:   0      OuterStep: 373      LossModel: 0.04221558     ContextsNorm: 0.00000000      Time/Step(s): 10.2952
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.67e-06
+	-DiffCxt:   1.94e-05Epoch:   0      Batch:   0      OuterStep: 374      LossModel: 0.04682058     ContextsNorm: 0.00000000      Time/Step(s): 10.2693
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.99e-06
+	-DiffCxt:   1.62e-05Epoch:   0      Batch:   0      OuterStep: 375      LossModel: 0.07668881     ContextsNorm: 0.00000000      Time/Step(s): 10.2504
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.31e-05
+	-DiffCxt:   1.87e-05Epoch:   0      Batch:   0      OuterStep: 376      LossModel: 0.06154775     ContextsNorm: 0.00000000      Time/Step(s): 10.2935
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.81e-06
+	-DiffCxt:   1.53e-05Epoch:   0      Batch:   0      OuterStep: 377      LossModel: 0.08249926     ContextsNorm: 0.00000000      Time/Step(s): 10.2504
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.29e-06
+	-DiffCxt:   1.06e-05Epoch:   0      Batch:   0      OuterStep: 378      LossModel: 0.07468748     ContextsNorm: 0.00000000      Time/Step(s): 10.2722
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.21e-06
+	-DiffCxt:   1.24e-05Epoch:   0      Batch:   0      OuterStep: 379      LossModel: 0.07748879     ContextsNorm: 0.00000000      Time/Step(s): 10.2836
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.08e-06
+	-DiffCxt:   1.97e-05Epoch:   0      Batch:   0      OuterStep: 380      LossModel: 0.03819894     ContextsNorm: 0.00000000      Time/Step(s): 10.2742
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.15e-06
+	-DiffCxt:   1.79e-05Epoch:   0      Batch:   0      OuterStep: 381      LossModel: 0.06695347     ContextsNorm: 0.00000000      Time/Step(s): 10.2357
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.07e-06
+	-DiffCxt:   1.85e-05Epoch:   0      Batch:   0      OuterStep: 382      LossModel: 0.07691987     ContextsNorm: 0.00000000      Time/Step(s): 10.2868
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.85e-06
+	-DiffCxt:   1.63e-05Epoch:   0      Batch:   0      OuterStep: 383      LossModel: 0.04970265     ContextsNorm: 0.00000000      Time/Step(s): 10.2828
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.32e-06
+	-DiffCxt:   2.01e-05Epoch:   0      Batch:   0      OuterStep: 384      LossModel: 0.06395110     ContextsNorm: 0.00000000      Time/Step(s): 10.2835
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.10e-06
+	-DiffCxt:   1.76e-05Epoch:   0      Batch:   0      OuterStep: 385      LossModel: 0.04246809     ContextsNorm: 0.00000000      Time/Step(s): 10.2445
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.24e-06
+	-DiffCxt:   1.67e-05Epoch:   0      Batch:   0      OuterStep: 386      LossModel: 0.05274443     ContextsNorm: 0.00000000      Time/Step(s): 10.3075
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.96e-06
+	-DiffCxt:   1.72e-05Epoch:   0      Batch:   0      OuterStep: 387      LossModel: 0.04353985     ContextsNorm: 0.00000000      Time/Step(s): 10.2931
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.29e-05
+	-DiffCxt:   1.45e-05Epoch:   0      Batch:   0      OuterStep: 388      LossModel: 0.05254989     ContextsNorm: 0.00000000      Time/Step(s): 10.2996
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.20e-05
+	-DiffCxt:   1.50e-05Epoch:   0      Batch:   0      OuterStep: 389      LossModel: 0.08904137     ContextsNorm: 0.00000000      Time/Step(s): 10.2686
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.92e-06
+	-DiffCxt:   1.71e-05Epoch:   0      Batch:   0      OuterStep: 390      LossModel: 0.04421099     ContextsNorm: 0.00000000      Time/Step(s): 10.2722
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.98e-06
+	-DiffCxt:   1.68e-05Epoch:   0      Batch:   0      OuterStep: 391      LossModel: 0.03726166     ContextsNorm: 0.00000000      Time/Step(s): 10.2819
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.64e-06
+	-DiffCxt:   1.45e-05Epoch:   0      Batch:   0      OuterStep: 392      LossModel: 0.03283925     ContextsNorm: 0.00000000      Time/Step(s): 10.2744
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.99e-06
+	-DiffCxt:   1.39e-05Epoch:   0      Batch:   0      OuterStep: 393      LossModel: 0.07557435     ContextsNorm: 0.00000000      Time/Step(s): 10.2279
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.65e-06
+	-DiffCxt:   1.58e-05Epoch:   0      Batch:   0      OuterStep: 394      LossModel: 0.03520644     ContextsNorm: 0.00000000      Time/Step(s): 10.2801
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.72e-06
+	-DiffCxt:   1.80e-05Epoch:   0      Batch:   0      OuterStep: 395      LossModel: 0.03478580     ContextsNorm: 0.00000000      Time/Step(s): 10.3175
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.66e-06
+	-DiffCxt:   1.69e-05Epoch:   0      Batch:   0      OuterStep: 396      LossModel: 0.06430201     ContextsNorm: 0.00000000      Time/Step(s): 10.2815
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.80e-06
+	-DiffCxt:   1.54e-05Epoch:   0      Batch:   0      OuterStep: 397      LossModel: 0.05291139     ContextsNorm: 0.00000000      Time/Step(s): 10.3058
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.42e-06
+	-DiffCxt:   1.76e-05Epoch:   0      Batch:   0      OuterStep: 398      LossModel: 0.07761396     ContextsNorm: 0.00000000      Time/Step(s): 10.2372
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.90e-06
+	-DiffCxt:   1.83e-05Epoch:   0      Batch:   0      OuterStep: 399      LossModel: 0.04871633     ContextsNorm: 0.00000000      Time/Step(s): 10.2633
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.26e-05
+	-DiffCxt:   1.46e-05Epoch:   0      Batch:   0      OuterStep: 400      LossModel: 0.07698829     ContextsNorm: 0.00000000      Time/Step(s): 10.3215
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.77e-06
+	-DiffCxt:   1.69e-05Epoch:   0      Batch:   0      OuterStep: 401      LossModel: 0.05865020     ContextsNorm: 0.00000000      Time/Step(s): 10.2386
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.42e-06
+	-DiffCxt:   1.67e-05Epoch:   0      Batch:   0      OuterStep: 402      LossModel: 0.07487678     ContextsNorm: 0.00000000      Time/Step(s): 10.2713
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.78e-06
+	-DiffCxt:   1.55e-05Epoch:   0      Batch:   0      OuterStep: 403      LossModel: 0.08290546     ContextsNorm: 0.00000000      Time/Step(s): 10.2848
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.71e-06
+	-DiffCxt:   1.92e-05Epoch:   0      Batch:   0      OuterStep: 404      LossModel: 0.07850260     ContextsNorm: 0.00000000      Time/Step(s): 10.2711
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.03e-06
+	-DiffCxt:   1.59e-05Epoch:   0      Batch:   0      OuterStep: 405      LossModel: 0.08469630     ContextsNorm: 0.00000000      Time/Step(s): 10.2978
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.40e-06
+	-DiffCxt:   2.09e-05Epoch:   0      Batch:   0      OuterStep: 406      LossModel: 0.08213404     ContextsNorm: 0.00000000      Time/Step(s): 10.2296
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.79e-07
+	-DiffCxt:   1.23e-05Epoch:   0      Batch:   0      OuterStep: 407      LossModel: 0.05770030     ContextsNorm: 0.00000000      Time/Step(s): 10.1924
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.75e-06
+	-DiffCxt:   1.20e-05Epoch:   0      Batch:   0      OuterStep: 408      LossModel: 0.03354768     ContextsNorm: 0.00000000      Time/Step(s): 10.2950
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.55e-06
+	-DiffCxt:   9.32e-06Epoch:   0      Batch:   0      OuterStep: 409      LossModel: 0.03734177     ContextsNorm: 0.00000000      Time/Step(s): 10.2563
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.83e-06
+	-DiffCxt:   1.57e-05Epoch:   0      Batch:   0      OuterStep: 410      LossModel: 0.05018859     ContextsNorm: 0.00000000      Time/Step(s): 10.2596
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.87e-06
+	-DiffCxt:   1.29e-05Epoch:   0      Batch:   0      OuterStep: 411      LossModel: 0.08611549     ContextsNorm: 0.00000000      Time/Step(s): 10.2452
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.12e-06
+	-DiffCxt:   1.31e-05Epoch:   0      Batch:   0      OuterStep: 412      LossModel: 0.04625009     ContextsNorm: 0.00000000      Time/Step(s): 10.2474
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.21e-06
+	-DiffCxt:   1.64e-05Epoch:   0      Batch:   0      OuterStep: 413      LossModel: 0.07027349     ContextsNorm: 0.00000000      Time/Step(s): 10.2756
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.77e-06
+	-DiffCxt:   1.14e-05Epoch:   0      Batch:   0      OuterStep: 414      LossModel: 0.08069387     ContextsNorm: 0.00000000      Time/Step(s): 10.2789
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.87e-06
+	-DiffCxt:   1.52e-05Epoch:   0      Batch:   0      OuterStep: 415      LossModel: 0.06667155     ContextsNorm: 0.00000000      Time/Step(s): 10.2666
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.83e-06
+	-DiffCxt:   1.66e-05Epoch:   0      Batch:   0      OuterStep: 416      LossModel: 0.07456709     ContextsNorm: 0.00000000      Time/Step(s): 10.2319
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.66e-06
+	-DiffCxt:   1.51e-05Epoch:   0      Batch:   0      OuterStep: 417      LossModel: 0.08059394     ContextsNorm: 0.00000000      Time/Step(s): 10.2918
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.91e-06
+	-DiffCxt:   1.27e-05Epoch:   0      Batch:   0      OuterStep: 418      LossModel: 0.04060844     ContextsNorm: 0.00000000      Time/Step(s): 10.2823
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.99e-06
+	-DiffCxt:   1.90e-05Epoch:   0      Batch:   0      OuterStep: 419      LossModel: 0.03128435     ContextsNorm: 0.00000000      Time/Step(s): 10.3106
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.36e-06
+	-DiffCxt:   1.30e-05Epoch:   0      Batch:   0      OuterStep: 420      LossModel: 0.04969696     ContextsNorm: 0.00000000      Time/Step(s): 10.2834
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.18e-06
+	-DiffCxt:   1.56e-05Epoch:   0      Batch:   0      OuterStep: 421      LossModel: 0.03945641     ContextsNorm: 0.00000000      Time/Step(s): 10.3018
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.93e-06
+	-DiffCxt:   1.12e-05Epoch:   0      Batch:   0      OuterStep: 422      LossModel: 0.03555906     ContextsNorm: 0.00000000      Time/Step(s): 10.2926
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.68e-06
+	-DiffCxt:   1.44e-05Epoch:   0      Batch:   0      OuterStep: 423      LossModel: 0.04388932     ContextsNorm: 0.00000000      Time/Step(s): 10.2696
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.33e-06
+	-DiffCxt:   1.34e-05Epoch:   0      Batch:   0      OuterStep: 424      LossModel: 0.08311087     ContextsNorm: 0.00000000      Time/Step(s): 10.3107
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.39e-06
+	-DiffCxt:   1.24e-05Epoch:   0      Batch:   0      OuterStep: 425      LossModel: 0.04507421     ContextsNorm: 0.00000000      Time/Step(s): 10.3014
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.05e-05
+	-DiffCxt:   1.43e-05Epoch:   0      Batch:   0      OuterStep: 426      LossModel: 0.07432831     ContextsNorm: 0.00000000      Time/Step(s): 10.2879
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.71e-06
+	-DiffCxt:   1.38e-05Epoch:   0      Batch:   0      OuterStep: 427      LossModel: 0.04232899     ContextsNorm: 0.00000000      Time/Step(s): 10.2750
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.87e-06
+	-DiffCxt:   1.52e-05Epoch:   0      Batch:   0      OuterStep: 428      LossModel: 0.07124260     ContextsNorm: 0.00000000      Time/Step(s): 10.2951
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.48e-06
+	-DiffCxt:   1.32e-05Epoch:   0      Batch:   0      OuterStep: 429      LossModel: 0.05155122     ContextsNorm: 0.00000000      Time/Step(s): 10.2961
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.66e-06
+	-DiffCxt:   1.02e-05Epoch:   0      Batch:   0      OuterStep: 430      LossModel: 0.07698305     ContextsNorm: 0.00000000      Time/Step(s): 10.2545
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.84e-06
+	-DiffCxt:   1.59e-05Epoch:   0      Batch:   0      OuterStep: 431      LossModel: 0.08960252     ContextsNorm: 0.00000000      Time/Step(s): 10.2717
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.28e-06
+	-DiffCxt:   1.48e-05Epoch:   0      Batch:   0      OuterStep: 432      LossModel: 0.05466027     ContextsNorm: 0.00000000      Time/Step(s): 10.2629
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.17e-06
+	-DiffCxt:   1.54e-05Epoch:   0      Batch:   0      OuterStep: 433      LossModel: 0.03558069     ContextsNorm: 0.00000000      Time/Step(s): 10.2654
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.78e-05
+	-DiffCxt:   1.52e-05Epoch:   0      Batch:   0      OuterStep: 434      LossModel: 0.07039256     ContextsNorm: 0.00000000      Time/Step(s): 10.3061
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.77e-06
+	-DiffCxt:   1.29e-05Epoch:   0      Batch:   0      OuterStep: 435      LossModel: 0.05184348     ContextsNorm: 0.00000000      Time/Step(s): 10.2836
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.04e-06
+	-DiffCxt:   1.41e-05Epoch:   0      Batch:   0      OuterStep: 436      LossModel: 0.07300785     ContextsNorm: 0.00000000      Time/Step(s): 10.2689
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.12e-05
+	-DiffCxt:   1.20e-05Epoch:   0      Batch:   0      OuterStep: 437      LossModel: 0.04269055     ContextsNorm: 0.00000000      Time/Step(s): 10.2733
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.42e-06
+	-DiffCxt:   1.13e-05Epoch:   0      Batch:   0      OuterStep: 438      LossModel: 0.08164210     ContextsNorm: 0.00000000      Time/Step(s): 10.2769
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.78e-06
+	-DiffCxt:   1.48e-05Epoch:   0      Batch:   0      OuterStep: 439      LossModel: 0.08932810     ContextsNorm: 0.00000000      Time/Step(s): 10.2482
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.36e-06
+	-DiffCxt:   1.29e-05Epoch:   0      Batch:   0      OuterStep: 440      LossModel: 0.04569924     ContextsNorm: 0.00000000      Time/Step(s): 10.2836
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.03e-06
+	-DiffCxt:   1.31e-05Epoch:   0      Batch:   0      OuterStep: 441      LossModel: 0.05195338     ContextsNorm: 0.00000000      Time/Step(s): 10.2793
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.22e-06
+	-DiffCxt:   1.16e-05Epoch:   0      Batch:   0      OuterStep: 442      LossModel: 0.07522603     ContextsNorm: 0.00000000      Time/Step(s): 10.2976
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.42e-06
+	-DiffCxt:   1.51e-05Epoch:   0      Batch:   0      OuterStep: 443      LossModel: 0.08372942     ContextsNorm: 0.00000000      Time/Step(s): 10.2705
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.12e-06
+	-DiffCxt:   1.44e-05Epoch:   0      Batch:   0      OuterStep: 444      LossModel: 0.05460502     ContextsNorm: 0.00000000      Time/Step(s): 10.2803
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.95e-06
+	-DiffCxt:   1.24e-05Epoch:   0      Batch:   0      OuterStep: 445      LossModel: 0.08161407     ContextsNorm: 0.00000000      Time/Step(s): 10.2730
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.37e-06
+	-DiffCxt:   1.54e-05Epoch:   0      Batch:   0      OuterStep: 446      LossModel: 0.07710858     ContextsNorm: 0.00000000      Time/Step(s): 10.2986
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.02e-06
+	-DiffCxt:   1.42e-05Epoch:   0      Batch:   0      OuterStep: 447      LossModel: 0.03515806     ContextsNorm: 0.00000000      Time/Step(s): 10.2921
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.95e-06
+	-DiffCxt:   1.33e-05Epoch:   0      Batch:   0      OuterStep: 448      LossModel: 0.07069597     ContextsNorm: 0.00000000      Time/Step(s): 10.2552
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.65e-06
+	-DiffCxt:   1.20e-05Epoch:   0      Batch:   0      OuterStep: 449      LossModel: 0.05601447     ContextsNorm: 0.00000000      Time/Step(s): 10.3002
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.96e-06
+	-DiffCxt:   1.29e-05
+Total gradient descent training time: 1 hours 18 mins 17 secs
+Train dataloaders have different batch sizes. Skipping evaluation ...
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+Saving artefacts in: ./runs/240927-025512/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 16)
+Saving visualization in: ./runs/240927-025512/few_shots_ind_uq.svg
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 512
+    Maximum number of batches (along envs): 39
+    Adapting on 1 batches
+Epoch:   0      Batch:   0      Loss: 0.07334725     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.07439035     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.07504258     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.07468712     ContextsNorm: 0.00000000
+Epoch: 160      Batch:   0      Loss: 0.04637305     ContextsNorm: 0.00000000
+Epoch: 320      Batch:   0      Loss: 0.04223230     ContextsNorm: 0.00000000
+Epoch: 480      Batch:   0      Loss: 0.02206792     ContextsNorm: 0.00000000
+Epoch: 499      Batch:   0      Loss: 0.04231822     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 4 secs
+
+    Test loss value: 3.33e-02 ± 1.55e-02
+    Train loss value for criterion 0: 4.23e-02
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 512
+    Maximum number of batches (along envs): 39
+    Adapting on 1 batches
+Epoch:   0      Batch:   0      Loss: 0.08208466     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.08240417     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.08066370     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.07381156     ContextsNorm: 0.00000000
+Epoch: 160      Batch:   0      Loss: 0.03310540     ContextsNorm: 0.00000000
+Epoch: 320      Batch:   0      Loss: 0.02380594     ContextsNorm: 0.00000000
+Epoch: 480      Batch:   0      Loss: 0.02331618     ContextsNorm: 0.00000000
+Epoch: 499      Batch:   0      Loss: 0.03804245     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 3 secs
+
+    Test loss value: 3.60e-02 ± 1.65e-02
+    Train loss value for criterion 0: 3.80e-02
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [64 80 24]
+    Visualized context dimensions along y: [ 38 100  62]
+No adaptation contexts found. Using latest found.
+Saving artefacts in: ./runs/240927-025512/adapt/artefacts.png
+
+==  Begining in-domain CelebA visualisation ... ==
+    Environment ids: range(0, 7)
+Saving visualization in: ./runs/240927-025512/adapt/few_shots_ood_uq.svg

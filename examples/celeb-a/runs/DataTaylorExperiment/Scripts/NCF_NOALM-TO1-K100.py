@@ -1,3 +1,5 @@
+k_shots=100
+taylor_orders=(1,0)
 #%%
 # %load_ext autoreload
 # %autoreload 2
@@ -26,12 +28,12 @@ output_dim = 3
 ## Train and adapt hps
 context_size = 128
 loss_contributors = 32
-# taylor_orders = (0, 0)
+# taylor_orders = (3, 0)
 context_pool_size = 1 if taylor_orders[0] == 0 else 3
 init_lrs = (1e-3, 1e-3)
 sched_factor = 1.0
-envs_batch_size = 162770
-envs_batch_size_val = 16*16*2
+envs_batch_size = 162770 // 1
+envs_batch_size_val = 100
 max_train_batches = 1
 max_val_batches = 1
 
@@ -39,7 +41,6 @@ pool_filling_strategy = "NF"
 loss_filling_strategy = "NF"
 
 nb_outer_steps = int(4500 * 100 / k_shots)
-# nb_outer_steps = 4
 nb_inner_steps = (10, 10)
 uq_train_contexts = 466
 

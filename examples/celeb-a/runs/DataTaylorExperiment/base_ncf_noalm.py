@@ -38,7 +38,7 @@ max_val_batches = 1
 pool_filling_strategy = "NF"
 loss_filling_strategy = "NF"
 
-nb_outer_steps = int(6000 * 100 / k_shots)
+nb_outer_steps = int(4500 * 100 / k_shots)
 nb_inner_steps = (10, 10)
 uq_train_contexts = 466
 

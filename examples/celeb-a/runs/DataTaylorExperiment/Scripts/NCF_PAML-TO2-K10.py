@@ -1,3 +1,5 @@
+k_shots=10
+taylor_orders=(2,0)
 #%%
 # %load_ext autoreload
 # %autoreload 2
