@@ -293,7 +293,8 @@ visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 visualtester.visualize_few_shots_multi(few_shots_loader=train_dataloader,
                                 all_shots_loader=all_shots_train_dataloader,
                                 nb_inner_steps=nb_inner_steps_eval,
-                                save_path=run_folder+"few_shots_ind.png",
+                                save_path=run_folder+"few_shots_ind.pdf",
+                                num_envs=8,
                                 key=jax.random.PRNGKey(time.time_ns())
                              );
 
@@ -345,7 +346,8 @@ if meta_test:
     visualtester.visualize_few_shots_multi(few_shots_loader=adapt_dataloader,
                                     all_shots_loader=all_shots_dataloader_test,
                                     nb_inner_steps=nb_inner_steps_eval,
-                                    save_path=adapt_folder+"few_shots_ood.png",
+                                    save_path=adapt_folder+"few_shots_ood.pdf",
+                                    num_envs=8,
                                     key=jax.random.PRNGKey(time.time_ns())
                                 );
 

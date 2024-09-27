@@ -276,11 +276,6 @@ class CelebAVisualTester(VisualTester):
             raise ValueError("Invalid dataloader class instance provided.")
 
 
-        _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
-                                                     nb_epochs=nb_inner_steps, 
-                                                     verbose=False)
-        X_hat, Y_true, Y_hat = X, Y, Y_hat
-
         if isinstance(few_shots_loader, CelebADataLoader):
             img_size = few_shots_loader.img_size
             X_few_shots, Y_few_shots = few_shots_loader.sample_environments(key, e, num_envs)
@@ -292,6 +287,15 @@ class CelebAVisualTester(VisualTester):
         else:
             raise ValueError("Invalid dataloader class instance provided.")
 
+
+        # _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X_few_shots, Y_few_shots)], 
+        _, _, (X, Y, Y_hat) = self.trainer.meta_test(dataloader=[(X, Y)], 
+                                                     nb_epochs=nb_inner_steps, 
+                                                     verbose=False)
+        # X_hat, Y_true, Y_hat = X_hat, Y, Y_hat
+
+        X_hat, Y_true, Y_hat = X, Y, Y_hat
+
         fig, ax = plt.subplots(num_envs, 3, figsize=(4*3, 3.7*num_envs))
 
         def make_image(xy_coords, rgb_pixels):
@@ -302,7 +306,8 @@ class CelebAVisualTester(VisualTester):
             return img
 
         for e in range(num_envs):
-            true_img = make_image(X_hat[e], Y_true[e])
+            # true_img = make_image(X_true[e], Y_true[e])
+            true_img = make_image(X[e], Y_true[e])
             ax[e, 0].imshow(true_img)
 
             few_shoot_img = make_image(X_few_shots[e], Y_few_shots[e])
@@ -316,7 +321,15 @@ class CelebAVisualTester(VisualTester):
             #     ax[e, 1].set_title('Few-shots', fontsize=16)
             #     ax[e, 2].set_title('Predicted', fontsize=16)
 
-        plt.suptitle(f"Sample Predictions", fontsize=20)
+            ## Remove axis
+            ax[e, 0].set_xticks([])
+            ax[e, 0].set_yticks([])
+            ax[e, 1].set_xticks([])
+            ax[e, 1].set_yticks([])
+            ax[e, 2].set_xticks([])
+            ax[e, 2].set_yticks([])
+
+        # plt.suptitle(f"Sample Predictions", fontsize=20)
 
         plt.tight_layout()
         # plt.show();

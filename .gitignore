@@ -84,6 +84,8 @@ examples/celeb-a/runs/250624-193230-VAE/*.eqx
 # !examples/celeb-a/runs/240901-174340-LC64/
 # !examples/celeb-a/runs/240901-220317-LC32-CP3-SuperLong/
 !examples/celeb-a/runs/DataTaylorExperiment/
+# !examples/celeb-a/runs/240904-124509-T0-LC32-P32-NOALM*/      ## This is the best one
+
 
 ## Sine experiment runs
 examples/sine-reg/runs/*
