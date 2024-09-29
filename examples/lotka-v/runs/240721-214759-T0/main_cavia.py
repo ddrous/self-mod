@@ -51,10 +51,11 @@ validate_every = 100
 # nb_adapt_epochs = 7500
 nb_inner_steps_eval = 25        ## To use during evaluation and visulisation
 
-meta_train = True
+meta_train = False
 # run_folder = "./runs/240719-113446-Test/"
-# run_folder = "./runs/240719-205911/"
-run_folder = None
+run_folder = "./"
+data_folder = "../../data/"
+# run_folder = None
 save_trainer = True
 
 meta_test = True
@@ -106,7 +107,7 @@ if meta_test:
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/train_data.npz", 
+train_dataloader = NumpyLoader(DynamicsDataset(data_dir=data_folder+"train_data.npz", 
                                                num_shots=num_shots[0], 
                                                skip_steps=skip_steps), 
                               batch_size=num_envs[0],
@@ -114,7 +115,7 @@ train_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/train_data.npz",
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/test_data.npz", 
+val_dataloader = NumpyLoader(DynamicsDataset(data_dir=data_folder+"test_data.npz", 
                                              num_shots=num_shots[1], 
                                              skip_steps=skip_steps),
                               batch_size=num_envs[0],
@@ -339,9 +340,19 @@ visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 
 
 
+
+
+
+
+
+
+
+
+#%%
+
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = NumpyLoader(DynamicsDataset(data_dir="./data/adapt_train.npz", 
+    adapt_dataloader = NumpyLoader(DynamicsDataset(data_dir=data_folder+"adapt_train.npz", 
                                                    num_shots=num_shots[0], 
                                                    skip_steps=skip_steps),
                                 batch_size=num_envs[1], 
@@ -371,7 +382,7 @@ if meta_test:
 ## Visualise the adaptation results
 
 if meta_test:
-    all_shots_loader = NumpyLoader(DynamicsDataset(data_dir="./data/adapt_test.npz", 
+    all_shots_loader = NumpyLoader(DynamicsDataset(data_dir=data_folder+"adapt_test.npz", 
                                                    num_shots=num_shots[0], 
                                                    skip_steps=skip_steps),
                                 batch_size=num_envs[1],
@@ -389,7 +400,52 @@ if meta_test:
     #                             key=jax.random.PRNGKey(time.time_ns())
     #                             );
 
+#%%
 
+
+sns.set_theme(context='talk', style='ticks',
+        font='sans-serif', font_scale=1, color_codes=True, rc={"lines.linewidth": 2})
+
+# plt.style.use(['science', 'no-latex'])
+
+## Set the following matplotlib parameters 
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['mathtext.fontset'] = 'dejavuserif'
+
+contexts = visualtester.trainer.learner.contexts_adapt
+
+
+ctx_utils = contexts.ctx_utils
+ctx_shapes, ctx_treedef, ctx_static, _ = ctx_utils
+
+t_arr = visualtester.trainer.learner.model.t_eval
+t_arr = jnp.array(t_arr)[:, None]
+# t_arr
+ctx_idx = 0
+
+fig, ax = plt.subplots(1, 1, figsize=(12, 6.5))
+colors = ["b", "g", "r", "c", "m", "y", "k", "orange", "purple"]
+
+for e in range(contexts.params.shape[0]):
+    ctx_params = unflatten_pytree(contexts.params[e], ctx_shapes, ctx_treedef)
+    ctx_fun = eqx.combine(ctx_params, ctx_static)
+
+    ctx_out = jax.vmap(ctx_fun)(t_arr)
+
+    # ax.plot(t_arr, ctx_out[:, ctx_idx], label=f"Env {e}")
+    ax.plot(t_arr, ctx_out[:, :], color=colors[e])
+
+    ax.plot(t_arr, ctx_out[:, 0], label=f"Env {e}", color=colors[e])
+
+    if e == 0:
+        print("context prediction shape is:", ctx_out.shape)
+
+ax.set_xlabel("Time")
+ax.set_ylabel(f"Context Predictions")
+ax.legend(loc='upper right')
+
+## Save to Pdf
+fig.savefig(run_folder+"context_predictions.pdf", bbox_inches='tight', dpi=300)
 
 
 

@@ -23,7 +23,7 @@ import argparse
 
 if _in_ipython_session:
 	# args = argparse.Namespace(split='train', savepath='tmp/', seed=42)
-	args = argparse.Namespace(split='adapt_test', savepath="./tmp_data/", seed=2026, verbose=1)
+	args = argparse.Namespace(split='train', savepath="./tmp_data/", seed=2026, verbose=1)
 else:
 	parser = argparse.ArgumentParser(description='Gray-Scott dataset generation script.')
 	parser.add_argument('--split', type=str, help='Generate "train", "test", "adapt", "adapt_test", or "adapt_huge" data', default='train', required=False)

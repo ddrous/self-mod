@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set(context='notebook', style='ticks',
         font='sans-serif', font_scale=1, color_codes=True, rc={"lines.linewidth": 2})
-plt.style.use("dark_background")
+# plt.style.use("dark_background")
 
 
 
