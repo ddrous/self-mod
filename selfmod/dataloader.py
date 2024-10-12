@@ -539,10 +539,89 @@ class DynamicsDataset:
         self.data_size = datashape[3]
 
 
-    def __getitem__(self, idx):     ## Idx doesn't matter here
+    def __getitem__(self, idx):
         inputs = self.dataset[idx, :, 0, :]
         outputs = self.dataset[idx, :, :, :]
         return inputs, outputs
+
+    def __len__(self):
+        return self.total_envs
+
+
+
+
+class ODEBenchDataset:
+    """
+    For all dynamics tasks as in the ODEBench paper
+    """
+
+    def __init__(self, data_dir, num_shots=-1, skip_steps=5, adaptation=False, traj_prop_min=1.0):
+
+        self.data_dir = data_dir
+        self.skip_steps = skip_steps
+        self.adaptation = adaptation
+
+        try:
+            raw_data = np.load(data_dir)
+        except:
+            raise ValueError(f"Data not found at {data_dir}")
+
+        dataset, t_eval = raw_data['X'][...,::self.skip_steps,:], raw_data['t'][..., ::skip_steps]
+
+        n_odes, n_envs_per_ode, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
+        n_odes, n_timesteps = t_eval.shape
+
+        ## Merge the two first dataset dimensions
+        self.dataset = dataset.reshape(n_odes*n_envs_per_ode, n_trajs_per_env, n_timesteps, n_dimensions)
+        ## Duplicate t_eval for each environment
+        self.t_eval = np.repeat(t_eval, n_envs_per_ode, axis=0)
+
+        self.total_envs = n_odes*n_envs_per_ode
+
+        if num_shots is None or num_shots == -1:
+            num_shots = n_trajs_per_env
+        self.num_shots = num_shots
+        if num_shots > n_trajs_per_env:
+            raise ValueError("Number of shots must be less than the total number of trajectories")
+
+        if traj_prop_min < 0 or traj_prop_min > 1:
+            raise ValueError("The smallest proportion of the trajectory to use must be between 0 and 1")
+        self.traj_prop_min = traj_prop_min
+
+        self.num_steps = n_timesteps
+        self.data_size = n_dimensions
+
+    def __getitem__(self, idx):
+        inputs = self.dataset[idx, :self.num_shots, 0, :]
+        outputs = self.dataset[idx, :self.num_shots, :, :]
+        t_evals = self.t_eval[idx]
+
+        if self.traj_prop_min == 1.0:
+            ### STRAIGHFORWARD APPROACH ###
+            return (inputs, t_evals), outputs
+
+        else:
+            ### SAMPLING APPROACH ###
+            ## Sample a start and end time step for the task, and interpolate to produce new timesteps
+            ### The minimum distance between the start and finish is min_len
+            traj_len = t_evals.shape[0]
+            new_traj_len = traj_len ## We always want traj_len samples
+            min_len = int(traj_len * self.traj_prop_min)
+            start_idx = np.random.randint(0, traj_len - min_len)
+            end_idx = np.random.randint(start_idx + min_len, traj_len)
+
+            ts = t_evals[start_idx:end_idx]
+            trajs = outputs[:, start_idx:end_idx, :]
+            new_ts = np.linspace(ts[0], ts[-1], new_traj_len)
+            new_trajs = np.zeros((self.num_shots, new_traj_len, self.data_size))
+            for i in range(self.num_shots):
+                for j in range(self.data_size):
+                    new_trajs[i, :, j] = np.interp(new_ts, ts, trajs[i, :, j])
+
+            return (new_trajs[:,0,:], new_ts), new_trajs
+
+
+
 
     def __len__(self):
         return self.total_envs

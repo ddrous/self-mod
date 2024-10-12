@@ -107,3 +107,6 @@ examples/lotka-v/runs/*
 !examples/lotka-v/runs/ContextPoolSizeExperiment/
 !examples/lotka-v/runs/ContextPoolSizeExperiment/
 
+## The Foundational dataset
+examples/foundational/data_2D/*
+examples/foundational/runs/*

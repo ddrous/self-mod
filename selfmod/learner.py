@@ -61,6 +61,9 @@ class Learner:
             else:
                 raise ValueError("Invalid pool filling strategy provided. Use one of 'RA', 'NF', 'NF*', 'SF'.")
 
+            # if isinstance(X, tuple) or isinstance(X, list):    ## The input X comes with time steps
+            #     X = (X[0], jnp.broadcast_to(X[1], (X[0].shape[0], X[1].shape[0])))
+
             Y_hat = jax.vmap(model, in_axes=(None, None, 0))(X, ctx, ctx_pool)
             Y_new = jnp.broadcast_to(Y, Y_hat.shape)
 
@@ -89,7 +92,12 @@ class Learner:
                     raise ValueError("Invalid loss filling strategy provided. Use one of 'RA', 'NF'.")
 
                 random_contexts = contexts.params[indices, :]
-                random_batch = (batch[0][indices], batch[1][indices])
+
+                # random_batch = (batch[0][indices], batch[1][indices])
+                
+                ## the full batch is now a pytree, the input is a tuple itself
+                random_batch = jax.tree_map(lambda x: x[indices], batch)
+
                 keys = keys[indices]
 
                 losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, random_batch, random_contexts, random_contexts, keys)
@@ -244,7 +252,7 @@ class Learner:
         X, Y = batch
         batched_model = eqx.filter_vmap(model, in_axes=(0, 0, 0))
 
-        if max_envs==-1 or max_envs>=X.shape[0] or self.loss_contributors==-1:
+        if max_envs==-1 or max_envs>=Y.shape[0] or self.loss_contributors==-1:
             Y_hat = batched_model(X, contexts.params, contexts.params)
 
         elif max_envs == None:
@@ -253,7 +261,7 @@ class Learner:
             X_list = []
             Y_list = []
             Y_hat = []
-            for i in range(0, X.shape[0], sub_batch_size):
+            for i in range(0, Y.shape[0], sub_batch_size):
                 contexts_ = contexts.params[i:i+sub_batch_size]
                 Y_hat.append(batched_model(X[i:i+sub_batch_size], contexts_, contexts_))
 
@@ -268,8 +276,17 @@ class Learner:
 
         else:
             contexts_ = contexts.params[:max_envs]
-            Y_hat = batched_model(X[:max_envs], contexts_, contexts_)
-            X = X[:max_envs]
+            # Y_hat = batched_model(X[:max_envs], contexts_, contexts_)
+            # X = X[:max_envs]
+
+            if isinstance(X, tuple) or isinstance(X, list):
+                # X = (X[0], jnp.broadcast_to(X[1], (X[1].shape[0], X[0].shape[1], X[1].shape[1])))
+                # X = (X[0], jnp.repeat(X[1], X[0].shape[1], axis=1))
+                X = jax.tree_map(lambda x: x[:max_envs], X)
+            else:
+                X = X[:max_envs]
+
+            Y_hat = batched_model(X, contexts_, contexts_)
             Y = Y[:max_envs]
 
         return X, Y, Y_hat
@@ -873,6 +890,69 @@ class SelfModVectorField(eqx.Module):
 
 
 
+# class NeuralODE(eqx.Module):
+#     vectorfield: eqx.Module
+#     ivp_args: dict
+#     taylor_order: int
+#     taylor_ad_mode: str
+#     t_eval: tuple
+
+#     def __init__(self, neuralnet, taylor_order, ivp_args=None, t_eval=None, taylor_ad_mode="forward"):
+#         self.ivp_args = ivp_args if ivp_args is not None else {}
+#         self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order, taylor_ad_mode=taylor_ad_mode)
+#         self.taylor_order = taylor_order
+#         self.taylor_ad_mode = taylor_ad_mode
+
+#         if t_eval is None:
+#             self.t_eval = (0., ivp_args.get("T", 1.))
+#         else:
+#             self.t_eval = t_eval
+
+#     def __call__(self, xs, ctx, ctx_):
+
+#         integrator = self.ivp_args.get("integrator", diffrax.Dopri5())
+
+#         # if isinstance(integrator, type(eqx.Module)):
+#         if not callable(integrator):
+#             def integrate(y0):
+#                 sol = diffrax.diffeqsolve(
+#                         terms=diffrax.ODETerm(self.vectorfield),
+#                         solver=integrator,
+#                         args=(ctx, ctx_.squeeze()),
+#                         t0=self.t_eval[0],
+#                         t1=self.t_eval[-1],
+#                         dt0=self.ivp_args.get("dt_init", 1e-2),
+#                         y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 0),))], axis=0),
+#                         stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
+#                                                                     atol=self.ivp_args.get("atol", 1e-6)),
+#                         saveat=diffrax.SaveAt(ts=jnp.array(self.t_eval)),
+#                         adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
+#                         max_steps=self.ivp_args.get("max_steps", 4096*1)
+#                     )
+
+#                 if self.ivp_args.get("return_traj", False):
+#                     return sol.ys[:, :y0.shape[0]]
+#                 else:
+#                     return sol.ys[-1, :y0.shape[0]]
+
+#         else:   ## Custom-made integrator
+#             def integrate(y0):
+#                 ys = integrator(fun=self.vectorfield, 
+#                                 t_span=(self.t_eval[0], self.t_eval[-1]), 
+#                                 y0=y0,
+#                                 args=(ctx, ctx_.squeeze()),
+#                                 t_eval=jnp.array(self.t_eval), 
+#                                 **self.ivp_args
+#                                 )
+#                 if self.ivp_args.get("return_traj", False):
+#                     return ys
+#                 else:
+#                     return ys[-1]
+
+#         return eqx.filter_vmap(integrate)(xs)
+
+
+
 class NeuralODE(eqx.Module):
     vectorfield: eqx.Module
     ivp_args: dict
@@ -885,11 +965,21 @@ class NeuralODE(eqx.Module):
         self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order, taylor_ad_mode=taylor_ad_mode)
         self.taylor_order = taylor_order
         self.taylor_ad_mode = taylor_ad_mode
+        self.t_eval = t_eval
 
-        if t_eval is None:
-            self.t_eval = (0., ivp_args.get("T", 1.))
-        else:
-            self.t_eval = t_eval
+
+    def get_t_eval(self, y0):
+        """ Determines the appropriate t-eval based on the input y0 """
+        if self.t_eval is None:     
+            if not self.ivp_args.get("return_traj", False):     ## User only cares for terminal state
+                t_eval = jnp.array((0., self.ivp_args.get("T", 1.)))
+            else:   ## Users cares for trajectory, but didn't provide it at initialisationt ime. User must now provide t_eval in every call!
+                y0, t_eval = y0
+        else:       ## User provides t_eval in the constructor
+            t_eval = jnp.array(self.t_eval)
+
+        return y0, t_eval
+
 
     def __call__(self, xs, ctx, ctx_):
 
@@ -898,19 +988,22 @@ class NeuralODE(eqx.Module):
         # if isinstance(integrator, type(eqx.Module)):
         if not callable(integrator):
             def integrate(y0):
+                y0, t_eval = self.get_t_eval(y0)
+
                 sol = diffrax.diffeqsolve(
                         terms=diffrax.ODETerm(self.vectorfield),
                         solver=integrator,
                         args=(ctx, ctx_.squeeze()),
-                        t0=self.t_eval[0],
-                        t1=self.t_eval[-1],
+                        t0=t_eval[0],
+                        t1=t_eval[-1],
                         dt0=self.ivp_args.get("dt_init", 1e-2),
                         y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 0),))], axis=0),
                         stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
                                                                     atol=self.ivp_args.get("atol", 1e-6)),
-                        saveat=diffrax.SaveAt(ts=jnp.array(self.t_eval)),
+                        saveat=diffrax.SaveAt(ts=t_eval),
                         adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
-                        max_steps=self.ivp_args.get("max_steps", 4096*1)
+                        max_steps=self.ivp_args.get("max_steps", 4096*1),
+                        throw=False,    ## Keep the nans and infs, don't throw and error !
                     )
 
                 if self.ivp_args.get("return_traj", False):
@@ -920,11 +1013,12 @@ class NeuralODE(eqx.Module):
 
         else:   ## Custom-made integrator
             def integrate(y0):
+                y0, t_eval = self.get_t_eval(y0)
                 ys = integrator(fun=self.vectorfield, 
-                                t_span=(self.t_eval[0], self.t_eval[-1]), 
+                                t_span=(t_eval[0], t_eval[-1]), 
                                 y0=y0,
                                 args=(ctx, ctx_.squeeze()),
-                                t_eval=jnp.array(self.t_eval), 
+                                t_eval=t_eval, 
                                 **self.ivp_args
                                 )
                 if self.ivp_args.get("return_traj", False):
@@ -932,7 +1026,13 @@ class NeuralODE(eqx.Module):
                 else:
                     return ys[-1]
 
-        return eqx.filter_vmap(integrate)(xs)
+        if isinstance(xs, tuple) or isinstance(xs, list):
+            xs = (xs[0], jnp.broadcast_to(xs[1][None,:], (xs[0].shape[0], xs[1].shape[0])))
+
+        batched_results = eqx.filter_vmap(integrate)(xs)
+
+        return jnp.nan_to_num(batched_results, nan=0., posinf=0., neginf=0.)
+
 
 
 
@@ -945,6 +1045,21 @@ class Swish(eqx.Module):
         return x * jax.nn.sigmoid(self.beta * x)
 
 
+
+class NeuroModulatedSwish(eqx.Module):
+    """ NMN neuro-modulation layer with swish base activation function: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0227922 """
+    beta: jnp.ndarray
+    w_s: jnp.ndarray
+    w_b: jnp.ndarray
+
+    def __init__(self, latent_size, key=None):
+        self.beta = jax.random.uniform(key, shape=(1,), minval=0.1, maxval=1.0)
+        self.w_s = jnp.ones((latent_size, 1))
+        self.w_b = jnp.zeros((latent_size, 1))
+
+    def __call__(self, x, ctx):
+        y = ctx.T @ (x * self.w_s + self.w_b)
+        return y * jax.nn.sigmoid(self.beta * y)
 
 
 

@@ -49,6 +49,7 @@ class VisualTester:
 
         ## Compute the confidence intervals on the losses
         _, Y, Y_hat = state_data
+        # TODO fix this cleanly plz - print("State data is: let's analysse it ...", jax.tree_map(lambda x: x.shape, state_data))
         if loss_criterion is None:
             axis = (-1, -2, -3) if len(Y.shape)>3 else (-1, -2)
             loss_criterion = lambda y, y_hat: jnp.mean((y - y_hat)**2, axis=axis)
@@ -163,11 +164,127 @@ class VisualTester:
 
 
 
+    @abstractmethod
+    def visualize_context_clusters(self, perplexities=(15, 5), save_path=False, key=None):
+        """ Visualize the context clusters of the model with a dimensionality reduction technique """
+        key = key if key != None else self.key
+
+        xis_train = self.trainer.learner.contexts
+        if hasattr(self.trainer.learner, 'contexts_adapt'):
+            xis_adapt = self.trainer.learner.contexts_adapt
+        elif hasattr(self.trainer.learner, 'contexts_latest'):
+            xis_adapt = self.trainer.learner.contexts_latest
+        else:
+            print("No contexts found. Using zeros.")
+            xis_adapt = jnp.zeros((10, self.trainer.learner.context_size))
+
+        print("\n==  Begining context clusters visualisation with t-SNE ... ==")
+
+        fig, ax = plt.subplot_mosaic('ABC;DEF', figsize=(4*3, 3.7*2))
+
+        print("    Visualising the paramters (either vectors or function weights)")
+
+        from sklearn.manifold import TSNE
+        reducer = TSNE(n_components=3, perplexity=perplexities[0], random_state=int(key[0]))
+        X = jnp.concatenate([xis_train.params, xis_adapt.params], axis=0)
+        X_embedded = reducer.fit_transform(X)
+
+        nb_train_envs = xis_train.params.shape[0]
+        nb_total_envs = X.shape[0]
+
+        dim0s = [0, 0, 1]
+        dim1s = [1, 2, 2]
+        plot_ids = ['A', 'B', 'C']
+        markers = ['X', 's', '+', 'o']
+        mkss = [30, 30, 30, 20]
+        colors = ['dodgerblue', 'orange', 'limegreen', 'purple']
+
+        for j in range(3):
+            dim0, dim1, p_id = dim0s[j], dim1s[j], plot_ids[j]
+
+            ax[p_id].scatter(X_embedded[:nb_train_envs, dim0], X_embedded[:nb_train_envs, dim1], label='Training', marker=markers[j], s=mkss[j], color=colors[j])
+            ax[p_id].scatter(X_embedded[nb_train_envs:, dim0], X_embedded[nb_train_envs:, dim1], label='Adaptation', marker=markers[-1], s=mkss[-1], color=colors[-1])
+
+            if nb_total_envs <= 20: ## Otherwise it gets too cluttered
+                for i in range(nb_train_envs):
+                    ax[p_id].text(X_embedded[i, dim0], X_embedded[i, dim1], str(i), fontsize=10, ha='center', va='center')
+                for i in range(nb_train_envs, nb_total_envs):
+                    ax[p_id].text(X_embedded[i, dim0]+20, X_embedded[i, dim1]+20, str(i-9), fontsize=10, ha='left', va='top')
+
+            # ax[p_id].set_xlabel(f't-SNE ${dim0}$')
+            # ax[p_id].set_ylabel(f't-SNE ${dim1}$')
+            ax[p_id].set_title(f"t-SNE ${dim0}$ vs t-SNE ${dim1}$")
+            ax[p_id].legend(fontsize=8, loc='upper right')
+
+        print("    Visualising predictions from the contexts (reconstituted as functions)")
 
 
+        model = self.trainer.learner.model
+        if hasattr(model, 'vectorfield'):
+            model_ = model.vectorfield.neuralnet
+        else:
+            model_ = model.neuralnet
+        
+        if hasattr(model_, 'ctx_utils'):
+            ctx_utils = model_.ctx_utils
+            ts = jnp.array([0, 1, 10])[:, None]
+            @eqx.filter_vmap
+            def ctx_arr_to_fun_eval(ctx_arr):
+                ctx_shapes, ctx_treedef, ctx_static, _ = ctx_utils
+                ctx_params = unflatten_pytree(ctx_arr, ctx_shapes, ctx_treedef)
+                ctx_fun = eqx.combine(ctx_params, ctx_static)
+                rets = jnp.stack([ctx_fun(ts[j]) for j in range(3)], axis=1)
+                return rets
+            train_dat = ctx_arr_to_fun_eval(xis_train.params)
+            adapt_dat = ctx_arr_to_fun_eval(xis_adapt.params)
+        else:
+            print("No context utilities found, meaning inf dim context are not used. Using zeros.")
+            train_dat = jnp.zeros((nb_train_envs, 8, 3))
+            adapt_dat = jnp.zeros((nb_total_envs-nb_train_envs, 8, 3))
 
+        plot_ids = ['D', 'E', 'F']
+        colors = ['royalblue', 'orangered', 'darkgreen', 'darkviolet']
+        for j, (t, p_id) in enumerate(zip(ts[:,0].tolist(), plot_ids)):
+            X = jnp.concatenate([train_dat[..., j], adapt_dat[..., j],], axis=0)
+            if perplexities[1] > 0:
+                reducer = TSNE(n_components=2, perplexity=perplexities[1], random_state=int(key[1]))
+                X_embedded = reducer.fit_transform(X)
+                dim0, dim1 = 0, 1
+            else:   ## We don't want the reduce anything
+                if j==0: print(f"   WARNING: invalid perplexity {perplexities[1]}. Skipping reduction.")
+                X_embedded = X
+                key, _ = jax.random.split(key)
+                dim0, dim1 = jax.random.randint(key, (2,), 0, X.shape[1])
+                if dim0==dim1: dim1 = (dim1+1) % X.shape[1]
 
+            ax[p_id].scatter(X_embedded[:nb_train_envs, dim0], X_embedded[:nb_train_envs, dim1], label='Training', marker=markers[j], s=mkss[j], color=colors[j])
+            ax[p_id].scatter(X_embedded[nb_train_envs:, dim0], X_embedded[nb_train_envs:, dim1], label='Adaptation', marker=markers[-1], s=mkss[-1], color=colors[-1])
 
+            if nb_total_envs <= 20:
+                for i in range(nb_train_envs):
+                    ax[p_id].text(X_embedded[i, dim0], X_embedded[i, dim1], str(i), fontsize=10, ha='center', va='center')
+                for i in range(nb_train_envs, nb_total_envs):
+                    ax[p_id].text(X_embedded[i, dim0]+20, X_embedded[i, dim1]+20, str(i-9), fontsize=10, ha='left', va='top')
+
+            if perplexities[1] > 0:
+                ax[p_id].set_xlabel(f't-SNE ${dim0}$', fontsize=8)
+                ax[p_id].set_ylabel(f't-SNE ${dim1}$', fontsize=8)
+            else:
+                ax[p_id].set_xlabel(f'dim ${dim0}$', fontsize=10)
+                ax[p_id].set_ylabel(f'dim ${dim1}$', fontsize=10)
+
+            ax[p_id].set_title(f"$t$={t}", fontsize=14)
+            ax[p_id].legend(fontsize=8, loc='upper right')
+
+        plt.suptitle(f"Context Embeddings (top, 3D) - Evaluations (bottom, 2D)", fontsize=20)
+
+        plt.tight_layout()
+        # plt.show();
+        plt.draw();
+
+        if save_path:
+            plt.savefig(save_path, dpi=100, bbox_inches='tight')
+            print("Saving context clusters in:", save_path, flush=True);
 
 
 
@@ -484,6 +601,8 @@ class DynamicsVisualTester(VisualTester):
                            data_loader, 
                            traj,
                            dims=(0,1), 
+                           nb_envs=-1,
+                           share_axes=True,
                            save_path=False, 
                            key=None):
 
@@ -494,6 +613,10 @@ class DynamicsVisualTester(VisualTester):
 
         t_test = data_loader.dataset.t_eval
         batch = next(iter(data_loader))
+
+        # nb_envs = data_loader.dataset.total_envs
+        total_envs = data_loader.dataset.total_envs
+        nb_envs = nb_envs if (nb_envs > 0 and nb_envs < total_envs) else total_envs
 
         if data_loader.dataset.adaptation == False:
             print("\n==  Begining in-domain dynamics visualisation ... ==")
@@ -507,16 +630,28 @@ class DynamicsVisualTester(VisualTester):
         if data_loader.dataset.adaptation == False:
             contexts = self.trainer.learner.contexts
         else:
-            contexts = self.trainer.learner.contexts_adapt
+            if hasattr(self.trainer.learner, 'contexts_adapt'):
+                contexts = self.trainer.learner.contexts_adapt
+            elif hasattr(self.trainer.learner, 'contexts_latest'):
+                contexts = self.trainer.learner.contexts_latest
+                print("WARNING: No specific adaptation contexts found. Using latest found.")
+            else:
+                raise ValueError("No contexts found for adaptation. Please adapt the model first.")
 
         # model = self.trainer.learner.model
         model = self.trainer.learner.reset_model(taylor_order=0, verbose=False)
         _, X, X_hat = self.trainer.learner.batch_predict(model, contexts, batch)
 
-        X_hat = X_hat[:,traj,...]
-        X = X[:,traj,...]
+        ## Select nb_envs indices at random from the total_envs
+        plot_envs = jax.random.choice(key, total_envs, (nb_envs,), replace=False)
 
-        nb_envs = data_loader.dataset.total_envs
+        # X_hat = X_hat[:,traj,...]
+        # X = X[:,traj,...]
+
+        X_hat = X_hat[plot_envs, traj, ...]
+        X = X[plot_envs, traj, ...]
+        t_test = t_test[plot_envs] if t_test.ndim > 1 else t_test
+
         fig, ax = plt.subplots(nb_envs, 2, figsize=(5*2, 3*nb_envs), sharex=False, sharey=False)
 
         mks = 2
@@ -529,30 +664,33 @@ class DynamicsVisualTester(VisualTester):
         eps = 0.1
 
         for e in range(nb_envs):
-            ax[e, 0].plot(t_test, X_hat[e, :, dim0], c="deepskyblue", label=f"$\\hat{{x}}_{{{dim0}}}$ (Pred)")
-            ax[e, 0].plot(t_test, X[e, :, dim0], "o", c="royalblue", label=f"$x_{{{dim0}}}$ (GT)", markersize=mks)
+            t_plot = t_test[e] if t_test.ndim > 1 else t_test
 
-            ax[e, 0].plot(t_test, X_hat[e, :, dim1], c="violet", label=f"$\\hat{{x}}_{{{dim1}}}$ (Pred)")
-            ax[e, 0].plot(t_test, X[e, :, dim1], "x", c="purple", label=f"$x_{{{dim1}}}$ (GT)", markersize=mks+1)
+            ax[e, 0].plot(t_plot, X_hat[e, :, dim0], c="deepskyblue", label=f"$\\hat{{x}}_{{{dim0}}}$ (Pred)")
+            ax[e, 0].plot(t_plot, X[e, :, dim0], "o", c="royalblue", label=f"$x_{{{dim0}}}$ (GT)", markersize=mks)
+
+            ax[e, 0].plot(t_plot, X_hat[e, :, dim1], c="violet", label=f"$\\hat{{x}}_{{{dim1}}}$ (Pred)")
+            ax[e, 0].plot(t_plot, X[e, :, dim1], "x", c="purple", label=f"$x_{{{dim1}}}$ (GT)", markersize=mks+1)
 
             ax[e, 1].plot(X_hat[e, :, dim0], X_hat[e, :, dim1], c="turquoise", label="Pred")
             ax[e, 1].plot(X[e, :, dim0], X[e, :, dim1], ".", c="teal", label="GT")
 
             if e==nb_envs-1: ax[e, 0].set_xlabel("Time")
-            else: ax[e, 0].set_xticklabels([])
-            if e==0: ax[e, 0].legend(title=f"Env {e}", loc='upper right')
-            else: ax[e, 0].legend([], title=f"Env {e}", loc='upper right')
+            elif share_axes==True : ax[e, 0].set_xticklabels([])
+            if e==0: ax[e, 0].legend(title=f"Env {plot_envs[e]}", loc='upper right')
+            else: ax[e, 0].legend([], title=f"Env {plot_envs[e]}", loc='upper right')
             ax[e, 0].set_ylabel("State")
 
             if e==nb_envs-1: ax[e, 1].set_xlabel(f"$x_{{{dim0}}}$")
             else: ax[e, 1].set_xticklabels([])
-            if e==0: ax[e, 1].legend(title=f"Env {e}", loc='upper right')
-            else: ax[e, 1].legend([], title=f"Env {e}", loc='upper right')
+            if e==0: ax[e, 1].legend(title=f"Env {plot_envs[e]}", loc='upper right')
+            else: ax[e, 1].legend([], title=f"Env {plot_envs[e]}", loc='upper right')
             ax[e, 1].set_ylabel(f"$x_{{{dim1}}}$")
 
-            ax[e, 0].set_ylim(min(xlim_0, ylim_0)-eps, max(xlim_1, ylim_1)+eps)
-            ax[e, 1].set_xlim(xlim_0-eps, xlim_1+eps)
-            ax[e, 1].set_ylim(ylim_0-eps, ylim_1+eps)
+            if share_axes==True:
+                ax[e, 0].set_ylim(min(xlim_0, ylim_0)-eps, max(xlim_1, ylim_1)+eps)
+                ax[e, 1].set_xlim(xlim_0-eps, xlim_1+eps)
+                ax[e, 1].set_ylim(ylim_0-eps, ylim_1+eps)
 
         plt.tight_layout()
         plt.suptitle(f"Trajectories and Phase Spaces for traj {traj}", fontsize=16, y=1.005)

@@ -137,9 +137,9 @@ if split == "train":
 elif split == "test":
   filename = savepath+'test_data.npz'
 elif split == "adapt":
-  filename = savepath+'adapt_data.npz'
+  filename = savepath+'adapt_train.npz'
 elif split == "adapt_test":
-  filename = savepath+'adapt_data_test.npz'
+  filename = savepath+'adapt_test.npz'
 
 np.savez(filename, t=t_eval, X=data)
 

@@ -52,15 +52,33 @@ class Trainer:
         assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
         print(f"\nNo training, loading model and results from {path} folder ...\n")
 
-        histories = np.load(path+"train_histories.npz")
+        if os.path.exists(path+"train_histories.npz"):
+            histories = np.load(path+"train_histories.npz")
+        elif os.path.exists(path+"checkpoints/train_histories.npz"):
+            print("WARNING: No training history found in the provided path. Using checkpointed ones.")
+            histories = np.load(path+"checkpoints/train_histories.npz")
+        else:
+            print("WARNING: No training history found at all. Using ones.")
+            histories = {'losses_model': np.ones((1,100)), 'losses_ctx': np.ones((1,100))}
         self.losses_model = [histories['losses_model']]
         self.losses_ctx = [histories['losses_ctx']]
 
         if os.path.exists(path+"val_losses.npy"):
             self.val_losses = [np.load(path+"val_losses.npy")]
+        elif os.path.exists(path+"checkpoints/val_losses.npy"):
+            print("WARNING: No validation history found in the provided path. Using checkpointed ones.")
+            self.val_losses = [np.load(path+"checkpoints/val_losses.npy")]
+        else:
+            print("WARNING: No validation history found at all. Using ones.")
+            self.val_losses = [np.ones((1,100))]
 
-        self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
-        # self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
+        if os.path.exists(path+"opt_state_model.pkl"):
+            self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
+            # self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
+        else:
+            print("WARNING: No optimiser state found in the provided path. Using Nones.")
+            self.opt_state_model = None
+            # self.opt_state_ctx = None
 
         self.learner.load_learner(path)
 
@@ -123,6 +141,7 @@ class NCFTrainer(Trainer):
                     max_train_batches=None,
                     patience=None, 
                     print_error_every=(1,1), 
+                    save_checkpoints=False,
                     validate_every=100,
                     save_path=False, 
                     val_dataloader=None, 
@@ -144,6 +163,11 @@ class NCFTrainer(Trainer):
         loss_fn = self.learner.loss_fn
         model = self.learner.model
         opt_state_model = self.opt_state_model
+
+        if save_checkpoints:
+            backup_folder = save_path+"checkpoints/"
+            if not os.path.exists(backup_folder):
+                os.makedirs(backup_folder)
 
         @eqx.filter_jit
         def train_step_model(model, model_old, contexts, batch, weightings, opt_state, key):
@@ -228,7 +252,7 @@ class NCFTrainer(Trainer):
                 loss_epochs_ctx = 0.
                 nb_batches = 0
 
-                nb_envs_in_batch = batch[0].shape[0]
+                nb_envs_in_batch = batch[1].shape[0]
                 weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
                 contexts = self.learner.reset_contexts(nb_envs_in_batch)
@@ -288,6 +312,17 @@ class NCFTrainer(Trainer):
                             print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
                             print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
+                            if save_checkpoints:
+                                ## Save the context and model with the right suffix
+                                context_save_path = backup_folder+f"contexts_outstep_{out_step:06d}.npy"
+                                np.save(context_save_path, contexts.params)
+                                eqx.tree_serialise_leaves(backup_folder+f"model_outstep_{out_step:06d}.eqx", model)
+                                np.savez(backup_folder+"train_histories.npz",
+                                    losses_model=jnp.vstack([jnp.vstack(losses_model)]), 
+                                    losses_ctx=jnp.vstack([jnp.vstack(losses_ctx)]))
+                                # np.save(backup_folder+"val_losses.npy", jnp.vstack([jnp.vstack(val_losses)]))
+
+
                     if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
                         self.learner.model = model
                         self.learner.contexts = contexts
@@ -311,13 +346,6 @@ class NCFTrainer(Trainer):
                         if out_step == nb_outer_steps-1:
                             self.learner.load_learner(save_path)
 
-                        # ## TODO remember to remove this (stop as soon as we get to 1e-4)
-                        # if ind_crit <= 1e-4:
-                        #     wall_time = time.time() - start_time
-                        #     time_in_hmsecs = seconds_to_hours(wall_time)
-                        #     print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
-                        #     return
-
                 # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                 loss_epochs_model += loss_model
@@ -326,7 +354,6 @@ class NCFTrainer(Trainer):
 
             # losses_model.append(loss_epochs_model/nb_batches)
             # losses_ctx.append(loss_epochs_ctx/nb_batches)
-
 
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
@@ -889,7 +916,7 @@ class NCFTrainer(Trainer):
             if env_batch >= max_adapt_batches:
                 break
 
-            nb_envs_in_batch = batch[0].shape[0]
+            nb_envs_in_batch = batch[1].shape[0]
             weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
             contexts = self.learner.reset_contexts(nb_envs_in_batch)
@@ -935,7 +962,10 @@ class NCFTrainer(Trainer):
         if save_path:
             self.save_adapted_trainer(save_path)
 
-        state_data = tuple(jnp.concat(state_data[i], axis=0) for i in range(3))
+        # state_data = tuple(jnp.concat(state_data[i], axis=0) for i in range(3))
+        # state_data = tuple(jax.tree_map(lambda x: jnp.concat(x, axis=0), state_data))
+        state_data = jax.tree_map(lambda x: jnp.concat(x, axis=0), state_data)
+        state_data = tuple([state_data[i][0] for i in range(3)])
 
         return losses_epochs, contexts, state_data
 
@@ -979,7 +1009,7 @@ class CAVIATrainer(Trainer):
                     nb_inner_steps=10,
                     print_error_every=(1, 1), 
                     save_path=False, 
-                    backup_contexts=False,
+                    save_checkpoints=False,
                     max_train_batches=None,
                     val_dataloader=None, 
                     val_criterion_id=None, 
@@ -994,10 +1024,10 @@ class CAVIATrainer(Trainer):
         opt_state_model = self.opt_state_model
 
         ## 
-        if backup_contexts:
-            backup_ctx_folder = save_path+"contexts/"
-            if not os.path.exists(backup_ctx_folder):
-                os.makedirs(backup_ctx_folder)
+        if save_checkpoints:
+            backup_folder = save_path+"checkpoints/"
+            if not os.path.exists(backup_folder):
+                os.makedirs(backup_folder)
 
         def inner_train_step(model, contexts, batch, weightings, opt_state, key):
             print(f'     ### (Re)Compiling function: {inner_train_step.__name__} ...  ')
@@ -1150,13 +1180,13 @@ class CAVIATrainer(Trainer):
                         # print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
                         # print()
 
-                        if backup_contexts and epoch==nb_epochs-1:
+                        if save_checkpoints and epoch==nb_epochs-1:
                             ## Save the context's numpy array with the suffix of the current batch*epoch
-                            context_save_path = backup_ctx_folder+f"contexts_epoch{epoch:04d}_batch{env_batch:06d}.npy"
+                            context_save_path = backup_folder+f"contexts_epoch{epoch:04d}_batch{env_batch:06d}.npy"
                             np.save(context_save_path, contexts.params)
 
                             ## Save the model as well
-                            eqx.tree_serialise_leaves(backup_ctx_folder+"model.eqx", model)
+                            eqx.tree_serialise_leaves(backup_folder+"model.eqx", model)
 
             # if epoch==nb_epochs-1 and hasattr(self.learner.model, 'taylor_weight'):
             #     alpha = model.taylor_weight[0]
@@ -1185,7 +1215,7 @@ class CAVIATrainer(Trainer):
 
                 ## Check if val loss is lowest to save the model
                 if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
-                    print(f"        Saving best model so far ...", end="\n")
+                    print(f"        Saving best model so far ...", end="\n", flush=True)
                     self.learner.save_learner(save_path)
                 ## Restore the learner at the last evaluation step
                 if epoch == nb_epochs-1:

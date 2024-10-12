@@ -1,0 +1,247 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.28
+Available devices: [cuda(id=0)]
+Created a new run folder at: ./runs/241012-192546/
+Completed copied scripts 
+Created a new adaptation folder at: ./runs/241012-192546/adapt/
+
+Using 8 environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 91561
+Total number of parameters in one context: 12610
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch along envs: 252
+    Maximum number of batches (along envs): 1
+    Total number of epochs: 1
+    Number of outer minimizations: 25000
+    Maximum numbers of inner steps per outer minimizations: (10, 10)
+    Training on 1 batches
+    Validating on 1 batches
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.08902124     ContextsNorm: 0.00000000      Time/Step(s): 22.7468
+	-NbInnerStepsMod:    1
+	-NbInnerStepsCxt:    1
+	-DiffMod:   6.48e-05
+	-DiffCxt:   2.99e+00Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.34457105     ContextsNorm: 0.00000000      Time/Step(s): 1.1972
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.58e-07
+	-DiffCxt:   1.76e-05Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.19178508     ContextsNorm: 0.00000000      Time/Step(s): 1.3308
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.68e-07
+	-DiffCxt:   1.41e-05Epoch:   0      Batch:   0      OuterStep: 300      LossModel: 0.12230798     ContextsNorm: 0.00000000      Time/Step(s): 1.1568
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-07
+	-DiffCxt:   2.44e-06Epoch:   0      Batch:   0      OuterStep: 400      LossModel: 0.12873857     ContextsNorm: 0.00000000      Time/Step(s): 1.4919
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.69e-08
+	-DiffCxt:   4.24e-06Epoch:   0      Batch:   0      OuterStep: 500      LossModel: 0.02321575     ContextsNorm: 0.00000000      Time/Step(s): 1.6604
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.38e-07
+	-DiffCxt:   1.45e-06        Validation Criterion: 0.07900444
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 600      LossModel: 0.15993278     ContextsNorm: 0.00000000      Time/Step(s): 2.3871
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.21e-06
+	-DiffCxt:   7.09e-06Epoch:   0      Batch:   0      OuterStep: 700      LossModel: 0.12535532     ContextsNorm: 0.00000000      Time/Step(s): 1.4467
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.54e-08
+	-DiffCxt:   1.34e-06Epoch:   0      Batch:   0      OuterStep: 800      LossModel: 0.35489026     ContextsNorm: 0.00000000      Time/Step(s): 1.3716
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.09e-07
+	-DiffCxt:   6.86e-06Epoch:   0      Batch:   0      OuterStep: 900      LossModel: 0.27389669     ContextsNorm: 0.00000000      Time/Step(s): 1.4199
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.80e-07
+	-DiffCxt:   2.79e-06Epoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.01035272     ContextsNorm: 0.00000000      Time/Step(s): 1.7647
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.13e-07
+	-DiffCxt:   1.75e-06        Validation Criterion: 0.05634861
+        Saving best model so far ...
+Epoch:   0      Batch:   0      OuterStep: 1100      LossModel: 11.40883636     ContextsNorm: 0.00000000      Time/Step(s): 1.7175
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.09e-06
+	-DiffCxt:   7.80e-06Epoch:   0      Batch:   0      OuterStep: 1200      LossModel: 0.09239137     ContextsNorm: 0.00000000      Time/Step(s): 1.5891
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.19e-06
+	-DiffCxt:   8.73e-06Epoch:   0      Batch:   0      OuterStep: 1300      LossModel: 0.02292825     ContextsNorm: 0.00000000      Time/Step(s): 1.8700
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.35e-07
+	-DiffCxt:   7.25e-07Epoch:   0      Batch:   0      OuterStep: 1400      LossModel: 0.08229086     ContextsNorm: 0.00000000      Time/Step(s): 1.5328
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.44e-05
+	-DiffCxt:   7.93e-07Epoch:   0      Batch:   0      OuterStep: 1500      LossModel: 0.06750932     ContextsNorm: 0.00000000      Time/Step(s): 1.5707
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.07e-07
+	-DiffCxt:   1.04e-06        Validation Criterion: 0.11542550
+Epoch:   0      Batch:   0      OuterStep: 1600      LossModel: 0.06312910     ContextsNorm: 0.00000000      Time/Step(s): 1.9651
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.14e-07
+	-DiffCxt:   3.86e-06Epoch:   0      Batch:   0      OuterStep: 1700      LossModel: 0.58681202     ContextsNorm: 0.00000000      Time/Step(s): 1.5303
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.96e-07
+	-DiffCxt:   8.66e-07Epoch:   0      Batch:   0      OuterStep: 1800      LossModel: 0.00227139     ContextsNorm: 0.00000000      Time/Step(s): 1.9669
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.49e-07
+	-DiffCxt:   3.23e-07Epoch:   0      Batch:   0      OuterStep: 1900      LossModel: 0.02009813     ContextsNorm: 0.00000000      Time/Step(s): 1.8625
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.84e-08
+	-DiffCxt:   2.06e-06Epoch:   0      Batch:   0      OuterStep: 2000      LossModel: 0.04572160     ContextsNorm: 0.00000000      Time/Step(s): 1.6124
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.19e-07
+	-DiffCxt:   3.90e-06        Validation Criterion: 0.21898639
+Epoch:   0      Batch:   0      OuterStep: 2100      LossModel: 0.04568231     ContextsNorm: 0.00000000      Time/Step(s): 1.6295
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.38e-07
+	-DiffCxt:   1.02e-06Epoch:   0      Batch:   0      OuterStep: 2200      LossModel: 0.01758843     ContextsNorm: 0.00000000      Time/Step(s): 1.9804
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   5.88e-07
+	-DiffCxt:   5.98e-07Epoch:   0      Batch:   0      OuterStep: 2300      LossModel: 0.28876612     ContextsNorm: 0.00000000      Time/Step(s): 2.0959
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.31e-07
+	-DiffCxt:   2.28e-06Epoch:   0      Batch:   0      OuterStep: 2400      LossModel: 0.00117284     ContextsNorm: 0.00000000      Time/Step(s): 1.6923
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.33e-08
+	-DiffCxt:   7.11e-07Epoch:   0      Batch:   0      OuterStep: 2500      LossModel: 0.00965617     ContextsNorm: 0.00000000      Time/Step(s): 1.9135
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.06e-07
+	-DiffCxt:   2.27e-06        Validation Criterion: 0.38929600
+Epoch:   0      Batch:   0      OuterStep: 2600      LossModel: 0.00049900     ContextsNorm: 0.00000000      Time/Step(s): 1.7326
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.86e-08
+	-DiffCxt:   1.45e-06Epoch:   0      Batch:   0      OuterStep: 2700      LossModel: 0.15630496     ContextsNorm: 0.00000000      Time/Step(s): 2.1138
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.71e-07
+	-DiffCxt:   1.87e-06Epoch:   0      Batch:   0      OuterStep: 2800      LossModel: 0.02282703     ContextsNorm: 0.00000000      Time/Step(s): 2.0574
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   4.68e-07
+	-DiffCxt:   7.73e-07Epoch:   0      Batch:   0      OuterStep: 2900      LossModel: 0.10779256     ContextsNorm: 0.00000000      Time/Step(s): 1.3965
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   2.44e-08
+	-DiffCxt:   5.65e-07Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.21253769     ContextsNorm: 0.00000000      Time/Step(s): 1.9979
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.43e-07
+	-DiffCxt:   2.00e-06        Validation Criterion: 0.20796680
+Epoch:   0      Batch:   0      OuterStep: 3100      LossModel: 0.01607389     ContextsNorm: 0.00000000      Time/Step(s): 1.8207
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   7.83e-09
+	-DiffCxt:   5.36e-07Epoch:   0      Batch:   0      OuterStep: 3200      LossModel: 0.13711652     ContextsNorm: 0.00000000      Time/Step(s): 1.6740
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.95e-08
+	-DiffCxt:   6.24e-07Epoch:   0      Batch:   0      OuterStep: 3300      LossModel: 0.01008620     ContextsNorm: 0.00000000      Time/Step(s): 1.8953
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.27e-08
+	-DiffCxt:   8.53e-07Epoch:   0      Batch:   0      OuterStep: 3400      LossModel: 0.01348695     ContextsNorm: 0.00000000      Time/Step(s): 2.1565
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.15e-08
+	-DiffCxt:   6.24e-07Epoch:   0      Batch:   0      OuterStep: 3500      LossModel: 0.13079424     ContextsNorm: 0.00000000      Time/Step(s): 1.7388
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   9.28e-07
+	-DiffCxt:   2.62e-06        Validation Criterion: 0.06484224
+Epoch:   0      Batch:   0      OuterStep: 3600      LossModel: 0.00673931     ContextsNorm: 0.00000000      Time/Step(s): 2.2923
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   8.11e-08
+	-DiffCxt:   2.24e-06Epoch:   0      Batch:   0      OuterStep: 3700      LossModel: 0.00163235     ContextsNorm: 0.00000000      Time/Step(s): 1.8432
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   3.15e-07
+	-DiffCxt:   2.32e-06Epoch:   0      Batch:   0      OuterStep: 3800      LossModel: 0.00297304     ContextsNorm: 0.00000000      Time/Step(s): 2.4310
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   1.58e-08
+	-DiffCxt:   4.83e-07Epoch:   0      Batch:   0      OuterStep: 3900      LossModel: 0.00603560     ContextsNorm: 0.00000000      Time/Step(s): 2.5589
+	-NbInnerStepsMod:   10
+	-NbInnerStepsCxt:   10
+	-DiffMod:   6.35e-08
+	-DiffCxt:   1.82e-06jax.pure_callback failed
+Traceback (most recent call last):
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 79, in pure_callback_impl
+    return tree_util.tree_map(np.asarray, callback(*args))
+                                          ^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+    return tree_util.tree_leaves(self.callback_func(*args, **kwargs))
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+    raise EqxRuntimeError(msgs[_index.item()])
+equinox._errors.EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+E1012 21:30:35.892132 2963895 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: INTERNAL: CustomCall failed: CpuCallback error: Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/foundational/main_ncf.py", line 270, in <module>
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/traceback_util.py", line 179, in reraise_with_filtered_traceback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 304, in cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 181, in _python_pjit_helper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 2789, in bind
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 391, in bind_with_trace
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 879, in process_primitive
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1525, in _pjit_call_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1508, in call_impl_cache_miss
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1462, in _pjit_call_impl_python
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/profiler.py", line 335, in wrapper
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/pxla.py", line 1177, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/mlir.py", line 2483, in _wrapped_callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 221, in _callback
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 82, in pure_callback_impl
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
+EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/foundational/main_ncf.py", line 270, in <module>
+    trainer.meta_train(dataloader=train_dataloader, 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
+    model, contexts, opt_state_model, loss_model, (_, term2, term3, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
+                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+jaxlib.xla_extension.XlaRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
+-------
+This error occurred during the runtime of your JAX program. Setting the environment
+variable `EQX_ON_ERROR=breakpoint` is usually the most useful way to debug such errors.
+(This can be navigated using most of the usual commands for the Python debugger:
+`u` and `d` to move through stack frames, the name of a variable to print its value,
+etc.) See also `https://docs.kidger.site/equinox/api/errors/#equinox.error_if` for more
+information.
+
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.

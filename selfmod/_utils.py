@@ -1,32 +1,17 @@
-import jax
-
 from ._config import *
 
+# import jax
 import jax.numpy as jnp
 
-import numpy as np
-np.set_printoptions(suppress=True)
 from scipy.interpolate import griddata
 
 import torch
-import equinox as eqx
-import diffrax
-# import lineax as lx
-
-# import matplotlib.pyplot as plt
 
 import optax
 from functools import partial
 
-import os
 import time
 # import cProfile
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set(context='notebook', style='ticks',
-        font='sans-serif', font_scale=1, color_codes=True, rc={"lines.linewidth": 2})
-# plt.style.use("dark_background")
 
 
 
@@ -156,11 +141,11 @@ def unflatten_pytree(flat, shapes, tree_def):
     return jax.tree_util.tree_unflatten(tree_def, leaves)
 
 
-def default_optimizer_schedule(init_lr, nb_epochs):
-    return optax.piecewise_constant_schedule(init_value=init_lr,
-                        boundaries_and_scales={int(nb_epochs*0.25):0.2,
-                                                int(nb_epochs*0.5):0.1,
-                                                int(nb_epochs*0.75):0.01})
+# def default_optimizer_schedule(init_lr, nb_epochs):
+#     return optax.piecewise_constant_schedule(init_value=init_lr,
+#                         boundaries_and_scales={int(nb_epochs*0.25):0.2,
+#                                                 int(nb_epochs*0.5):0.1,
+#                                                 int(nb_epochs*0.75):0.01})
 
 
 def get_id_current_time():
@@ -466,3 +451,44 @@ def make_image(xy_coords, rgb_pixels, img_size=(32, 32, 3)):
     y_coords = (xy_coords[:, 1] * img_size[1]).astype(int)
     img = img.at[x_coords, y_coords, :].set(jnp.clip(rgb_pixels, 0., 1.))
     return img
+
+
+
+
+def make_run_folder(parent_path='./runs/'):
+    """ Create a new folder for the run. """
+    if not os.path.exists(parent_path):
+        os.mkdir(parent_path)
+
+    # run_folder = parent_path+time.strftime("%y%m%d-%H%M%S")+'/'
+    run_folder = os.path.join(parent_path, time.strftime("%y%m%d-%H%M%S")+'/')
+    if not os.path.exists(run_folder):
+        os.mkdir(run_folder)
+        print("Created a new run folder at:", run_folder)
+
+    return run_folder
+
+
+def setup_run_folder(folder_path, script_name):
+    """ Copy the run script, the module files, and create a folder for the adaptation results. """
+
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+        print("Created a new run folder at:", folder_path)
+
+    # Save the run scripts in that folder
+    os.system(f"cp {script_name} {folder_path}")
+
+    # Save the selfmod module files as well
+    # module_folder = os.path.join(os.path.dirname(__file__), "../")
+    module_folder = os.path.join(os.path.dirname(__file__))
+    os.system(f"cp -r {module_folder} {folder_path}")
+    print("Completed copied scripts ")
+
+    ## Create a folder for the adaptation results
+    adapt_folder = folder_path+"adapt/"
+    if not os.path.exists(adapt_folder):
+        os.mkdir(adapt_folder)
+        print("Created a new adaptation folder at:", adapt_folder)
+
+    return adapt_folder

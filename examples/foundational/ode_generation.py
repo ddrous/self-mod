@@ -16,11 +16,12 @@ def parse_arguments():
         _in_ipython_session = False
 
     if _in_ipython_session:
-        args = argparse.Namespace(split='test', 
-                                  savepath="tmp/", 
-                                  seed=2026, 
+        args = argparse.Namespace(split='adapt_test', 
+                                  savepath="data_2D/", 
+                                  seed=2024, 
                                   verbose=1, 
-                                  dimension=2)
+                                  dimension=2,
+                                  nb_steps=100)
         return args
 
     else:
@@ -30,6 +31,7 @@ def parse_arguments():
         parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
         parser.add_argument('--verbose', type=int, default=1, help='Verbosity level')
         parser.add_argument('--dimension', type=int, default=2, help='Dimension of ODEs')
+        parser.add_argument('--nb_steps', type=int, default=100, help='Number of time steps to simulate')
         return parser.parse_args()
 
 def parse_lambda(lambda_str):
@@ -60,7 +62,7 @@ def generate_environments(reference_params, n_envs, adaptation=False):
                     env[param] = value * np.random.uniform(0.9, 1.1)
                 else:
                     # Outside training domain
-                    env[param] = value * np.random.uniform(1.1, 1.3)
+                    env[param] = value * np.random.uniform(0.8, 1.2)
             envs.append(env)
     else:
         # Generate training environments
@@ -99,7 +101,7 @@ def generate_initial_conditions(reference_ic, n_ic):
 def simulate_ode(ode_func, t_span, initial_state, args, dt):
     t_eval = np.arange(t_span[0], t_span[1], dt)
     # print("t_eval", t_eval.shape)
-    solution = solve_ivp(ode_func, t_span, initial_state, args=args, t_eval=t_eval)
+    solution = solve_ivp(ode_func, t_span, initial_state, args=args, t_eval=t_eval, method='RK45')
     # print("solution", solution.y.shape, t_eval.shape, t_eval[-1], solution.t[-1])
     return solution.t, solution.y.T
 
@@ -120,6 +122,7 @@ def main():
 
     all_data = []
     all_t_eval = []
+    all_environments = {}
 
     for ode_id, ode_info in ode_definitions.items():
         if args.verbose:
@@ -131,7 +134,7 @@ def main():
 
         # Adjust time parameters
         T = ode_info.get("time_horizon", 1)
-        dt = T / 20  # Approximately 20 time steps per ODE
+        dt = T / args.nb_steps  # Approximately 20 time steps per ODE
 
         ode_data = np.zeros((n_envs, n_ic, int(T/dt), len(ode_info['initial_values'])))
 
@@ -142,11 +145,14 @@ def main():
 
         all_data.append(ode_data)
         all_t_eval.append(t)
+        all_environments[ode_id] = environments
 
     # Save data
     filename = f"{args.savepath}/{args.split}_data.npz"
-
     np.savez(filename, t=np.stack(all_t_eval), X=np.stack(all_data))
+    # Save environments
+    with open(f"{args.savepath}/{args.split}_envs.json", 'w') as f:
+        json.dump(all_environments, f, indent=4)
 
     if args.verbose:
         print(f"Data saved to {filename}")
@@ -169,24 +175,28 @@ if __name__ == "__main__":
     ode_id = 0
 
     args = parse_arguments()
+    ode_defs = load_ode_definitions(args.dimension)
 
-    ## Load the data
-    filename = f"{args.savepath}/{args.split}_data.npz"
-    data = np.load(filename)
+    for ode_id, ode_def in enumerate(ode_defs.keys()):
+        ## Load the data
+        filename = f"{args.savepath}/{args.split}_data.npz"
+        data = np.load(filename)
 
-    t = data['t'][ode_id]
-    X = data['X'][ode_id]
+        t = data['t'][ode_id]
+        X = data['X'][ode_id]
 
-    print("t", t.shape)
-    print("X", X.shape)
+        # print("t", t.shape)
+        # print("X", X.shape)
 
-    plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(10, 4))
 
-    ## Plot all environments from the same initial condition
-    for i in range(X.shape[0]):
-        plt.plot(t, X[:, i, :, 0].T, "b-", alpha=(i+1)/(X.shape[0]+1))
-        plt.plot(t, X[:, i, :, 1].T, "r-", alpha=(i+1)/(X.shape[0]+1))
+        ## Plot all environments from the same initial condition
+        for i in range(X.shape[0]):
+            plt.plot(t, X[:, i, :, 0].T, color="royalblue", alpha=(i+1)/(X.shape[0]+1))
+            plt.plot(t, X[:, i, :, 1].T, color="crimson", alpha=(i+1)/(X.shape[0]+1))
 
-    plt.xlabel("Time")
-    # plt.legend()
-    plt.show()
+        plt.title(f"ODE {ode_def}")
+
+        plt.xlabel("Time")
+        # plt.legend()
+        plt.show()
