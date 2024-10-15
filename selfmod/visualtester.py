@@ -23,6 +23,7 @@ class VisualTester:
                  criterion_id=0, 
                  max_adapt_batches=-1, 
                  max_ret_env_states=10,
+                 stochastic=True,
                  taylor_order=0, 
                  val_dataloader=None,
                  verbose=False):
@@ -41,6 +42,7 @@ class VisualTester:
                                             taylor_order=taylor_order, 
                                             val_dataloader=val_dataloader,
                                             max_ret_env_states=max_ret_env_states,
+                                            stochastic=stochastic,
                                             verbose=verbose)
 
         # ## losses: (nb_inner_steps, nb_criterions)
@@ -182,7 +184,7 @@ class VisualTester:
 
         fig, ax = plt.subplot_mosaic('ABC;DEF', figsize=(4*3, 3.7*2))
 
-        print("    Visualising the paramters (either vectors or function weights)")
+        print("    Visualising the parameters (either vectors or function weights)")
 
         from sklearn.manifold import TSNE
         reducer = TSNE(n_components=3, perplexity=perplexities[0], random_state=int(key[0]))
@@ -225,9 +227,9 @@ class VisualTester:
         else:
             model_ = model.neuralnet
         
-        if hasattr(model_, 'ctx_utils'):
+        ts = jnp.array([0, 1, 10])[:, None]
+        if hasattr(model_, 'ctx_utils') and model_.ctx_utils is not None:
             ctx_utils = model_.ctx_utils
-            ts = jnp.array([0, 1, 10])[:, None]
             @eqx.filter_vmap
             def ctx_arr_to_fun_eval(ctx_arr):
                 ctx_shapes, ctx_treedef, ctx_static, _ = ctx_utils
@@ -238,9 +240,9 @@ class VisualTester:
             train_dat = ctx_arr_to_fun_eval(xis_train.params)
             adapt_dat = ctx_arr_to_fun_eval(xis_adapt.params)
         else:
-            print("No context utilities found, meaning inf dim context are not used. Using zeros.")
-            train_dat = jnp.zeros((nb_train_envs, 8, 3))
-            adapt_dat = jnp.zeros((nb_total_envs-nb_train_envs, 8, 3))
+            print("WARNING: No context utilities found, meaning inf dim context are not used. Using randoms.")
+            train_dat = jax.random.normal(key, (nb_train_envs, 8, 3))
+            adapt_dat = jax.random.normal(key, (nb_total_envs-nb_train_envs, 8, 3))
 
         plot_ids = ['D', 'E', 'F']
         colors = ['royalblue', 'orangered', 'darkgreen', 'darkviolet']

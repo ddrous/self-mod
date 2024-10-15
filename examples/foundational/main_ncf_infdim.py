@@ -8,7 +8,7 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 20260
+seed = 2026
 
 ## Dataloader hps
 num_envs = (9*28, 4*28)
@@ -20,9 +20,9 @@ test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 4
-context_size = 128
-taylor_orders = (2, 0)
-ivp_args = {"y0_pad_size":0, "return_traj":True, "max_steps":1024*1, "dt_min":1e-2}
+context_size = 64*4
+taylor_orders = (0, 0)
+ivp_args = {"return_traj":True, "max_steps":1024*1, "dt_min":1e-2}
 skip_steps = 5
 loss_contributors = 8
 max_ret_env_states = 8
@@ -33,19 +33,19 @@ sched_factor = 1.
 max_train_batches = 1
 max_adapt_batches = 1
 
-nb_outer_steps = 3000*1
+nb_outer_steps = 3000*3
 nb_inner_steps = (10, 10)
-nb_adapt_epochs = 5
-validate_every = 5
+nb_adapt_epochs = 1000
+validate_every = 1000
 
-print_error_every = (1, 1)
+print_error_every = (300, 300)
 
 meta_train = True
 save_trainer = True
 meta_test = True
 
-run_folder = "./runs/241012-234111/"
-# run_folder = None
+# run_folder = "./runs/241014-214909-Best/"
+run_folder = None
 data_folder = "./data_2D/"
 
 
@@ -64,7 +64,8 @@ adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__))
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train_data.npz", 
+train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz", 
+                                               norm_consts=data_folder+"test_bounds.npy",   ## since more data in test/val sets
                                                num_shots=num_shots[0], 
                                                skip_steps=skip_steps,
                                                traj_prop_min=train_proportion), 
@@ -73,7 +74,8 @@ train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train_data.
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test_data.npz", 
+val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz", 
+                                             norm_consts=data_folder+"test_bounds.npy",
                                              num_shots=num_shots[1], 
                                              skip_steps=skip_steps,
                                              traj_prop_min=test_proportion),
@@ -98,7 +100,7 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test_data.npz
 
 # print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
 
-# E_plot = 1
+# E_plot = 5
 # E_ = 9
 
 # fig, ax = plt.subplots(E_plot, 1, figsize=(6, E_plot*3))
@@ -113,7 +115,7 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test_data.npz
 #         ax[e].plot(e_t_eval[e_], e_plot_data[e_].T, '-', color=colors[e_])
 #         # if e==1:
 #         #     print("t_eval is:", e_t_eval[e_])
-#     ax[e].set_title(f"Environment {e}")
+#     ax[e].set_title(f"Environment {23+e}")
 #     ax[e].set_xlabel("time")
 #     ax[e].set_ylabel("y_0")
 
@@ -125,24 +127,6 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test_data.npz
 #%%
 
 
-class NeuroModulatedSwish(eqx.Module):
-    """ NMN neuro-modulation layer with swish base activation function: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0227922 """
-    beta: jnp.ndarray
-    w_s: jnp.ndarray
-    w_b: jnp.ndarray
-
-    def __init__(self, latent_size, key=None):
-        self.beta = jax.random.uniform(key, shape=(1,), minval=0.1, maxval=1.0)
-        self.w_s = jnp.ones((latent_size, 1))
-        self.w_b = jnp.zeros((latent_size, 1))
-
-    def __call__(self, x, ctx):
-        y = ctx.T @ (x * self.w_s + self.w_b)
-        return y * jax.nn.sigmoid(self.beta * y)
-        # return jax.nn.softplus(y)
-        # return jax.nn.tanh(y)
-
-
 
 
 
@@ -151,36 +135,36 @@ class NeuroModulatedSwish(eqx.Module):
 
 # ## Define model and loss function for the learner
 class MultiMLP(eqx.Module):
-    # layers_data: list
-    # activations_data: list
+    layers_data: list
+    activations_data: list
     layers_main: list
     activations_main: list
 
     ctx_utils:any
-    # depth_data:int
+    depth_data:int
     depth_main:int
 
     def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_utils, key=None):
         self.ctx_utils = ctx_utils
-        # self.depth_data = depth_data
+        self.depth_data = depth_data
         self.depth_main = depth_main
 
-        # keys = jax.random.split(key, num=depth_data+depth_main)
-        keys = jax.random.split(key, num=depth_data+depth_main)
-        # self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
+        layer_ctx_size = context_size//depth_main  ## Size of the context to modulate each shared/main layer
+        assert context_size%depth_main==0, "Context size must be divisible by the depth of the main network"
 
-        nmn_latent_size = (context_size//1) // depth_main
-        assert (context_size//1) % depth_main == 0, "Context (prediction) size must be divisible by the number of activation layers"
-        self.activations_main = [NeuroModulatedSwish(nmn_latent_size, key=k) for k in keys[depth_data:]]
+        keys = jax.random.split(key, num=depth_data+depth_main+2)
+        self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
+        self.activations_main = [Swish(key=k) for k in keys[depth_data+2:]]
 
-        # self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[0])]
-        # self.layers_data += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[i]) for i in range(1, depth_data+1)]
+        self.layers_data = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[0])]
+        self.layers_data += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[i]) for i in range(1, depth_data)]
+        self.layers_data += [eqx.nn.Linear(hidden_size, layer_ctx_size, key=keys[depth_data])]
 
-        self.layers_main = [eqx.nn.Linear(1+data_size, hidden_size, key=keys[depth_data])]
-        self.layers_main += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[depth_data+i]) for i in range(1, depth_main)]
-        self.layers_main += [eqx.nn.Linear(hidden_size, data_size, key=keys[depth_data+depth_main])]
+        self.layers_main = [eqx.nn.Linear(2*layer_ctx_size, hidden_size, key=keys[depth_data+1])]
+        self.layers_main += [eqx.nn.Linear(hidden_size+layer_ctx_size, hidden_size, key=keys[depth_data+i+1]) for i in range(1, depth_main)]
+        self.layers_main += [eqx.nn.Linear(hidden_size, data_size, key=keys[depth_data+depth_main+1])]
 
-        # assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
+        assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
         assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
 
@@ -193,21 +177,18 @@ class MultiMLP(eqx.Module):
         t_arr = jnp.array([t])
         ctx = ctx_fun(t_arr)
 
-        ## Split the context into parts for each activation layer
-        # half_size = ctx.shape[0]//2
+        ## Split the context into parts for each layer
         ctx_parts = jnp.split(ctx[:], self.depth_main, axis=0)
 
         y = jnp.concatenate([t_arr, y], axis=0)
-        # for layer in self.layers_data:
-        #     y = layer(y)
+        for layer, activation in zip(self.layers_data[:-1], self.activations_data):
+            y = activation(layer(y))
+        y = self.layers_data[-1](y)
 
-        ## Apply the context at the first layer
-        # y = jnp.concatenate([y, ctx[:]], axis=0)
-
-        ## Apply the context at each activation layer for NMN modulation
+        ## Apply the context at each layer (except the very last)
         for layer, activation, ctx_part in zip(self.layers_main[:-1], self.activations_main, ctx_parts):
-            y = activation(layer(y), ctx_part)
-
+            y = jnp.concatenate([y, ctx_part], axis=0)
+            y = activation(layer(y))
         y = self.layers_main[-1](y)
 
         return y
@@ -233,14 +214,14 @@ def env_loss_fn(model, ctx, y_hat, y):
 contexts = InfDimContextParams(nb_envs=num_envs[0], 
                                 input_dim=1,
                                 output_dim=context_size,
-                            hidden_size=64, 
-                            depth=3, 
+                            hidden_size=32, 
+                            depth=2, 
                             activation=Swish(key=model_key),
                             key=None)
 # contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size)
 
 neuralnet = MultiMLP(data_size=2,
-                     hidden_size=128, 
+                     hidden_size=64, 
                      depth_data=2,
                      depth_main=4,
                      context_size=context_size,
@@ -281,7 +262,6 @@ sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, bounda
 opt_model = optax.chain(optax.clip(5.0), optax.adam(sched_model))
 
 opt_ctx = optax.adam(init_lr_ctx)
-# opt_ctx = optax.chain(optax.clip(0.1), optax.adam(init_lr_ctx))
 
 trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
@@ -335,7 +315,8 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
                                     verbose=True,
                                     val_dataloader=val_dataloader,
                                     max_ret_env_states=max_ret_env_states,
-                                    max_adapt_batches=max_adapt_batches)
+                                    max_adapt_batches=max_adapt_batches,
+                                    stochastic=False)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
 print("Loss per InD environment:", all_ind_crit[0].tolist())
@@ -363,6 +344,7 @@ visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
 if meta_test:
     adapt_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"adapt_train.npz", 
                                                    adaptation=True,
+                                                   norm_consts=data_folder+"adapt_test_bounds.npy",
                                                    num_shots=num_shots[0], 
                                                    skip_steps=skip_steps,
                                                    traj_prop_min=train_proportion),
@@ -373,6 +355,7 @@ if meta_test:
 
     adapt_dataloader_test = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"adapt_test.npz", 
                                                         adaptation=True,
+                                                        norm_consts=data_folder+"adapt_test_bounds.npy",
                                                         num_shots=num_shots[0], 
                                                         skip_steps=skip_steps,
                                                         traj_prop_min=test_proportion),
@@ -389,23 +372,26 @@ if meta_test:
                                         verbose=True,
                                         val_dataloader=adapt_dataloader_test,
                                         max_ret_env_states=max_ret_env_states,
-                                        max_adapt_batches=max_adapt_batches)
+                                        max_adapt_batches=max_adapt_batches,
+                                        stochastic=False)
 
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
     print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
-visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood.png",
-                                data_loader=adapt_dataloader_test,
-                                nb_envs=4,
-                                traj=0,
-                                share_axes=False,
-                                key=test_key)
 
+    visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood.png",
+                                    data_loader=adapt_dataloader_test,
+                                    nb_envs=4,
+                                    traj=0,
+                                    share_axes=False,
+                                    key=test_key)
 
+#%%
 
-
-
-
+visualtester.visualize_context_clusters(perplexities=(25, 20),
+                                        # key=test_key,
+                                        key=jax.random.PRNGKey(time.time_ns()),
+                                        save_path=run_folder+"context_clusters.png")
 
 #%%
 ## After training, copy nohup.log to the runfolder
@@ -413,3 +399,8 @@ try:
     __IPYTHON__ ## in a jupyter notebook
 except NameError:
     os.system(f"cp nohup.log {run_folder}")
+
+#%%
+# adapt_dataloader_test.dataset.dataset.max()
+train_dataloader.dataset.dataset.max()
+val_dataloader.dataset.dataset.max()

@@ -555,7 +555,7 @@ class ODEBenchDataset:
     For all dynamics tasks as in the ODEBench paper
     """
 
-    def __init__(self, data_dir, num_shots=-1, skip_steps=5, adaptation=False, traj_prop_min=1.0):
+    def __init__(self, data_dir, norm_consts=None, num_shots=-1, skip_steps=5, adaptation=False, traj_prop_min=1.0):
 
         self.data_dir = data_dir
         self.skip_steps = skip_steps
@@ -570,6 +570,12 @@ class ODEBenchDataset:
 
         n_odes, n_envs_per_ode, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
         n_odes, n_timesteps = t_eval.shape
+        ## Load the bounds and normalise the dataset
+        if norm_consts is None:
+            ##  TODO remember to build a Network that predicts this scaling based on the context
+            raise ValueError("Normalisation constants must be provided, unique per environment across train and test")
+        norm_consts = np.load(norm_consts)
+        dataset = dataset / norm_consts
 
         ## Merge the two first dataset dimensions
         self.dataset = dataset.reshape(n_odes*n_envs_per_ode, n_trajs_per_env, n_timesteps, n_dimensions)
@@ -577,6 +583,10 @@ class ODEBenchDataset:
         self.t_eval = np.repeat(t_eval, n_envs_per_ode, axis=0)
 
         self.total_envs = n_odes*n_envs_per_ode
+
+        # ## Normalise the dynamics between -1 and 1, for each environment - TODO remember to build a Network that predicts this scaling based on the context
+        # max_vals = np.max(np.abs(self.dataset), axis=(1,2), keepdims=True)
+        # self.dataset = self.dataset / max_vals
 
         if num_shots is None or num_shots == -1:
             num_shots = n_trajs_per_env

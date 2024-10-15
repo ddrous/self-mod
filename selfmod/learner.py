@@ -996,14 +996,15 @@ class NeuralODE(eqx.Module):
                         args=(ctx, ctx_.squeeze()),
                         t0=t_eval[0],
                         t1=t_eval[-1],
-                        dt0=self.ivp_args.get("dt_init", 1e-2),
+                        dt0=self.ivp_args.get("dt_init", t_eval[1]-t_eval[0]),
                         y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 0),))], axis=0),
                         stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
-                                                                    atol=self.ivp_args.get("atol", 1e-6)),
+                                                                    atol=self.ivp_args.get("atol", 1e-6),
+                                                                    dtmin=self.ivp_args.get("dt_min", None)),
                         saveat=diffrax.SaveAt(ts=t_eval),
                         adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
                         max_steps=self.ivp_args.get("max_steps", 4096*1),
-                        throw=False,    ## Keep the nans and infs, don't throw and error !
+                        throw=True,    ## Keep the nans and infs, don't throw and error !
                     )
 
                 if self.ivp_args.get("return_traj", False):

@@ -248,10 +248,6 @@ class NCFTrainer(Trainer):
                 # if env_batch%10==0:
                 #     print(f"  Learning on batch {env_batch} ...")
 
-                loss_epochs_model = 0.
-                loss_epochs_ctx = 0.
-                nb_batches = 0
-
                 nb_envs_in_batch = batch[1].shape[0]
                 weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
@@ -260,6 +256,10 @@ class NCFTrainer(Trainer):
 
                 for out_step in range(nb_outer_steps):
                     # print(f"    Staring outer step {out_step} ...")
+
+                    loss_epochs_model = []
+                    loss_epochs_ctx = []
+
                     start_time_step = time.perf_counter()
 
                     model_old = jax.tree_util.tree_map(lambda x: x, model)
@@ -272,6 +272,8 @@ class NCFTrainer(Trainer):
                         loss_key, _ = jax.random.split(loss_key)
 
                         model, contexts, opt_state_model, loss_model, (_, term2, term3, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
+
+                        loss_epochs_model.append(loss_model)
 
                         ## TODO Update the weightings based on loss progress
 
@@ -289,6 +291,8 @@ class NCFTrainer(Trainer):
 
                         model, contexts, opt_state_ctx, loss_ctx, (_, term2, term3, diff_ctx_) = train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state_ctx, loss_key)
 
+                        loss_epochs_ctx.append(loss_ctx)
+
                         diff_ctx = params_diff_norm_squared(contexts, contexts_prev) / params_norm_squared(contexts_prev)
                         if diff_ctx < inner_tol_ctx or out_step==0:
                             break
@@ -304,12 +308,18 @@ class NCFTrainer(Trainer):
                         print(f"Stopping early after {patience} steps with no improvement in the loss. Consider increasing the tolerances for the inner minimizations.")
                         break
 
-                    losses_model.append(loss_model)
-                    losses_ctx.append(loss_ctx)
+                    # losses_model.append(loss_model)
+                    # losses_ctx.append(loss_ctx)
+
+                    # losses_model.append(jnp.mean(jnp.array(loss_epochs_model)))
+                    # losses_ctx.append(jnp.mean(jnp.array(loss_epochs_ctx)))
+
+                    losses_model.append(jnp.median(jnp.array(loss_epochs_model)))
+                    losses_ctx.append(jnp.median(jnp.array(loss_epochs_ctx)))
 
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
                         if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
-                            print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
+                            print(f"{time.strftime("%H:%M:%S")}      Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
                             print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
                             if save_checkpoints:
@@ -334,6 +344,7 @@ class NCFTrainer(Trainer):
                                                     nb_steps=val_nb_steps,
                                                     taylor_order=0, 
                                                     max_ret_env_states=self.learner.loss_contributors,
+                                                    stochastic=True,
                                                     verbose=False)
                         print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True)
                         val_losses.append(np.array([out_step, ind_crit]))
@@ -348,12 +359,6 @@ class NCFTrainer(Trainer):
 
                 # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
 
-                loss_epochs_model += loss_model
-                loss_epochs_ctx += loss_ctx
-                nb_batches += 1
-
-            # losses_model.append(loss_epochs_model/nb_batches)
-            # losses_ctx.append(loss_epochs_ctx/nb_batches)
 
         wall_time = time.time() - start_time
         time_in_hmsecs = seconds_to_hours(wall_time)
@@ -811,6 +816,7 @@ class NCFTrainer(Trainer):
                    max_adapt_batches=None,
                    val_dataloader=None,
                    max_ret_env_states=None,
+                   stochastic=True,
                    verbose=True,
                    save_path=False, 
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:
@@ -820,8 +826,11 @@ class NCFTrainer(Trainer):
 
         nb_epochs = nb_steps
         assert nb_epochs > 0, "Number of epochs must be greater than 0."
-        # loss_fn = self.learner.loss_fn_full
-        loss_fn = self.learner.loss_fn
+
+        if stochastic==False:      ## Use all the adaptation environments 
+            loss_fn = self.learner.loss_fn_full
+        else:
+            loss_fn = self.learner.loss_fn
         # model = self.learner.model
 
         if val_dataloader is None:
@@ -1174,7 +1183,8 @@ class CAVIATrainer(Trainer):
 
                 if epoch%print_every_epoch==0 or epoch==nb_epochs-1:
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
-                        print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
+                        # print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}        Current time (hms)", flush=True, end="\n")
+                        print(f"{time.strftime("%H:%M:%S")}   Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
 
                         # alpha = model.taylor_weight[0]
                         # print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
@@ -1258,6 +1268,7 @@ class CAVIATrainer(Trainer):
                    max_adapt_batches=None,
                    val_dataloader=None,
                    max_ret_env_states=None,
+                   stochastic=True,
                    verbose=True,
                    save_path=False, 
                    key=None) -> Tuple[jnp.ndarray, Tuple[jnp.ndarray, Any]]:

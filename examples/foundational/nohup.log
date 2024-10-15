@@ -3,245 +3,200 @@
 
 Jax version: 0.4.28
 Available devices: [cuda(id=0)]
-Created a new run folder at: ./runs/241012-192546/
+Created a new run folder at: ./runs/241015-150926/
 Completed copied scripts 
-Created a new adaptation folder at: ./runs/241012-192546/adapt/
+Created a new adaptation folder at: ./runs/241015-150926/adapt/
 
 Using 8 environments to estimate the global training loss function ...
 
 
-Total number of parameters in the model: 91561
-Total number of parameters in one context: 12610
+Total number of parameters in the model: 41672
+Total number of parameters in one context: 256
 
 
 === Beginning Meta-Training ... ===
     Number of examples in a batch along envs: 252
     Maximum number of batches (along envs): 1
     Total number of epochs: 1
-    Number of outer minimizations: 25000
+    Number of outer minimizations: 6000
     Maximum numbers of inner steps per outer minimizations: (10, 10)
     Training on 1 batches
     Validating on 1 batches
      ### Compiling function "train_step" for the model ...  
      ### Compiling function "train_step" for the contexts ...  
-Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.08902124     ContextsNorm: 0.00000000      Time/Step(s): 22.7468
+15:09:43      Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.45806205     ContextsNorm: 0.00000000      Time/Step(s): 16.5429
 	-NbInnerStepsMod:    1
 	-NbInnerStepsCxt:    1
-	-DiffMod:   6.48e-05
-	-DiffCxt:   2.99e+00Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.34457105     ContextsNorm: 0.00000000      Time/Step(s): 1.1972
+	-DiffMod:   3.88e-05
+	-DiffCxt:   inf15:11:29      Epoch:   0      Batch:   0      OuterStep: 300      LossModel: 0.00545629     ContextsNorm: 0.00000000      Time/Step(s): 0.3783
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   4.58e-07
-	-DiffCxt:   1.76e-05Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.19178508     ContextsNorm: 0.00000000      Time/Step(s): 1.3308
+	-DiffMod:   1.54e-07
+	-DiffCxt:   1.90e-0615:13:17      Epoch:   0      Batch:   0      OuterStep: 600      LossModel: 0.00193575     ContextsNorm: 0.00000000      Time/Step(s): 0.3661
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   1.68e-07
-	-DiffCxt:   1.41e-05Epoch:   0      Batch:   0      OuterStep: 300      LossModel: 0.12230798     ContextsNorm: 0.00000000      Time/Step(s): 1.1568
+	-DiffMod:   1.94e-06
+	-DiffCxt:   4.39e-0615:15:12      Epoch:   0      Batch:   0      OuterStep: 900      LossModel: 0.00056152     ContextsNorm: 0.00000000      Time/Step(s): 0.4271
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   1.06e-07
-	-DiffCxt:   2.44e-06Epoch:   0      Batch:   0      OuterStep: 400      LossModel: 0.12873857     ContextsNorm: 0.00000000      Time/Step(s): 1.4919
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   5.69e-08
-	-DiffCxt:   4.24e-06Epoch:   0      Batch:   0      OuterStep: 500      LossModel: 0.02321575     ContextsNorm: 0.00000000      Time/Step(s): 1.6604
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   2.38e-07
-	-DiffCxt:   1.45e-06        Validation Criterion: 0.07900444
+	-DiffMod:   9.51e-08
+	-DiffCxt:   1.18e-06        Validation Criterion: 0.28407276
         Saving best model so far ...
-Epoch:   0      Batch:   0      OuterStep: 600      LossModel: 0.15993278     ContextsNorm: 0.00000000      Time/Step(s): 2.3871
+15:17:35      Epoch:   0      Batch:   0      OuterStep: 1200      LossModel: 0.00255876     ContextsNorm: 0.00000000      Time/Step(s): 0.4233
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   2.21e-06
-	-DiffCxt:   7.09e-06Epoch:   0      Batch:   0      OuterStep: 700      LossModel: 0.12535532     ContextsNorm: 0.00000000      Time/Step(s): 1.4467
+	-DiffMod:   4.26e-06
+	-DiffCxt:   5.21e-0615:19:35      Epoch:   0      Batch:   0      OuterStep: 1500      LossModel: 0.00078729     ContextsNorm: 0.00000000      Time/Step(s): 0.4009
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   3.54e-08
-	-DiffCxt:   1.34e-06Epoch:   0      Batch:   0      OuterStep: 800      LossModel: 0.35489026     ContextsNorm: 0.00000000      Time/Step(s): 1.3716
+	-DiffMod:   9.99e-08
+	-DiffCxt:   9.02e-0715:21:39      Epoch:   0      Batch:   0      OuterStep: 1800      LossModel: 0.00055015     ContextsNorm: 0.00000000      Time/Step(s): 0.3212
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   8.09e-07
-	-DiffCxt:   6.86e-06Epoch:   0      Batch:   0      OuterStep: 900      LossModel: 0.27389669     ContextsNorm: 0.00000000      Time/Step(s): 1.4199
+	-DiffMod:   1.09e-06
+	-DiffCxt:   8.30e-06        Validation Criterion: 0.29744047
+15:24:06      Epoch:   0      Batch:   0      OuterStep: 2100      LossModel: 0.00066173     ContextsNorm: 0.00000000      Time/Step(s): 0.4396
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   6.80e-07
-	-DiffCxt:   2.79e-06Epoch:   0      Batch:   0      OuterStep: 1000      LossModel: 0.01035272     ContextsNorm: 0.00000000      Time/Step(s): 1.7647
+	-DiffMod:   8.94e-08
+	-DiffCxt:   8.78e-0715:26:09      Epoch:   0      Batch:   0      OuterStep: 2400      LossModel: 0.00102806     ContextsNorm: 0.00000000      Time/Step(s): 0.3505
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   3.13e-07
-	-DiffCxt:   1.75e-06        Validation Criterion: 0.05634861
-        Saving best model so far ...
-Epoch:   0      Batch:   0      OuterStep: 1100      LossModel: 11.40883636     ContextsNorm: 0.00000000      Time/Step(s): 1.7175
+	-DiffMod:   1.53e-07
+	-DiffCxt:   8.44e-0715:28:15      Epoch:   0      Batch:   0      OuterStep: 2700      LossModel: 0.00056160     ContextsNorm: 0.00000000      Time/Step(s): 0.3971
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   2.09e-06
-	-DiffCxt:   7.80e-06Epoch:   0      Batch:   0      OuterStep: 1200      LossModel: 0.09239137     ContextsNorm: 0.00000000      Time/Step(s): 1.5891
+	-DiffMod:   1.62e-07
+	-DiffCxt:   6.82e-0715:30:19      Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.00064577     ContextsNorm: 0.00000000      Time/Step(s): 0.3947
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   4.19e-06
-	-DiffCxt:   8.73e-06Epoch:   0      Batch:   0      OuterStep: 1300      LossModel: 0.02292825     ContextsNorm: 0.00000000      Time/Step(s): 1.8700
+	-DiffMod:   4.77e-07
+	-DiffCxt:   1.71e-06        Validation Criterion: 0.30102426
+15:32:51      Epoch:   0      Batch:   0      OuterStep: 3300      LossModel: 0.00115100     ContextsNorm: 0.00000000      Time/Step(s): 0.4628
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   1.35e-07
-	-DiffCxt:   7.25e-07Epoch:   0      Batch:   0      OuterStep: 1400      LossModel: 0.08229086     ContextsNorm: 0.00000000      Time/Step(s): 1.5328
+	-DiffMod:   1.64e-07
+	-DiffCxt:   4.23e-0715:34:59      Epoch:   0      Batch:   0      OuterStep: 3600      LossModel: 0.00116177     ContextsNorm: 0.00000000      Time/Step(s): 0.3995
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   2.44e-05
-	-DiffCxt:   7.93e-07Epoch:   0      Batch:   0      OuterStep: 1500      LossModel: 0.06750932     ContextsNorm: 0.00000000      Time/Step(s): 1.5707
+	-DiffMod:   8.03e-07
+	-DiffCxt:   1.57e-0615:37:07      Epoch:   0      Batch:   0      OuterStep: 3900      LossModel: 0.00022173     ContextsNorm: 0.00000000      Time/Step(s): 0.4021
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   2.07e-07
-	-DiffCxt:   1.04e-06        Validation Criterion: 0.11542550
-Epoch:   0      Batch:   0      OuterStep: 1600      LossModel: 0.06312910     ContextsNorm: 0.00000000      Time/Step(s): 1.9651
+	-DiffMod:   7.57e-07
+	-DiffCxt:   9.03e-07        Validation Criterion: 0.30021110
+15:39:41      Epoch:   0      Batch:   0      OuterStep: 4200      LossModel: 0.00023731     ContextsNorm: 0.00000000      Time/Step(s): 0.3985
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   5.14e-07
-	-DiffCxt:   3.86e-06Epoch:   0      Batch:   0      OuterStep: 1700      LossModel: 0.58681202     ContextsNorm: 0.00000000      Time/Step(s): 1.5303
+	-DiffMod:   3.78e-07
+	-DiffCxt:   2.35e-0715:41:49      Epoch:   0      Batch:   0      OuterStep: 4500      LossModel: 0.00075655     ContextsNorm: 0.00000000      Time/Step(s): 0.4117
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   4.96e-07
-	-DiffCxt:   8.66e-07Epoch:   0      Batch:   0      OuterStep: 1800      LossModel: 0.00227139     ContextsNorm: 0.00000000      Time/Step(s): 1.9669
+	-DiffMod:   7.78e-08
+	-DiffCxt:   8.16e-0715:43:58      Epoch:   0      Batch:   0      OuterStep: 4800      LossModel: 0.00045857     ContextsNorm: 0.00000000      Time/Step(s): 0.4145
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   1.49e-07
-	-DiffCxt:   3.23e-07Epoch:   0      Batch:   0      OuterStep: 1900      LossModel: 0.02009813     ContextsNorm: 0.00000000      Time/Step(s): 1.8625
+	-DiffMod:   9.33e-08
+	-DiffCxt:   7.68e-07        Validation Criterion: 0.30156627
+15:46:31      Epoch:   0      Batch:   0      OuterStep: 5100      LossModel: 0.00023810     ContextsNorm: 0.00000000      Time/Step(s): 0.4714
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   2.84e-08
-	-DiffCxt:   2.06e-06Epoch:   0      Batch:   0      OuterStep: 2000      LossModel: 0.04572160     ContextsNorm: 0.00000000      Time/Step(s): 1.6124
+	-DiffMod:   1.05e-06
+	-DiffCxt:   6.73e-0715:48:41      Epoch:   0      Batch:   0      OuterStep: 5400      LossModel: 0.00097288     ContextsNorm: 0.00000000      Time/Step(s): 0.3838
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   8.19e-07
-	-DiffCxt:   3.90e-06        Validation Criterion: 0.21898639
-Epoch:   0      Batch:   0      OuterStep: 2100      LossModel: 0.04568231     ContextsNorm: 0.00000000      Time/Step(s): 1.6295
+	-DiffMod:   4.60e-07
+	-DiffCxt:   1.45e-0615:50:50      Epoch:   0      Batch:   0      OuterStep: 5700      LossModel: 0.00023843     ContextsNorm: 0.00000000      Time/Step(s): 0.4170
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   2.38e-07
-	-DiffCxt:   1.02e-06Epoch:   0      Batch:   0      OuterStep: 2200      LossModel: 0.01758843     ContextsNorm: 0.00000000      Time/Step(s): 1.9804
+	-DiffMod:   6.45e-08
+	-DiffCxt:   1.38e-0715:53:01      Epoch:   0      Batch:   0      OuterStep: 5999      LossModel: 0.00058993     ContextsNorm: 0.00000000      Time/Step(s): 0.3785
 	-NbInnerStepsMod:   10
 	-NbInnerStepsCxt:   10
-	-DiffMod:   5.88e-07
-	-DiffCxt:   5.98e-07Epoch:   0      Batch:   0      OuterStep: 2300      LossModel: 0.28876612     ContextsNorm: 0.00000000      Time/Step(s): 2.0959
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   4.31e-07
-	-DiffCxt:   2.28e-06Epoch:   0      Batch:   0      OuterStep: 2400      LossModel: 0.00117284     ContextsNorm: 0.00000000      Time/Step(s): 1.6923
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   1.33e-08
-	-DiffCxt:   7.11e-07Epoch:   0      Batch:   0      OuterStep: 2500      LossModel: 0.00965617     ContextsNorm: 0.00000000      Time/Step(s): 1.9135
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   1.06e-07
-	-DiffCxt:   2.27e-06        Validation Criterion: 0.38929600
-Epoch:   0      Batch:   0      OuterStep: 2600      LossModel: 0.00049900     ContextsNorm: 0.00000000      Time/Step(s): 1.7326
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   1.86e-08
-	-DiffCxt:   1.45e-06Epoch:   0      Batch:   0      OuterStep: 2700      LossModel: 0.15630496     ContextsNorm: 0.00000000      Time/Step(s): 2.1138
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   3.71e-07
-	-DiffCxt:   1.87e-06Epoch:   0      Batch:   0      OuterStep: 2800      LossModel: 0.02282703     ContextsNorm: 0.00000000      Time/Step(s): 2.0574
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   4.68e-07
-	-DiffCxt:   7.73e-07Epoch:   0      Batch:   0      OuterStep: 2900      LossModel: 0.10779256     ContextsNorm: 0.00000000      Time/Step(s): 1.3965
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   2.44e-08
-	-DiffCxt:   5.65e-07Epoch:   0      Batch:   0      OuterStep: 3000      LossModel: 0.21253769     ContextsNorm: 0.00000000      Time/Step(s): 1.9979
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   3.43e-07
-	-DiffCxt:   2.00e-06        Validation Criterion: 0.20796680
-Epoch:   0      Batch:   0      OuterStep: 3100      LossModel: 0.01607389     ContextsNorm: 0.00000000      Time/Step(s): 1.8207
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   7.83e-09
-	-DiffCxt:   5.36e-07Epoch:   0      Batch:   0      OuterStep: 3200      LossModel: 0.13711652     ContextsNorm: 0.00000000      Time/Step(s): 1.6740
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   1.95e-08
-	-DiffCxt:   6.24e-07Epoch:   0      Batch:   0      OuterStep: 3300      LossModel: 0.01008620     ContextsNorm: 0.00000000      Time/Step(s): 1.8953
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   1.27e-08
-	-DiffCxt:   8.53e-07Epoch:   0      Batch:   0      OuterStep: 3400      LossModel: 0.01348695     ContextsNorm: 0.00000000      Time/Step(s): 2.1565
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   9.15e-08
-	-DiffCxt:   6.24e-07Epoch:   0      Batch:   0      OuterStep: 3500      LossModel: 0.13079424     ContextsNorm: 0.00000000      Time/Step(s): 1.7388
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   9.28e-07
-	-DiffCxt:   2.62e-06        Validation Criterion: 0.06484224
-Epoch:   0      Batch:   0      OuterStep: 3600      LossModel: 0.00673931     ContextsNorm: 0.00000000      Time/Step(s): 2.2923
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   8.11e-08
-	-DiffCxt:   2.24e-06Epoch:   0      Batch:   0      OuterStep: 3700      LossModel: 0.00163235     ContextsNorm: 0.00000000      Time/Step(s): 1.8432
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   3.15e-07
-	-DiffCxt:   2.32e-06Epoch:   0      Batch:   0      OuterStep: 3800      LossModel: 0.00297304     ContextsNorm: 0.00000000      Time/Step(s): 2.4310
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   1.58e-08
-	-DiffCxt:   4.83e-07Epoch:   0      Batch:   0      OuterStep: 3900      LossModel: 0.00603560     ContextsNorm: 0.00000000      Time/Step(s): 2.5589
-	-NbInnerStepsMod:   10
-	-NbInnerStepsCxt:   10
-	-DiffMod:   6.35e-08
-	-DiffCxt:   1.82e-06jax.pure_callback failed
-Traceback (most recent call last):
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 79, in pure_callback_impl
-    return tree_util.tree_map(np.asarray, callback(*args))
-                                          ^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
-    return tree_util.tree_leaves(self.callback_func(*args, **kwargs))
-                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
-    raise EqxRuntimeError(msgs[_index.item()])
-equinox._errors.EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
-E1012 21:30:35.892132 2963895 pjrt_stream_executor_client.cc:2826] Execution of replica 0 failed: INTERNAL: CustomCall failed: CpuCallback error: Traceback (most recent call last):
-  File "/home/gb21553/Projects/Self-Mod/examples/foundational/main_ncf.py", line 270, in <module>
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 205, in __call__
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_module.py", line 1056, in __call__
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_jit.py", line 199, in _call
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/traceback_util.py", line 179, in reraise_with_filtered_traceback
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 304, in cache_miss
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 181, in _python_pjit_helper
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 2789, in bind
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 391, in bind_with_trace
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/core.py", line 879, in process_primitive
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1525, in _pjit_call_impl
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1508, in call_impl_cache_miss
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/pjit.py", line 1462, in _pjit_call_impl_python
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/profiler.py", line 335, in wrapper
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/pxla.py", line 1177, in __call__
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/interpreters/mlir.py", line 2483, in _wrapped_callback
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 221, in _callback
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 82, in pure_callback_impl
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/jax/_src/callback.py", line 64, in __call__
-  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_errors.py", line 70, in raises
-EqxRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
-Traceback (most recent call last):
-  File "/home/gb21553/Projects/Self-Mod/examples/foundational/main_ncf.py", line 270, in <module>
-    trainer.meta_train(dataloader=train_dataloader, 
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gb21553/Projects/Self-Mod/selfmod/trainer.py", line 250, in meta_train
-    model, contexts, opt_state_model, loss_model, (_, term2, term3, diff_model_) = train_step_model(model, model_old, contexts, batch, weightings, opt_state_model, loss_key)
-                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-jaxlib.xla_extension.XlaRuntimeError: The maximum number of solver steps was reached. Try increasing `max_steps`.
--------
-This error occurred during the runtime of your JAX program. Setting the environment
-variable `EQX_ON_ERROR=breakpoint` is usually the most useful way to debug such errors.
-(This can be navigated using most of the usual commands for the Python debugger:
-`u` and `d` to move through stack frames, the name of a variable to print its value,
-etc.) See also `https://docs.kidger.site/equinox/api/errors/#equinox.error_if` for more
-information.
+	-DiffMod:   1.21e-06
+	-DiffCxt:   2.47e-06        Validation Criterion: 0.29182822
 
+Total gradient descent training time: 0 hours 43 mins 58 secs
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 252
+    Maximum number of batches (along envs): 1
+    Adapting on 1 batches
+Epoch:   0      Batch:   0      Loss: 0.11238910     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.11013623     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.10792036     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.10574582     ContextsNorm: 0.00000000
+Epoch: 300      Batch:   0      Loss: 0.01197969     ContextsNorm: 0.00000000
+Epoch: 600      Batch:   0      Loss: 0.00849723     ContextsNorm: 0.00000000
+Epoch: 900      Batch:   0      Loss: 0.00683283     ContextsNorm: 0.00000000
+Epoch: 999      Batch:   0      Loss: 0.00618265     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 39 secs
+
+    Test loss value: 2.05e-01 ± 2.73e-01
+    Train loss value for criterion 0: 6.18e-03
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [ 83  93 197]
+    Visualized context dimensions along y: [ 77 214 128]
+Saving artefacts in: ./runs/241015-150926/artefacts.png
+Loss per InD environment: [0.766739547252655, 0.766739547252655, 0.11743821948766708, 0.11743821948766708, 0.11743821948766708, 0.11743821948766708, 0.11743821948766708, 0.766739547252655, 0.766739547252655, 0.11743821948766708, 0.11743821948766708, 0.766739547252655, 0.766739547252655, 0.11743821948766708, 0.766739547252655, 0.766739547252655, 0.11743821948766708, 0.11743821948766708, 0.11743821948766708, 0.766739547252655, 0.766739547252655, 0.766739547252655, 0.11743821948766708, 0.766739547252655, 0.766739547252655, 0.11743821948766708, 0.766739547252655, 0.11743821948766708, 0.11743821948766708, 0.766739547252655, 0.766739547252655, 0.766739547252655, 0.14825020730495453, 0.14825020730495453, 0.013729092665016651, 0.013729092665016651, 0.013729092665016651, 0.013729092665016651, 0.013729092665016651, 0.14825020730495453, 0.14825020730495453, 0.013729092665016651, 0.013729092665016651, 0.14825020730495453, 0.14825020730495453, 0.013729092665016651, 0.14825020730495453, 0.14825020730495453, 0.013729092665016651, 0.013729092665016651, 0.013729092665016651, 0.14825020730495453, 0.14825020730495453, 0.14825020730495453, 0.013729092665016651, 0.14825020730495453, 0.14825020730495453, 0.013729092665016651, 0.14825020730495453, 0.013729092665016651, 0.013729092665016651, 0.14825020730495453, 0.14825020730495453, 0.14825020730495453, 0.027357423678040504, 0.027357423678040504, 0.0176988635212183, 0.0176988635212183, 0.0176988635212183, 0.0176988635212183, 0.0176988635212183, 0.027357423678040504, 0.027357423678040504, 0.0176988635212183, 0.0176988635212183, 0.027357423678040504, 0.027357423678040504, 0.0176988635212183, 0.027357423678040504, 0.027357423678040504, 0.0176988635212183, 0.0176988635212183, 0.0176988635212183, 0.027357423678040504, 0.027357423678040504, 0.027357423678040504, 0.0176988635212183, 0.027357423678040504, 0.027357423678040504, 0.0176988635212183, 0.027357423678040504, 0.0176988635212183, 0.0176988635212183, 0.027357423678040504, 0.027357423678040504, 0.027357423678040504, 0.02823011949658394, 0.02823011949658394, 0.01925160549581051, 0.01925160549581051, 0.01925160549581051, 0.01925160549581051, 0.01925160549581051, 0.02823011949658394, 0.02823011949658394, 0.01925160549581051, 0.01925160549581051, 0.02823011949658394, 0.02823011949658394, 0.01925160549581051, 0.02823011949658394, 0.02823011949658394, 0.01925160549581051, 0.01925160549581051, 0.01925160549581051, 0.02823011949658394, 0.02823011949658394, 0.02823011949658394, 0.01925160549581051, 0.02823011949658394, 0.02823011949658394, 0.01925160549581051, 0.02823011949658394, 0.01925160549581051, 0.01925160549581051, 0.02823011949658394, 0.02823011949658394, 0.02823011949658394, 0.8408748507499695, 0.8408748507499695, 0.151265949010849, 0.151265949010849, 0.151265949010849, 0.151265949010849, 0.151265949010849, 0.8408748507499695, 0.8408748507499695, 0.151265949010849, 0.151265949010849, 0.8408748507499695, 0.8408748507499695, 0.151265949010849, 0.8408748507499695, 0.8408748507499695, 0.151265949010849, 0.151265949010849, 0.151265949010849, 0.8408748507499695, 0.8408748507499695, 0.8408748507499695, 0.151265949010849, 0.8408748507499695, 0.8408748507499695, 0.151265949010849, 0.8408748507499695, 0.151265949010849, 0.151265949010849, 0.8408748507499695, 0.8408748507499695, 0.8408748507499695, 0.012604708783328533, 0.012604708783328533, 0.03358079120516777, 0.03358079120516777, 0.03358079120516777, 0.03358079120516777, 0.03358079120516777, 0.012604708783328533, 0.012604708783328533, 0.03358079120516777, 0.03358079120516777, 0.012604708783328533, 0.012604708783328533, 0.03358079120516777, 0.012604708783328533, 0.012604708783328533, 0.03358079120516777, 0.03358079120516777, 0.03358079120516777, 0.012604708783328533, 0.012604708783328533, 0.012604708783328533, 0.03358079120516777, 0.012604708783328533, 0.012604708783328533, 0.03358079120516777, 0.012604708783328533, 0.03358079120516777, 0.03358079120516777, 0.012604708783328533, 0.012604708783328533, 0.012604708783328533, 0.1876688450574875, 0.1876688450574875, 0.08244093507528305, 0.08244093507528305, 0.08244093507528305, 0.08244093507528305, 0.08244093507528305, 0.1876688450574875, 0.1876688450574875, 0.08244093507528305, 0.08244093507528305, 0.1876688450574875, 0.1876688450574875, 0.08244093507528305, 0.1876688450574875, 0.1876688450574875, 0.08244093507528305, 0.08244093507528305, 0.08244093507528305, 0.1876688450574875, 0.1876688450574875, 0.1876688450574875, 0.08244093507528305, 0.1876688450574875, 0.1876688450574875, 0.08244093507528305, 0.1876688450574875, 0.08244093507528305, 0.08244093507528305, 0.1876688450574875, 0.1876688450574875, 0.1876688450574875, 0.5948412418365479, 0.5948412418365479, 0.11125286668539047, 0.11125286668539047, 0.11125286668539047, 0.11125286668539047, 0.11125286668539047, 0.5948412418365479, 0.5948412418365479, 0.11125286668539047, 0.11125286668539047, 0.5948412418365479, 0.5948412418365479, 0.11125286668539047, 0.5948412418365479, 0.5948412418365479, 0.11125286668539047, 0.11125286668539047, 0.11125286668539047, 0.5948412418365479, 0.5948412418365479, 0.5948412418365479, 0.11125286668539047, 0.5948412418365479, 0.5948412418365479, 0.11125286668539047, 0.5948412418365479, 0.11125286668539047, 0.11125286668539047, 0.5948412418365479, 0.5948412418365479, 0.5948412418365479]
+
+==  Begining in-domain dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 1)
+Testing finished. Figure saved in: ./runs/241015-150926/dynamics.png
+    Creating a new model with taylor order 0 ...
+Using any previrouly defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 112
+    Maximum number of batches (along envs): 1
+    Adapting on 1 batches
+Epoch:   0      Batch:   0      Loss: 0.09956287     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.09743920     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.09538499     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.09334952     ContextsNorm: 0.00000000
+Epoch: 300      Batch:   0      Loss: 0.00288667     ContextsNorm: 0.00000000
+Epoch: 600      Batch:   0      Loss: 0.00182755     ContextsNorm: 0.00000000
+Epoch: 900      Batch:   0      Loss: 0.00140455     ContextsNorm: 0.00000000
+Epoch: 999      Batch:   0      Loss: 0.00130622     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 35 secs
+
+    Test loss value: 1.90e-01 ± 1.44e-01
+    Train loss value for criterion 0: 1.31e-03
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [ 83  93 197]
+    Visualized context dimensions along y: [ 77 214 128]
+No adaptation contexts found. Using latest found.
+Saving artefacts in: ./runs/241015-150926/adapt/artefacts.png
+Loss per OoD environment: [0.011458118446171284, 0.011458118446171284, 0.12351899594068527, 0.12351899594068527, 0.011458118446171284, 0.011458118446171284, 0.011458118446171284, 0.12351899594068527, 0.12351899594068527, 0.12351899594068527, 0.12351899594068527, 0.12351899594068527, 0.011458118446171284, 0.011458118446171284, 0.12351899594068527, 0.12351899594068527, 0.011458118446171284, 0.011458118446171284, 0.12351899594068527, 0.011458118446171284, 0.011458118446171284, 0.12351899594068527, 0.12351899594068527, 0.12351899594068527, 0.011458118446171284, 0.011458118446171284, 0.011458118446171284, 0.12351899594068527, 0.011458118446171284, 0.011458118446171284, 0.12351899594068527, 0.011458118446171284, 0.21364977955818176, 0.21364977955818176, 0.277671754360199, 0.277671754360199, 0.21364977955818176, 0.21364977955818176, 0.21364977955818176, 0.277671754360199, 0.277671754360199, 0.277671754360199, 0.277671754360199, 0.277671754360199, 0.21364977955818176, 0.21364977955818176, 0.277671754360199, 0.277671754360199, 0.21364977955818176, 0.21364977955818176, 0.277671754360199, 0.21364977955818176, 0.21364977955818176, 0.277671754360199, 0.277671754360199, 0.277671754360199, 0.21364977955818176, 0.21364977955818176, 0.21364977955818176, 0.277671754360199, 0.21364977955818176, 0.21364977955818176, 0.277671754360199, 0.21364977955818176, 0.07798738032579422, 0.07798738032579422, 0.23557744920253754, 0.23557744920253754, 0.07798738032579422, 0.07798738032579422, 0.07798738032579422, 0.23557744920253754, 0.23557744920253754, 0.23557744920253754, 0.23557744920253754, 0.23557744920253754, 0.07798738032579422, 0.07798738032579422, 0.23557744920253754, 0.23557744920253754, 0.07798738032579422, 0.07798738032579422, 0.23557744920253754, 0.07798738032579422, 0.07798738032579422, 0.23557744920253754, 0.23557744920253754, 0.23557744920253754, 0.07798738032579422, 0.07798738032579422, 0.07798738032579422, 0.23557744920253754, 0.07798738032579422, 0.07798738032579422, 0.23557744920253754, 0.07798738032579422, 0.20752587914466858, 0.20752587914466858, 0.049052126705646515, 0.049052126705646515, 0.20752587914466858, 0.20752587914466858, 0.20752587914466858, 0.049052126705646515, 0.049052126705646515, 0.049052126705646515, 0.049052126705646515, 0.049052126705646515, 0.20752587914466858, 0.20752587914466858, 0.049052126705646515, 0.049052126705646515, 0.20752587914466858, 0.20752587914466858, 0.049052126705646515, 0.20752587914466858, 0.20752587914466858, 0.049052126705646515, 0.049052126705646515, 0.049052126705646515, 0.20752587914466858, 0.20752587914466858, 0.20752587914466858, 0.049052126705646515, 0.20752587914466858, 0.20752587914466858, 0.049052126705646515, 0.20752587914466858, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.1157337948679924, 0.1157337948679924, 0.09147951751947403, 0.09147951751947403, 0.1157337948679924, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.09147951751947403, 0.09147951751947403, 0.1157337948679924, 0.1157337948679924, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.1157337948679924, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.09147951751947403, 0.1157337948679924, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.021444877609610558, 0.021444877609610558, 0.022535959258675575, 0.022535959258675575, 0.021444877609610558, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.022535959258675575, 0.022535959258675575, 0.021444877609610558, 0.021444877609610558, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.021444877609610558, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.022535959258675575, 0.021444877609610558, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.41304752230644226, 0.41304752230644226, 0.4128185212612152, 0.4128185212612152, 0.41304752230644226, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.4128185212612152, 0.4128185212612152, 0.41304752230644226, 0.41304752230644226, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.41304752230644226, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.4128185212612152, 0.41304752230644226, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031, 0.3444729745388031, 0.3444729745388031, 0.44773030281066895, 0.44773030281066895, 0.3444729745388031, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031, 0.44773030281066895, 0.44773030281066895, 0.3444729745388031, 0.3444729745388031, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031, 0.3444729745388031, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031, 0.44773030281066895, 0.3444729745388031]
+
+==  Begining out-of-distribution dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 1)
+WARNING: No specific adaptation contexts found. Using latest found.
+Testing finished. Figure saved in: ./runs/241015-150926/adapt/dynamics_ood.png
+
+==  Begining context clusters visualisation with t-SNE ... ==
+    Visualising the paramters (either vectors or function weights)
+    Visualising predictions from the contexts (reconstituted as functions)
+Traceback (most recent call last):
+  File "/home/gb21553/Projects/Self-Mod/examples/foundational/main_ncf.py", line 393, in <module>
+    visualtester.visualize_context_clusters(perplexities=(25, 20),
+  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 240, in visualize_context_clusters
+    train_dat = ctx_arr_to_fun_eval(xis_train.params)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/equinox/_vmap_pmap.py", line 219, in __call__
+    vmapd, static = jax.vmap(
+                    ^^^^^^^^^
+  File "/home/gb21553/Projects/Self-Mod/selfmod/visualtester.py", line 235, in ctx_arr_to_fun_eval
+    ctx_shapes, ctx_treedef, ctx_static, _ = ctx_utils
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
 --------------------
 For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.

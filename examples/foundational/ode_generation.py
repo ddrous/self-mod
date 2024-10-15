@@ -2,11 +2,14 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+# print("svailables stules", plt.style.available)
+# plt.style.use("seaborn-v0_8-white")
 from scipy.integrate import solve_ivp
 import argparse
 import json
 import ast
 import math
+from PIL import Image
 
 def parse_arguments():
     try:
@@ -17,7 +20,7 @@ def parse_arguments():
 
     if _in_ipython_session:
         args = argparse.Namespace(split='adapt_test', 
-                                  savepath="data_2D/", 
+                                  savepath="tmp/", 
                                   seed=2024, 
                                   verbose=1, 
                                   dimension=2,
@@ -26,7 +29,7 @@ def parse_arguments():
 
     else:
         parser = argparse.ArgumentParser(description='Generate ODE data for multiple dynamical systems')
-        parser.add_argument('--split', type=str, choices=['train', 'test', 'adapt', 'adapt_test'], default='train', help='Data split to generate')
+        parser.add_argument('--split', type=str, choices=['train', 'test', 'adapt_train', 'adapt_test'], default='train', help='Data split to generate')
         parser.add_argument('--savepath', type=str, default='tmp/', help='Path to save generated data')
         parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
         parser.add_argument('--verbose', type=int, default=1, help='Verbosity level')
@@ -115,7 +118,7 @@ def main():
         n_envs, n_ic = 9, 4
     elif args.split == 'test':
         n_envs, n_ic = 9, 32
-    elif args.split == 'adapt':
+    elif args.split == 'adapt_train':
         n_envs, n_ic = 4, 1
     elif args.split == 'adapt_test':
         n_envs, n_ic = 4, 32
@@ -148,8 +151,13 @@ def main():
         all_environments[ode_id] = environments
 
     # Save data
-    filename = f"{args.savepath}/{args.split}_data.npz"
+    filename = f"{args.savepath}/{args.split}.npz"
     np.savez(filename, t=np.stack(all_t_eval), X=np.stack(all_data))
+
+    ## Save normalising constants
+    norm_consts = np.max(np.abs(all_data), axis=(2,3), keepdims=True)
+    np.save(f"{args.savepath}/{args.split}_bounds.npy", norm_consts)
+
     # Save environments
     with open(f"{args.savepath}/{args.split}_envs.json", 'w') as f:
         json.dump(all_environments, f, indent=4)
@@ -177,6 +185,9 @@ if __name__ == "__main__":
     args = parse_arguments()
     ode_defs = load_ode_definitions(args.dimension)
 
+    ## Collect all the plots to form a gif
+    all_plots = []
+
     for ode_id, ode_def in enumerate(ode_defs.keys()):
         ## Load the data
         filename = f"{args.savepath}/{args.split}_data.npz"
@@ -185,18 +196,24 @@ if __name__ == "__main__":
         t = data['t'][ode_id]
         X = data['X'][ode_id]
 
-        # print("t", t.shape)
-        # print("X", X.shape)
-
         plt.figure(figsize=(10, 4))
 
         ## Plot all environments from the same initial condition
-        for i in range(X.shape[0]):
-            plt.plot(t, X[:, i, :, 0].T, color="royalblue", alpha=(i+1)/(X.shape[0]+1))
-            plt.plot(t, X[:, i, :, 1].T, color="crimson", alpha=(i+1)/(X.shape[0]+1))
+        for i in range(X.shape[1]):
+            plt.plot(t, X[:, i, :, 0].T, color="royalblue", alpha=(i+1)/(X.shape[1]+1))
+            plt.plot(t, X[:, i, :, 1].T, color="crimson", alpha=(i+1)/(X.shape[1]+1))
 
-        plt.title(f"ODE {ode_def}")
+        plt.title(f"ODEBench - {ode_def}")
 
         plt.xlabel("Time")
         # plt.legend()
-        plt.show()
+        # plt.show()
+        plt.draw()
+
+        # all_plots.append(plt.gcf())
+        plt.savefig(f"tmp/odebench_{ode_def}.png")
+        all_plots.append(Image.open(f"tmp/odebench_{ode_def}.png"))
+
+    ## Save the plots as a gif
+    all_plots[0].save("odebench_2D.gif", save_all=True, append_images=all_plots[1:], duration=100, loop=0, optimize=True)
+
