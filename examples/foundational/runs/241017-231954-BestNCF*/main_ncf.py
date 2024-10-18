@@ -40,12 +40,12 @@ validate_every = 150
 
 print_error_every = (100, 100)
 
-meta_train = True
+meta_train = False
 save_trainer = True
 meta_test = True
 
-# run_folder = "./runs/241017-231954-BestNCF*/"
-run_folder = None
+run_folder = "./runs/241017-231954-BestNCF*/"
+# run_folder = None
 data_folder = "./data_2D/"
 
 

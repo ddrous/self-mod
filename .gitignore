@@ -110,3 +110,4 @@ examples/lotka-v/runs/*
 ## The Foundational dataset
 examples/foundational/data_2D/*
 examples/foundational/runs/*
+!examples/foundational/runs/241017-231954-BestNCF*/
