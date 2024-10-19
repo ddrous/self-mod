@@ -355,7 +355,7 @@ class NCFTrainer(Trainer):
 
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
                         if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
-                            print(f"{time.strftime("%H:%M:%S")}      Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
+                            print(f"{time.strftime('%H:%M:%S')}      Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
                             # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
                             print(f"Training losses per environment: {all_env_losses.tolist()}", flush=True, end="\n")
 
@@ -1275,7 +1275,7 @@ class CAVIATrainer(Trainer):
                 if epoch%print_every_epoch==0 or epoch==nb_epochs-1:
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
                         # print(f"Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}        Current time (hms)", flush=True, end="\n")
-                        print(f"{time.strftime("%H:%M:%S")}   Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
+                        print(f"{time.strftime('%H:%M:%S')}   Epoch: {epoch:-3d}      Batch: {env_batch:-3d}    Loss: {losses[-1]:-.8f}     ContextsNorm: {jnp.mean(term2):-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\n")
 
                         # alpha = model.taylor_weight[0]
                         # print(f"Current unnormalised weight of the taylor expansion: {alpha:-.8f}       NormalisedWeight: {jax.nn.sigmoid(model.taylor_scale*alpha):-.8f}", flush=True, end="\r")
