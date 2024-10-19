@@ -19,7 +19,7 @@ def parse_arguments():
         _in_ipython_session = False
 
     if _in_ipython_session:
-        args = argparse.Namespace(split='adapt_test', 
+        args = argparse.Namespace(split='train', 
                                   savepath="tmp/", 
                                   seed=2024, 
                                   verbose=1, 
@@ -75,6 +75,7 @@ def generate_environments(reference_params, n_envs, adaptation=False):
             for param, value in reference_params.items():
                 env[param] = value * np.random.uniform(0.8, 1.2)
             envs.append(env)
+        # print(envs)
     return envs
 
 def generate_initial_conditions(reference_ic, n_ic):
