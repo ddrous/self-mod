@@ -11,44 +11,44 @@ from selfmod import *
 seed = 2026
 
 ## Dataloader hps
-num_envs = (9*1, 4*28)
+num_envs = (9*28, 4*28)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 0.4  ## Min proporrion of the trajectory for training
+train_proportion = 0.3  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 2
+context_pool_size = 1
 context_size = 64*4*1
-taylor_orders = (2, 0)
+taylor_orders = (0, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
-ivp_args = {"return_traj":True, "max_steps":256*4, "integrator":diffrax.Tsit5(), "rtol": 1e-4, "atol":1e-8}
+ivp_args = {"return_traj":True, "max_steps":256*16*32, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None}
 skip_steps = 5
-loss_contributors = 8
+loss_contributors = 16*5
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
 init_lrs = (5e-4, 5e-4)
-sched_factor = 1.
+sched_factor = 1.0
 max_train_batches = 1
 max_adapt_batches = 1
 
-proximal_betas = (1., 1.)
+proximal_betas = (0., 0.)
 
-nb_outer_steps = 1500
-nb_inner_steps = (20, 20)
-nb_adapt_epochs = 1500
-validate_every = 100
+nb_outer_steps = 3000*2
+nb_inner_steps = (2, 2)
+nb_adapt_epochs = 3500
+validate_every = 100*1
 
-print_error_every = (100, 100)
+print_error_every = (10*3, 10*3)
 
-meta_train = False
+meta_train = True
 save_trainer = True
 meta_test = True
 
-run_folder = "./runs/241019-183954-CoDAH-9Envs/"
-# run_folder = None
+# run_folder = "./runs/241021-163134-Excellent*/"
+run_folder = None
 data_folder = "./data_2D/"
 
 
@@ -152,7 +152,7 @@ class RootNetwork(eqx.Module):
 class GradualMLP(eqx.Module):
     layers: list
 
-    def __init__(self, input_dim, output_dim, activation=jax.nn.softplus, key=None):
+    def __init__(self, input_dim, output_dim, activation=jax.nn.tanh, key=None):
         key = key if key is not None else jax.random.PRNGKey(0)
         keys = jax.random.split(key, 3)
 
@@ -247,8 +247,8 @@ learner = Learner(model=model,
                 contexts=contexts,
                 reuse_contexts=True,
                 loss_contributors=loss_contributors,
-                pool_filling="NF",
-                loss_filling="NF-W",
+                pool_filling="NF*",     ## TODO. Put back NF as soon as mem permits
+                loss_filling="NF",
                 key=model_key)
 
 
@@ -308,6 +308,7 @@ if meta_train == True:
     #                     max_val_batches=max_train_batches,
     #                     key=trainer_key)
 else:
+    print("Skipping meta-training ...")
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)
 
@@ -339,7 +340,7 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
                                     max_adapt_batches=max_adapt_batches,
                                     stochastic=False)
 
-visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png")
+visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
 print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 
@@ -352,9 +353,10 @@ print("Loss per InD environment:", all_ind_crit[0].tolist())
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                nb_envs=9,
-                                # envs=[0, 2, 3, 5, 6, 7, 20, 49, 58, 66, 116, 202, 214, 232],
-                                traj=0,
+                                # nb_envs=252,
+                                # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
+                                envs=jnp.arange(0, 252).tolist(),
+                                traj=1,
                                 share_axes=False,
                                 key=test_key)
 
@@ -422,7 +424,7 @@ if meta_test:
 
 #%%
 
-visualtester.visualize_context_clusters(perplexities=(25, 20),
+visualtester.visualize_context_clusters(perplexities=(8, 8),
                                         # key=test_key,
                                         key=jax.random.PRNGKey(time.time_ns()),
                                         save_path=run_folder+"context_clusters.png")

@@ -1020,11 +1020,15 @@ class NeuralODE(eqx.Module):
                         throw=True,    ## Keep the nans and infs, don't throw and error !
                     )
                 # jax.debug.print("SOL {}", sol.ys)
+                ys = sol.ys
+                clip = self.ivp_args.get("clip_sol", None)
+                if clip is not None:
+                    ys = jnp.clip(ys, clip[0], clip[1])
 
                 if self.ivp_args.get("return_traj", False):
-                    return sol.ys[:, :y0.shape[0]]
+                    return ys[:, :y0.shape[0]]
                 else:
-                    return sol.ys[-1, :y0.shape[0]]
+                    return ys[-1, :y0.shape[0]]
 
         else:   ## Custom-made integrator
             def integrate(y0):

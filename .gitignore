@@ -112,3 +112,4 @@ examples/foundational/data_2D/*
 examples/foundational/runs/*
 !examples/foundational/runs/241017-231954-BestNCF*/
 !examples/foundational/runs/241019-183954-CoDAH-9Envs/
+!examples/foundational/runs/241021-163134-Excellent/

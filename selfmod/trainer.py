@@ -31,26 +31,27 @@ class Trainer:
         self.losses_model = []
         self.losses_ctx = []
  
-    def save_trainer(self, path):
+    def save_trainer(self, path, ignore_losses=False):
         assert path[-1] == "/", "ERROR: The path must end with /"
         # print(f"\nSaving model and results into {path} folder ...\n")
 
-        np.savez(path+"train_histories.npz",
-                 losses_model=jnp.vstack(self.losses_model), 
-                 losses_ctx=jnp.vstack(self.losses_ctx))
+        if not ignore_losses:
+            np.savez(path+"train_histories.npz",
+                    losses_model=jnp.vstack(self.losses_model), 
+                    losses_ctx=jnp.vstack(self.losses_ctx))
 
-        if hasattr(self, 'val_losses'):
-            np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
+            if hasattr(self, 'val_losses'):
+                np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
 
         pickle.dump(self.opt_state_model, open(path+"opt_state_model.pkl", "wb"))
-        # pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
+        pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
 
-        if not hasattr(self, 'val_losses'):
-            self.learner.save_learner(path)
+        # if not hasattr(self, 'val_losses'):
+        self.learner.save_learner(path)
 
     def restore_trainer(self, path):
         assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
-        print(f"\nNo training, loading model and results from {path} folder ...\n")
+        print(f"\nLoading model and results from {path} folder ...\n")
 
         if os.path.exists(path+"train_histories.npz"):
             histories = np.load(path+"train_histories.npz")
@@ -58,8 +59,8 @@ class Trainer:
             print("WARNING: No training history found in the provided path. Using checkpointed ones.")
             histories = np.load(path+"checkpoints/train_histories.npz")
         else:
-            print("WARNING: No training history found at all. Using ones.")
-            histories = {'losses_model': np.ones((1,100)), 'losses_ctx': np.ones((1,100))}
+            print("WARNING: No training history found at all. Using tens.")
+            histories = {'losses_model': jnp.inf*np.ones((1,1)), 'losses_ctx': jnp.inf*np.ones((1,1))}
         self.losses_model = [histories['losses_model']]
         self.losses_ctx = [histories['losses_ctx']]
 
@@ -69,15 +70,16 @@ class Trainer:
             print("WARNING: No validation history found in the provided path. Using checkpointed ones.")
             self.val_losses = [np.load(path+"checkpoints/val_losses.npy")]
         else:
-            print("WARNING: No validation history found at all. Using ones.")
-            self.val_losses = [np.ones((1,100))]
+            print("WARNING: No validation history found at all. Using ten.")
+            # self.val_losses = [jnp.inf*np.ones((1,1))]
+            self.val_losses = []
 
         if os.path.exists(path+"opt_state_model.pkl"):
             self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
-            # self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
+            self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
         else:
-            print("WARNING: No optimiser state found in the provided path. Using Nones.")
-            self.opt_state_model = None
+            print("WARNING: No optimiser state found in the provided path.")
+            # self.opt_state_model = None
             # self.opt_state_ctx = None
 
         self.learner.load_learner(path)
@@ -152,6 +154,16 @@ class NCFTrainer(Trainer):
         """ Train the model using the proximal gradient descent algorithm (PAM) """
 
         key = key if key is not None else self.key
+
+        ## Try to load checkpoints if they exist
+        try:
+            self.restore_trainer(path=save_path)
+            print(f"Restored the trainer from the path {save_path}")
+            # if self.opt_state_model is None:
+            #     print(f"No checkpoints or error after loading training. Initialising a new one ...")
+
+        except Exception as e:
+            print(f"No checkpoints or error when attempting to load training configs - '{e}' - Starting from scratch ...")
 
         if isinstance(nb_inner_steps, int):
             nb_inner_steps = (nb_inner_steps, nb_inner_steps)
@@ -377,6 +389,9 @@ class NCFTrainer(Trainer):
                         # print("Setting contexts in the metatrainer: \n", contexts.params)
                         self.learner.all_env_losses = all_env_losses
 
+                        self.opt_state_model = opt_state_model
+                        self.opt_state_ctx = opt_state_ctx
+
                         ind_crit,_ = tester.evaluate(val_dataloader,
                                                     criterion_id=val_criterion_id,
                                                     max_adapt_batches=max_val_batches,
@@ -391,10 +406,12 @@ class NCFTrainer(Trainer):
                         ## Check if val loss is lowest to save the model
                         if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
                             print(f"        Saving best model so far ...")
-                            self.learner.save_learner(save_path)
+                            self.save_trainer(save_path, ignore_losses=True)
+                            # self.learner.save_learner(save_path)
                         ## Restore the learner at the last evaluation step
                         if out_step == nb_outer_steps-1:
-                            self.learner.load_learner(save_path)
+                            self.save_trainer(save_path, ignore_losses=True)
+                            # self.learner.load_learner(save_path)
 
                     ###========== Approach #2 to only sample relevent environments. Find the worst contributors
                     loss_sort = jnp.argsort(all_env_losses)

@@ -83,7 +83,7 @@ class VisualTester:
         pass
 
     @abstractmethod
-    def visualize_artefacts(self, adaptation=False, save_path=False, key=None):
+    def visualize_artefacts(self, adaptation=False, save_path=False, key=None, ylim=None):
         """ Visualize the artefacts of the model : loss, and context dimensions """
         key = key if key != None else self.key
 
@@ -135,6 +135,8 @@ class VisualTester:
         ax['D'].set_title("Loss Terms")
         ax['D'].set_yscale('log')
         ax['D'].legend()
+        if ylim is not None:
+            ax['D'].set_ylim(ylim)
 
         colors = ['dodgerblue', 'crimson', 'darkgreen', 'purple', 'brown']
         ax['E'].scatter(xis[:,ctx_dims_x[0]], xis[:,ctx_dims_y[0]], s=30, c=colors[0], marker='X')
@@ -672,7 +674,8 @@ class DynamicsVisualTester(VisualTester):
         X = X[plot_envs, traj, ...]
         t_test = t_test[plot_envs] if t_test.ndim > 1 else t_test
 
-        fig, ax = plt.subplots(nb_envs, 2, figsize=(5*2, 3*nb_envs), sharex=False, sharey=False)
+        # fig, ax = plt.subplots(nb_envs, 2, figsize=(5*2, 3*nb_envs), sharex=False, sharey=False)
+        fig, ax = plt.subplots(nb_envs, 2, figsize=(4*2, 2*nb_envs), sharex=False, sharey=False, gridspec_kw = {'wspace':0.27, 'hspace':0.25})
 
         mks = 4
         dim0, dim1 = dims
@@ -711,6 +714,8 @@ class DynamicsVisualTester(VisualTester):
                 ax[e, 0].set_ylim(min(xlim_0, ylim_0)-eps, max(xlim_1, ylim_1)+eps)
                 ax[e, 1].set_xlim(xlim_0-eps, xlim_1+eps)
                 ax[e, 1].set_ylim(ylim_0-eps, ylim_1+eps)
+
+        # plt.subplots_adjust(wspace=0, hspace=0)
 
         plt.tight_layout()
         plt.suptitle(f"Trajectories and Phase Spaces for traj {traj}", fontsize=16, y=1.005)
