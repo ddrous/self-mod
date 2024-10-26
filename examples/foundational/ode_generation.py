@@ -19,8 +19,8 @@ def parse_arguments():
         _in_ipython_session = False
 
     if _in_ipython_session:
-        args = argparse.Namespace(split='train', 
-                                  savepath="tmp/", 
+        args = argparse.Namespace(split='test', 
+                                  savepath="data_2D/", 
                                   seed=2024, 
                                   verbose=1, 
                                   dimension=2,
@@ -57,25 +57,56 @@ def generate_environments(reference_params, n_envs, adaptation=False):
     if adaptation:
         # Generate 2 environments in training domain and 2 outside
         envs = []
-        for i in range(4):
+        scalings = np.linspace(0.8, 1.2, n_envs)
+        for i in range(n_envs):
             env = {}
             for param, value in reference_params.items():
-                if i < 2:
-                    # In training domain
-                    env[param] = value * np.random.uniform(0.9, 1.1)
-                else:
-                    # Outside training domain
-                    env[param] = value * np.random.uniform(0.8, 1.2)
+                env[param] = np.round(value * scalings[i], 2)
             envs.append(env)
     else:
         # Generate training environments
         envs = []
-        for _ in range(n_envs):
-            env = {}
-            for param, value in reference_params.items():
-                env[param] = value * np.random.uniform(0.8, 1.2)
-            envs.append(env)
+        # for _ in range(n_envs):
+        #     env = {}
+        #     for param, value in reference_params.items():
+        #         env[param] = value * np.random.uniform(0.8, 1.2)
+        #     envs.append(env)
         # print(envs)
+
+        ## Keep one paramter constant and vary the other, repeat until n_envs   
+        # envs = []
+        # env_count = 0
+        # while env_count < n_envs:
+        #     for focus_param, focus_value in reference_params.items():
+        #         env = {}
+        #         env[focus_param] = focus_value * np.random.uniform(0.8, 1.2)
+        #         for param, value in reference_params.items():
+        #             if param != focus_param:
+        #                 env[param] = value * np.random.uniform(0.8, 1.2)
+        #         envs.append(env)
+        #         env_count += 1
+        #         if env_count >= n_envs:
+        #             break
+
+        ## Make a grid with log(nenvs)/log(nparams) points in each dimension
+        n_params = len(reference_params)
+        n_per_dim = math.ceil(n_envs ** (1/n_params))
+        param_values = [np.round(np.linspace(0.8*ref, 1.2*ref, n_per_dim), 2) for ref in reference_params.values()]
+
+        # print("param_values", param_values)
+        # for param_values_comb in np.meshgrid(*param_values):
+        #     print("param_values_comb", param_values_comb)
+
+        for param_values_comb in np.array(np.meshgrid(*param_values)).T.reshape(-1, n_params):
+
+            env = {param: value for param, value in zip(reference_params.keys(), param_values_comb)}
+            envs.append(env)
+            if len(envs) >= n_envs:
+                break
+
+        print("     Original Parameters", reference_params)
+        print("     Created Environments:", envs)
+
     return envs
 
 def generate_initial_conditions(reference_ic, n_ic):
@@ -88,6 +119,17 @@ def generate_initial_conditions(reference_ic, n_ic):
     # alpha = np.random.uniform(0, 1, size=1)
     # return [alpha * np.array(ic1) + (1 - alpha) * np.array(ic2)]
 
+    ## The two reference ics, then n_ic-2 interpolates between the two initial conditions
+    ic1, ic2 = np.array(ic1), np.array(ic2)
+    # return [ic1, ic2] + [alpha * ic1 + (1 - alpha) * ic2 for alpha in np.linspace(0.1, 0.9, n_ic-2)]
+    # return [ic1, ic2] + [alpha * ic1 + (1 - alpha) * ic2 for alpha in np.random.uniform(0, 2, size=ic1.shape)]
+    ret = [ic1]
+    for _ in range(n_ic-2):
+        alpha = np.round(np.random.uniform(0.01, 0.99, size=ic1.shape), 2)
+        ret.append(alpha * ic1 + (1 - alpha) * ic2)
+    ret.append(ic2)
+    return ret[:n_ic]
+
     ## Sample a paramter to interpolate. Higer probability to sample either of the two initial conditions themselves. Have one sample paramter for each dimension
     # initial_conditions = []
     # for _ in range(n_ic):
@@ -99,7 +141,7 @@ def generate_initial_conditions(reference_ic, n_ic):
     # return initial_conditions
 
     ## Rndomly pick one of the two initial conditions
-    return [np.array(ic1) if np.random.uniform(0, 1) < 0.5 else np.array(ic2) for _ in range(n_ic)]
+    # return [np.array(ic1) if np.random.uniform(0, 1) < 0.5 else np.array(ic2) for _ in range(n_ic)]
 
 
 def simulate_ode(ode_func, t_span, initial_state, args, dt):
@@ -116,9 +158,9 @@ def main():
     ode_definitions = load_ode_definitions(args.dimension)
     
     if args.split == 'train':
-        n_envs, n_ic = 9, 4
+        n_envs, n_ic = 16, 4
     elif args.split == 'test':
-        n_envs, n_ic = 9, 32
+        n_envs, n_ic = 16, 32
     elif args.split == 'adapt_train':
         n_envs, n_ic = 4, 1
     elif args.split == 'adapt_test':
@@ -135,6 +177,7 @@ def main():
         # Generate environments and initial conditions
         environments = generate_environments(ode_info['parameters'], n_envs, args.split in ['adapt', 'adapt_test'])
         initial_conditions = generate_initial_conditions(ode_info['initial_values'], n_ic)
+        # print("initial_conditions", initial_conditions)
 
         # Adjust time parameters
         T = ode_info.get("time_horizon", 1)
@@ -144,6 +187,7 @@ def main():
 
         for i, env in enumerate(environments):
             for j, ic in enumerate(initial_conditions):
+                # print("Currently using IC", ic)
                 t, trajectory = simulate_ode(ode_info['function'], (0, T), ic, tuple(env.values()), dt)
                 ode_data[i, j] = trajectory
 
@@ -180,20 +224,17 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
 
-    ## PLot all trajectories on the same plot for one single ODE
-    ode_id = 0
-
     args = parse_arguments()
     ode_defs = load_ode_definitions(args.dimension)
 
     ## Collect all the plots to form a gif
     all_plots = []
+    ## Load the data
+    filename = f"{args.savepath}/{args.split}.npz"
+    data = np.load(filename)
+    print(data['t'].shape, data['X'].shape)
 
     for ode_id, ode_def in enumerate(ode_defs.keys()):
-        ## Load the data
-        filename = f"{args.savepath}/{args.split}_data.npz"
-        data = np.load(filename)
-
         t = data['t'][ode_id]
         X = data['X'][ode_id]
 
@@ -201,6 +242,7 @@ if __name__ == "__main__":
 
         ## Plot all environments from the same initial condition
         for i in range(X.shape[1]):
+            # print('IC is ', X[0, i, 0])
             plt.plot(t, X[:, i, :, 0].T, color="royalblue", alpha=(i+1)/(X.shape[1]+1))
             plt.plot(t, X[:, i, :, 1].T, color="crimson", alpha=(i+1)/(X.shape[1]+1))
 

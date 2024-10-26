@@ -8,46 +8,48 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2026
+seed = 2029
 
 ## Dataloader hps
-num_envs = (9*28, 4*28)
+# num_envs = (9*28, 4*28)
+num_envs = (16*4, 16*4)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 0.3  ## Min proporrion of the trajectory for training
+train_proportion = 0.7  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 1
-context_size = 64*4*1
-taylor_orders = (0, 0)
+context_pool_size = 2
+context_size = 64*1*2
+taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
-ivp_args = {"return_traj":True, "max_steps":256*16*32, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None}
-skip_steps = 5
-loss_contributors = 16*5
+ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
+skip_steps = 2
+# loss_contributors = 16*5//2
+loss_contributors = 16*4
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
 init_lrs = (5e-4, 5e-4)
-sched_factor = 1.0
+sched_factor = 0.2
 max_train_batches = 1
 max_adapt_batches = 1
 
 proximal_betas = (0., 0.)
 
-nb_outer_steps = 5000
-nb_inner_steps = (2, 2)
-nb_adapt_epochs = 3500
-validate_every = 100*1
+nb_outer_steps = 2000
+nb_inner_steps = (1, 1)
+nb_adapt_epochs = 1000
+validate_every = 50*1
 
-print_error_every = (10*3, 10*3)
+print_error_every = (10*1, 10*1)
 
 meta_train = True
 save_trainer = True
 meta_test = True
 
-# run_folder = "./runs/241021-163134-Excellent*/"
+# run_folder = "./241025-162623/"
 run_folder = None
 data_folder = "./data_2D/"
 
@@ -70,7 +72,7 @@ data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz", 
                                                norm_consts=data_folder+"train_bounds.npy",   ## since more data in test/val sets
                                                num_shots=num_shots[0], 
-                                               skip_steps=skip_steps,
+                                               skip_steps=skip_steps, 
                                                traj_prop_min=train_proportion), 
                               batch_size=num_envs[0],
                               shuffle=shuffle,
@@ -89,6 +91,7 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz",
 
 # ins, outs = next(iter(train_dataloader))
 # ins.shape, outs.shape
+# val_dataloader.num_batches
 
 #%%
 
@@ -103,8 +106,8 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz",
 
 # print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
 
-# E_plot = 5
-# E_ = 9
+# E_plot = 2
+# E_ = 16
 
 # fig, ax = plt.subplots(E_plot, 1, figsize=(6, E_plot*3))
 # if E_plot==1:
@@ -130,81 +133,115 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz",
 #%%
 
 
-class RootNetwork(eqx.Module):
-    network: list
-    root_utils: any
-    network_size: int     ## The effective/actual size of a root network (flattened neural network)
+# ## Define model and loss function for the learner
+class Expert(eqx.Module):
+    layers_data: list
+    activations_data: list
+    layers_main: list
+    layers_ctx: list
+    activations_main: list
+    activations_ctx: list
 
-    def __init__(self, input_dim, output_dim, hidden_size, depth, activation=jax.nn.softplus, key=None):
-        key = key if key is not None else jax.random.PRNGKey(0)
-        self.network = MLP(input_dim, output_dim, hidden_size, depth, activation, key=key)
+    ctx_utils:any
+    depth_data:int
+    depth_main:int
 
-        props = (input_dim, output_dim, hidden_size, depth, activation)
-        params, static = eqx.partition(self.network, eqx.is_array)
-        _, shapes, treedef = flatten_pytree(params)
-        self.root_utils = (shapes, treedef, static, props)
+    def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
+        self.ctx_utils = ctx_utils
+        self.depth_data = depth_data
+        self.depth_main = depth_main
+        depth_ctx = depth_data
 
-        self.network_size = sum(x.size for x in jax.tree_util.tree_leaves(params) if x is not None)
+        layer_ctx_size = context_size
+        # layer_ctx_size = context_size//depth_main  ## Size of the context to modulate each shared/main layer
+        # assert context_size%depth_main==0, "Context size must be divisible by the depth of the main network"
+        total_ctx_size = context_size * depth_main
 
-    def __call__(self, x):
-        return self.network(x)
 
-class GradualMLP(eqx.Module):
-    layers: list
+        keys_ctx = jax.random.split(key, num=depth_ctx+1)
+        hid_ctx_size = (context_size + total_ctx_size) // 2
+        self.activations_ctx = [Swish(key=k) for k in keys_ctx[:depth_ctx]]
+        self.layers_ctx = [eqx.nn.Linear(context_size, hid_ctx_size, key=keys_ctx[0])]
+        self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys_ctx[i]) for i in range(1, depth_ctx)]
+        self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, total_ctx_size, key=keys_ctx[depth_ctx])]
 
-    def __init__(self, input_dim, output_dim, activation=jax.nn.tanh, key=None):
-        key = key if key is not None else jax.random.PRNGKey(0)
-        keys = jax.random.split(key, 3)
+        keys = jax.random.split(key, num=depth_data+depth_main+2)
+        self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
+        self.layers_data = [eqx.nn.Linear(0+data_size, hidden_size, key=keys[0])]
+        self.layers_data += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[i]) for i in range(1, depth_data)]
+        self.layers_data += [eqx.nn.Linear(hidden_size, layer_ctx_size, key=keys[depth_data])]
 
-        ## We want two intermediate layers: with input neurons gradually decreasing to output_dim
-        hidden_size1 = int(2/3*input_dim + 1/3*output_dim)
-        hidden_size2 = int(1/3*input_dim + 2/3*output_dim)
-        in_layer = eqx.nn.Linear(input_dim, hidden_size1, key=keys[0])
-        hidden_layer = eqx.nn.Linear(hidden_size1, hidden_size2, key=keys[1])
-        out_layer = eqx.nn.Linear(hidden_size2, output_dim, key=keys[2])
+        self.activations_main = [Swish(key=k) for k in keys[depth_data+2:]]
+        self.layers_main = [eqx.nn.Linear(2*layer_ctx_size, hidden_size, key=keys[depth_data+1])]
+        self.layers_main += [eqx.nn.Linear(hidden_size+layer_ctx_size, hidden_size, key=keys[depth_data+i+1]) for i in range(1, depth_main)]
+        self.layers_main += [eqx.nn.Linear(hidden_size, data_size, key=keys[depth_data+depth_main+1])]
 
-        self.layers = [in_layer, activation, hidden_layer, activation, out_layer]
+        assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
+        assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
-    def __call__(self, x):
-        y = x
-        for layer in self.layers:
-            y = layer(y)
+
+    def __call__(self, in_dat):
+        t, y, ctx = in_dat
+
+        for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
+            ctx = activation(layer(ctx))
+        ctx = self.layers_ctx[-1](ctx)
+
+        ## Split the context into parts for each layer
+        ctx_parts = jnp.split(ctx[:], self.depth_main, axis=0)
+
+        # y = jnp.concatenate([t_arr, y], axis=0)
+        for layer, activation in zip(self.layers_data[:-1], self.activations_data):
+            y = activation(layer(y))
+        y = self.layers_data[-1](y)
+
+        ## Apply the context at each layer (except the very last)
+        for layer, activation, ctx_part in zip(self.layers_main[:-1], self.activations_main, ctx_parts):
+            y = jnp.concatenate([y, ctx_part], axis=0)
+            y = activation(layer(y))
+        y = self.layers_main[-1](y)
+
         return y
 
 
 # ## Define model and loss function for the learner
 class Model(eqx.Module):
-    hyper_root_network_dec: eqx.Module
-    hyper_root_network_enc: eqx.Module
-    root_utils: eqx.Module
-    hyper_delta_network: eqx.Module
+    experts: list
+    n_experts: int
+    top_k: int
+    gate_weight: eqx.Module
+    is_moe: bool
 
-    def __init__(self, data_size, hidden_size, depth, context_size, key=None):
-        keys = jax.random.split(key, 4)
+    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts=6, top_k=3, key=None):
+        keys = jax.random.split(key, nb_experts+2)
 
-        # ex_root = RootNetwork(data_size, data_size, hidden_size, depth, Swish(key=keys[0]), key=keys[1])
-        ex_root = RootNetwork(data_size, data_size, hidden_size, depth, jax.nn.softplus, key=keys[1])
-        self.root_utils = ex_root.root_utils
+        self.experts = [Expert(data_size, hidden_size, 2, depth, context_size, key=keys[i]) for i in range(nb_experts)]
 
-        root_size = ex_root.network_size
-        self.hyper_root_network_dec = GradualMLP(context_size, root_size, activation=jax.nn.tanh, key=keys[2])
-        self.hyper_root_network_enc = GradualMLP(root_size, context_size, activation=jax.nn.tanh, key=keys[3])
-        self.hyper_delta_network = eqx.nn.Linear(context_size*2, root_size, key=keys[3])
+        self.gate_weight = jnp.zeros((nb_experts, context_size))
+
+        self.n_experts = nb_experts
+        self.top_k = top_k
+        self.is_moe = True
+
+
+    def gating_function(self, ctx):
+        H = self.gate_weight@ctx
+
+        topk_vals, topk_idx = jax.lax.top_k(H, self.top_k)
+        infs = jnp.full_like(H, -jnp.inf)
+        infs = infs.at[topk_idx].set(topk_vals)
+        G = jax.nn.softmax(infs)
+
+        return G
 
     def __call__(self, t, y, ctx):
+        G = self.gating_function(ctx)
 
-        root_arr = self.hyper_root_network_dec(ctx)
-        ctx_ = self.hyper_root_network_enc(root_arr)
-        delta_arr = self.hyper_delta_network(jnp.concatenate([ctx, ctx_], axis=0))
+        dy = jnp.zeros_like(y)
+        for i in range(self.n_experts):
+            dy += G[i]*self.experts[i]((t, y, ctx))
 
-        final_arr = root_arr + delta_arr
-
-        shapes, treedef, static, _ = self.root_utils
-        params = unflatten_pytree(final_arr, shapes, treedef)
-        root_fun = eqx.combine(params, static)
-
-        return root_fun(y)
-
+        return dy
 
 
 
@@ -218,6 +255,8 @@ def env_loss_fn(model, ctx, y_hat, y):
     # term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
 
+    # term2 = jnp.abs(model.vectorfield.neuralnet.gate(ctx).squeeze())
+    
     # loss_val = term1 + 1e-3*term2 + 1e-3*term3
     loss_val = term1
 
@@ -227,7 +266,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
 neuralnet = Model(data_size=2,
-                hidden_size=32, 
+                hidden_size=64*2, 
                 depth=3,
                 context_size=context_size,
                 key=model_key) 
@@ -247,8 +286,8 @@ learner = Learner(model=model,
                 contexts=contexts,
                 reuse_contexts=True,
                 loss_contributors=loss_contributors,
-                pool_filling="NF*",     ## TODO. Put back NF as soon as mem permits
-                loss_filling="NF",
+                pool_filling="NF",     ## TODO. Put back NF as soon as mem permits
+                loss_filling="FO",   ## First only, we only need the first loss contributor
                 key=model_key)
 
 
@@ -267,13 +306,16 @@ total_steps = nb_outer_steps*nb_inner_steps[0]
 bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
 # opt_model = optax.adam(sched_model)
-opt_model = optax.chain(optax.clip(100.), optax.adam(sched_model))
+opt_model = optax.chain(optax.clip(10.), optax.adam(sched_model))
 
 opt_ctx = optax.adam(init_lr_ctx)
 
 trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
+
+## Use this loss criterion instead ...
+# loss_criterion = lambda y, y_hat: jnp.quantile((y - y_hat)**2, q=q, axis=(-1, -2, -3))
 
 ## Meta-training
 if meta_train == True:
@@ -353,19 +395,69 @@ print("Loss per InD environment:", all_ind_crit[0].tolist())
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                # nb_envs=252,
+                                # nb_envs=9*4,
                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                envs=jnp.arange(0, 252).tolist(),
+                                envs=jnp.arange(0, 16*4).tolist(),
                                 traj=1,
                                 share_axes=False,
                                 key=test_key)
 
-#%%
-# learner.contexts.params
-# learner.model.vectorfield.neuralnet.hyperlayer.weight
-# learner.model.vectorfield.neuralnet.root_weights.shape
+# exit()
 
 #%%
+## Inspect the context, and evalualte the gate layer
+contexts = learner.contexts
+network = trainer.learner.model.vectorfield.neuralnet
+
+@eqx.filter_vmap
+def gate_fn(ctx):
+    ctx_fam, ctx_env = jnp.split(ctx, 2, axis=0)
+
+    in_dat = jnp.concatenate((jnp.array([0.]), jnp.array([0.,0.]), ctx_fam), axis=0)
+    H = network.gate_weight@ctx
+
+    topk_vals, topk_idx = jax.lax.top_k(H, 2)
+    infs = jnp.full_like(H, -jnp.inf)
+    infs = infs.at[topk_idx].set(topk_vals)
+    G = jax.nn.softmax(infs)
+
+    return G
+
+gate_vals = gate_fn(contexts.params)
+
+fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+## sort and plot histogram of gate values
+# gate_vals = jnp.sort(gate_vals.flatten())
+ax.hist(gate_vals.flatten(), bins=50);
+
+print(gate_vals)
+# print(gate_vals.sum(axis=0))
+# print(network.gate_weight)
+
+plt.draw()
+plt.savefig(run_folder+"gate_histogram.png")
+
+
+
+#%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -424,7 +516,7 @@ if meta_test:
 
 #%%
 
-visualtester.visualize_context_clusters(perplexities=(8, 8),
+visualtester.visualize_context_clusters(perplexities=(3, 3),
                                         # key=test_key,
                                         key=jax.random.PRNGKey(time.time_ns()),
                                         save_path=run_folder+"context_clusters.png")
