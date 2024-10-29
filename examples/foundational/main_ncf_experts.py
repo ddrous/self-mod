@@ -12,11 +12,11 @@ seed = 2029
 
 ## Dataloader hps
 # num_envs = (9*28, 4*28)
-num_envs = (16*4, 16*4)
+num_envs = (16*10, 16*10)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 0.7  ## Min proporrion of the trajectory for training
+train_proportion = 0.2  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
@@ -27,23 +27,23 @@ taylor_orders = (2, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 2
 # loss_contributors = 16*5//2
-loss_contributors = 16*4
+loss_contributors = 16*1
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
 init_lrs = (5e-4, 5e-4)
-sched_factor = 0.2
+sched_factor = 1.0
 max_train_batches = 1
 max_adapt_batches = 1
 
 proximal_betas = (0., 0.)
 
-nb_outer_steps = 2000
+nb_outer_steps = 10000
 nb_inner_steps = (1, 1)
-nb_adapt_epochs = 1000
+nb_adapt_epochs = 5000
 validate_every = 50*1
 
-print_error_every = (10*1, 10*1)
+print_error_every = (100*1, 100*1)
 
 meta_train = True
 save_trainer = True
@@ -212,7 +212,7 @@ class Model(eqx.Module):
     gate_weight: eqx.Module
     is_moe: bool
 
-    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts=6, top_k=3, key=None):
+    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts=10, top_k=2, key=None):
         keys = jax.random.split(key, nb_experts+2)
 
         self.experts = [Expert(data_size, hidden_size, 2, depth, context_size, key=keys[i]) for i in range(nb_experts)]
@@ -229,7 +229,7 @@ class Model(eqx.Module):
 
         topk_vals, topk_idx = jax.lax.top_k(H, self.top_k)
         infs = jnp.full_like(H, -jnp.inf)
-        infs = infs.at[topk_idx].set(topk_vals)
+        infs = infs.at[topk_idx].set(topk_vals / 0.1)
         G = jax.nn.softmax(infs)
 
         return G
@@ -287,7 +287,7 @@ learner = Learner(model=model,
                 reuse_contexts=True,
                 loss_contributors=loss_contributors,
                 pool_filling="NF",     ## TODO. Put back NF as soon as mem permits
-                loss_filling="FO",   ## First only, we only need the first loss contributor
+                loss_filling="NF",   ## First only, we only need the first loss contributor
                 key=model_key)
 
 
@@ -395,9 +395,9 @@ print("Loss per InD environment:", all_ind_crit[0].tolist())
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                # nb_envs=9*4,
+                                nb_envs=16*5,
                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                envs=jnp.arange(0, 16*4).tolist(),
+                                # envs=jnp.arange(0, 16*4).tolist(),
                                 traj=1,
                                 share_axes=False,
                                 key=test_key)
@@ -505,7 +505,6 @@ if meta_test:
     print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
     visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
-
 
     visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood.png",
                                     data_loader=adapt_dataloader_test,

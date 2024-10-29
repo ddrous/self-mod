@@ -639,6 +639,6 @@ class ODEBenchDataset:
 
 
     def __len__(self):
-        # return self.total_envs
-        return 16*4      ### TODO this is temporary
+        return self.total_envs
+        # return 16*4      ### TODO this is temporary
 

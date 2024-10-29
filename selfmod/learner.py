@@ -81,7 +81,8 @@ class Learner:
                 ind = jax.random.permutation(key, ctxs.shape[0])[:self.context_pool_size]
                 ctx_pool = ctxs[ind, :]
             elif self.pool_filling=="NF":       ## Fill the context with the nearest first
-                dists = jnp.mean(jnp.abs(ctxs-ctx), axis=1)
+                # dists = jnp.mean(jnp.abs(ctxs-ctx), axis=1)
+                dists = jnp.mean((ctxs-ctx)**2, axis=1)     ## TODO test with L2 norm
                 ind = jnp.argsort(dists)[:self.context_pool_size]
                 ctx_pool = ctxs[ind, :]
             elif self.pool_filling=="NF*":      ## Same as NF, but excluding the current context
@@ -128,7 +129,8 @@ class Learner:
                     indices = jnp.arange(loss_contributors)
                 elif self.loss_filling=="NF":       ## Pick one at random and then the nearest to it
                     rnd_env = jax.random.randint(key, (1,), 0, contexts.params.shape[0])[0]
-                    dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
+                    # dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
+                    dists = jnp.mean((contexts.params-contexts.params[rnd_env])**2, axis=1)    ## TODO test with L2 norm
                     indices = jnp.argsort(dists)[:loss_contributors]
                 elif self.loss_filling=="NF-W":       ## Weighted. We Pick one of the environments we want to focus on
                     probas = prev_losses / jnp.sum(prev_losses)
