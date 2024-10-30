@@ -68,8 +68,8 @@ class Learner:
 
             # jax.debug.print("The coefficient of variation is:  {} {}  ", cv, importances)
 
-            # return 0.0*cv, importances          ## TODO remove this
-            return 1.*cv, batched_gates
+            return 0., batched_gates          ## TODO remove this
+            # return 1.*cv, batched_gates
 
 
 

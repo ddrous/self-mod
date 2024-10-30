@@ -41,7 +41,7 @@ proximal_betas = (0., 0.)
 nb_outer_steps = 10000
 nb_inner_steps = (1, 1)
 nb_adapt_epochs = 5000
-validate_every = 50*1
+validate_every = 500*1
 
 print_error_every = (100*1, 100*1)
 
@@ -217,15 +217,16 @@ class Model(eqx.Module):
 
         self.experts = [Expert(data_size, hidden_size, 2, depth, context_size, key=keys[i]) for i in range(nb_experts)]
 
-        self.gate_weight = jnp.zeros((nb_experts, context_size))
+        # self.gate_weight = jnp.zeros((nb_experts, context_size))
+        self.gate_weight = MLP(context_size, nb_experts, hidden_size, depth, activation=jax.nn.relu, key=keys[-1])
 
         self.n_experts = nb_experts
         self.top_k = top_k
-        self.is_moe = True
-
+        self.is_moe = True     ## Fix this !
 
     def gating_function(self, ctx):
-        H = self.gate_weight@ctx
+        # H = self.gate_weight@ctx
+        H = jax.nn.relu(self.gate_weight(ctx))
 
         topk_vals, topk_idx = jax.lax.top_k(H, self.top_k)
         infs = jnp.full_like(H, -jnp.inf)

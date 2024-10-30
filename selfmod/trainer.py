@@ -373,7 +373,7 @@ class NCFTrainer(Trainer):
                             # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
                             # print(f"Training losses per environment: {all_env_losses.tolist()}", flush=True, end="\n")
                             print("Term3 quantities: \n", term3[1], flush=True, end="\n")
-                            print("Contributed losses: \n", loss_contrs, flush=True, end="\n")
+                            print("Contributed losses: ", loss_contrs, flush=True, end="\n")
                             # print("Gate weights in model are: \n", model.vectorfield.neuralnet.gate_weight, flush=True, end="\n")
 
                             if save_checkpoints:
