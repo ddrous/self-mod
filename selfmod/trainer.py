@@ -456,6 +456,373 @@ class NCFTrainer(Trainer):
 
 
 
+    def meta_train_gated(self,
+                        dataloader: DataLoader, 
+                        nb_epochs,
+                        nb_outer_steps,
+                        nb_inner_steps=(10, 10, 10),
+                        inner_tols=(1e-12, 1e-12, 1e-12), 
+                        proximal_betas=(100., 100., 100.), 
+                        max_train_batches=None,
+                        patience=None, 
+                        print_error_every=(1,1), 
+                        save_checkpoints=False,
+                        validate_every=100,
+                        save_path=False, 
+                        val_dataloader=None, 
+                        val_criterion_id=None, 
+                        max_val_batches=None,
+                        val_nb_steps=10,
+                        key=None):
+        """ Train the model using the proximal gradient descent algorithm (PAM) """
+
+        key = key if key is not None else self.key
+
+        ## Try to load checkpoints if they exist
+        try:
+            self.restore_trainer(path=save_path)
+            print(f"Restored the trainer from the path {save_path}")
+
+
+        except Exception as e:
+            print(f"No checkpoints or error when attempting to load training configs - '{e}' - Starting from scratch ...")
+
+        if isinstance(nb_inner_steps, int):
+            nb_inner_steps = (nb_inner_steps, nb_inner_steps, nb_inner_steps)
+        nb_inner_steps_model, nb_inner_steps_ctx, nb_inner_steps_gates = nb_inner_steps
+
+        inner_tol_model, inner_tol_ctx, inner_tol_gates = inner_tols
+        proximal_reg_model, proximal_reg_ctx, proximal_reg_gates = proximal_betas
+
+        loss_fn = self.learner.loss_fn
+        model = self.learner.model
+        opt_state_model = self.opt_state_model
+        loss_filling = self.learner.loss_filling
+        nb_loss_contr = self.learner.loss_contributors
+
+        gates = self.learner.model.vectorfield.neuralnet.gate       ## TODO In the future, we can have more gates
+        loss_fn_gates = self.learner.loss_fn_gates
+        # nb_loss_contr_gates = nb_environments   ## If the VRAM can handle it
+        opt_state_gates = self.opt_model.init(eqx.filter(gates, eqx.is_array))
+
+        if save_checkpoints:
+            backup_folder = save_path+"checkpoints/"
+            if not os.path.exists(backup_folder):
+                os.makedirs(backup_folder)
+
+        @eqx.filter_jit
+        def train_step_model(model, model_old, contexts, batch, weightings, opt_state, key):
+            print('     ### Compiling function "train_step" for the model ...  ')
+
+            def prox_loss_fn(model, contexts, batch, weightings, key):
+                loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                diff_norm = params_diff_norm_squared(model, model_old)
+                return loss + proximal_reg_model * diff_norm / 2., (*aux_data, diff_norm)
+
+            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(model, contexts, batch, weightings, key)
+
+            updates, opt_state = self.opt_model.update(grads, opt_state)
+            model = eqx.apply_updates(model, updates)
+
+            return model, contexts, opt_state, loss, aux_data
+
+
+        @eqx.filter_jit
+        def train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state, key):
+            print('     ### Compiling function "train_step" for the contexts ...  ')
+
+            def prox_loss_fn(contexts, model, batch, weightings, key):
+                loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                diff_norm = params_diff_norm_squared(contexts, contexts_old)
+                return loss + proximal_reg_ctx * diff_norm / 2., (*aux_data, diff_norm)
+
+            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
+
+            updates, opt_state = self.opt_ctx.update(grads, opt_state)
+            contexts = eqx.apply_updates(contexts, updates)
+
+            return model, contexts, opt_state, loss, aux_data
+
+
+
+        @eqx.filter_jit
+        def train_step_gates(gates, gates_old, contexts, opt_state, key):
+            print('     ### Compiling function "train_step" for the gates ...  ')
+
+            def prox_loss_fn(gates, contexts, key):
+                loss, aux_data = loss_fn_gates(gates, contexts, key)
+                diff_norm = params_diff_norm_squared(gates, gates_old)
+                return loss + proximal_reg_gates * diff_norm / 2., (*aux_data, diff_norm)
+
+            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(gates, contexts, key)
+
+            updates, opt_state = self.opt_model.update(grads, opt_state)
+            gates = eqx.apply_updates(gates, updates)
+
+            return gates, contexts, opt_state, loss, aux_data
+
+
+
+        # if not isinstance(dataloader, DataLoader):
+        #     raise ValueError("The dataloader must be an instance of DataLoader")
+        if val_dataloader is not None:
+            tester = VisualTester(self, key=key)
+
+        validate_every = validate_every if validate_every > 0 else 1
+
+        print(f"\n\n=== Beginning Meta-Training ... ===")
+        print(f"    Number of examples in a batch along envs: {dataloader.batch_size}")
+        print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
+        print(f"    Total number of epochs: {nb_epochs}")
+        print(f"    Number of outer minimizations: {nb_outer_steps}")
+        print(f"    Maximum numbers of inner steps per outer minimizations: {nb_inner_steps_model, nb_inner_steps_ctx}")
+
+        if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:
+            max_train_batches = dataloader.num_batches
+        print(f"    Training on {max_train_batches} batches")
+        if val_dataloader is not None:
+            if max_val_batches is None or max_val_batches<1 or max_val_batches>val_dataloader.num_batches:
+                max_val_batches = val_dataloader.num_batches
+            print(f"    Validating on {max_val_batches} batches")
+
+        if isinstance(print_error_every, int):
+            print_error_every = (print_error_every, print_error_every)
+        print_every_out_step, print_every_batch = print_error_every
+
+        start_time = time.time()
+
+        losses_model = []
+        losses_ctx = []
+        losses_gates = []
+        if val_dataloader is not None:
+            val_losses = []
+
+        loss_key, _ = jax.random.split(key)
+        early_stopping_count = 0
+
+        for epoch in range(nb_epochs):
+            # print(f"\nEPOCH {epoch} ... ")
+
+            for env_batch, batch in enumerate(dataloader):
+                if env_batch >= max_train_batches:
+                    break
+
+                nb_envs_in_batch = batch[1].shape[0]
+                # weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+
+                ## Approach #2
+                if loss_filling == "NF-iW":
+                    all_env_losses = jnp.inf*jnp.ones(nb_envs_in_batch)
+                elif loss_filling == "NF-W":
+                    all_env_losses = jnp.zeros(nb_envs_in_batch)
+                else:
+                    all_env_losses = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
+
+                contexts = self.learner.reset_contexts(nb_envs_in_batch)
+                opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
+
+                for out_step in range(nb_outer_steps):
+                    # print(f"    Staring outer step {out_step} ...")
+
+                    loss_epochs_model = []
+                    loss_epochs_ctx = []
+                    loss_epochs_gates = []
+
+                    start_time_step = time.perf_counter()
+
+                    model_old = jax.tree_util.tree_map(lambda x: x, model)
+                    contexts_old = jax.tree_util.tree_map(lambda x: x, contexts)
+
+                    ## Extract the new gates
+                    gates_old = jax.tree_util.tree_map(lambda x: x, gates)
+                    gates = model.vectorfield.neuralnet.gate        ## TODO for now !
+
+                    ######### Gates proximal innner minimization #########
+                    for in_step_gates in range(nb_inner_steps_gates):
+
+                        # loss_key, _ = jax.random.split(loss_key)
+
+                        gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, opt_state_gates, loss_key)
+
+                        loss_epochs_gates.append(loss_gates)
+
+                        # print("Gate losses: ", loss_gates, flush=True, end="\n")
+
+                        ## TODO Update the weightings based on loss progress
+                        # keys = jax.random.split(key, num=contexts.params.shape[0])
+
+                        # diff_model = params_diff_norm_squared(model, model_prev) / params_norm_squared(model_prev)
+                        # if diff_model < inner_tol_model or out_step==0:
+                        #     break
+                        # model_prev = model
+
+                    ## Inject the gates back into the model
+                    model = eqx.tree_at(lambda m: m.vectorfield.neuralnet.gate, model, gates)
+
+
+                    ######### Model proximal innner minimization #########
+                    # model_prev = jax.tree_util.tree_map(lambda x: x, model)
+                    for in_step_model in range(nb_inner_steps_model):
+
+                        loss_key, _ = jax.random.split(loss_key)
+
+                        model, contexts, opt_state_model, loss_model, (term1, term2, _, loss_contrs, _) = train_step_model(model, model_old, contexts, batch, all_env_losses, opt_state_model, loss_key)
+
+                        # ###========== Approach #2
+                        all_env_losses = all_env_losses.at[loss_contrs].set(term1)
+
+                        # print(loss_contrs.tolist(), end=" - ")
+                        loss_epochs_model.append(loss_model)
+
+                        ## TODO Update the weightings based on loss progress
+                        # keys = jax.random.split(key, num=contexts.params.shape[0])
+
+                        # diff_model = params_diff_norm_squared(model, model_prev) / params_norm_squared(model_prev)
+                        # if diff_model < inner_tol_model or out_step==0:
+                        #     break
+                        # model_prev = model
+
+
+                    ######### Contexts proximal innner minimization #########
+                    # contexts_prev = jax.tree_util.tree_map(lambda x: x, contexts)
+                    for in_step_ctx in range(nb_inner_steps_ctx):
+
+                        loss_key, _ = jax.random.split(loss_key)
+
+                        model, contexts, opt_state_ctx, loss_ctx, (term1, term2, term3, loss_contrs, _) = train_step_ctx(model, contexts, contexts_old, batch, all_env_losses, opt_state_ctx, loss_key)
+
+                        # ###========== Approach #1
+                        # all_env_losses = all_env_losses.at[loss_contrs].set(term1)
+                        # # all_env_losses = jnp.clip(all_env_losses, 1e-4, 10.)
+                        # all_env_losses = jnp.clip(all_env_losses, min=all_env_losses.min()+min_loss_weight, 
+                        #                           max=all_env_losses.min()+min_loss_weight+10*min_loss_weight)
+
+                        # ###========== Approach #2
+                        all_env_losses = all_env_losses.at[loss_contrs].set(term1)
+
+                        # print(loss_contrs.tolist(), end=" - " if in_step_ctx < nb_inner_steps_ctx-1 else "\n")
+                        loss_epochs_ctx.append(loss_ctx)
+
+                        # diff_ctx = params_diff_norm_squared(contexts, contexts_prev) / params_norm_squared(contexts_prev)
+                        # if diff_ctx < inner_tol_ctx or out_step==0:
+                        #     break
+                        # contexts_prev = contexts
+
+                    # print("Current contributors: ", loss_contrs, "\nall env losses:\n", all_env_losses.tolist())
+
+                    if in_step_model < 1 and in_step_ctx < 1:
+                        early_stopping_count += 1
+                    else:
+                        early_stopping_count = 0
+
+                    if (patience is not None) and (early_stopping_count >= patience):
+                        print(f"Stopping early after {patience} steps with no improvement in the loss. Consider increasing the tolerances for the inner minimizations.")
+                        break
+
+                    # losses_model.append(loss_model)
+                    # losses_ctx.append(loss_ctx)
+
+                    # losses_model.append(jnp.mean(jnp.array(loss_epochs_model)))
+                    # losses_ctx.append(jnp.mean(jnp.array(loss_epochs_ctx)))
+
+                    losses_model.append(jnp.median(jnp.array(loss_epochs_model)))
+                    losses_ctx.append(jnp.median(jnp.array(loss_epochs_ctx)))
+                    losses_gates.append(jnp.median(jnp.array(loss_epochs_gates)))
+
+                    if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:
+                        if out_step%print_every_out_step==0 or out_step==nb_outer_steps-1:
+                            print(f"{time.strftime('%H:%M:%S')}      Epoch: {epoch:-3d}      Batch: {env_batch:-3d}      OuterStep: {out_step:-3d}      LossModel: {losses_model[-1]:-.8f}     LossTerm2: {jnp.mean(term2):-.8f}     LossGates: {losses_gates[-1]:-.8f}      Time/Step(s): {time.perf_counter()-start_time_step:-.4f}", flush=True, end="\r")
+                            # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
+                            # print(f"Training losses per environment: {all_env_losses.tolist()}", flush=True, end="\n")
+                            # print("Term3 quantities: \n", term3[1], flush=True, end="\n")
+                            print("Contributing envs to the losses: ", loss_contrs, flush=True, end="\n")
+                            # print("Gate weights in model are: \n", model.vectorfield.neuralnet.gate_weight, flush=True, end="\n")
+                            print("Gate values for each environment (all envs): \n", gate_vals, flush=True, end="\n")
+
+                            if save_checkpoints:
+                                ## Save the context and model with the right suffix
+                                # context_save_path = backup_folder+f"contexts_outstep_{out_step:06d}.npy"
+                                # np.save(context_save_path, contexts.params)
+                                context_save_path = backup_folder+f"contexts_outstep_{out_step:06d}.eqx"
+                                eqx.tree_serialise_leaves(context_save_path, contexts)
+                                eqx.tree_serialise_leaves(backup_folder+f"model_outstep_{out_step:06d}.eqx", model)
+                                np.savez(backup_folder+"train_histories.npz",
+                                    losses_model=jnp.vstack([jnp.vstack(losses_model)]), 
+                                    losses_ctx=jnp.vstack([jnp.vstack(losses_ctx)]))
+                                # np.save(backup_folder+"val_losses.npy", jnp.vstack([jnp.vstack(val_losses)]))
+
+                    if val_dataloader is not None and (out_step != 0 and (out_step%validate_every==0 or out_step==nb_outer_steps-1)):
+                        self.learner.model = model
+                        self.learner.contexts = contexts
+                        # print("Setting contexts in the metatrainer: \n", contexts.params)
+                        self.learner.all_env_losses = all_env_losses
+
+                        self.opt_state_model = opt_state_model
+                        self.opt_state_ctx = opt_state_ctx
+
+                        ind_crit,_ = tester.evaluate(val_dataloader,
+                                                    criterion_id=val_criterion_id,
+                                                    max_adapt_batches=max_val_batches,
+                                                    nb_steps=val_nb_steps,
+                                                    taylor_order=0, 
+                                                    max_ret_env_states=self.learner.loss_contributors,
+                                                    stochastic=False,
+                                                    verbose=False)
+                        print(f"        Validation Criterion: {ind_crit:-.8f}", flush=True)
+                        val_losses.append(np.array([out_step, ind_crit]))
+
+                        ## Check if val loss is lowest to save the model
+                        if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
+                            print(f"        Saving best model so far ...")
+                            self.save_trainer(save_path, ignore_losses=True)
+                            # self.learner.save_learner(save_path)
+                        ## Restore the learner at the last evaluation step
+                        if out_step == nb_outer_steps-1:
+                            self.save_trainer(save_path, ignore_losses=True)
+                            # self.learner.load_learner(save_path)
+
+                    ###========== Approach #2 to only sample relevent environments. Find the worst contributors
+                    loss_sort = jnp.argsort(all_env_losses)
+                    if loss_filling == "NF-iW":
+                        # all_env_losses = all_env_losses.at[loss_sort[-nb_envs_in_batch//2:]].set(jnp.inf)
+                        all_env_losses = all_env_losses.at[loss_sort[-nb_loss_contr:]].set(jnp.inf)
+                    elif loss_filling == "NF-W":
+                        all_env_losses = all_env_losses.at[loss_sort[:nb_loss_contr]].set(0.)
+
+                # print(f"\n\t-NbInnerStepsMod: {in_step_model+1:4d}\n\t-NbInnerStepsCxt: {in_step_ctx+1:4d}\n\t-DiffMod:   {diff_model:.2e}\n\t-DiffCxt:   {diff_ctx:.2e}", flush=True, end="\r")
+
+
+        wall_time = time.time() - start_time
+        time_in_hmsecs = seconds_to_hours(wall_time)
+        print("\nTotal gradient descent training time: %d hours %d mins %d secs" %time_in_hmsecs)
+
+        self.losses_model.append(jnp.vstack(losses_model))
+        self.losses_ctx.append(jnp.vstack(losses_ctx))
+
+        if val_dataloader is not None:
+            if not hasattr(self, 'val_losses'):
+                self.val_losses = []
+            self.val_losses.append(jnp.vstack(val_losses))
+
+        self.opt_state_model = opt_state_model
+        if val_dataloader is None:
+            self.learner.model = model
+
+        ## DO NOT TRUST. Just for visualisation purposes
+        self.opt_ctx_state = opt_state_ctx
+        self.learner.contexts = contexts
+
+        # Save the model and results
+        if save_path:
+            self.save_trainer(save_path)
+
+
+
+
+
+
+
+
     def meta_train_noalm(self,
                     dataloader: DataLoader, 
                     nb_epochs,

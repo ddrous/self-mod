@@ -8,7 +8,7 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2029
+seed = 2028
 
 ## Dataloader hps
 # num_envs = (9*28, 4*28)
@@ -16,31 +16,31 @@ num_envs = (16*10, 16*10)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 0.2  ## Min proporrion of the trajectory for training
+train_proportion = 0.4  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 2
-context_size = 64*1*2
+context_size = 64*1*4
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 2
 # loss_contributors = 16*5//2
-loss_contributors = 16*1
+loss_contributors = 16*5
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
 init_lrs = (5e-4, 5e-4)
-sched_factor = 1.0
+sched_factor = 0.2
 max_train_batches = 1
 max_adapt_batches = 1
 
-proximal_betas = (0., 0.)
+proximal_betas = (0., 10., 0.)
 
-nb_outer_steps = 10000
-nb_inner_steps = (1, 1)
-nb_adapt_epochs = 5000
+nb_outer_steps = 12000
+nb_inner_steps = (1, 1, 1)
+nb_adapt_epochs = 12000
 validate_every = 500*1
 
 print_error_every = (100*1, 100*1)
@@ -208,38 +208,40 @@ class Expert(eqx.Module):
 class Model(eqx.Module):
     experts: list
     n_experts: int
-    top_k: int
-    gate_weight: eqx.Module
-    gate_temp: float
-    is_moe: bool
+    # top_k: int
+    gate:dict
+    is_moe: True
 
-    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts=10, top_k=2, key=None):
+    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts=8, top_k=3, key=None):
         keys = jax.random.split(key, nb_experts+2)
 
         self.experts = [Expert(data_size, hidden_size, 2, depth, context_size, key=keys[i]) for i in range(nb_experts)]
 
         # self.gate_weight = jnp.zeros((nb_experts, context_size))
-        self.gate_weight = MLP(context_size, nb_experts, hidden_size, depth, activation=jax.nn.relu, key=keys[-1])
+        # gate_weight = MLP(context_size, nb_experts, hidden_size, depth, activation=jax.nn.relu, key=keys[-1])
+        gate_weight = eqx.nn.Linear(context_size, nb_experts, key=keys[-1])
+
+        # gate_temp = jnp.array([-1.5])
+        gate_temp = [-1.]
+
+        def gating_function(gate, ctx):
+            ctx = ctx / 10**gate["temperature"][0]
+            H = jax.nn.relu(gate["weight"](ctx))
+
+            topk_vals, topk_idx = jax.lax.top_k(H, gate["top_k"])
+            infs = jnp.full_like(H, -jnp.inf)
+            infs = infs.at[topk_idx].set(topk_vals / 1.)
+            G = jax.nn.softmax(infs)
+
+            return G
+
+        self.gate = {"weight":gate_weight, "temperature":gate_temp, "top_k":top_k, "function":gating_function}
 
         self.n_experts = nb_experts
-        self.top_k = top_k
         self.is_moe = True     ## Fix this !
-        self.gate_temp = -1.5
-
-    def gating_function(self, ctx):
-        # H = self.gate_weight@ctx
-        ctx = ctx / 10**self.gate_temp
-        H = jax.nn.relu(self.gate_weight(ctx))
-
-        topk_vals, topk_idx = jax.lax.top_k(H, self.top_k)
-        infs = jnp.full_like(H, -jnp.inf)
-        infs = infs.at[topk_idx].set(topk_vals / 0.1)
-        G = jax.nn.softmax(infs)
-
-        return G
 
     def __call__(self, t, y, ctx):
-        G = self.gating_function(ctx)
+        G = self.gate["function"](self.gate, ctx)
 
         dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
@@ -324,11 +326,11 @@ trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 ## Meta-training
 if meta_train == True:
     trainer_save_path = run_folder if save_trainer == True else False
-    trainer.meta_train(dataloader=train_dataloader, 
+    trainer.meta_train_gated(dataloader=train_dataloader, 
                         nb_epochs=1, 
                         nb_outer_steps=nb_outer_steps, 
                         nb_inner_steps=nb_inner_steps, 
-                        inner_tols=(1e-16, 1e-16), 
+                        inner_tols=(1e-16, 1e-16, 1e-16), 
                         proximal_betas=proximal_betas, 
                         max_train_batches=max_train_batches, 
                         print_error_every=print_error_every, 
@@ -399,9 +401,9 @@ print("Loss per InD environment:", all_ind_crit[0].tolist())
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                nb_envs=16*5,
+                                # nb_envs=16*5,
                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                # envs=jnp.arange(0, 16*4).tolist(),
+                                envs=jnp.arange(0, 16*10).tolist(),
                                 traj=1,
                                 share_axes=False,
                                 key=test_key)
@@ -418,7 +420,8 @@ def gate_fn(ctx):
     ctx_fam, ctx_env = jnp.split(ctx, 2, axis=0)
 
     in_dat = jnp.concatenate((jnp.array([0.]), jnp.array([0.,0.]), ctx_fam), axis=0)
-    H = network.gate_weight@ctx
+    # H = network.gate_weight@ctx
+    H = network.gate["function"](network.gate, ctx)
 
     topk_vals, topk_idx = jax.lax.top_k(H, 2)
     infs = jnp.full_like(H, -jnp.inf)

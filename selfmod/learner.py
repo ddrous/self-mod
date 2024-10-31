@@ -73,6 +73,24 @@ class Learner:
 
 
 
+
+        def loss_fn_gates(gates, ctxs, key):
+            print("    Compiling gating loss function - coefficient of variation ...")
+            batched_gates = eqx.filter_vmap(gates["function"], in_axes=(None, 0))(gates, ctxs.params)
+
+            ## count the non-zeros along axis 0
+            non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
+            non_zeros = jnp.where(non_zeros==0, 1, non_zeros)
+            importances = jnp.sum(batched_gates, axis=0) / non_zeros
+
+            cv = jnp.var(importances) / jnp.mean(importances)**2
+
+            return cv, (batched_gates, )
+
+        self.loss_fn_gates = loss_fn_gates
+
+
+
         def env_loss_fn_(model, batch, ctx, ctxs, key):
             """ Wrapping the loss function before vectorizing it below """
             X, Y = batch
@@ -161,10 +179,9 @@ class Learner:
                 base_loss = jnp.sum(losses) / loss_contributors  ## TODO testing CV
                 # base_loss = 0.
 
-                cv, importances = moe_cv_loss_fn(model, random_contexts)
-                base_loss += cv
-                terms3 = (terms3, importances)
-                # terms3 = (importances[...,0], importances[...,1], importances[...,2])
+                # cv, importances = moe_cv_loss_fn(model, random_contexts)
+                # base_loss += cv
+                # terms3 = (terms3, importances)
 
                 return base_loss, (term1, terms2, terms3, indices)
 
