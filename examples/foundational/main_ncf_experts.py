@@ -210,6 +210,7 @@ class Model(eqx.Module):
     n_experts: int
     top_k: int
     gate_weight: eqx.Module
+    gate_temp: float
     is_moe: bool
 
     def __init__(self, data_size, hidden_size, depth, context_size, nb_experts=10, top_k=2, key=None):
@@ -223,9 +224,11 @@ class Model(eqx.Module):
         self.n_experts = nb_experts
         self.top_k = top_k
         self.is_moe = True     ## Fix this !
+        self.gate_temp = -1.5
 
     def gating_function(self, ctx):
         # H = self.gate_weight@ctx
+        ctx = ctx / 10**self.gate_temp
         H = jax.nn.relu(self.gate_weight(ctx))
 
         topk_vals, topk_idx = jax.lax.top_k(H, self.top_k)
