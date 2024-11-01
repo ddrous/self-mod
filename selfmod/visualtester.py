@@ -1,5 +1,6 @@
 
 from abc import abstractmethod
+from types import SimpleNamespace
 from selfmod.dataloader import DataLoader, CelebADataLoader, NumpyLoader
 from ._utils import *
 
@@ -176,11 +177,13 @@ class VisualTester:
         xis_train = self.trainer.learner.contexts
         if hasattr(self.trainer.learner, 'contexts_adapt'):
             xis_adapt = self.trainer.learner.contexts_adapt
-        elif hasattr(self.trainer.learner, 'contexts_latest'):
-            xis_adapt = self.trainer.learner.contexts_latest
+        # elif hasattr(self.trainer.learner, 'contexts_latest'):
+        #     xis_adapt = self.trainer.learner.contexts_latest
+        # else:
+        #     print("No contexts found. Using zeros.")
+        #     xis_adapt = jnp.zeros((10, self.trainer.learner.context_size))
         else:
-            print("No contexts found. Using zeros.")
-            xis_adapt = jnp.zeros((10, self.trainer.learner.context_size))
+            xis_adapt = SimpleNamespace(params=jnp.zeros((1, self.trainer.learner.context_size)))
 
         print("\n==  Begining context clusters visualisation with t-SNE ... ==")
 
@@ -676,7 +679,8 @@ class DynamicsVisualTester(VisualTester):
         t_test = t_test[plot_envs] if t_test.ndim > 1 else t_test
 
         # fig, ax = plt.subplots(nb_envs, 2, figsize=(5*2, 3*nb_envs), sharex=False, sharey=False)
-        fig, ax = plt.subplots(nb_envs, 2, figsize=(4*2, 2*nb_envs), sharex=False, sharey=False, gridspec_kw = {'wspace':0.27, 'hspace':0.25})
+        # fig, ax = plt.subplots(nb_envs, 2, figsize=(4*2, 2*nb_envs), sharex=False, sharey=False, gridspec_kw = {'wspace':0.17, 'hspace':0.15})
+        fig, ax = plt.subplots(nb_envs, 2, figsize=(4*2, 2*nb_envs), sharex=False, sharey=False)
 
         mks = 4
         dim0, dim1 = dims
@@ -719,7 +723,8 @@ class DynamicsVisualTester(VisualTester):
         # plt.subplots_adjust(wspace=0, hspace=0)
 
         plt.tight_layout()
-        plt.suptitle(f"Trajectories and Phase Spaces for traj {traj}", fontsize=16, y=1.005)
+        plt.suptitle(f"Trajectories and Phase Spaces for Trajectories Id {traj}", fontsize=16, y=1.001)
+        # plt.suptitle(f"Trajectories and Phase Spaces for Trajectory Id {traj}", fontsize=16)
 
         plt.draw();
 

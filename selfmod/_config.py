@@ -11,11 +11,13 @@ np.set_printoptions(suppress=True)
 np.set_printoptions(linewidth=np.inf)
 
 ## Plotting configs
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_theme(context='notebook', style='ticks',
         font='sans-serif', font_scale=1, color_codes=True, rc={"lines.linewidth": 2})
 # plt.style.use("dark_background")
+mpl.rcParams['savefig.facecolor'] = 'w'
 
 ## Set the following parameters for scientfic plots
 # sns.set_theme(context='talk', style='ticks',

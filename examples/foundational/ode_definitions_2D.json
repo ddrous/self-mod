@@ -24,7 +24,7 @@
       "name": "Damped double well oscillator",
       "function": "lambda t, y, c0: [y[1], -c0*y[1] - y[0]**3 + y[0]]",
       "parameters": {"c0": 0.18},
-      "initial_values": [[-1.8, -1.8], [5.8, 0.0]],
+      "initial_values": [[-1.8, -1.8], [-2.8, 1.0]],
       "time_horizon": 5
     },
     "34": {
