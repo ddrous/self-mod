@@ -38,7 +38,7 @@
       "name": "Rotational dynamics of an object in a shear flow",
       "function": "lambda t, y, c0: [np.cos(y[0])/np.tan(y[1]), np.sin(y[0])*(c0*np.sin(y[1])**2 + np.cos(y[1])**2)]",
       "parameters": {"c0": 4.2},
-      "initial_values": [[1.13, -0.3], [2.4, 1.7]],
+      "initial_values": [[1.13, -0.3], [0.7, -1.7]],
       "time_horizon": 5
     },
     "37": {

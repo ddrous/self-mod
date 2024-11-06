@@ -583,9 +583,9 @@ class ODEBenchDataset:
         ## Duplicate t_eval for each environment
         self.t_eval = np.repeat(t_eval, n_envs_per_ode, axis=0)
 
-        # ## Ignore the first 16*2 TODO temporary
-        # self.dataset = self.dataset[16*2:, :, :, :]
-        # self.t_eval = self.t_eval[16*2:, :]
+        # # ## Ignore the first 16*2 TODO temporary
+        # self.dataset = self.dataset[16*5:, :, :, :]
+        # self.t_eval = self.t_eval[16*5:, :]
 
         self.total_envs = n_odes*n_envs_per_ode
 
@@ -640,5 +640,5 @@ class ODEBenchDataset:
 
     def __len__(self):
         return self.total_envs
-        # return 16*4      ### TODO this is temporary
+        # return 16*1      ### TODO this is temporary
 

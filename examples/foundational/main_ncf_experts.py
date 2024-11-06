@@ -1,8 +1,10 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+
 from selfmod import *
 
 import umap
@@ -15,7 +17,7 @@ seed = 2026
 ## Dataloader hps
 ode_count = 10          ## Total number of ODEs in the dataset
 nb_experts = 8
-top_k = 8
+top_k = 6
 
 num_envs = (16*ode_count, 16*ode_count)
 num_shots = (-1, -1)
@@ -29,7 +31,7 @@ context_pool_size = 4
 context_size = 64
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
-ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
+ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 4
 # loss_contributors = 16*5//2
 loss_contributors = 16*ode_count
@@ -43,12 +45,12 @@ max_adapt_batches = 1
 
 proximal_betas = (0., 10., 0.)
 
-nb_outer_steps = 12000
+nb_outer_steps = 8000
 nb_inner_steps = (1, 1, 1)
 nb_adapt_epochs = 1200
-validate_every = 500*1
+validate_every = 400*1
 
-print_error_every = (100*1, 100*1)
+print_error_every = (50*1, 50*1)
 
 meta_train = True
 save_trainer = True
@@ -117,10 +119,10 @@ class Expert(eqx.Module):
         self.depth_main = depth_main
         depth_ctx = depth_data
 
-        layer_ctx_size = context_size
+        layer_ctx_size = hidden_size
         # layer_ctx_size = context_size//depth_main  ## Size of the context to modulate each shared/main layer
         # assert context_size%depth_main==0, "Context size must be divisible by the depth of the main network"
-        total_ctx_size = context_size * depth_main
+        total_ctx_size = layer_ctx_size * depth_main
 
 
         keys_ctx = jax.random.split(key, num=depth_ctx+1)
@@ -187,7 +189,7 @@ class Model(eqx.Module):
         gate_weight = eqx.nn.Linear(context_size, nb_experts, key=keys[-1])
 
         # gate_temp = jnp.array([-1.5])
-        gate_temp = [-0.5]
+        gate_temp = [-1.0]
 
         def gating_function(gate, ctx):
             ctx = ctx / 10**gate["temperature"][0]
@@ -238,7 +240,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
 neuralnet = Model(data_size=2,
-                hidden_size=64, 
+                hidden_size=32*1, 
                 depth=3,
                 context_size=context_size,
                 nb_experts=nb_experts,
@@ -359,7 +361,7 @@ visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 # nb_envs=16*ode_count,
                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
                                 envs=jnp.arange(0, 16*ode_count).tolist(),
-                                traj=1,
+                                traj=0,
                                 share_axes=False,
                                 key=test_key)
 
@@ -402,7 +404,8 @@ plt.savefig(run_folder+"gate_histogram.png")
 
 #%%
 
-visualtester.visualize_context_clusters(perplexities=(ode_count, ode_count),
+perp = ode_count if ode_count > 1 else 4
+visualtester.visualize_context_clusters(perplexities=(perp, perp),
                                         key=test_key,
                                         # key=jax.random.PRNGKey(time.time_ns()),
                                         save_path=run_folder+"context_clusters.png")
@@ -503,7 +506,8 @@ if meta_test:
 
 #%%
 
-visualtester.visualize_context_clusters(perplexities=(ode_count, ode_count),
+perp = ode_count if ode_count > 1 else 4
+visualtester.visualize_context_clusters(perplexities=(perp, perp),
                                         # key=test_key,
                                         key=jax.random.PRNGKey(time.time_ns()),
                                         save_path=adapt_folder+"context_clusters.png")
