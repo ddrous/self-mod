@@ -573,9 +573,11 @@ class ODEBenchDataset:
         ## Load the bounds and normalise the dataset
         if norm_consts is None:
             ##  TODO remember to build a Network that predicts this scaling based on the context
-            raise ValueError("Normalisation constants must be provided, unique per environment across train and test")
-        norm_consts = np.load(norm_consts)
-        dataset = dataset / norm_consts
+            # raise ValueError("Normalisation constants must be provided, unique per environment across train and test")
+            pass
+        else:
+            norm_consts = np.load(norm_consts)
+            dataset = dataset / norm_consts
 
         ## Merge the two first dataset dimensions
         self.dataset = dataset.reshape(n_odes*n_envs_per_ode, n_trajs_per_env, n_timesteps, n_dimensions)

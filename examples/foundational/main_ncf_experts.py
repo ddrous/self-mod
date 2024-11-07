@@ -47,10 +47,10 @@ proximal_betas = (0., 10., 0.)
 
 nb_outer_steps = 8000
 nb_inner_steps = (1, 1, 1)
-nb_adapt_epochs = 1200
+nb_adapt_epochs = 5000
 validate_every = 400*1
 
-print_error_every = (50*1, 50*1)
+print_error_every = (100*1, 100*1)
 
 meta_train = True
 save_trainer = True
@@ -77,7 +77,7 @@ mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz", 
-                                               norm_consts=data_folder+"train_bounds.npy",   ## since more data in test/val sets
+                                            #    norm_consts=data_folder+"train_bounds.npy",   ## since more data in test/val sets
                                                num_shots=num_shots[0], 
                                                skip_steps=skip_steps, 
                                                traj_prop_min=train_proportion), 
@@ -87,7 +87,7 @@ train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz",
                               drop_last=False)
 
 val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz", 
-                                             norm_consts=data_folder+"train_bounds.npy",
+                                            #  norm_consts=data_folder+"train_bounds.npy",
                                              num_shots=num_shots[1], 
                                              skip_steps=skip_steps,
                                              traj_prop_min=test_proportion),
@@ -112,6 +112,8 @@ class Expert(eqx.Module):
     ctx_utils:any
     depth_data:int
     depth_main:int
+
+    rescaler: eqx.Module
 
     def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
         self.ctx_utils = ctx_utils
@@ -146,9 +148,14 @@ class Expert(eqx.Module):
         assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
         assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
+        self.rescaler = eqx.nn.Linear(context_size, 1, key=keys[depth_data+depth_main+2])
 
     def __call__(self, in_dat):
         t, y, ctx = in_dat
+
+        ## Rescale factor
+        factor = jnp.clip(jax.nn.relu(self.rescaler(ctx).squeeze()), 1e-3, 1e3)
+        y = y / factor
 
         for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
             ctx = activation(layer(ctx))
@@ -167,6 +174,9 @@ class Expert(eqx.Module):
             y = jnp.concatenate([y, ctx_part], axis=0)
             y = activation(layer(y))
         y = self.layers_main[-1](y)
+
+        ## Rescale the output
+        y = y * factor
 
         return y
 
@@ -461,23 +471,36 @@ plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
 
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"adapt_train.npz", 
-                                                   adaptation=True,
-                                                   norm_consts=data_folder+"adapt_train_bounds.npy",
-                                                   num_shots=num_shots[0], 
-                                                   skip_steps=skip_steps,
-                                                   traj_prop_min=train_proportion),
-                                batch_size=num_envs[1], 
+    adapt_id = 4*5+1     ## The single environment to adapt to (the difficult rectangular one)
+
+    adapt_dataset = ODEBenchDataset(data_dir=data_folder+"adapt_train.npz", 
+                                    adaptation=True,
+                                    # norm_consts=data_folder+"adapt_train_bounds.npy",
+                                    num_shots=num_shots[0], 
+                                    skip_steps=skip_steps,
+                                    traj_prop_min=train_proportion)
+    adapt_dataset.total_envs = 1
+    adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
+    adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
+
+    adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
+                                # batch_size=num_envs[1], 
+                                batch_size=1, 
                                 shuffle=shuffle,
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    adapt_dataloader_test = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"adapt_test.npz", 
-                                                        adaptation=True,
-                                                        norm_consts=data_folder+"adapt_train_bounds.npy",
-                                                        num_shots=num_shots[0], 
-                                                        skip_steps=skip_steps,
-                                                        traj_prop_min=test_proportion),
+    adapt_dataset_test = ODEBenchDataset(data_dir=data_folder+"adapt_test.npz", 
+                                            adaptation=True,
+                                            # norm_consts=data_folder+"adapt_train_bounds.npy",
+                                            num_shots=num_shots[0], 
+                                            skip_steps=skip_steps,
+                                            traj_prop_min=test_proportion)
+    adapt_dataset_test.total_envs = 1
+    adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:, :, :, :]
+    adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
+
+    adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
                                 batch_size=num_envs[1],
                                 shuffle=shuffle,
                                 num_workers=num_workers,
@@ -490,19 +513,20 @@ if meta_test:
                                         criterion_id=0,
                                         verbose=True,
                                         val_dataloader=adapt_dataloader_test,
-                                        max_ret_env_states=max_ret_env_states,
+                                        max_ret_env_states=1,
                                         max_adapt_batches=max_adapt_batches,
                                         stochastic=False)
     print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
-    visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
+#%%
+visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_4_5.png", adaptation=True)
 
-    visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood.png",
-                                    data_loader=adapt_dataloader_test,
-                                    nb_envs=4,
-                                    traj=0,
-                                    share_axes=False,
-                                    key=test_key)
+visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_4_5.png",
+                                data_loader=adapt_dataloader_test,
+                                nb_envs=1,
+                                traj=0,
+                                share_axes=False,
+                                key=test_key)
 
 #%%
 

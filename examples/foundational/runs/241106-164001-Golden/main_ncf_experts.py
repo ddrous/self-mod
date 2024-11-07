@@ -1,6 +1,6 @@
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -34,8 +34,10 @@ taylor_orders = (2, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 4
 # loss_contributors = 16*5//2
-loss_contributors = 16*ode_count
-max_ret_env_states = num_envs[0]
+# loss_contributors = 16*ode_count
+loss_contributors = 1       ## For now, only one loss contributor   ## For meta-testing
+# max_ret_env_states = num_envs[0]
+max_ret_env_states = 1
 
 ## Train and adapt hps
 init_lrs = (5e-4, 5e-4)
@@ -47,10 +49,10 @@ proximal_betas = (0., 10., 0.)
 
 nb_outer_steps = 8000
 nb_inner_steps = (1, 1, 1)
-nb_adapt_epochs = 1200
+nb_adapt_epochs = 4000
 validate_every = 400*1
 
-print_error_every = (50*1, 50*1)
+print_error_every = (200*1, 200*1)
 
 meta_train = False
 save_trainer = True
@@ -58,7 +60,7 @@ meta_test = True
 
 run_folder = "./"
 # run_folder = None
-data_folder = "../../data_2D/"
+data_folder = "./data_2D/"
 
 
 #%%
@@ -404,11 +406,11 @@ plt.draw()
 
 #%%
 
-perp = ode_count if ode_count > 1 else 4
-visualtester.visualize_context_clusters(perplexities=(perp, perp),
-                                        key=test_key,
-                                        # key=jax.random.PRNGKey(time.time_ns()),
-                                        save_path=run_folder+"context_clusters.png")
+# perp = ode_count if ode_count > 1 else 4
+# visualtester.visualize_context_clusters(perplexities=(perp, perp),
+#                                         key=test_key,
+#                                         # key=jax.random.PRNGKey(time.time_ns()),
+#                                         save_path=run_folder+"context_clusters.png")
 
 #%%
 X = learner.contexts.params
@@ -435,7 +437,7 @@ for i in range(0, X_reduced.shape[0], 16):
     plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
 
 plt.draw()
-plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
+# plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
 
 
 
@@ -461,23 +463,36 @@ plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
 
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"adapt_train.npz", 
-                                                   adaptation=True,
-                                                   norm_consts=data_folder+"adapt_train_bounds.npy",
-                                                   num_shots=num_shots[0], 
-                                                   skip_steps=skip_steps,
-                                                   traj_prop_min=train_proportion),
-                                batch_size=num_envs[1], 
+    adapt_id = 4*5+1     ## The single environment to adapt to (the difficult rectangular one)
+
+    adapt_dataset = ODEBenchDataset(data_dir=data_folder+"adapt_train.npz", 
+                                    adaptation=True,
+                                    norm_consts=data_folder+"adapt_train_bounds.npy",
+                                    num_shots=num_shots[0], 
+                                    skip_steps=skip_steps,
+                                    traj_prop_min=train_proportion)
+    adapt_dataset.total_envs = 1
+    adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
+    adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
+
+    adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
+                                # batch_size=num_envs[1], 
+                                batch_size=1, 
                                 shuffle=shuffle,
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    adapt_dataloader_test = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"adapt_test.npz", 
-                                                        adaptation=True,
-                                                        norm_consts=data_folder+"adapt_train_bounds.npy",
-                                                        num_shots=num_shots[0], 
-                                                        skip_steps=skip_steps,
-                                                        traj_prop_min=test_proportion),
+    adapt_dataset_test = ODEBenchDataset(data_dir=data_folder+"adapt_test.npz", 
+                                            adaptation=True,
+                                            norm_consts=data_folder+"adapt_train_bounds.npy",
+                                            num_shots=num_shots[0], 
+                                            skip_steps=skip_steps,
+                                            traj_prop_min=test_proportion)
+    adapt_dataset_test.total_envs = 1
+    adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:, :, :, :]
+    adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
+
+    adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
                                 batch_size=num_envs[1],
                                 shuffle=shuffle,
                                 num_workers=num_workers,
@@ -485,7 +500,7 @@ if meta_test:
 
     ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
                                         taylor_order=taylor_orders[1], 
-                                        nb_steps=nb_adapt_epochs,
+                                        nb_steps=5000,
                                         print_error_every=print_error_every, 
                                         criterion_id=0,
                                         verbose=True,
@@ -495,14 +510,15 @@ if meta_test:
                                         stochastic=False)
     print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
-    visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
+#%%
+visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_4_5.png", adaptation=True)
 
-    visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood.png",
-                                    data_loader=adapt_dataloader_test,
-                                    nb_envs=4,
-                                    traj=0,
-                                    share_axes=False,
-                                    key=test_key)
+visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_4_5.png",
+                                data_loader=adapt_dataloader_test,
+                                nb_envs=1,
+                                traj=0,
+                                share_axes=False,
+                                key=test_key)
 
 #%%
 

@@ -681,6 +681,8 @@ class DynamicsVisualTester(VisualTester):
         # fig, ax = plt.subplots(nb_envs, 2, figsize=(5*2, 3*nb_envs), sharex=False, sharey=False)
         # fig, ax = plt.subplots(nb_envs, 2, figsize=(4*2, 2*nb_envs), sharex=False, sharey=False, gridspec_kw = {'wspace':0.17, 'hspace':0.15})
         fig, ax = plt.subplots(nb_envs, 2, figsize=(4*2, 2*nb_envs), sharex=False, sharey=False)
+        if nb_envs ==1:
+            ax = ax[None, ...]
 
         mks = 4
         dim0, dim1 = dims

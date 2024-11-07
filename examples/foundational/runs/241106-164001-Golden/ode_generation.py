@@ -156,7 +156,7 @@ def main():
     np.random.seed(args.seed)
 
     ode_definitions = load_ode_definitions(args.dimension)
-
+    
     if args.split == 'train':
         n_envs, n_ic = 16, 4
     elif args.split == 'test':
