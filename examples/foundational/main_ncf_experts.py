@@ -12,7 +12,7 @@ import umap
 #%%
 
 ## For reproducibility
-seed = 2026
+seed = 2024
 
 ## Dataloader hps
 ode_count = 10          ## Total number of ODEs in the dataset

@@ -116,3 +116,5 @@ examples/foundational/runs/*
 !examples/foundational/runs/241026-122758-Top4-MoE-NCF/
 !examples/foundational/runs/241028-103114-LongestMoE/
 !examples/foundational/runs/241101-011640-LargeAwesome/
+!examples/foundational/runs/241106-164001-Golden/
+

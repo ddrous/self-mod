@@ -4,11 +4,13 @@ print("\n############# Contextual Self-Modulation #############\n")
 import os
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 # os.environ["EQX_ON_ERROR"] = 'breakpoint'
+import sys
 
 ## Numpy configs
 import numpy as np
 np.set_printoptions(suppress=True)
 np.set_printoptions(linewidth=np.inf)
+np.set_printoptions(threshold=sys.maxsize)
 
 ## Plotting configs
 import matplotlib as mpl
