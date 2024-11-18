@@ -3,7 +3,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '2'
 
 from selfmod import *
 
@@ -16,8 +16,8 @@ seed = 2024
 
 ## Dataloader hps
 ode_count = 10          ## Total number of ODEs in the dataset
-nb_experts = 8
-top_k = 8
+nb_experts = 10
+top_k = 2
 
 num_envs = (16*ode_count, 16*ode_count)
 num_shots = (-1, -1)
@@ -35,18 +35,20 @@ taylor_orders = (2, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 4
 # loss_contributors = 16*5//2
-loss_contributors = 16*ode_count
+# loss_contributors = 16*ode_count
+loss_contributors = 16*2
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
 init_lrs = (1e-4, 1e-4)
-sched_factor = 1.0
+# sched_factor = 1.0
+transition_steps = 100
 max_train_batches = 1
 max_adapt_batches = 1
 
 proximal_betas = (0., 10., 0.)
 
-nb_outer_steps = 10000
+nb_outer_steps = 5000
 nb_inner_steps = (1, 1, 1)
 nb_adapt_epochs = 5000
 validate_every = 400*1
@@ -129,8 +131,8 @@ for e in range(E_plot):
         #     print("t_eval is:", e_t_eval[e_])
     # ax[e].set_title(f"Environment {23+e}")
     ax[e].set_title(f"Environment {e}")
-    ax[e].set_xlabel("time")
-    ax[e].set_ylabel("y_0")
+    ax[e].set_xlabel("Time")
+    ax[e].set_ylabel(f"$y_0$")
 
 plt.tight_layout()
 plt.draw()
@@ -272,7 +274,9 @@ class Model(eqx.Module):
 
         dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
-            dy += G[i]*self.experts[i]((t, y, ctx))
+            # dy += G[i]*self.experts[i]((t, y, ctx))
+            contribution = jax.lax.cond(G[i]>1e-3, lambda t, x, ctx: self.experts[i](t, y, ctx), lambda t, x, ctx: jnp.zeros_like(x), (t, y, ctx))
+            dy += G[i]*contribution
 
         return dy
 
@@ -336,14 +340,19 @@ print("Total number of parameters in one context:", contexts.eff_context_size)
 
 ## Define optimiser and train the model
 init_lr_model, init_lr_ctx = init_lrs
-total_steps = nb_outer_steps*nb_inner_steps[0]
-# total_steps = nb_outer_steps
-bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
-sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
-# opt_model = optax.adam(sched_model)
-opt_model = optax.chain(optax.clip(10.), optax.adam(sched_model))
 
-opt_ctx = optax.adam(init_lr_ctx)
+# total_steps = nb_outer_steps*nb_inner_steps[0]
+# # total_steps = nb_outer_steps
+# bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
+# sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
+# # opt_model = optax.adam(sched_model)
+# opt_model = optax.chain(optax.clip(10.), optax.adam(sched_model))
+# opt_ctx = optax.adam(init_lr_ctx)
+
+sched_model = optax.exponential_decay(init_value=init_lr_model, transition_steps=transition_steps, decay_rate=0.99)
+opt_model = optax.adam(sched_model)
+sched_ctx = optax.exponential_decay(init_value=init_lr_ctx, transition_steps=transition_steps, decay_rate=0.99)
+opt_ctx = optax.adam(sched_ctx)
 
 trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
@@ -522,7 +531,7 @@ labels = np.arange(ode_count).repeat(16)
 color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
 colors = [color_table[l] for l in labels]
 
-umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=2., metric="euclidean", spread=3.)
+umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=1., metric="euclidean", spread=2.)
 
 # Fit and transform the data
 X_reduced = umap_reducer.fit_transform(X)
