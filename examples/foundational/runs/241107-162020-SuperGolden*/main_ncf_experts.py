@@ -3,7 +3,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '2'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
 
@@ -16,8 +16,8 @@ seed = 2024
 
 ## Dataloader hps
 ode_count = 10          ## Total number of ODEs in the dataset
-nb_experts = 10
-top_k = 1
+nb_experts = 8
+top_k = 6
 
 num_envs = (16*ode_count, 16*ode_count)
 num_shots = (-1, -1)
@@ -29,39 +29,36 @@ test_proportion = 1.0
 ## Learner/model hps
 context_pool_size = 4
 context_size = 64
-taylor_orders = (1, 0)
+taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
-# ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-# ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
+ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 4
 # loss_contributors = 16*5//2
 loss_contributors = 16*ode_count
-# loss_contributors = 16*2
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
-init_lrs = (1e-4, 1e-4)
-# sched_factor = 1.0
-transition_steps = 100
+init_lrs = (5e-4, 5e-4)
+sched_factor = 0.2
 max_train_batches = 1
 max_adapt_batches = 1
 
 proximal_betas = (0., 10., 0.)
 
-nb_outer_steps = 10000
+nb_outer_steps = 8000
 nb_inner_steps = (1, 1, 1)
 nb_adapt_epochs = 5000
 validate_every = 400*1
 
 print_error_every = (100*1, 100*1)
 
-meta_train = True
+meta_train = False
 save_trainer = True
 meta_test = True
 
-run_folder = None if meta_train else "./"
-data_folder = "./data_2D/" if meta_train else "../../data_2D/"
+run_folder = "./"
+# run_folder = None
+data_folder = "./data_2D/"
 
 
 #%%
@@ -71,7 +68,7 @@ if run_folder==None:
 else:
     print("Using existing run folder:", run_folder)
 
-adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.dirname(__file__))
+adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__))
 
 #%%
 
@@ -132,8 +129,8 @@ for e in range(E_plot):
         #     print("t_eval is:", e_t_eval[e_])
     # ax[e].set_title(f"Environment {23+e}")
     ax[e].set_title(f"Environment {e}")
-    ax[e].set_xlabel("Time")
-    ax[e].set_ylabel(f"$y_0$")
+    ax[e].set_xlabel("time")
+    ax[e].set_ylabel("y_0")
 
 plt.tight_layout()
 plt.draw()
@@ -193,20 +190,13 @@ class Expert(eqx.Module):
         assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
         assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
-        rescaler = eqx.nn.Linear(context_size, 1, key=keys[depth_data+depth_main+2])
-        ## Increase the scale of the weights
-        rescaler = eqx.tree_at(lambda m:m.weight, rescaler, rescaler.weight*10)
-        ## Set the bias to exactly 1
-        # self.rescaler = eqx.tree_at(lambda m:m.bias, rescaler, jnp.array([1.]))
-        self.rescaler = eqx.tree_at(lambda m:m.bias, rescaler, rescaler.bias*10)
+        self.rescaler = eqx.nn.Linear(context_size, 1, key=keys[depth_data+depth_main+2])
 
     def __call__(self, in_dat):
         t, y, ctx = in_dat
 
         ## Rescale factor
-        # factor = jnp.clip(jax.nn.relu(self.rescaler(ctx).squeeze()), 1, 1e2)
-        # factor = jnp.abs(self.rescaler(ctx).squeeze())
-        factor = jax.nn.softplus(self.rescaler(ctx).squeeze())
+        factor = jnp.clip(jax.nn.relu(self.rescaler(ctx).squeeze()), 1, 1e2)
         y = y / factor
 
         for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
@@ -275,9 +265,7 @@ class Model(eqx.Module):
 
         dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
-            # dy += G[i]*self.experts[i]((t, y, ctx))
-            contribution = jax.lax.cond(G[i]>1e-3, lambda in_dat: self.experts[i](in_dat), lambda in_dat: jnp.zeros_like(in_dat[1]), (t, y, ctx))
-            dy += G[i]*contribution
+            dy += G[i]*self.experts[i]((t, y, ctx))
 
         return dy
 
@@ -341,19 +329,14 @@ print("Total number of parameters in one context:", contexts.eff_context_size)
 
 ## Define optimiser and train the model
 init_lr_model, init_lr_ctx = init_lrs
+total_steps = nb_outer_steps*nb_inner_steps[0]
+# total_steps = nb_outer_steps
+bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
+sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
+# opt_model = optax.adam(sched_model)
+opt_model = optax.chain(optax.clip(10.), optax.adam(sched_model))
 
-# total_steps = nb_outer_steps*nb_inner_steps[0]
-# # total_steps = nb_outer_steps
-# bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
-# sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
-# # opt_model = optax.adam(sched_model)
-# opt_model = optax.chain(optax.clip(10.), optax.adam(sched_model))
-# opt_ctx = optax.adam(init_lr_ctx)
-
-sched_model = optax.exponential_decay(init_value=init_lr_model, transition_steps=transition_steps, decay_rate=0.99)
-opt_model = optax.adam(sched_model)
-sched_ctx = optax.exponential_decay(init_value=init_lr_ctx, transition_steps=transition_steps, decay_rate=0.99)
-opt_ctx = optax.adam(sched_ctx)
+opt_ctx = optax.adam(init_lr_ctx)
 
 trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
@@ -403,19 +386,19 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
-ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
-                                    taylor_order=taylor_orders[1], 
-                                    nb_steps=nb_adapt_epochs,
-                                    print_error_every=print_error_every, 
-                                    criterion_id=0,
-                                    verbose=True,
-                                    val_dataloader=val_dataloader,
-                                    max_ret_env_states=max_ret_env_states,
-                                    max_adapt_batches=max_adapt_batches,
-                                    stochastic=False)
+# ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
+#                                     taylor_order=taylor_orders[1], 
+#                                     nb_steps=nb_adapt_epochs,
+#                                     print_error_every=print_error_every, 
+#                                     criterion_id=0,
+#                                     verbose=True,
+#                                     val_dataloader=val_dataloader,
+#                                     max_ret_env_states=max_ret_env_states,
+#                                     max_adapt_batches=max_adapt_batches,
+#                                     stochastic=False)
 
-visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
-print("Loss per InD environment:", all_ind_crit[0].tolist())
+# visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
+# print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 
 
@@ -425,15 +408,16 @@ print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 
 #%%
-visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
-                                data_loader=val_dataloader,
-                                # nb_envs=16*ode_count,
-                                # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                envs=jnp.arange(0, 16*ode_count).tolist(),
-                                traj=0,
-                                share_axes=False,
-                                key=test_key)
+# visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
+#                                 data_loader=val_dataloader,
+#                                 # nb_envs=16*ode_count,
+#                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
+#                                 envs=jnp.arange(0, 16*ode_count).tolist(),
+#                                 traj=0,
+#                                 share_axes=False,
+#                                 key=test_key)
 
+# exit()
 
 #%%
 ## Inspect the context, and evalualte the gate layer
@@ -472,13 +456,8 @@ ax2.set_xlabel("Experts")
 ax2.set_ylabel("Environments")
 
 ## Set yticks in steps of 16
-y_labels = np.arange(0, 16*ode_count, 16)
-ax2.set_yticks(y_labels)
-ax2.set_yticklabels(y_labels)
-
-x_labels = np.arange(0, nb_experts, 1)
-ax2.set_xticks(x_labels)
-ax2.set_xticklabels(x_labels)
+ax2.set_yticks(np.arange(0, 16*ode_count, 16))
+ax2.set_yticklabels(np.arange(0, 16*ode_count, 16))
 
 ax2.set_title("Gate Values")
 
@@ -486,32 +465,28 @@ plt.draw()
 plt.savefig(run_folder+"gate_histogram_big.png")
 
 
-
+#%%
 #### Plot the rescaling factors
 @eqx.filter_vmap
 def rescale_fn(ctx):
     scales = []
     for i in range(nb_experts):
         factor = jax.nn.relu(network.experts[i].rescaler(ctx).squeeze())
+        # factor = network.experts[i].rescaler(ctx).squeeze()
+        # factor = network.experts[i].rescaler.bias.squeeze()
         # factor = jnp.clip(factor, 1, 1e2)
         scales.append(factor)
     return jnp.array(scales)
 
 rescale_vals = rescale_fn(contexts.params)  ## (nb_envs, nb_experts)
+print("Rescale values limits:", rescale_vals[-5:])
 
 ## Visualise as an imshow
 fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-img = ax.imshow(rescale_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
+img = ax.imshow(rescale_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None, vmin=rescale_vals.min(), vmax=rescale_vals.max())
 plt.colorbar(img)
 ax.set_xlabel("Experts")
 ax.set_ylabel("Environments")
-
-ax.set_yticks(y_labels)
-ax.set_yticklabels(y_labels)
-
-ax.set_xticks(x_labels)
-ax.set_xticklabels(x_labels)
-
 ax.set_title("Rescale Factors")
 plt.draw()
 plt.savefig(run_folder+"rescale_factors.png")
@@ -520,38 +495,38 @@ plt.savefig(run_folder+"rescale_factors.png")
 
 #%%
 
-perp = ode_count if ode_count > 1 else 4
-visualtester.visualize_context_clusters(perplexities=(perp, perp),
-                                        key=test_key,
-                                        # key=jax.random.PRNGKey(time.time_ns()),
-                                        save_path=run_folder+"context_clusters.png")
+# perp = ode_count if ode_count > 1 else 4
+# visualtester.visualize_context_clusters(perplexities=(perp, perp),
+#                                         key=test_key,
+#                                         # key=jax.random.PRNGKey(time.time_ns()),
+#                                         save_path=run_folder+"context_clusters.png")
 
 #%%
-X = learner.contexts.params
-labels = np.arange(ode_count).repeat(16)
-color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
-colors = [color_table[l] for l in labels]
+# X = learner.contexts.params
+# labels = np.arange(ode_count).repeat(16)
+# color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
+# colors = [color_table[l] for l in labels]
 
-umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=1., metric="euclidean", spread=2.)
+# umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=2., metric="euclidean", spread=3.)
 
-# Fit and transform the data
-X_reduced = umap_reducer.fit_transform(X)
+# # Fit and transform the data
+# X_reduced = umap_reducer.fit_transform(X)
 
-# Plotting
-plt.figure(figsize=(10, 7))
-plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
-plt.title("Training Context Dimensionality Reduction", fontsize=24)
-plt.xlabel("UMAP 1")
-plt.ylabel("UMAP 2")
+# # Plotting
+# plt.figure(figsize=(10, 7))
+# plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
+# plt.title("Training Context Dimensionality Reduction", fontsize=24)
+# plt.xlabel("UMAP 1")
+# plt.ylabel("UMAP 2")
 
-# Adding annotations for each point
-for i in range(0, X_reduced.shape[0], 16):
-    label = labels[i]
-    # label = i
-    plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
+# # Adding annotations for each point
+# for i in range(0, X_reduced.shape[0], 16):
+#     label = labels[i]
+#     # label = i
+#     plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
 
-plt.draw()
-plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
+# plt.draw()
+# plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
 
 
 
@@ -577,7 +552,7 @@ plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
 
 ## Adapt the model to the new dataset
 if meta_test:
-    adapt_id = 4*5+1     ## The single environment to adapt to (the difficult rectangular one)
+    adapt_id = 4*4+1     ## The single environment to adapt to (the difficult rectangular one)
 
     adapt_dataset = ODEBenchDataset(data_dir=data_folder+"adapt_train.npz", 
                                     adaptation=True,
@@ -625,9 +600,9 @@ if meta_test:
     print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
 #%%
-visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_4_5.png", adaptation=True)
+visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_4_4.png", adaptation=True)
 
-visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_4_5.png",
+visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_4_4.png",
                                 data_loader=adapt_dataloader_test,
                                 nb_envs=1,
                                 traj=0,
@@ -650,7 +625,6 @@ except NameError:
     os.system(f"cp nohup.log {run_folder}")
 
 #%%
-
 # adapt_dataloader_test.dataset.dataset.max()
 # train_dataloader.dataset.dataset.max()
 # val_dataloader.dataset.dataset.max()
