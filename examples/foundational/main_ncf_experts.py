@@ -3,7 +3,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '2'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 from selfmod import *
 
@@ -29,14 +29,14 @@ test_proportion = 1.0
 ## Learner/model hps
 context_pool_size = 4
 context_size = 64
-taylor_orders = (1, 0)
+taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 skip_steps = 4
 # loss_contributors = 16*5//2
-loss_contributors = 16*ode_count
+loss_contributors = 8*ode_count
 # loss_contributors = 16*2
 max_ret_env_states = num_envs[0]
 
@@ -50,7 +50,7 @@ max_adapt_batches = 1
 proximal_betas = (0., 10., 0.)
 
 nb_outer_steps = 10000
-nb_inner_steps = (1, 1, 1)
+nb_inner_steps = (1, 10, 1)
 nb_adapt_epochs = 5000
 validate_every = 400*1
 

@@ -158,7 +158,7 @@ def main():
     ode_definitions = load_ode_definitions(args.dimension)
 
     if args.split == 'train':
-        n_envs, n_ic = 16, 4
+        n_envs, n_ic = 16, 24
     elif args.split == 'test':
         n_envs, n_ic = 16, 32
     elif args.split == 'adapt_train':
