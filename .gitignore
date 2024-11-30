@@ -109,6 +109,7 @@ examples/lotka-v/runs/*
 
 ## The Foundational dataset
 examples/foundational/data_2D/*
+examples/foundational/data_2D_tiny/*
 examples/foundational/runs/*
 !examples/foundational/runs/241017-231954-BestNCF*/
 !examples/foundational/runs/241019-183954-CoDAH-9Envs/
@@ -120,3 +121,6 @@ examples/foundational/runs/*
 
 !examples/foundational/runs/241115-141631-FullExperts/
 !examples/foundational/runs/241107-162020-SuperGolden*/
+
+examples/foundational/runs/241129-230513-MegaGolden*/checkpoints/
+!examples/foundational/runs/241129-230513-MegaGolden*/
