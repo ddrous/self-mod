@@ -3,7 +3,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
 
@@ -15,15 +15,15 @@ import umap
 seed = 2024
 
 ## Dataloader hps
-ode_count = 2          ## Total number of ODEs in the dataset
-nb_experts = 2
+ode_count = 10          ## Total number of ODEs in the dataset
+nb_experts = 10
 top_k = 1
 
 num_envs = (16*ode_count, 4*ode_count)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 0.4  ## Min proporrion of the trajectory for training
+train_proportion = 0.9  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
@@ -36,8 +36,8 @@ ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5()
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 skip_steps = 4
 # loss_contributors = 16*5//2
-loss_contributors = 16*ode_count
-# loss_contributors = 16*2
+# loss_contributors = 16*ode_count
+loss_contributors = 16*1
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
@@ -61,7 +61,8 @@ save_trainer = True
 meta_test = True
 
 run_folder = None if meta_train else "./"
-data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
+# data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
+data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
 
 #%%
@@ -194,7 +195,7 @@ class Expert(eqx.Module):
         assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
 
-        scale_factor = 10
+        scale_factor = 1 * np.sqrt(context_size).squeeze()
         rescaler = eqx.nn.Linear(context_size, 1, key=keys[depth_data+depth_main+2])
         ## Increase the scale of the weights
         rescaler = eqx.tree_at(lambda m:m.weight, rescaler, rescaler.weight*scale_factor)
@@ -252,11 +253,16 @@ class Model(eqx.Module):
         # gate_weight = MLP(context_size, nb_experts, hidden_size, depth, activation=jax.nn.relu, key=keys[-1])
         gate_weight = eqx.nn.Linear(context_size, nb_experts, key=keys[-1])
 
+        # Scale gate weights and bias
+        scale_factor = 1 * np.sqrt(context_size).squeeze()
+        gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, gate_weight.weight*scale_factor)
+        gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, gate_weight.bias*scale_factor) 
+
         # gate_temp = jnp.array([-1.5])
-        gate_temp = [-1.0]
+        gate_temp = [0.1]     ## The more the experts, the lower the temp
 
         def gating_function(gate, ctx):
-            ctx = ctx / 10**gate["temperature"][0]
+            ctx = ctx / gate["temperature"][0]
             # H = jax.nn.relu(gate["weight"](ctx))
             H = gate["weight"](ctx)
 

@@ -1,0 +1,16 @@
+{
+    "25": {
+      "name": "Harmonic oscillator with damping",
+      "function": "lambda t, y, c0, c1: [y[1], -c0*y[0] - c1*y[1]]",
+      "parameters": {"c0": 4.5, "c1": 0.43},
+      "initial_values": [[0.12, 0.043], [0.0, -0.3]],
+      "time_horizon": 8
+    },
+    "35": {
+      "name": "Rotational dynamics of an object in a shear flow",
+      "function": "lambda t, y, c0: [np.cos(y[0])/np.tan(y[1]), np.sin(y[0])*(c0*np.sin(y[1])**2 + np.cos(y[1])**2)]",
+      "parameters": {"c0": 4.2},
+      "initial_values": [[1.13, -0.3], [0.7, -1.7]],
+      "time_horizon": 5
+    }
+  }

@@ -56,7 +56,7 @@ validate_every = 50*1
 
 print_error_every = (10*1, 10*1)
 
-meta_train = True
+meta_train = False
 save_trainer = True
 meta_test = True
 

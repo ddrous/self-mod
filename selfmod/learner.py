@@ -39,37 +39,37 @@ class Learner:
             print("    No context template provides, using arrays ...")
             self.contexts = ArrayContextParams(nb_envs=1, context_size=context_size)
 
-        def moe_cv_loss_fn(model, ctxs):
-            # If the model is a mixture of experts, then minimize its coefficient of variation
-            is_moe = False
-            gating_function = None
-            if hasattr(model, "vectorfield") and model.vectorfield.neuralnet.is_moe:
-                is_moe = True
-                network = model.vectorfield.neuralnet
-            elif hasattr(model, "neuralnet") and model.neuralnet.is_moe:
-                is_moe = True
-                network = model.neuralnet
+        # def moe_cv_loss_fn(model, ctxs):
+        #     # If the model is a mixture of experts, then minimize its coefficient of variation
+        #     is_moe = False
+        #     gating_function = None
+        #     if hasattr(model, "vectorfield") and model.vectorfield.neuralnet.is_moe:
+        #         is_moe = True
+        #         network = model.vectorfield.neuralnet
+        #     elif hasattr(model, "neuralnet") and model.neuralnet.is_moe:
+        #         is_moe = True
+        #         network = model.neuralnet
 
-            if is_moe:
-                print("    Minimizing coefficient of variation in the loss function ...")
-                batched_gates = eqx.filter_vmap(network.gating_function)(ctxs)
-                # jax.debug.print("The batched gates are:  {}  ", batched_gates)
+        #     if is_moe:
+        #         print("    Minimizing coefficient of variation in the loss function ...")
+        #         batched_gates = eqx.filter_vmap(network.gating_function)(ctxs)
+        #         # jax.debug.print("The batched gates are:  {}  ", batched_gates)
 
-                ## count the non-zeros along axis 0
-                non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
-                non_zeros = jnp.where(non_zeros==0, 1, non_zeros)
-                importances = jnp.sum(batched_gates, axis=0) / non_zeros
+        #         ## count the non-zeros along axis 0
+        #         non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
+        #         non_zeros = jnp.where(non_zeros==0, 1, non_zeros)
+        #         importances = jnp.sum(batched_gates, axis=0) / non_zeros
 
-                cv = jnp.var(importances) / jnp.mean(importances)**2
+        #         cv = jnp.var(importances) / jnp.mean(importances)**2
 
-            else:
-                cv = 0.0
-                importances = None
+        #     else:
+        #         cv = 0.0
+        #         importances = None
 
-            # jax.debug.print("The coefficient of variation is:  {} {}  ", cv, importances)
+        #     # jax.debug.print("The coefficient of variation is:  {} {}  ", cv, importances)
 
-            return 0., batched_gates          ## TODO remove this
-            # return 1.*cv, batched_gates
+        #     return 0., batched_gates          ## TODO remove this
+        #     # return 1.*cv, batched_gates
 
 
 
@@ -80,12 +80,12 @@ class Learner:
 
             ## count the non-zeros along axis 0
             non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
-            non_zeros = jnp.where(non_zeros==0, 1, non_zeros)
+            non_zeros = jnp.where(non_zeros==0, 1, non_zeros)   ## Avoid division by zero
             importances = jnp.sum(batched_gates, axis=0) / non_zeros
 
-            cv = jnp.var(importances) / jnp.mean(importances)**2
+            coef_var = jnp.var(importances) / jnp.mean(importances)**2
 
-            return cv, (batched_gates, )
+            return coef_var, (batched_gates, )
 
         self.loss_fn_gates = loss_fn_gates
 
