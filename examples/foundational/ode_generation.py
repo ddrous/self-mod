@@ -19,8 +19,8 @@ def parse_arguments():
         _in_ipython_session = False
 
     if _in_ipython_session:
-        args = argparse.Namespace(split='train', 
-                                  savepath="data_2D/", 
+        args = argparse.Namespace(split='adapt_train', 
+                                  savepath="tmp/", 
                                   seed=2024, 
                                   verbose=1, 
                                   dimension=2,

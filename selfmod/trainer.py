@@ -503,7 +503,7 @@ class NCFTrainer(Trainer):
         gates = self.learner.model.vectorfield.neuralnet.gate       ## TODO In the future, we can have more gates
         loss_fn_gates = self.learner.loss_fn_gates
         # nb_loss_contr_gates = nb_environments   ## If the VRAM can handle it
-        opt_state_gates = self.opt_model.init(eqx.filter(gates, eqx.is_array))
+        # opt_state_gates = self.opt_model.init(eqx.filter(gates, eqx.is_array))
 
         if save_checkpoints:
             backup_folder = save_path+"checkpoints/"
@@ -544,23 +544,41 @@ class NCFTrainer(Trainer):
             return model, contexts, opt_state, loss, aux_data
 
 
+        # @eqx.filter_jit
+        # def train_step_gates(gates, gates_old, contexts, opt_state, key):
+        #     print('     ### Compiling function "train_step" for the gates ...  ')
+
+        #     def prox_loss_fn(gates, contexts, key):
+        #         loss, aux_data = loss_fn_gates(gates, contexts, key)
+        #         diff_norm = params_diff_norm_squared(gates, gates_old)
+        #         return loss + proximal_reg_gates * diff_norm / 2., (*aux_data, diff_norm)
+
+        #     (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(gates, contexts, key)
+
+        #     updates, opt_state = self.opt_model.update(grads, opt_state)
+        #     gates = eqx.apply_updates(gates, updates)
+
+        #     return gates, contexts, opt_state, loss, aux_data
 
         @eqx.filter_jit
-        def train_step_gates(gates, gates_old, contexts, opt_state, key):
+        def train_step_gates(gates, gates_old, contexts, contexts_old, opt_state, key):
             print('     ### Compiling function "train_step" for the gates ...  ')
 
-            def prox_loss_fn(gates, contexts, key):
+            ## Updates both the gates and the contexts
+
+            def prox_loss_fn(trainable, key):
+                gates, contexts = trainable
                 loss, aux_data = loss_fn_gates(gates, contexts, key)
-                diff_norm = params_diff_norm_squared(gates, gates_old)
+                diff_norm = params_diff_norm_squared((gates, contexts), (gates_old, contexts_old))
                 return loss + proximal_reg_gates * diff_norm / 2., (*aux_data, diff_norm)
 
-            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(gates, contexts, key)
+            (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)((gates, contexts), key)
 
             updates, opt_state = self.opt_model.update(grads, opt_state)
-            gates = eqx.apply_updates(gates, updates)
+            new_quantities = eqx.apply_updates((gates, contexts), updates)
+            gates, contexts = new_quantities
 
             return gates, contexts, opt_state, loss, aux_data
-
 
 
         # if not isinstance(dataloader, DataLoader):
@@ -620,6 +638,7 @@ class NCFTrainer(Trainer):
 
                 contexts = self.learner.reset_contexts(nb_envs_in_batch)
                 opt_state_ctx = self.opt_ctx.init(eqx.filter(contexts, eqx.is_array))
+                opt_state_gates = self.opt_model.init(eqx.filter((gates, contexts), eqx.is_array))
 
                 for out_step in range(nb_outer_steps):
                     # print(f"    Staring outer step {out_step} ...")
@@ -642,11 +661,15 @@ class NCFTrainer(Trainer):
 
                         # loss_key, _ = jax.random.split(loss_key)
 
-                        gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, opt_state_gates, loss_key)
+                        # gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, opt_state_gates, loss_key)
+                        gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, contexts_old, opt_state_gates, loss_key)
 
                         loss_epochs_gates.append(loss_gates)
 
-                        # print("Gate losses: ", loss_gates, flush=True, end="\n")
+                        print("Gate losses: ", loss_gates, flush=True, end="\n")
+                        print("Gate kernel values: ", gates["weight"].weight.squeeze(), flush=True, end="\n")
+                        print("First 2 context vectors: \n", contexts.params[:2], flush=True, end="\n")
+                        print("Last 2 context vectors: \n", contexts.params[-2:], flush=True, end="\n")
 
                         ## TODO Update the weightings based on loss progress
                         # keys = jax.random.split(key, num=contexts.params.shape[0])
@@ -741,6 +764,8 @@ class NCFTrainer(Trainer):
                             # print("Term3 quantities: \n", term3[1], flush=True, end="\n")
                             print("Contributing envs to the losses: ", loss_contrs, flush=True, end="\n")
                             # print("Gate weights in model are: \n", model.vectorfield.neuralnet.gate_weight, flush=True, end="\n")
+                            print("Gate kernel values: ", model.vectorfield.neuralnet.gate["weight"].weight.squeeze(), flush=True, end="\n")
+
                             print("Gate values for each environment (all envs): \n", gate_vals, flush=True, end="\n")
 
                             if save_checkpoints:

@@ -72,20 +72,52 @@ class Learner:
         #     # return 1.*cv, batched_gates
 
 
-
-
         def loss_fn_gates(gates, ctxs, key):
             print("    Compiling gating loss function - coefficient of variation ...")
             batched_gates = eqx.filter_vmap(gates["function"], in_axes=(None, 0))(gates, ctxs.params)
 
-            ## count the non-zeros along axis 0
-            non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
-            non_zeros = jnp.where(non_zeros==0, 1, non_zeros)   ## Avoid division by zero
-            importances = jnp.sum(batched_gates, axis=0) / non_zeros
+            # gate_weight = eqx.nn.Conv1d(1, 1, 
+            #                             kernel_size=4, 
+            #                             padding="valid", 
+            #                             stride=4, 
+            #                             use_bias=False,
+            #                             key=key)
+            # def gating_function(gate, ctx):
+            #     ctx = jnp.abs(ctx)**2 / 0.1
+            #     # H = jax.lax.stop_gradient(gate["weight"])(ctx[None,:]).squeeze()
+            #     # H = gate["weight"](ctx[None,:]).squeeze()
+            #     H = gate_weight(ctx[None,:]).squeeze()
 
+            #     # topk_vals, topk_idx = jax.lax.top_k(H, gate["top_k"])
+            #     # infs = jnp.full_like(H, -jnp.inf)
+            #     # infs = infs.at[topk_idx].set(topk_vals / 1.)
+            #     # G = jax.nn.softmax(infs)
+
+            #     return H
+            #     # return ctx[:10]
+            # batched_gates = eqx.filter_vmap(gating_function, in_axes=(None, 0))(gates, ctxs.params)
+
+            # ## count the non-zeros along axis 0
+            # non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
+            # non_zeros = jnp.where(non_zeros==0, 1, non_zeros)   ## Avoid division by zero
+            # importances = jnp.sum(batched_gates, axis=0) / non_zeros
+
+            # coef_var = jnp.var(importances) / jnp.mean(importances)**2
+            # # l1_reg = jnp.mean(jnp.abs(gates["weight"].weight)) + jnp.mean(jnp.abs(gates["weight"].bias))
+
+            importances = jnp.mean(batched_gates, axis=0)
             coef_var = jnp.var(importances) / jnp.mean(importances)**2
+            l1_reg = jnp.mean(jnp.abs(ctxs.params))
 
-            return coef_var, (batched_gates, )
+            return coef_var + 1e-0*l1_reg, (batched_gates, )
+            # return coef_var, (batched_gates, )
+            # return jnp.mean((ctxs.params-1.)**2), (batched_gates, ) ## Test
+            # return (batched_gates[0, 0]-0.5)**2, (batched_gates, ) ## Test
+
+            ## Simple: penalize the exitence of zero after summation along the batch axis
+            # expert_count = jnp.sum(batched_gates, axis=0)   ## Shape: (nb_experts,)
+            # return -jnp.mean(expert_count<1e-4), (batched_gates, )
+            # return jnp.mean((batched_gates-1.)**2), (batched_gates, )
 
         self.loss_fn_gates = loss_fn_gates
 
