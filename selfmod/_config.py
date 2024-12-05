@@ -33,6 +33,7 @@ plt.rcParams['mathtext.fontset'] = 'dejavuserif'
 import jax
 import equinox as eqx
 import diffrax
+import einops
 
 # jax.config.update("jax_debug_nans", True)
 # jax.config.update("jax_platform_name", "cpu")

@@ -657,28 +657,35 @@ class NCFTrainer(Trainer):
                     gates = model.vectorfield.neuralnet.gate        ## TODO for now !
 
                     ######### Gates proximal innner minimization #########
-                    for in_step_gates in range(nb_inner_steps_gates):
+                    if out_step == 0 and nb_inner_steps_gates > 0:
+                        for in_step_gates in range(nb_inner_steps_gates):
+                            # loss_key, _ = jax.random.split(loss_key)
 
-                        # loss_key, _ = jax.random.split(loss_key)
+                            # gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, opt_state_gates, loss_key)
+                            gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, contexts_old, opt_state_gates, loss_key)
 
-                        # gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, opt_state_gates, loss_key)
-                        gates, contexts, opt_state_gates, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, contexts_old, opt_state_gates, loss_key)
+                            loss_epochs_gates.append(loss_gates)
 
-                        loss_epochs_gates.append(loss_gates)
+                            if in_step_gates%1000 == 0:
+                                print("Gate losses: ", loss_gates, flush=True, end="\n")
+                                print("Gate kernel values: ", gates["weight"].weight.squeeze(), flush=True, end="\n")
+                                print("First 1 context vectors: \n", contexts.params[:1], flush=True, end="\n")
+                                print("Last 1 context vectors: \n", contexts.params[-1:], flush=True, end="\n")
+                                print("Gate values: \n", gate_vals, flush=True, end="\n")
 
-                        print("Gate losses: ", loss_gates, flush=True, end="\n")
-                        print("Gate kernel values: ", gates["weight"].weight.squeeze(), flush=True, end="\n")
-                        print("First 2 context vectors: \n", contexts.params[:2], flush=True, end="\n")
-                        print("Last 2 context vectors: \n", contexts.params[-2:], flush=True, end="\n")
+                            ## TODO Update the weightings based on loss progress
+                            # keys = jax.random.split(key, num=contexts.params.shape[0])
 
-                        ## TODO Update the weightings based on loss progress
-                        # keys = jax.random.split(key, num=contexts.params.shape[0])
+                            # diff_model = params_diff_norm_squared(model, model_prev) / params_norm_squared(model_prev)
+                            # if diff_model < inner_tol_model or out_step==0:
+                            #     break
+                            # model_prev = model
 
-                        # diff_model = params_diff_norm_squared(model, model_prev) / params_norm_squared(model_prev)
-                        # if diff_model < inner_tol_model or out_step==0:
-                        #     break
-                        # model_prev = model
+                    else:       ## If we have already done the gates minimization
+                        gates, _, _, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, contexts_old, opt_state_gates, loss_key)
 
+
+                    # exit(26)        ## TODO remove this
                     ## Inject the gates back into the model
                     model = eqx.tree_at(lambda m: m.vectorfield.neuralnet.gate, model, gates)
 
@@ -750,8 +757,11 @@ class NCFTrainer(Trainer):
 
                     losses_model.append(jnp.median(jnp.array(loss_epochs_model)))
                     losses_ctx.append(jnp.median(jnp.array(loss_epochs_ctx)))
-                    if nb_inner_steps_gates > 0:
-                        losses_gates.append(jnp.median(jnp.array(loss_epochs_gates)))
+                    if nb_inner_steps_gates > 0 :
+                        if len(loss_epochs_gates) > 0:
+                            losses_gates.append(jnp.median(jnp.array(loss_epochs_gates)))
+                        else:
+                            losses_gates.append(0.)
                     else: 
                         gate_vals = None
                         losses_gates.append(0.)
