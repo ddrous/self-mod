@@ -504,6 +504,7 @@ class NCFTrainer(Trainer):
         loss_fn_gates = self.learner.loss_fn_gates
         # nb_loss_contr_gates = nb_environments   ## If the VRAM can handle it
         # opt_state_gates = self.opt_model.init(eqx.filter(gates, eqx.is_array))
+        gates_factor = 1e+1     ## The factor to multiply the gates loss by
 
         if save_checkpoints:
             backup_folder = save_path+"checkpoints/"
@@ -516,8 +517,9 @@ class NCFTrainer(Trainer):
 
             def prox_loss_fn(model, contexts, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                gates_loss, _ = loss_fn_gates(model.vectorfield.neuralnet.gate, contexts, key)
                 diff_norm = params_diff_norm_squared(model, model_old)
-                return loss + proximal_reg_model * diff_norm / 2., (*aux_data, diff_norm)
+                return loss + gates_factor*gates_loss + proximal_reg_model * diff_norm / 2., (*aux_data, diff_norm)
 
             (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(model, contexts, batch, weightings, key)
 
@@ -533,8 +535,9 @@ class NCFTrainer(Trainer):
 
             def prox_loss_fn(contexts, model, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
+                gates_loss, _ = loss_fn_gates(model.vectorfield.neuralnet.gate, contexts, key)
                 diff_norm = params_diff_norm_squared(contexts, contexts_old)
-                return loss + proximal_reg_ctx * diff_norm / 2., (*aux_data, diff_norm)
+                return loss + gates_factor*gates_loss + proximal_reg_ctx * diff_norm / 2., (*aux_data, diff_norm)
 
             (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
 
@@ -682,8 +685,9 @@ class NCFTrainer(Trainer):
                             # model_prev = model
 
                     else:       ## If we have already done the gates minimization
-                        gates, _, _, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, contexts_old, opt_state_gates, loss_key)
-
+                        _, _, _, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, contexts_old, opt_state_gates, loss_key)
+                        print("First 1 context vectors: \n", contexts.params[:1], flush=True, end="\n")
+                        print("Last 1 context vectors: \n", contexts.params[-1:], flush=True, end="\n")
 
                     # exit(26)        ## TODO remove this
                     ## Inject the gates back into the model
@@ -763,7 +767,7 @@ class NCFTrainer(Trainer):
                         else:
                             losses_gates.append(0.)
                     else: 
-                        gate_vals = None
+                        # gate_vals = None
                         losses_gates.append(0.)
 
                     if env_batch%print_every_batch==0 or env_batch==max_train_batches-1:

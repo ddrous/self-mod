@@ -7,20 +7,16 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
 
-# ## Import jax and debug NaNs
-# import jax
-# jax.config.update("jax_debug_nans", True)
-
 import umap
 
 #%%
 
 ## For reproducibility
-seed = 2020
+seed = 2024
 
 ## Dataloader hps
 ode_count = 2          ## Total number of ODEs in the dataset
-nb_experts = ode_count
+nb_experts = 2
 top_k = 1
 
 num_envs = (16*ode_count, 4*ode_count)
@@ -32,7 +28,7 @@ test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 2
-context_size = 4*ode_count*2
+context_size = 8
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
@@ -40,24 +36,25 @@ ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5()
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 skip_steps = 4
 # loss_contributors = 16*5//2
-# loss_contributors = 16*ode_count
 loss_contributors = 16*1
+# loss_contributors = 16*2
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
-init_lrs = (1e-3, 1e-3)
+init_lrs = (1e-4, 1e-4)
 # sched_factor = 1.0
 transition_steps = 100
 max_train_batches = 1
 max_adapt_batches = 1
+
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
 nb_outer_steps = 500
-nb_inner_steps = (10, 10, 00000)
+nb_inner_steps = (10, 10, 0)
 nb_adapt_epochs = 500
 validate_every = 50*1
 
-print_error_every = (2*1, 2*1)
+print_error_every = (10*1, 10*1)
 
 meta_train = True
 save_trainer = True
@@ -65,7 +62,6 @@ meta_test = True
 
 run_folder = None if meta_train else "./"
 data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
-# data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
 
 #%%
@@ -117,7 +113,7 @@ plt_t = ts
 
 print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
 
-E_plot = ode_count
+E_plot = 2
 E_ = 16
 
 # fig, ax = plt.subplots(E_plot, 1, figsize=(6, E_plot*3))
@@ -135,7 +131,7 @@ for e in range(E_plot):
         # if e==1:
         #     print("t_eval is:", e_t_eval[e_])
     # ax[e].set_title(f"Environment {23+e}")
-    ax[e].set_title(f"Family {e}")
+    ax[e].set_title(f"Environment {e}")
     ax[e].set_xlabel("Time")
     ax[e].set_ylabel(f"$y_0$")
 
@@ -197,8 +193,8 @@ class Expert(eqx.Module):
         assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
         assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
-        # scale_factor = 1 * np.sqrt(context_size).squeeze()
-        scale_factor = 1
+
+        scale_factor = 10
         rescaler = eqx.nn.Linear(context_size, 1, key=keys[depth_data+depth_main+2])
         ## Increase the scale of the weights
         rescaler = eqx.tree_at(lambda m:m.weight, rescaler, rescaler.weight*scale_factor)
@@ -212,9 +208,8 @@ class Expert(eqx.Module):
         ## Rescale factor
         # factor = jnp.clip(jax.nn.relu(self.rescaler(ctx).squeeze()), 1, 1e2)
         # factor = jnp.abs(self.rescaler(ctx).squeeze())
-
-        # factor = jax.nn.softplus(self.rescaler(ctx).squeeze())
-        # y = y / factor
+        factor = jax.nn.softplus(self.rescaler(ctx).squeeze())
+        y = y / factor
 
         for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
             ctx = activation(layer(ctx))
@@ -234,8 +229,8 @@ class Expert(eqx.Module):
             y = activation(layer(y))
         y = self.layers_main[-1](y)
 
-        # ## Rescale the output
-        # y = y * factor
+        ## Rescale the output
+        y = y * factor
 
         return y
 
@@ -251,93 +246,42 @@ class Model(eqx.Module):
     def __init__(self, data_size, hidden_size, depth, context_size, nb_experts, top_k, key=None):
         keys = jax.random.split(key, nb_experts+2)
 
-        ## The context is now split into tiny chunks for each expert
-        eff_context_size = context_size//1
-
-        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, key=keys[i]) for i in range(nb_experts)]
+        self.experts = [Expert(data_size, hidden_size, 2, depth, context_size, key=keys[i]) for i in range(nb_experts)]
 
         # self.gate_weight = jnp.zeros((nb_experts, context_size))
-        # gate_weight = MLP(context_size, nb_experts, 32, 2, activation=jax.nn.relu, key=keys[-1])
-
-        # ## The gate is simply a 1d convolution with kernel size eff_context_size
-        # gate_weight = eqx.nn.Conv1d(1, 1, 
-        #                             kernel_size=eff_context_size, 
-        #                             padding="valid", 
-        #                             stride=eff_context_size, 
-        #                             use_bias=False,
-        #                             key=keys[-1])
-        # new_kernel = jnp.ones_like(gate_weight.weight)   ## Non-trainable
-        # gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, new_kernel)
-
-        gate_weight = eqx.nn.Linear(context_size//1, nb_experts, key=keys[-1])
-
-        # # # Scale gate weights and bias
-        # scale_factor = 1 * np.sqrt(context_size).squeeze() / np.sqrt(eff_context_size).squeeze()
-        # gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, gate_weight.weight*scale_factor)
-        # gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, gate_weight.bias*scale_factor) 
-
-        # gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, jnp.ones_like(gate_weight.weight))
-        # gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, jnp.ones_like(gate_weight.bias)) 
+        # gate_weight = MLP(context_size, nb_experts, hidden_size, depth, activation=jax.nn.relu, key=keys[-1])
+        gate_weight = eqx.nn.Linear(context_size, nb_experts, key=keys[-1])
 
         # gate_temp = jnp.array([-1.5])
-        gate_temp = [0.01]     ## The more the experts, the lower the temp
+        gate_temp = [0.01]
 
         def gating_function(gate, ctx):
-            ## Use the second half of the context
-            # _, ctx = jnp.split(ctx, 2, axis=0)
-
             ctx = ctx / gate["temperature"][0]
-            # ctx = jnp.abs(ctx) / gate["temperature"][0]
             # H = jax.nn.relu(gate["weight"](ctx))
-            # ctx = jnp.abs(ctx)
-            # ctx = ctx**2
-            # H = jax.lax.stop_gradient(gate["weight"])(ctx[None,:]).squeeze()
-            # H = gate["weight"](ctx[None,:]).squeeze()
             H = gate["weight"](ctx)
-            # print("H shape is:", H.shape)
 
-            # topk_vals, topk_idx = jax.lax.top_k(H, gate["top_k"])
-            # logits = jnp.full_like(H, -jnp.inf).at[topk_idx].set(topk_vals)
-            # G = jax.nn.softmax(logits)
-
-            # topk_vals, topk_idx = jax.lax.approx_min_k(H, nb_experts-gate["top_k"])
-            # logits = jnp.full_like(H, -jnp.inf).at[jnp.argmax(H)].set(jnp.max(H))
-            # logits = H.at[topk_idx].set(-jnp.inf)
-            # logits = H.at[jnp.argsort(H)[:-1]].set(-jnp.inf)
-
-            # logits = H * (1e+6)
-            # G = jax.nn.softmax(logits)
-
-            H = H + 1e-4
-            logits = (H / (jnp.max(H))) ** 2
-            # logits = jnp.clip(logits, 1e-6, 1+1e-6)
-            G = jax.nn.softmax(jnp.log(logits))
-
-            # # G = jax.nn.softmax(H)       ## This works, but above doesn't
+            topk_vals, topk_idx = jax.lax.top_k(H, gate["top_k"])
+            infs = jnp.full_like(H, -jnp.inf)
+            infs = infs.at[topk_idx].set(topk_vals / 1.)
+            G = jax.nn.softmax(infs)
 
             return G
-            # return H
 
         self.gate = {"weight":gate_weight, "temperature":gate_temp, "top_k":top_k, "function":gating_function}
-        # gating_function(self.gate, jnp.zeros((context_size,)))    TEST
 
         self.n_experts = nb_experts
         self.is_moe = True     ## Fix this !
 
     def __call__(self, t, y, ctx):
         G = self.gate["function"](self.gate, ctx)
-        # ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
-        ## Use the second half of the context
-        # ctx, _ = jnp.split(ctx, 2, axis=0)
 
         dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
             # dy += G[i]*self.experts[i]((t, y, ctx))
-            contribution = jax.lax.cond(G[i]>=jnp.max(G)-1e-6, 
+            contribution = jax.lax.cond(G[i]>0., 
                                         lambda in_dat: self.experts[i](in_dat), 
                                         lambda in_dat: jnp.zeros_like(in_dat[1]), 
                                         (t, y, ctx))
-                                        # (t, y, ctx_pieces[i]))
             dy += G[i]*contribution
 
         return dy
@@ -365,7 +309,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
 neuralnet = Model(data_size=2,
-                hidden_size=32*2, 
+                hidden_size=32*4, 
                 depth=3,
                 context_size=context_size,
                 nb_experts=nb_experts,
@@ -373,10 +317,10 @@ neuralnet = Model(data_size=2,
                 key=model_key) 
 
 model = NeuralODE(neuralnet=neuralnet,
-                taylor_order=taylor_orders[0],
-                ivp_args=ivp_args,
-                t_eval=None,    ## t_eval is provided with each model call
-                taylor_ad_mode="forward")
+                    taylor_order=taylor_orders[0],
+                    ivp_args=ivp_args,
+                    t_eval=None,    ## t_eval is provided with each model call
+                    taylor_ad_mode="forward")
 
 # print("Model is ...", model)
 
@@ -388,7 +332,7 @@ learner = Learner(model=model,
                 reuse_contexts=True,
                 loss_contributors=loss_contributors,
                 pool_filling="NF",     ## TODO. Put back NF as soon as mem permits
-                loss_filling="NF",   ## First only, we only need the first loss contributor
+                loss_filling="NF-W",   ## First only, we only need the first loss contributor
                 key=model_key)
 
 
@@ -501,8 +445,6 @@ visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
 contexts = learner.contexts
 network = trainer.learner.model.vectorfield.neuralnet
 
-# print("These the gate weights:", network.gate.weight.squeeze())
-
 @eqx.filter_vmap
 def gate_fn(ctx):
     ctx_fam, ctx_env = jnp.split(ctx, 2, axis=0)
@@ -554,9 +496,8 @@ plt.savefig(run_folder+"gate_histogram_big.png")
 @eqx.filter_vmap
 def rescale_fn(ctx):
     scales = []
-    ctx = jnp.split(ctx, nb_experts, axis=0)
     for i in range(nb_experts):
-        factor = jax.nn.relu(network.experts[i].rescaler(ctx[i]).squeeze())
+        factor = jax.nn.relu(network.experts[i].rescaler(ctx).squeeze())
         # factor = jnp.clip(factor, 1, 1e2)
         scales.append(factor)
     return jnp.array(scales)
