@@ -211,7 +211,7 @@ class Learner:
                     indices = jnp.argsort(dists)[:loss_contributors]
                 elif self.loss_filling=="NF-W":       ## Weighted. We Pick one of the environments we want to focus on
                     probas = prev_losses / jnp.sum(prev_losses)
-                    rnd_env = jax.random.choice(key, a=contexts.params.shape[0], shape=(1,), p=probas)[0]
+                    rnd_env = jax.random.choice(key, a=contexts.params.shape[0], shape=(1,), p=probas**2)[0]
                     dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
                     indices = jnp.argsort(dists)[:loss_contributors]
                 elif self.loss_filling=="NF-iW":       ## inversely Weighted.

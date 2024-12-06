@@ -504,7 +504,7 @@ class NCFTrainer(Trainer):
         loss_fn_gates = self.learner.loss_fn_gates
         # nb_loss_contr_gates = nb_environments   ## If the VRAM can handle it
         # opt_state_gates = self.opt_model.init(eqx.filter(gates, eqx.is_array))
-        gates_factor = 1e+1     ## The factor to multiply the gates loss by
+        gates_factor = 1e+2     ## The factor to multiply the gates loss by
 
         if save_checkpoints:
             backup_folder = save_path+"checkpoints/"
@@ -686,8 +686,8 @@ class NCFTrainer(Trainer):
 
                     else:       ## If we have already done the gates minimization
                         _, _, _, loss_gates, (gate_vals, _) = train_step_gates(gates, gates_old, contexts, contexts_old, opt_state_gates, loss_key)
-                        print("First 1 context vectors: \n", contexts.params[:1], flush=True, end="\n")
-                        print("Last 1 context vectors: \n", contexts.params[-1:], flush=True, end="\n")
+                        # print("First 1 context vectors: \n", contexts.params[:1], flush=True, end="\n")
+                        # print("Last 1 context vectors: \n", contexts.params[-1:], flush=True, end="\n")
 
                     # exit(26)        ## TODO remove this
                     ## Inject the gates back into the model

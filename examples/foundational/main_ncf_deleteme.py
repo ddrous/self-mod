@@ -27,12 +27,12 @@ num_envs = (16*ode_count, 4*ode_count)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 0.4  ## Min proporrion of the trajectory for training
+train_proportion = 0.75  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 2
-context_size = 4*ode_count*2
+context_size = 4*ode_count*1
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
@@ -50,14 +50,14 @@ init_lrs = (1e-3, 1e-3)
 transition_steps = 100
 max_train_batches = 1
 max_adapt_batches = 1
-proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
+proximal_betas = (0., 0., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 500
-nb_inner_steps = (10, 10, 00000)
+nb_outer_steps = 500*2
+nb_inner_steps = (1, 1, 00000)
 nb_adapt_epochs = 500
 validate_every = 50*1
 
-print_error_every = (2*1, 2*1)
+print_error_every = (10*1, 10*1)
 
 meta_train = True
 save_trainer = True
@@ -271,16 +271,17 @@ class Model(eqx.Module):
 
         gate_weight = eqx.nn.Linear(context_size//1, nb_experts, key=keys[-1])
 
-        # # # Scale gate weights and bias
+        # # Scale gate weights and bias
         # scale_factor = 1 * np.sqrt(context_size).squeeze() / np.sqrt(eff_context_size).squeeze()
-        # gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, gate_weight.weight*scale_factor)
-        # gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, gate_weight.bias*scale_factor) 
+        scale_factor = 0.
+        gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, gate_weight.weight*scale_factor)
+        gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, gate_weight.bias*scale_factor) 
 
         # gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, jnp.ones_like(gate_weight.weight))
         # gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, jnp.ones_like(gate_weight.bias)) 
 
         # gate_temp = jnp.array([-1.5])
-        gate_temp = [0.01]     ## The more the experts, the lower the temp
+        gate_temp = [0.1]     ## The more the experts, the lower the temp
 
         def gating_function(gate, ctx):
             ## Use the second half of the context
@@ -308,10 +309,13 @@ class Model(eqx.Module):
             # logits = H * (1e+6)
             # G = jax.nn.softmax(logits)
 
-            H = H + 1e-4
-            logits = (H / (jnp.max(H))) ** 2
-            # logits = jnp.clip(logits, 1e-6, 1+1e-6)
-            G = jax.nn.softmax(jnp.log(logits))
+            # H = jnp.abs(H) + 1e-5
+            # logits = (H / (jnp.max(H))) ** 2
+            # # logits = jnp.clip(logits, 1e-6, 1+1e-6)
+            # G = jax.nn.softmax(jnp.log(logits))
+
+            H = jnp.abs(H) + 1e-5
+            G = H / jnp.sum(H)
 
             # # G = jax.nn.softmax(H)       ## This works, but above doesn't
 
@@ -329,16 +333,21 @@ class Model(eqx.Module):
         # ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
         ## Use the second half of the context
         # ctx, _ = jnp.split(ctx, 2, axis=0)
+        SM = jax.nn.softmax(G)
 
+        max_G = jnp.max(G)
         dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
             # dy += G[i]*self.experts[i]((t, y, ctx))
-            contribution = jax.lax.cond(G[i]>=jnp.max(G)-1e-6, 
+            contribution = jax.lax.cond(G[i]>max_G-1e-6, 
                                         lambda in_dat: self.experts[i](in_dat), 
                                         lambda in_dat: jnp.zeros_like(in_dat[1]), 
                                         (t, y, ctx))
                                         # (t, y, ctx_pieces[i]))
-            dy += G[i]*contribution
+            # dy += G[i]*contribution
+            dy += SM[i]*contribution
+            # dy += jnp.round(G[i], 1)*contribution
+            # dy += contribution
 
         return dy
 
@@ -388,7 +397,7 @@ learner = Learner(model=model,
                 reuse_contexts=True,
                 loss_contributors=loss_contributors,
                 pool_filling="NF",     ## TODO. Put back NF as soon as mem permits
-                loss_filling="NF",   ## First only, we only need the first loss contributor
+                loss_filling="NF-W",   ## First only, we only need the first loss contributor
                 key=model_key)
 
 
@@ -550,35 +559,35 @@ plt.savefig(run_folder+"gate_histogram_big.png")
 
 
 
-#### Plot the rescaling factors
-@eqx.filter_vmap
-def rescale_fn(ctx):
-    scales = []
-    ctx = jnp.split(ctx, nb_experts, axis=0)
-    for i in range(nb_experts):
-        factor = jax.nn.relu(network.experts[i].rescaler(ctx[i]).squeeze())
-        # factor = jnp.clip(factor, 1, 1e2)
-        scales.append(factor)
-    return jnp.array(scales)
+# #### Plot the rescaling factors
+# @eqx.filter_vmap
+# def rescale_fn(ctx):
+#     scales = []
+#     ctx = jnp.split(ctx, nb_experts, axis=0)
+#     for i in range(nb_experts):
+#         factor = jax.nn.relu(network.experts[i].rescaler(ctx[i]).squeeze())
+#         # factor = jnp.clip(factor, 1, 1e2)
+#         scales.append(factor)
+#     return jnp.array(scales)
 
-rescale_vals = rescale_fn(contexts.params)  ## (nb_envs, nb_experts)
+# rescale_vals = rescale_fn(contexts.params)  ## (nb_envs, nb_experts)
 
-## Visualise as an imshow
-fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-img = ax.imshow(rescale_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
-plt.colorbar(img)
-ax.set_xlabel("Experts")
-ax.set_ylabel("Environments")
+# ## Visualise as an imshow
+# fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+# img = ax.imshow(rescale_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
+# plt.colorbar(img)
+# ax.set_xlabel("Experts")
+# ax.set_ylabel("Environments")
 
-ax.set_yticks(y_labels)
-ax.set_yticklabels(y_labels)
+# ax.set_yticks(y_labels)
+# ax.set_yticklabels(y_labels)
 
-ax.set_xticks(x_labels)
-ax.set_xticklabels(x_labels)
+# ax.set_xticks(x_labels)
+# ax.set_xticklabels(x_labels)
 
-ax.set_title("Rescale Factors")
-plt.draw()
-plt.savefig(run_folder+"rescale_factors.png")
+# ax.set_title("Rescale Factors")
+# plt.draw()
+# plt.savefig(run_folder+"rescale_factors.png")
 
 
 
@@ -711,7 +720,7 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
 try:
     __IPYTHON__ ## in a jupyter notebook
 except NameError:
-    os.system(f"cp nohup.log {run_folder}")
+    os.system(f"cp nohup_deleteme.log {run_folder}")
 
 #%%
 
