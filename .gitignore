@@ -124,3 +124,5 @@ examples/foundational/runs/*
 
 examples/foundational/runs/241129-230513-MegaGolden*/checkpoints/
 !examples/foundational/runs/241129-230513-MegaGolden*/
+!examples/foundational/runs/241207-204554-PerfectT0/
+examples/foundational/runs/241207-204554-PerfectT0/checkpoints
