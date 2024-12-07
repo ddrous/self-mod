@@ -11,7 +11,6 @@ from selfmod import *
 # import jax
 # jax.config.update("jax_debug_nans", True)
 
-import umap
 
 #%%
 
@@ -31,7 +30,7 @@ train_proportion = 0.75  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 2
+context_pool_size = 3
 context_size = 4*ode_count*1
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
@@ -41,7 +40,7 @@ ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5()
 skip_steps = 4
 # loss_contributors = 16*5//2
 # loss_contributors = 16*ode_count
-loss_contributors = 16*1
+loss_contributors = 26*1
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
@@ -50,12 +49,12 @@ init_lrs = (1e-3, 1e-3)
 transition_steps = 100
 max_train_batches = 1
 max_adapt_batches = 1
-proximal_betas = (0., 0., 0.)       ## For the model, context and the gate, in that order
+proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 500*2
-nb_inner_steps = (1, 1, 00000)
+nb_outer_steps = 100*3
+nb_inner_steps = (10, 10, 00000)
 nb_adapt_epochs = 500
-validate_every = 50*1
+validate_every = 10*1
 
 print_error_every = (10*1, 10*1)
 
@@ -102,7 +101,6 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz",
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
-
 
 #%%
 
@@ -281,13 +279,13 @@ class Model(eqx.Module):
         # gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, jnp.ones_like(gate_weight.bias)) 
 
         # gate_temp = jnp.array([-1.5])
-        gate_temp = [0.1]     ## The more the experts, the lower the temp
+        gate_temp = [0.01]     ## The more the experts, the lower the temp
 
         def gating_function(gate, ctx):
             ## Use the second half of the context
             # _, ctx = jnp.split(ctx, 2, axis=0)
 
-            ctx = ctx / gate["temperature"][0]
+            # ctx = ctx / gate["temperature"][0]
             # ctx = jnp.abs(ctx) / gate["temperature"][0]
             # H = jax.nn.relu(gate["weight"](ctx))
             # ctx = jnp.abs(ctx)
@@ -314,10 +312,11 @@ class Model(eqx.Module):
             # # logits = jnp.clip(logits, 1e-6, 1+1e-6)
             # G = jax.nn.softmax(jnp.log(logits))
 
-            H = jnp.abs(H) + 1e-5
-            G = H / jnp.sum(H)
+            # H = jnp.abs(H) + 1e-5
+            # G = H / jnp.sum(H)
 
-            # # G = jax.nn.softmax(H)       ## This works, but above doesn't
+            # G = jax.nn.softmax(H)       ## This works, but above doesn't
+            G = jax.nn.softmax(H / gate["temperature"][0])
 
             return G
             # return H
@@ -333,21 +332,22 @@ class Model(eqx.Module):
         # ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
         ## Use the second half of the context
         # ctx, _ = jnp.split(ctx, 2, axis=0)
-        SM = jax.nn.softmax(G)
+        # SM = jax.nn.softmax(G)
 
-        max_G = jnp.max(G)
+        # max_G = jnp.max(G)
         dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
-            # dy += G[i]*self.experts[i]((t, y, ctx))
-            contribution = jax.lax.cond(G[i]>max_G-1e-6, 
-                                        lambda in_dat: self.experts[i](in_dat), 
-                                        lambda in_dat: jnp.zeros_like(in_dat[1]), 
-                                        (t, y, ctx))
-                                        # (t, y, ctx_pieces[i]))
-            # dy += G[i]*contribution
-            dy += SM[i]*contribution
-            # dy += jnp.round(G[i], 1)*contribution
-            # dy += contribution
+            dy += G[i]*self.experts[i]((t, y, ctx))
+
+            # contribution = jax.lax.cond(G[i]>max_G-1e-6, 
+            #                             lambda in_dat: self.experts[i](in_dat), 
+            #                             lambda in_dat: jnp.zeros_like(in_dat[1]), 
+            #                             (t, y, ctx))
+            #                             # (t, y, ctx_pieces[i]))
+            # # dy += G[i]*contribution
+            # dy += SM[i]*contribution
+            # # dy += jnp.round(G[i], 1)*contribution
+            # # dy += contribution
 
         return dy
 
@@ -397,7 +397,7 @@ learner = Learner(model=model,
                 reuse_contexts=True,
                 loss_contributors=loss_contributors,
                 pool_filling="NF",     ## TODO. Put back NF as soon as mem permits
-                loss_filling="NF-W",   ## First only, we only need the first loss contributor
+                loss_filling="NF-B",   ## The environment with the biggest loss is picked up
                 key=model_key)
 
 
@@ -605,6 +605,7 @@ labels = np.arange(ode_count).repeat(16)
 color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
 colors = [color_table[l] for l in labels]
 
+import umap
 umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=0., metric="euclidean")
 
 # Fit and transform the data

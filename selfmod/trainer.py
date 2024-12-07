@@ -504,7 +504,7 @@ class NCFTrainer(Trainer):
         loss_fn_gates = self.learner.loss_fn_gates
         # nb_loss_contr_gates = nb_environments   ## If the VRAM can handle it
         # opt_state_gates = self.opt_model.init(eqx.filter(gates, eqx.is_array))
-        gates_factor = 1e+2     ## The factor to multiply the gates loss by
+        gates_factor = 0.     ## The factor to multiply the gates loss by
 
         if save_checkpoints:
             backup_folder = save_path+"checkpoints/"
@@ -517,9 +517,10 @@ class NCFTrainer(Trainer):
 
             def prox_loss_fn(model, contexts, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-                gates_loss, _ = loss_fn_gates(model.vectorfield.neuralnet.gate, contexts, key)
+                # gates_loss, _ = loss_fn_gates(model.vectorfield.neuralnet.gate, contexts, key)
                 diff_norm = params_diff_norm_squared(model, model_old)
-                return loss + gates_factor*gates_loss + proximal_reg_model * diff_norm / 2., (*aux_data, diff_norm)
+                # return loss + gates_factor*gates_loss + proximal_reg_model * diff_norm / 2., (*aux_data, diff_norm)
+                return loss + proximal_reg_model * diff_norm / 2., (*aux_data, diff_norm)
 
             (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(model, contexts, batch, weightings, key)
 
@@ -535,9 +536,10 @@ class NCFTrainer(Trainer):
 
             def prox_loss_fn(contexts, model, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
-                gates_loss, _ = loss_fn_gates(model.vectorfield.neuralnet.gate, contexts, key)
+                # gates_loss, _ = loss_fn_gates(model.vectorfield.neuralnet.gate, contexts, key)
                 diff_norm = params_diff_norm_squared(contexts, contexts_old)
-                return loss + gates_factor*gates_loss + proximal_reg_ctx * diff_norm / 2., (*aux_data, diff_norm)
+                # return loss + gates_factor*gates_loss + proximal_reg_ctx * diff_norm / 2., (*aux_data, diff_norm)
+                return loss + proximal_reg_ctx * diff_norm / 2., (*aux_data, diff_norm)
 
             (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(contexts, model, batch, weightings, key)
 
@@ -632,9 +634,9 @@ class NCFTrainer(Trainer):
                 # weightings = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
 
                 ## Approach #2
-                if loss_filling == "NF-iW":
+                if loss_filling in ["NF-iW", "NF-B"]:
                     all_env_losses = jnp.inf*jnp.ones(nb_envs_in_batch)
-                elif loss_filling == "NF-W":
+                elif loss_filling in ["NF-W"]:
                     all_env_losses = jnp.zeros(nb_envs_in_batch)
                 else:
                     all_env_losses = jnp.ones(nb_envs_in_batch) / nb_envs_in_batch
