@@ -18,8 +18,8 @@ from selfmod import *
 seed = 2020
 
 ## Dataloader hps
-ode_count = 2          ## Total number of ODEs in the dataset
-nb_experts = ode_count
+ode_count = 10          ## Total number of ODEs in the dataset
+nb_experts = 10
 top_k = 1
 
 num_envs = (16*ode_count, 4*ode_count)
@@ -32,7 +32,7 @@ test_proportion = 1.0
 ## Learner/model hps
 context_pool_size = 4
 context_size = 4*ode_count*1
-taylor_orders = (0, 0)
+taylor_orders = (1, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
@@ -40,18 +40,18 @@ ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5()
 skip_steps = 4
 # loss_contributors = 16*5//2
 # loss_contributors = 16*ode_count
-loss_contributors = 26*1
+loss_contributors = 46*1
 max_ret_env_states = num_envs[0]
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
 # sched_factor = 1.0
-transition_steps = 100
+transition_steps = 250
 max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 100*1
+nb_outer_steps = 100*2
 nb_inner_steps = (10, 10, 00000)
 nb_adapt_epochs = 500
 validate_every = 10*1
@@ -63,8 +63,8 @@ save_trainer = True
 meta_test = True
 
 run_folder = None if meta_train else "./"
-data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
-# data_folder = "./data_2D/" if meta_train else "../../data_2D/"
+# data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
+data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
 
 #%%
@@ -374,7 +374,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
 neuralnet = Model(data_size=2,
-                hidden_size=32*2, 
+                hidden_size=16*1, 
                 depth=3,
                 context_size=context_size,
                 nb_experts=nb_experts,
