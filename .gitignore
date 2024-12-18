@@ -108,21 +108,21 @@ examples/lotka-v/runs/*
 !examples/lotka-v/runs/ContextPoolSizeExperiment/
 
 ## The Foundational dataset
-examples/foundational/data_2D/*
-examples/foundational/data_2D_tiny/*
-examples/foundational/runs/*
-!examples/foundational/runs/241017-231954-BestNCF*/
-!examples/foundational/runs/241019-183954-CoDAH-9Envs/
-!examples/foundational/runs/241021-163134-Excellent/
-!examples/foundational/runs/241026-122758-Top4-MoE-NCF/
-!examples/foundational/runs/241028-103114-LongestMoE/
-!examples/foundational/runs/241101-011640-LargeAwesome/
-!examples/foundational/runs/241106-164001-Golden/
+examples/ode-bench/data_2D/*
+examples/ode-bench/data_2D_tiny/*
+examples/ode-bench/runs/*
+!examples/ode-bench/runs/241017-231954-BestNCF*/
+!examples/ode-bench/runs/241019-183954-CoDAH-9Envs/
+!examples/ode-bench/runs/241021-163134-Excellent/
+!examples/ode-bench/runs/241026-122758-Top4-MoE-NCF/
+!examples/ode-bench/runs/241028-103114-LongestMoE/
+!examples/ode-bench/runs/241101-011640-LargeAwesome/
+!examples/ode-bench/runs/241106-164001-Golden/
 
-!examples/foundational/runs/241115-141631-FullExperts/
-!examples/foundational/runs/241107-162020-SuperGolden*/
+!examples/ode-bench/runs/241115-141631-FullExperts/
+!examples/ode-bench/runs/241107-162020-SuperGolden*/
 
-examples/foundational/runs/241129-230513-MegaGolden*/checkpoints/
-!examples/foundational/runs/241129-230513-MegaGolden*/
-!examples/foundational/runs/241207-204554-PerfectT0/
-examples/foundational/runs/241207-204554-PerfectT0/checkpoints
+examples/ode-bench/runs/241129-230513-MegaGolden*/checkpoints/
+!examples/ode-bench/runs/241129-230513-MegaGolden*/
+!examples/ode-bench/runs/241207-204554-PerfectT0/
+examples/ode-bench/runs/241207-204554-PerfectT0/checkpoints
