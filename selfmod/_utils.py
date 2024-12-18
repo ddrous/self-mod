@@ -491,6 +491,12 @@ def setup_run_folder(folder_path, script_name, script_folder=None):
         os.mkdir(adapt_folder)
         print("Created a new adaptation folder at:", adapt_folder)
 
+    ## Create a folder for the chckpoints results
+    checkpoints_folder = folder_path+"checkpoints/"
+    if not os.path.exists(checkpoints_folder):
+        os.mkdir(checkpoints_folder)
+        print("Created a new checkpoints folder at:", checkpoints_folder)
+
     ## Create a folder for the generation data scripts
     if script_folder is not None:
         data_folder = os.path.join(folder_path, "data/")
