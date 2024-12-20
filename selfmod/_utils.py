@@ -503,8 +503,8 @@ def setup_run_folder(folder_path, script_name, script_folder=None):
         if not os.path.exists(data_folder):
             os.mkdir(data_folder)
             print("Created a new data folder at:", data_folder)
-        os.system(f"cp {script_folder}/ode_generation.py {data_folder}")
-        [os.system(f"cp {script_folder}/ode_definitions_{n}D.json {data_folder}") for n in range(1, 5)]
+        os.system(f"cp {script_folder}/data_gen/ode_generation.py {data_folder}")
+        [os.system(f"cp {script_folder}/data_gen/ode_definitions_{n}D.json {data_folder}") for n in range(1, 5)]
         print("Copied the data generation scripts")
 
     return adapt_folder

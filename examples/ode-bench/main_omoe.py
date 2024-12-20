@@ -1,9 +1,9 @@
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
 
@@ -52,7 +52,7 @@ max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
 nb_outer_steps = 100*2
-nb_inner_steps = (10, 10, 00000)
+nb_inner_steps = (1, 1, 1)
 nb_adapt_epochs = 500
 validate_every = 10*1
 
@@ -62,7 +62,8 @@ meta_train = True
 save_trainer = True
 meta_test = True
 
-run_folder = None if meta_train else "./"
+# run_folder = None if meta_train else "./"
+run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
 # data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
 data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
@@ -204,8 +205,8 @@ class Expert(eqx.Module):
         # self.rescaler = eqx.tree_at(lambda m:m.bias, rescaler, jnp.array([1.]))
         self.rescaler = eqx.tree_at(lambda m:m.bias, rescaler, rescaler.bias*scale_factor)
 
-    def __call__(self, in_dat):
-        t, y, ctx = in_dat
+    def __call__(self, t, y, ctx):
+        # t, y, ctx = in_dat
 
         ## Rescale factor
         # factor = jnp.clip(jax.nn.relu(self.rescaler(ctx).squeeze()), 1, 1e2)
@@ -253,67 +254,18 @@ class Model(eqx.Module):
         eff_context_size = context_size//1
 
         self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, key=keys[i]) for i in range(nb_experts)]
+        # gate_weight = eqx.nn.Linear(context_size+1, nb_experts, key=keys[-1], use_bias=False)
+        # gate_weight = jnp.zeros((context_size+1, nb_experts))
 
-        # self.gate_weight = jnp.zeros((nb_experts, context_size))
-        # gate_weight = MLP(context_size, nb_experts, 32, 2, activation=jax.nn.relu, key=keys[-1])
+        lim = 1 / np.sqrt(context_size)
+        gate_weight = jax.random.uniform(keys[-1], (context_size+1, nb_experts), minval=-lim, maxval=lim)
 
-        # ## The gate is simply a 1d convolution with kernel size eff_context_size
-        # gate_weight = eqx.nn.Conv1d(1, 1, 
-        #                             kernel_size=eff_context_size, 
-        #                             padding="valid", 
-        #                             stride=eff_context_size, 
-        #                             use_bias=False,
-        #                             key=keys[-1])
-        # new_kernel = jnp.ones_like(gate_weight.weight)   ## Non-trainable
-        # gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, new_kernel)
-
-        gate_weight = eqx.nn.Linear(context_size//1, nb_experts, key=keys[-1])
-
-        # # Scale gate weights and bias
-        # scale_factor = 1 * np.sqrt(context_size).squeeze() / np.sqrt(eff_context_size).squeeze()
-        scale_factor = 0.
-        gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, gate_weight.weight*scale_factor)
-        gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, gate_weight.bias*scale_factor) 
-
-        # gate_weight = eqx.tree_at(lambda m:m.weight, gate_weight, jnp.ones_like(gate_weight.weight))
-        # gate_weight = eqx.tree_at(lambda m:m.bias, gate_weight, jnp.ones_like(gate_weight.bias)) 
-
-        # gate_temp = jnp.array([-1.5])
-        gate_temp = [0.01]     ## The more the experts, the lower the temp
+        gate_temp = [1.]     ## The more the experts, the lower the temp
 
         def gating_function(gate, ctx):
-            ## Use the second half of the context
-            # _, ctx = jnp.split(ctx, 2, axis=0)
-
-            # ctx = ctx / gate["temperature"][0]
-            # ctx = jnp.abs(ctx) / gate["temperature"][0]
-            # H = jax.nn.relu(gate["weight"](ctx))
-            # ctx = jnp.abs(ctx)
-            # ctx = ctx**2
-            # H = jax.lax.stop_gradient(gate["weight"])(ctx[None,:]).squeeze()
-            # H = gate["weight"](ctx[None,:]).squeeze()
-            H = gate["weight"](ctx)
-            # print("H shape is:", H.shape)
-
-            # topk_vals, topk_idx = jax.lax.top_k(H, gate["top_k"])
-            # logits = jnp.full_like(H, -jnp.inf).at[topk_idx].set(topk_vals)
-            # G = jax.nn.softmax(logits)
-
-            # topk_vals, topk_idx = jax.lax.approx_min_k(H, nb_experts-gate["top_k"])
-            # logits = jnp.full_like(H, -jnp.inf).at[jnp.argmax(H)].set(jnp.max(H))
-            # logits = H.at[topk_idx].set(-jnp.inf)
-            # logits = H.at[jnp.argsort(H)[:-1]].set(-jnp.inf)
-
-            # logits = H * (1e+6)
-            # G = jax.nn.softmax(logits)
-
-            # H = jnp.abs(H) + 1e-5
-            # logits = (H / (jnp.max(H))) ** 2
-            # # logits = jnp.clip(logits, 1e-6, 1+1e-6)
-            # G = jax.nn.softmax(jnp.log(logits))
-
-            # H = jnp.abs(H) + 1e-5
-            # G = H / jnp.sum(H)
+            # H = gate["weight"](ctx)
+            ctx = jnp.concatenate([ctx, jnp.ones((1,))], axis=0)
+            H = gate["weight"].T @ ctx      ## TODO check this
 
             # G = jax.nn.softmax(H)       ## This works, but above doesn't
             G = jax.nn.softmax(H / gate["temperature"][0])
@@ -340,7 +292,7 @@ class Model(eqx.Module):
             # dy += G[i]*self.experts[i]((t, y, ctx))
 
             contribution = jax.lax.cond(G[i]>max_G-1e-6, 
-                                        lambda in_dat: self.experts[i](in_dat), 
+                                        lambda in_dat: self.experts[i](*in_dat), 
                                         lambda in_dat: jnp.zeros_like(in_dat[1]), 
                                         (t, y, ctx))
                                         # (t, y, ctx_pieces[i]))

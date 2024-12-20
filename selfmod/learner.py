@@ -197,24 +197,24 @@ class Learner:
 
         if loss_contributors > 0:
             print(f"\nUsing {loss_contributors} environments to estimate the global training loss function ...")
-            def loss_fn(model, contexts, batch, prev_losses, key):
-                keys = jax.random.split(key, num=loss_contributors)
 
-                if self.loss_filling=="RA":         ## Randomly pick contributors to the loss function
+            def select_indices(loss_filling, contexts, prev_losses, key):
+                """ Select the indices of the contexts to use for the loss function, based on the pool-filling strategy """
+                if loss_filling=="RA":         ## Randomly pick contributors to the loss function
                     indices = jax.random.permutation(key, contexts.params.shape[0])[:loss_contributors]
-                elif self.loss_filling=="FO":       ## Pick the first environments, based on their loss (no randomness at all)
+                elif loss_filling=="FO":       ## Pick the first environments, based on their loss (no randomness at all)
                     indices = jnp.arange(loss_contributors)
-                elif self.loss_filling=="NF":       ## Pick one at random and then the nearest to it
+                elif loss_filling=="NF":       ## Pick one at random and then the nearest to it
                     rnd_env = jax.random.randint(key, (1,), 0, contexts.params.shape[0])[0]
                     dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
                     # dists = jnp.mean((contexts.params-contexts.params[rnd_env])**2, axis=1)    ## TODO test with L2 norm
                     indices = jnp.argsort(dists)[:loss_contributors]
-                elif self.loss_filling=="NF-W":       ## Weighted. We Pick one of the environments we want to focus on
+                elif loss_filling=="NF-W":       ## Weighted. We Pick one of the environments we want to focus on
                     probas = prev_losses / jnp.sum(prev_losses)
                     rnd_env = jax.random.choice(key, a=contexts.params.shape[0], shape=(1,), p=probas**1)[0]
                     dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
                     indices = jnp.argsort(dists)[:loss_contributors]
-                elif self.loss_filling=="NF-iW":       ## inversely Weighted.
+                elif loss_filling=="NF-iW":       ## inversely Weighted.
                     inv_losses = 1/prev_losses
                     probas = inv_losses / jnp.sum(inv_losses)
                     # jax.debug.print("These are the probabilities:  {}  ", probas)
@@ -222,12 +222,19 @@ class Learner:
                     dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
                     indices = jnp.argsort(dists)[:loss_contributors]
                     # jax.debug.print("These are the indices:  {}  ", indices)
-                elif self.loss_filling=="NF-B":       ## Biggest lost is picked up !
+                elif loss_filling=="NF-B":       ## Biggest lost is picked up !
                     rnd_env = jnp.argmax(prev_losses)
                     dists = jnp.mean(jnp.abs(contexts.params-contexts.params[rnd_env]), axis=1)
                     indices = jnp.argsort(dists)[:loss_contributors]
                 else:
                     raise ValueError("Invalid loss filling strategy provided. Use one of 'RA', 'NF'.")
+
+                return indices
+
+
+            def loss_fn(model, contexts, batch, prev_losses, key):
+                keys = jax.random.split(key, num=loss_contributors)
+                indices = select_indices(self.loss_filling, contexts, prev_losses, key)
 
                 random_contexts = contexts.params[indices, :]
 
@@ -251,6 +258,55 @@ class Learner:
 
                 return base_loss, (term1, terms2, terms3, indices)
 
+
+
+
+
+
+
+
+            def env_loss_fn_multitask_(model, batch, ctx, ctxs, key):
+                """ Wrapping the env loss function without CSM, for each expert individualy """
+                X, Y = batch
+
+                expert_losses = []
+                for expert in model.vectorfield.neuralnet.experts:
+                    new_model = self.reset_model_expert(model, expert)    ## Reset the expert model without CSM
+
+                    Y_hat = jax.vmap(new_model, in_axes=(None, None, 0))(X, ctx, ctx[None, :])  ## No CSM
+                    Y_new = jnp.broadcast_to(Y, Y_hat.shape)
+                    loss, _ = env_loss_fn(expert, ctx, Y_new, Y_hat)
+                    expert_losses.append(loss)
+
+                expert_losses = jnp.array(expert_losses)
+
+                return jnp.mean(expert_losses), (expert_losses, )
+
+
+            def loss_fn_multitask(model, contexts, batch, key):
+                """ This loss computes the loss function for each expert invidually, and then combines them """
+                # indices = select_indices(self.loss_filling, contexts, prev_losses, key)
+
+                ## Actually, let's use all the environments for each expert
+                indices = jnp.arange(contexts.params.shape[0])
+
+                random_contexts = contexts.params[indices, :]
+
+                # random_batch = (batch[0][indices], batch[1][indices])
+
+                ## the full batch is now a pytree, the input is a tuple itself
+                random_batch = jax.tree_map(lambda x: x[indices], batch)
+
+                # keys = keys[indices]
+                keys = jax.random.split(key, num=indices.shape[0])
+
+                losses, (expert_losses, ) = jax.vmap(env_loss_fn_multitask_, in_axes=(None, 0, 0, None, 0))(model, random_batch, random_contexts, random_contexts, keys)
+
+                weightings = jnp.arange(indices.shape[0]) / indices.shape[0]
+                mean_loss = jnp.sum(weightings * losses)
+
+                return mean_loss, (expert_losses, indices)      ## Expert losses of shape (nb_experts, nb_envs)
+
         else:
             print("    Using all environments to estimate the global training loss function ...")
             loss_fn = loss_fn_full
@@ -258,6 +314,9 @@ class Learner:
         self.loss_fn = loss_fn                  ## Meta loss function
         self.loss_fn_full = loss_fn_full        ## Base loss function in full
         self.env_loss_fn = env_loss_fn_         ## Base loss function
+
+        self.env_loss_fn_multitask = env_loss_fn_multitask_
+        self.loss_fn_multitask = loss_fn_multitask
 
 
     def save_learner(self, path):
@@ -312,6 +371,20 @@ class Learner:
                                                     taylor_order=taylor_order)
             else:
                 raise ValueError("The model type is not supported")
+        return model
+
+
+
+    def reset_model_expert(self, model, expert):
+        """ Reset the model to use a specific expert """
+        if isinstance(model, NeuralODE):        ## TODO also check that its neural net is a MoE
+            model = NeuralODE(neuralnet=expert, 
+                            taylor_order=0,
+                            taylor_ad_mode=model.taylor_ad_mode, 
+                            ivp_args=model.ivp_args,
+                            t_eval=model.t_eval)
+        else:
+            raise ValueError(f"The model type {type(model)} is not supported")
         return model
 
 
@@ -377,7 +450,6 @@ class Learner:
                                         activation=activation,
                                         key=key)
         else:
-            print("COntexts is", self.contexts)
             raise ValueError(f"The context type {type(self.contexts)} is not supported")
 
         return contexts

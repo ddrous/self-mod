@@ -2,8 +2,8 @@ print("\n############# Contextual Self-Modulation #############\n")
 
 ## System-level configuration
 import os
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = '.25'
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'true'
+# os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = '.25'
+# os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'true'
 # os.environ["EQX_ON_ERROR"] = 'breakpoint'
 import sys
 
