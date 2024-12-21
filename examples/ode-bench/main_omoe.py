@@ -1,6 +1,6 @@
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -62,8 +62,8 @@ meta_train = True
 save_trainer = True
 meta_test = True
 
-run_folder = None if meta_train else "./"
-# run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
+# run_folder = None if meta_train else "./"
+run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
 data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
 # data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 

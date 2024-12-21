@@ -280,7 +280,8 @@ class Learner:
 
                 expert_losses = jnp.array(expert_losses)
 
-                return jnp.mean(expert_losses), (expert_losses, )
+                # return jnp.mean(expert_losses), (expert_losses, )
+                return jnp.min(expert_losses), (expert_losses, )        ## The min so that only one expert might contribute
 
 
             def loss_fn_multitask(model, contexts, batch, key):
