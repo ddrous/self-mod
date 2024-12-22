@@ -51,7 +51,7 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (0., 0., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 4000
+nb_outer_steps = 2000
 nb_inner_steps = (1, 1, 1)
 nb_adapt_epochs = 500
 validate_every = 100*1
@@ -253,14 +253,14 @@ class Model(eqx.Module):
         ## The context is now split into tiny chunks for each expert
         eff_context_size = context_size//1
 
-        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, key=keys[i]) for i in range(nb_experts)]
+        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, key=keys[0]) for i in range(nb_experts)]
         # gate_weight = eqx.nn.Linear(context_size+1, nb_experts, key=keys[-1], use_bias=False)
         # gate_weight = jnp.zeros((context_size+1, nb_experts))
 
         lim = 1 / np.sqrt(context_size)
         gate_weight = jax.random.uniform(keys[-1], (context_size+1, nb_experts), minval=-lim, maxval=lim)
 
-        gate_temp = [1.]     ## The more the experts, the lower the temp
+        gate_temp = [0.01]     ## The more the experts, the lower the temp
 
         def gating_function(gate, ctx):
             # H = gate["weight"](ctx)
@@ -301,10 +301,10 @@ class Model(eqx.Module):
                                         lambda in_dat: jnp.zeros_like(in_dat[1]), 
                                         (t, y, ctx))
                                         # (t, y, ctx_pieces[i]))
-            dy += G[i]*contribution     ##TODO: remove the weigthing
+            # dy += G[i]*contribution     ##TODO: remove the weigthing
             # dy += SM[i]*contribution
             # dy += jnp.round(G[i], 1)*contribution
-            # dy += contribution
+            dy += contribution
 
         return dy
 

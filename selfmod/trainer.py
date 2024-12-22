@@ -593,17 +593,17 @@ class NCFTrainer(Trainer):
         def train_step_gates(model, contexts, expert_losses_old, batch, key):
             print('     ### Compiling function "train_step" for the contexts ...  ')
 
-            ############ Strategy 1 to select the best expert - Use the previous losses ############
-            loss, aux_data = self.learner.loss_fn_multitask(model, contexts, batch, key)
-            expert_losses_new = aux_data[0]     ## Shape: (nb_envs, nb_experts) i.e. for each environment, we know the loss of each expert
-            ## Let's calculate the rate of improvement of each expert (for each environment)
-            if expert_losses_old is None:
-                expert_improvements = -expert_losses_new
-            else:
-                # expert_improvements = (expert_losses_old - expert_losses_new) / expert_losses_old       ## Must be positive
-                expert_improvements = jnp.abs((expert_losses_old - expert_losses_new) / expert_losses_old)       ## Must be positive
-            best_experts = jnp.argmax(expert_improvements, axis=1)       ## The best expert for each environment
-            #############################################
+            # ############ Strategy 1 to select the best expert - Use the previous losses ############
+            # loss, aux_data = self.learner.loss_fn_multitask(model, contexts, batch, key)
+            # expert_losses_new = aux_data[0]     ## Shape: (nb_envs, nb_experts) i.e. for each environment, we know the loss of each expert
+            # ## Let's calculate the rate of improvement of each expert (for each environment)
+            # if expert_losses_old is None:
+            #     expert_improvements = -expert_losses_new
+            # else:
+            #     # expert_improvements = (expert_losses_old - expert_losses_new) / expert_losses_old       ## Must be positive
+            #     expert_improvements = jnp.abs((expert_losses_old - expert_losses_new) / expert_losses_old)       ## Must be positive
+            # best_experts = jnp.argmax(expert_improvements, axis=1)       ## The best expert for each environment
+            # #############################################
 
             ### Strategy 2 to select the best expert - Use the gradients ###
             # thew weights and ctx were updated in other steps before, so the diff is nos uitable. use the normal of the gradient wrt withe weights only. It will be the weight that is being used, befause the others are fixed. Check this first please !!!!
@@ -611,16 +611,11 @@ class NCFTrainer(Trainer):
             def grad_loss_fn(model, ctx, batch, key):
                 loss, _ = self.learner.env_loss_fn_multitask(model, batch, ctx, ctx, key)
                 return loss
+            def get_mean_loss(model, ctxs, batchs, keys):
+                loss, _ = eqx.filter_vmap(self.learner.env_loss_fn_multitask, in_axes=(None, 0, 0, 0, 0))(model, batchs, ctxs, ctxs, keys)
+                return jnp.mean(loss)
             keys = jax.random.split(key, num=contexts.params.shape[0])
-            all_losses, all_grads = eqx.filter_vmap(grad_loss_fn, in_axes=(None, 0, 0, 0))(model, contexts.params, batch, keys)
-
-            ############ All grads should have a leading dimension of the number of environments, and the experts should mostly be zeros
-            # exp_id, env_id = 0, 0
-            # # jax.debug.print("Print all of all grads {}", all_grads.shape)
-            # jax.debug.print("All grads for env 0 for expert 0 are: {} \n", all_grads.vectorfield.neuralnet.experts[exp_id].layers_main[env_id].weight.shape)
-            # print(flush=True)
-            # # jax.debug.print("All grads for env 0 for expert 1 are: {} \n", all_grads.vectorfield.neuralnet.experts[exp_id+1].layers_main[env_id].weight)
-
+            loss, all_grads = eqx.filter_vmap(grad_loss_fn, in_axes=(None, 0, 0, 0))(model, contexts.params, batch, keys)
             def get_expert_grad_norm(grads):    ## For a single context
                 all_norms = []
                 for expert in grads.vectorfield.neuralnet.experts:
@@ -628,12 +623,43 @@ class NCFTrainer(Trainer):
                 return jnp.array(all_norms)
             all_envs_expert_norms = eqx.filter_vmap(get_expert_grad_norm)(all_grads)
             best_experts = jnp.argmax(all_envs_expert_norms, axis=1)       ## The best expert for each environment
+            expert_losses_new = all_envs_expert_norms
+
+            # ## Update the model with the gradients, for a few steps, all while accumulating the losses and 
+            # fake_losses = [expert_losses_old]
+            # fake_grads_norms = []
+            # fake_model = model
+            # fake_model_params, fake_model_static = eqx.partition(fake_model, eqx.is_array)
+            # for _ in range(10):
+            #     keys = jax.random.split(key, num=contexts.params.shape[0])
+            #     loss, fake_loss = self.learner.loss_fn_multitask(model, contexts, batch, key)
+            #     # fake_loss, all_grads = eqx.filter_vmap(grad_loss_fn, in_axes=(None, 0, 0, 0))(fake_model, contexts.params, batch, keys)
+            #     fake_losses.append(fake_loss[0])
+
+            #     fake_grads = eqx.filter_grad(get_mean_loss)(fake_model, contexts.params, batch, keys)
+            #     # fake_grads_norms.append(eqx.filter_vmap(get_expert_grad_norm)(all_grads))
+            #     fake_model_params = jax.tree.map(lambda x, y: x-y, fake_model_params, eqx.partition(fake_grads, eqx.is_array)[0])
+            #     fake_model = eqx.combine(fake_model_params, fake_model_static)
+
+            # all_fake_losses = fake_losses
+            # ## Let's calculate the ema of the EMA over the fake_losses, and select the experts that produce the best improvements in losses
+            # if expert_losses_old is None:
+            #     expert_improvements = jnp.abs((all_fake_losses[-1] - all_fake_losses[1]) / all_fake_losses[1])       ## Must be positive
+            # else:
+            #     expert_improvements = jnp.abs((all_fake_losses[-1] - all_fake_losses[0]) / all_fake_losses[0])       ## Must be positive
+
+            # ## Return values
+            # print("The shape of the expert improvements is: ", expert_improvements.shape, all_fake_losses[-1].shape, all_fake_losses[1].shape)
+            # best_experts = jnp.argmax(expert_improvements, axis=1)
+            # expert_losses_new = all_fake_losses[-1]
+            # # loss = fake_loss
             #############################################
 
             ## Let's setup the gating problem
             X = jnp.concatenate([contexts.params, jnp.ones((contexts.params.shape[0], 1))], axis=1)  ## Shape: (nb_envs, nb_features+1)
             # Y = 2*jax.nn.one_hot(best_experts, num_classes=expert_losses_new.shape[1])-1.      ## Shape: (nb_envs, nb_experts)  varies between -1 and 1 .. TODO: set this differently
             Y = jax.nn.one_hot(best_experts, num_classes=expert_losses_new.shape[1])      ## Shape: (nb_envs, nb_experts)
+            Y = 2*Y-1       ## Shape: (nb_envs, nb_experts)
             Y = jax.nn.softmax(Y, axis=1)       ## Shape: (nb_envs, nb_experts)
             Y = Y + 0.0*jax.random.normal(shape=Y.shape, key=key)     ## Add some noise to the labels TODO
 
