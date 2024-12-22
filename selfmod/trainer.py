@@ -615,11 +615,11 @@ class NCFTrainer(Trainer):
             all_losses, all_grads = eqx.filter_vmap(grad_loss_fn, in_axes=(None, 0, 0, 0))(model, contexts.params, batch, keys)
 
             ############ All grads should have a leading dimension of the number of environments, and the experts should mostly be zeros
-            exp_id, env_id = 0, 0
-            # jax.debug.print("Print all of all grads {}", all_grads.shape)
-            jax.debug.print("All grads for env 0 for expert 0 are: {} \n", all_grads.vectorfield.neuralnet.experts[exp_id].layers_main[env_id].weight.shape)
-            print(flush=True)
-            # jax.debug.print("All grads for env 0 for expert 1 are: {} \n", all_grads.vectorfield.neuralnet.experts[exp_id+1].layers_main[env_id].weight)
+            # exp_id, env_id = 0, 0
+            # # jax.debug.print("Print all of all grads {}", all_grads.shape)
+            # jax.debug.print("All grads for env 0 for expert 0 are: {} \n", all_grads.vectorfield.neuralnet.experts[exp_id].layers_main[env_id].weight.shape)
+            # print(flush=True)
+            # # jax.debug.print("All grads for env 0 for expert 1 are: {} \n", all_grads.vectorfield.neuralnet.experts[exp_id+1].layers_main[env_id].weight)
 
             def get_expert_grad_norm(grads):    ## For a single context
                 all_norms = []
@@ -640,7 +640,12 @@ class NCFTrainer(Trainer):
             ## The matrix that maps X to Y is the gate matrix (with the bias)
             gate_weight = jnp.linalg.lstsq(X, Y, rcond=None)[0]       ## Shape: (nb_features+1, nb_experts)
 
-            ## Let's update the gate in the model
+            # ## interpolate beetween the current gate and the new one
+            # old_gate_weight = model.vectorfield.neuralnet.gate["weight"]
+            # gate_factor = model.vectorfield.neuralnet.gate["lsqr_factor"]
+            # gate_weight = (1.-gate_factor)*old_gate_weight + gate_factor*gate_weight
+
+            ## Let's update the gate in the model       TODO: put this back
             model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.gate["weight"], model, gate_weight)
 
             return model, contexts, loss, expert_losses_new
@@ -836,7 +841,8 @@ class NCFTrainer(Trainer):
                             # print("Term3 quantities: \n", term3[1], flush=True, end="\n")
                             print("Contributing envs to the losses: ", loss_contrs, flush=True, end="\n")
                             # print("Gate weights in model are: \n", model.vectorfield.neuralnet.gate_weight, flush=True, end="\n")
-                            print("Gate kernel values: ", model.vectorfield.neuralnet.gate["weight"].squeeze(), flush=True, end="\n")
+                            print("Gate kernel values: \n", model.vectorfield.neuralnet.gate["weight"].squeeze(), flush=True, end="\n")
+                            print("The factor: how much of the new gate kernel do I used ?", model.vectorfield.neuralnet.gate["lsqr_factor"], flush=True, end="\n")
 
                             gate_fun = model.vectorfield.neuralnet.gate["function"]
                             gate_vals = eqx.filter_vmap(gate_fun, in_axes=(None, 0))(model.vectorfield.neuralnet.gate, contexts.params)

@@ -1,6 +1,6 @@
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -15,7 +15,7 @@ from selfmod import *
 #%%
 
 ## For reproducibility
-seed = 2022
+seed = 2034
 
 ## Dataloader hps
 ode_count = 2          ## Total number of ODEs in the dataset
@@ -32,7 +32,7 @@ test_proportion = 1.0
 ## Learner/model hps
 context_pool_size = 4
 context_size = 4*ode_count*1
-taylor_orders = (1, 0)
+taylor_orders = (0, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
@@ -46,15 +46,15 @@ max_ret_env_states = num_envs[0]
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
 # sched_factor = 1.0
-transition_steps = 250
+transition_steps = 150
 max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (0., 0., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 100*20
+nb_outer_steps = 4000
 nb_inner_steps = (1, 1, 1)
 nb_adapt_epochs = 500
-validate_every = 10*1
+validate_every = 100*1
 
 print_error_every = (10*1, 10*1)
 
@@ -62,8 +62,8 @@ meta_train = True
 save_trainer = True
 meta_test = True
 
-# run_folder = None if meta_train else "./"
-run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
+run_folder = None if meta_train else "./"
+# run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
 data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
 # data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
@@ -266,7 +266,7 @@ class Model(eqx.Module):
             # H = gate["weight"](ctx)
             ctx = jnp.concatenate([ctx, jnp.ones((1,))], axis=0)
             # H = gate["weight"].T @ ctx      ## TODO check this
-            H = jax.lax.stop_gradient(gate["weight"].T) @ ctx      ## TODO check this
+            H = jax.lax.stop_gradient(gate["weight"].T) @ ctx
 
             # G = jax.nn.softmax(H)       ## This works, but above doesn't
             # G = jax.nn.softmax(H / gate["temperature"][0])
@@ -277,7 +277,8 @@ class Model(eqx.Module):
             return G
             # return H
 
-        self.gate = {"weight":gate_weight, "temperature":gate_temp, "top_k":top_k, "function":gating_function}
+        # self.gate = {"weight":gate_weight, "temperature":gate_temp, "top_k":top_k, "function":gating_function}
+        self.gate = {"weight":gate_weight, "temperature":gate_temp, "top_k":top_k, "function":gating_function, "lsqr_factor":jnp.array([1e-3])}
         # gating_function(self.gate, jnp.zeros((context_size,)))    TEST
 
         self.n_experts = nb_experts
@@ -300,7 +301,7 @@ class Model(eqx.Module):
                                         lambda in_dat: jnp.zeros_like(in_dat[1]), 
                                         (t, y, ctx))
                                         # (t, y, ctx_pieces[i]))
-            dy += G[i]*contribution
+            dy += G[i]*contribution     ##TODO: remove the weigthing
             # dy += SM[i]*contribution
             # dy += jnp.round(G[i], 1)*contribution
             # dy += contribution
