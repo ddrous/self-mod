@@ -1,3 +1,12 @@
+#%%[markdown]
+# # ODE-Bench: Main script for training and testing the ODE-Bench dataset
+# ToDos:
+# - [x] On the trained models (one is much beter trained than the other), calculate the rates of improvement in the loss.
+# - [x] Copy the gating mecahism from the trainer, and fit the lstsqr to see if its's working as expected
+# - [x] If not, see if a neural network would be able to learn the gating mechanism (n_expert outputs, softmaxed), with a fixed point DEQ learning mechanism
+
+
+
 #%%
 # %load_ext autoreload
 # %autoreload 2

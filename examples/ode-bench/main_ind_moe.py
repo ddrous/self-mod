@@ -51,8 +51,8 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (0., 0., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 2000
-nb_inner_steps = (1, 1, 1)
+nb_outer_steps = 500
+nb_inner_steps = (1, 1, 0)
 nb_adapt_epochs = 500
 validate_every = 100*1
 
@@ -162,6 +162,7 @@ class Expert(eqx.Module):
     depth_main:int
 
     rescaler: eqx.Module
+    router: eqx.Module
 
     def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
         self.ctx_utils = ctx_utils
@@ -205,11 +206,10 @@ class Expert(eqx.Module):
         # self.rescaler = eqx.tree_at(lambda m:m.bias, rescaler, jnp.array([1.]))
         self.rescaler = eqx.tree_at(lambda m:m.bias, rescaler, rescaler.bias*scale_factor)
 
-    def __call__(self, t, y, ctx):
-        # t, y, ctx = in_dat
+        self.router = eqx.nn.Linear(context_size, 1, key=keys[depth_data+depth_main+2])
 
-        ## Pad the context with zeros before using
-        ctx = jnp.concatenate([ctx, jnp.zeros_like(ctx)], axis=0)
+    def forward(self, t, y, ctx):
+        # t, y, ctx = in_dat
 
         ## Rescale factor
         # factor = jnp.clip(jax.nn.relu(self.rescaler(ctx).squeeze()), 1, 1e2)
@@ -240,6 +240,16 @@ class Expert(eqx.Module):
         # y = y * factor
 
         return y
+
+
+    def __call__(self, t, y, ctx):
+        G = self.router(ctx)[0]
+        return jax.lax.cond(G>0., 
+                            lambda in_dat: self.forward(*in_dat), 
+                            lambda in_dat: jnp.zeros_like(in_dat[1]), 
+                            (t, y, ctx))
+
+
 
 
 # ## Define model and loss function for the learner
@@ -288,28 +298,9 @@ class Model(eqx.Module):
         self.is_moe = True     ## Fix this !
 
     def __call__(self, t, y, ctx):
-        G = self.gate["function"](self.gate, ctx)
-        ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
-        ## Use the second half of the context
-        # ctx, _ = jnp.split(ctx, 2, axis=0)
-        # SM = jax.nn.softmax(G)
-
-        # ctx_pieces = (ctx_pieces[0], ctx_pieces[1].at[:].add(1.))
-
-        max_G = jnp.max(G)
         dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
-            # dy += G[i]*self.experts[i]((t, y, ctx))
-
-            contribution = jax.lax.cond(G[i]>max_G-1e-6, 
-                                        lambda in_dat: self.experts[i](*in_dat), 
-                                        lambda in_dat: jnp.zeros_like(in_dat[1]), 
-                                        # (t, y, ctx))
-                                        (t, y, i+ctx_pieces[i]))
-            # dy += G[i]*contribution     ##TODO: remove the weigthing
-            # dy += SM[i]*contribution
-            # dy += jnp.round(G[i], 1)*contribution
-            dy += contribution
+            dy += self.experts[i](t, y, ctx)
 
         return dy
 
