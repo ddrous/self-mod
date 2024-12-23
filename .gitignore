@@ -125,5 +125,6 @@ examples/ode-bench/runs/*
 examples/ode-bench/runs/241129-230513-MegaGolden*/checkpoints/
 !examples/ode-bench/runs/241129-230513-MegaGolden*/
 !examples/ode-bench/runs/241207-204554-PerfectT0/
+examples/ode-bench/runs/241207-204554-PerfectT0/runs/
 examples/ode-bench/runs/241207-204554-PerfectT0/checkpoints
 examples/ode-bench/core
