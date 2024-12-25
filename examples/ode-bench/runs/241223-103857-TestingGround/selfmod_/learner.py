@@ -277,7 +277,7 @@ class Learner:
 
                     Y_hat = jax.vmap(new_model, in_axes=(None, None, 0))(X, ctxs[i], ctx[None, :])  ## No CSM
                     Y_new = jnp.broadcast_to(Y, Y_hat.shape)
-                    loss, _ = env_loss_fn(expert, ctx, Y_hat, Y_new)
+                    loss, _ = env_loss_fn(expert, ctx, Y_new, Y_hat)
                     expert_losses.append(loss)
 
                 expert_losses = jnp.array(expert_losses)

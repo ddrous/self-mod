@@ -268,16 +268,31 @@ class Learner:
             def env_loss_fn_multitask_(model, batch, ctx, ctxs, key):
                 """ Wrapping the env loss function without CSM, for each expert individualy """
                 X, Y = batch
+                # jax.debug.print("SHape of X, Y: {} {}", X.shape, Y.shape)
+
+                new_model = self.reset_model_expert(model, model.vectorfield.neuralnet.experts[0])    ## Reset the expert model without CSM
 
                 expert_losses = []
                 nb_experts = len(model.vectorfield.neuralnet.experts)
                 ctxs = jnp.split(ctx, nb_experts, axis=0)
                 for i, expert in enumerate(model.vectorfield.neuralnet.experts):
-                    new_model = self.reset_model_expert(model, expert)    ## Reset the expert model without CSM
 
-                    Y_hat = jax.vmap(new_model, in_axes=(None, None, 0))(X, ctxs[i], ctx[None, :])  ## No CSM
+                    jax.debug.print("A weight in the learned expert \n {}", expert.layers_data[0].weight)
+
+                    # make a copy of the expert
+                    # expert = jax.tree.map(lambda x: x, expert)
+                    # new_model = self.reset_model_expert(model, expert)    ## Reset the expert model without CSM
+
+                    ## SUrgery on new_model to replace the expert
+                    new_model = eqx.tree_at(lambda m: m.vectorfield.neuralnet, new_model, expert)
+
+                    # Y_hat = jax.vmap(new_model, in_axes=(None, None, 0))(X, ctxs[i], ctx[None, :])  ## No CSM
+                    # Y_new = jnp.broadcast_to(Y, Y_hat.shape)
+
+                    Y_hat = new_model(X, ctxs[i], ctxs[i])
                     Y_new = jnp.broadcast_to(Y, Y_hat.shape)
-                    loss, _ = env_loss_fn(expert, ctx, Y_new, Y_hat)
+
+                    loss, _ = env_loss_fn(expert, ctx, Y_hat, Y_new)
                     expert_losses.append(loss)
 
                 expert_losses = jnp.array(expert_losses)
@@ -289,6 +304,7 @@ class Learner:
             def loss_fn_multitask(model, contexts, batch, key):
                 """ This loss computes the loss function for each expert invidually, and then combines them """
                 # indices = select_indices(self.loss_filling, contexts, prev_losses, key)
+                # print("We're using all the environments for each expert ...")
 
                 ## Actually, let's use all the environments for each expert
                 indices = jnp.arange(contexts.params.shape[0])
@@ -381,14 +397,14 @@ class Learner:
     def reset_model_expert(self, model, expert):
         """ Reset the model to use a specific expert """
         if isinstance(model, NeuralODE):        ## TODO also check that its neural net is a MoE
-            model = NeuralODE(neuralnet=expert, 
+            new_model = NeuralODE(neuralnet=expert, 
                             taylor_order=0,
                             taylor_ad_mode=model.taylor_ad_mode, 
                             ivp_args=model.ivp_args,
                             t_eval=model.t_eval)
         else:
             raise ValueError(f"The model type {type(model)} is not supported")
-        return model
+        return new_model
 
 
     # def reset_contexts(self, nb_envs):

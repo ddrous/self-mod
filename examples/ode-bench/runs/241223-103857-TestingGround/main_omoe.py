@@ -8,8 +8,8 @@
 
 
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -67,9 +67,9 @@ validate_every = 100*1
 
 print_error_every = (10*1, 10*1)
 
-meta_train = True
+meta_train = False
 save_trainer = True
-meta_test = True
+meta_test = False
 
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
@@ -440,10 +440,183 @@ else:
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)
 
+
+
+
+
+#%%
+
+## Let's calulate the reates of improvement for each environment
+
+
+fake_model = learner.model
+print("Check insitance type:", isinstance(fake_model, NeuralODE))
+# new_model = learner.reset_model_expert(learner.model, learner.model.vectorfield.neuralnet.experts[0])    ## Reset the expert model without CSM
+
+
+#%%
+# print("A weifh in the learned expert 0:\n", fake_model.vectorfield.neuralnet.experts[0].layers_data[0].weight)
+# print("A weifh in the learned expert 1:\n", fake_model.vectorfield.neuralnet.experts[1].layers_data[0].weight)
+
+## Set the first expert to be the same as the second expert
+# fake_model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.experts[0], fake_model, fake_model.vectorfield.neuralnet.experts[1])
+
+## Fake model is loaded from the ckecpoint folder
+# fake_model = eqx.tree_deserialise_leaves(run_folder+"checkpoints/model_outstep_000100.eqx", fake_model)
+# fake_model = eqx.tree_deserialise_leaves(run_folder+"checkpoints/model_outstep_001990.eqx", fake_model)
+
+eff_ctx_size = learner.contexts.eff_context_size // nb_experts
+ctx_expt1 = learner.contexts.params[:, :eff_ctx_size]
+ctx_expt2 = learner.contexts.params[:, eff_ctx_size:]
+
+all_exp1 = jnp.concatenate([ctx_expt1, ctx_expt1], axis=1)
+all_exp2 = jnp.concatenate([ctx_expt2, ctx_expt2], axis=1)
+
+fake_ctx = learner.contexts
+fake_ctx1 = eqx.tree_at(lambda c:c.params, fake_ctx, all_exp1)
+fake_ctx2 = eqx.tree_at(lambda c:c.params, fake_ctx, all_exp2)
+
+
+
+def env_loss_fn_multitask_(model, batch, ctx, ctxs, key):
+    """ Wrapping the env loss function without CSM, for each expert individualy """
+    X, Y = batch
+    # jax.debug.print("SHape of X, Y: {} {}", X.shape, Y.shape)
+
+    new_model = learner.reset_model_expert(model, model.vectorfield.neuralnet.experts[0])    ## Reset the expert model without CSM
+    # new_model = model
+
+    Y_hats = []
+    Y_news = []
+
+    expert_losses = []
+    nb_experts = len(model.vectorfield.neuralnet.experts)
+    ctxs = jnp.split(ctx, nb_experts, axis=0)
+    for i, expert in enumerate(model.vectorfield.neuralnet.experts):
+
+        # jax.debug.print("A weight in the learned expert \n {}", expert.layers_data[0].weight)
+
+        # make a copy of the expert
+        # expert = jax.tree.map(lambda x: x, expert)
+        # new_model = self.reset_model_expert(model, expert)    ## Reset the expert model without CSM
+
+        ## SUrgery on new_model to replace the expert
+        new_model = eqx.tree_at(lambda m: m.vectorfield.neuralnet, new_model, expert) ## TODO put this back
+
+        # Y_hat = jax.vmap(new_model, in_axes=(None, None, 0))(X, ctxs[i], ctx[None, :])  ## No CSM
+        # Y_new = jnp.broadcast_to(Y, Y_hat.shape)
+
+        Y_hat = new_model(X, i+ctxs[i], i+ctxs[i])      ##TODO add i to this !!
+        # Y_hat = new_model(X, ctx, ctx)
+
+        Y_new = jnp.broadcast_to(Y, Y_hat.shape)
+
+        # loss, _ = env_loss_fn(expert, ctx, Y_hat, Y_new)
+        loss = jnp.mean((Y_hat-Y_new)**2)
+
+        expert_losses.append(loss)
+        Y_hats.append(Y_hat)
+        Y_news.append(Y_new)
+
+    expert_losses = jnp.array(expert_losses)
+
+    return jnp.mean(expert_losses), (expert_losses, jnp.stack(Y_hats), jnp.stack(Y_news))
+    # return jnp.min(expert_losses), (expert_losses, )        ## The min so that only one expert might contribute
+
+
+def loss_fn_multitask(model, contexts, batch, key):
+    """ This loss computes the loss function for each expert invidually, and then combines them """
+    # indices = select_indices(self.loss_filling, contexts, prev_losses, key)
+    # print("We're using all the environments for each expert ...")
+
+    ## Actually, let's use all the environments for each expert
+    indices = jnp.arange(contexts.params.shape[0])
+
+    random_contexts = contexts.params[indices, :]
+
+    # random_batch = (batch[0][indices], batch[1][indices])
+
+    ## the full batch is now a pytree, the input is a tuple itself
+    random_batch = jax.tree.map(lambda x: x[indices], batch)
+
+    # keys = keys[indices]
+    keys = jax.random.split(key, num=indices.shape[0])
+
+    losses, (expert_losses, Y_hat, Y_new) = jax.vmap(env_loss_fn_multitask_, in_axes=(None, 0, 0, None, 0))(model, random_batch, random_contexts, random_contexts, keys)
+
+    weightings = jnp.arange(indices.shape[0]) / indices.shape[0]
+    mean_loss = jnp.sum(weightings * losses)
+
+    return mean_loss, (expert_losses, indices, Y_hat, Y_new)      ## Expert losses of shape (nb_experts, nb_envs)
+
+
+
+
+
+
+## Set the train_propotion to 1, to get the full trajectory
+train_dataloader.dataset.traj_prop_min = 1.0
+
+## These expert losses are something different than the losses above, and I'm going to find out what !!!
+for b_id, batch in enumerate(train_dataloader):
+    print("Batch ID is:", b_id, batch[1].shape)
+    # mean_loss, (expert_losses, indices) = learner.loss_fn_multitask(fake_model, fake_ctx, batch, trainer_key)
+    mean_loss, (expert_losses, indices, Y_hat, Y_new) = loss_fn_multitask(fake_model, fake_ctx, batch, trainer_key)
+
+
+print("Mean loss is:", mean_loss)
+# print("Contributing indices are:", indices)
+# print("Expert losses are:\n", expert_losses)
+
+print("Y hat shape is:", Y_hat.shape)
+# Y_hat = Y_hat.transpose(1, 0, 2, 3)
+# Y_new = Y_new.transpose(1, 0, 2, 3)
+## Let's do a plot of Y_hat vs Y_new for the first 9 environments (Expert 1)
+fig, ax = plt.subplots(1, 2, figsize=(6*3, 3))
+ax[0].scatter(Y_new[:,0].flatten(), Y_hat[:,0].flatten(), cmap='viridis', label="Expert 0")
+ax[1].scatter(Y_new[:,1].flatten(), Y_hat[:,1].flatten(), cmap='viridis', label="Expert 1")
+
+## Properly plot the trajectories
+env = 16
+traj = 0
+Y_hat = Y_hat[env, :, traj]
+Y_new = Y_new[env, :, traj]
+fig, ax = plt.subplots(1, 1, figsize=(6*1, 3*1))
+ax.plot(Y_new[0], '-', label="True", color='k')
+ax.plot(Y_hat[0], '+-', label="Expert 0", color='r', markersize=10)
+ax.plot(Y_hat[1], 'o-', label="Expert 1", color='b')
+# ax.set_ylim(-2, 2)
+ax.legend()
+# print("Y hat 0 is:", Y_hat[0])
+
+## PLot the expert losses as two bar plots on the same axis
+fig, ax = plt.subplots(1, 1, figsize=(10, 4))
+ax.bar(np.arange(16*ode_count), expert_losses[:,0], color='r', alpha=0.6, label="Expert 0")
+ax.bar(np.arange(16*ode_count), expert_losses[:,1], color='b', alpha=0.4, label="Expert 1")
+ax.set_yscale('log')
+ax.legend()
+ax.set_title("Loss per InD environment for the two experts");
+
+# ## Check that the first expert is the same as the second expert (weight)
+# f_expert = fake_model.vectorfield.neuralnet.experts[0]
+# s_expert = fake_model.vectorfield.neuralnet.experts[1]
+# print("First expert is:", f_expert.layers_data[0].weight)
+# print("Second expert is:", s_expert.layers_data[0].weight)
+
+
+#%%
+## I am witnessing magic live
+
+new_model = learner.reset_model_expert(learner.model, learner.model.vectorfield.neuralnet.experts[0])    ## Reset the expert model without CSM
+print(new_model)
+
+
+
 #%%
 ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
+#%%
 ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
                                     taylor_order=taylor_orders[1], 
                                     nb_steps=nb_adapt_epochs,
@@ -458,14 +631,35 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
 print("Loss per InD environment:", all_ind_crit[0].tolist())
 
+## PLot the loss per env for the 32 envs on the x axis
+fig, ax = plt.subplots(1, 1, figsize=(10, 4))
+## I want rectangles, whose hight indicates the loss, rather than simple points
+ax.bar(np.arange(16*ode_count), all_ind_crit[0], color='b', alpha=0.6)
+
+## x axis labels are ALL the environments
+ax.set_xticks(np.arange(16*ode_count))
+ax.set_xticklabels(np.arange(16*ode_count))
+
+
+# ax.plot(all_ind_crit[0], 'o-' )
+
+ax.set_yscale('log')
+ax.set_title("Loss per InD environment")
 
 
 # new_ctx = np.load(run_folder+"contexts_params.npy")
 # learner.contexts = eqx.tree_at(lambda c:c.params, learner.contexts, new_ctx)
 # eqx.tree_serialise_leaves(run_folder+"contexts.eqx", learner.contexts)
 
+# original_model = eqx.tree_at(lambda m:m, trainer.learner.model, trainer.learner.model)    ## Copy the model
 
 #%%
+
+## Visualise the dynamics of with a fake model (Expert 0 is completely untrained. It's loss whoudl be bigger)
+# fake_model = original_model
+# fake_model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.experts[1], fake_model, fake_model.vectorfield.neuralnet.experts[0])
+# visualtester.trainer.learner.model = fake_model
+
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
                                 # nb_envs=16*ode_count,
@@ -481,6 +675,9 @@ visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
 contexts = learner.contexts
 network = trainer.learner.model.vectorfield.neuralnet
 
+print("A weifh in the learned expert 0:\n", network.experts[0].layers_data[0].weight)
+print("A weifh in the learned expert 1:\n", network.experts[1].layers_data[0].weight)
+
 # print("These the gate weights:", network.gate.weight.squeeze())
 
 @eqx.filter_vmap
@@ -491,14 +688,17 @@ def gate_fn(ctx):
     # H = network.gate_weight@ctx
     H = network.gate["function"](network.gate, ctx)
 
-    topk_vals, topk_idx = jax.lax.top_k(H, top_k)
-    infs = jnp.full_like(H, -jnp.inf)
-    infs = infs.at[topk_idx].set(topk_vals)
-    G = jax.nn.softmax(infs)
+    # topk_vals, topk_idx = jax.lax.top_k(H, top_k)
+    # infs = jnp.full_like(H, -jnp.inf)
+    # infs = infs.at[topk_idx].set(topk_vals)
+    # G = jax.nn.softmax(infs)
+
+    G = H
 
     return G
 
 gate_vals = gate_fn(contexts.params)
+# print("Gate values are:", gate_vals)
 
 fig, (ax, ax2) = plt.subplots(1, 2, figsize=(7*2, 6))
 ## sort and plot histogram of gate values
@@ -509,7 +709,8 @@ ax.set_title(f"Gate Histogram with Top-K = {top_k}")
 # print(gate_vals)
 
 ## inshow on ax2
-img = ax2.imshow(gate_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
+img = ax2.imshow(gate_vals, aspect='auto', cmap='turbo', interpolation=None)
+# img = ax2.imshow(gate_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
 plt.colorbar(img)
 ax2.set_xlabel("Experts")
 ax2.set_ylabel("Environments")
@@ -670,14 +871,14 @@ if meta_test:
     print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
 #%%
-visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_4_5.png", adaptation=True)
+# visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_4_5.png", adaptation=True)
 
-visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_4_5.png",
-                                data_loader=adapt_dataloader_test,
-                                nb_envs=1,
-                                traj=0,
-                                share_axes=False,
-                                key=test_key)
+# visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_4_5.png",
+#                                 data_loader=adapt_dataloader_test,
+#                                 nb_envs=1,
+#                                 traj=0,
+#                                 share_axes=False,
+#                                 key=test_key)
 
 #%%
 
@@ -686,6 +887,95 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
                                         # key=test_key,
                                         key=jax.random.PRNGKey(time.time_ns()),
                                         save_path=adapt_folder+"context_clusters.png")
+
+
+
+
+
+#%%
+
+X = learner.contexts.params # of shape (nb_envs, context_size)
+
+## Perform k-means clustering, to find 2 clusters. DO not use sklearn. Implement from scratch, using JAX as much as possible
+
+def kmeans(X, k, max_iter=100):
+    """
+    X: (nb_envs, context_size)
+    k: number of clusters
+    """
+    nb_envs, context_size = X.shape
+
+    ## Randomly initialise the centroids
+    centroids = jax.random.uniform(jax.random.PRNGKey(time.time_ns()), (k, context_size), minval=-1, maxval=1)
+
+    # for i in range(max_iter):
+    #     ## Assign each point to the nearest centroid
+    #     distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
+    #     cluster_assignments = jnp.argmin(distances, axis=-1)
+
+    #     ## Update the centroids
+    #     for j in range(k):
+    #         cluster_points = X[cluster_assignments == j]
+    #         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
+
+    ## Use a JAX fori loop
+    # @eqx.filter_jit(static_argnums=(2,))
+    def cluster_fun(x, cluster_id, j):
+        return jax.lax.cond(cluster_id == j, 
+                            lambda x: x, 
+                            lambda x: jnp.zeros_like(x), 
+                            x)
+
+    def body_fun(i, in_data):
+        centroids = in_data[0]
+        distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
+        cluster_assignments = jnp.argmin(distances, axis=-1)
+
+        ## Update the centroids
+        for j in range(k):
+            # cluster_points = X[cluster_assignments == j]
+            ## Use jax.lax.cond to handle cluster assignment
+            cluster_points = eqx.filter_vmap(cluster_fun, in_axes=(0,0,None))(X, cluster_assignments, j)
+
+            centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
+        return centroids, cluster_assignments
+
+    ## Just for init
+    distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
+    cluster_assignments = jnp.argmin(distances, axis=-1)
+    centroids, cluster_assignments = jax.lax.fori_loop(0, max_iter, body_fun, (centroids, cluster_assignments))
+
+    return centroids, cluster_assignments
+
+centroids, cluster_assignments = kmeans(X, 2, max_iter=5)
+
+## Visualise the clusters
+fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+
+# ax.scatter(X[:, 0], X[:, 2], c=cluster_assignments)
+## Plot the points, different colors for different clusters
+for k in range(2):
+    ax.scatter(X[cluster_assignments==k, 0], X[cluster_assignments==k, 2], label=f"Cluster {k}")
+
+ax.scatter(centroids[:, 0], centroids[:, 2], c='red', s=100)
+ax.legend()
+plt.draw()
+plt.savefig(run_folder+"kmeans_clusters.png")
+
+# print("Centroids are:", centroids)
+print("Number of points in each cluster:", jnp.bincount(cluster_assignments))
+print("Cluster assignments are:", cluster_assignments)
+
+
+
+
+
+
+
+
+
+
+
 
 #%%
 ## After training, copy nohup.log to the runfolder
@@ -699,3 +989,5 @@ except NameError:
 # adapt_dataloader_test.dataset.dataset.max()
 # train_dataloader.dataset.dataset.max()
 # val_dataloader.dataset.dataset.max()
+
+# %%
