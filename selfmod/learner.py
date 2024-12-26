@@ -277,7 +277,7 @@ class Learner:
                 ctxs = jnp.split(ctx, nb_experts, axis=0)
                 for i, expert in enumerate(model.vectorfield.neuralnet.experts):
 
-                    jax.debug.print("A weight in the learned expert \n {}", expert.layers_data[0].weight)
+                    # jax.debug.print("A weight in the learned expert \n {}", expert.layers_data[0].weight)
 
                     # make a copy of the expert
                     # expert = jax.tree.map(lambda x: x, expert)

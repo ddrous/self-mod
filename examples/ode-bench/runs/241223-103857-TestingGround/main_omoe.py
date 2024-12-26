@@ -444,6 +444,84 @@ else:
 
 
 
+
+
+#%%
+
+X = learner.contexts.params # of shape (nb_envs, context_size)
+
+## Perform k-means clustering, to find 2 clusters. DO not use sklearn. Implement from scratch, using JAX as much as possible
+
+def kmeans(X, k, max_iter=100):
+    """
+    X: (nb_envs, context_size)
+    k: number of clusters
+    """
+    nb_envs, context_size = X.shape
+
+    ## Randomly initialise the centroids
+    centroids = jax.random.uniform(jax.random.PRNGKey(time.time_ns()), (k, context_size), minval=-1, maxval=1)
+
+    # for i in range(max_iter):
+    #     ## Assign each point to the nearest centroid
+    #     distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
+    #     cluster_assignments = jnp.argmin(distances, axis=-1)
+
+    #     ## Update the centroids
+    #     for j in range(k):
+    #         cluster_points = X[cluster_assignments == j]
+    #         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
+
+    ## Use a JAX fori loop
+    # @eqx.filter_jit(static_argnums=(2,))
+    def cluster_fun(x, cluster_id, j):
+        return jax.lax.cond(cluster_id == j, 
+                            lambda x: x, 
+                            lambda x: jnp.zeros_like(x), 
+                            x)
+
+    def body_fun(i, in_data):
+        centroids = in_data[0]
+        distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
+        cluster_assignments = jnp.argmin(distances, axis=-1)
+
+        ## Update the centroids
+        for j in range(k):
+            # cluster_points = X[cluster_assignments == j]
+            ## Use jax.lax.cond to handle cluster assignment
+            cluster_points = eqx.filter_vmap(cluster_fun, in_axes=(0,0,None))(X, cluster_assignments, j)
+
+            centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
+        return centroids, cluster_assignments
+
+    ## Just for init
+    distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
+    cluster_assignments = jnp.argmin(distances, axis=-1)
+    centroids, cluster_assignments = jax.lax.fori_loop(0, max_iter, body_fun, (centroids, cluster_assignments))
+
+    return centroids, cluster_assignments
+
+centroids, cluster_assignments = kmeans(X, 2, max_iter=5)
+
+## Visualise the clusters
+fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+
+# ax.scatter(X[:, 0], X[:, 2], c=cluster_assignments)
+## Plot the points, different colors for different clusters
+for k in range(2):
+    ax.scatter(X[cluster_assignments==k, 0], X[cluster_assignments==k, 2], label=f"Cluster {k}")
+
+ax.scatter(centroids[:, 0], centroids[:, 2], c='red', s=100)
+ax.legend()
+plt.draw()
+plt.savefig(run_folder+"kmeans_clusters.png")
+
+# print("Centroids are:", centroids)
+print("Number of points in each cluster:", jnp.bincount(cluster_assignments))
+print("Cluster assignments are:", cluster_assignments)
+
+
+
 #%%
 
 ## Let's calulate the reates of improvement for each environment
@@ -602,6 +680,69 @@ ax.set_title("Loss per InD environment for the two experts");
 # s_expert = fake_model.vectorfield.neuralnet.experts[1]
 # print("First expert is:", f_expert.layers_data[0].weight)
 # print("Second expert is:", s_expert.layers_data[0].weight)
+
+
+
+#%%
+
+## Let's recapitulate the quantities we have right now,
+## 1. The expert losses for each environment: expert_losses
+# print("Expert losses are:", expert_losses)
+## 2. The clusters of the environments: centroids, cluster_assignments
+print("Centroids are:", centroids)
+print("Cluster assignments are:", cluster_assignments)
+
+## 3. Calculate the average loss for each cluster for each expert
+expert_cluster_losses_0 = expert_losses[cluster_assignments==0].mean(axis=0)
+expert_cluster_losses_1 = expert_losses[cluster_assignments==1].mean(axis=0)
+print("Expert cluster losses for cluster 0:", expert_cluster_losses_0)
+print("Expert cluster losses for cluster 1:", expert_cluster_losses_1)
+all_expert_cluster_losses = jnp.stack([expert_cluster_losses_0, expert_cluster_losses_1], axis=0)
+
+## 4. Assign clusters to the experts
+used_experts = []  ## The experts that have been assigned to a cluster
+chosen_experts = [] ## The experts that have been chosen as the best expert for a cluster
+for j in range(2):  ##2 is the number of clusters
+    ## Find the expert with the lowest loss in the cluster
+    sorted_mins = jnp.argsort(all_expert_cluster_losses[j])
+    min_expert = sorted_mins[0]
+    while min_expert in used_experts:
+        sorted_mins = sorted_mins[1:]
+        min_expert = sorted_mins[0]
+    used_experts.append(min_expert)
+
+    # all_expert_cluster_losses = all_expert_cluster_losses.at[j].set(jnp.inf)
+    chosen_experts.append(min_expert)
+
+print("Chosen experts are:", np.array(chosen_experts))
+
+# ## 5. Define the gating problem to solve: X=centroids, Y=chosen_experts (one-hoe)
+# X = centroids
+# Y = jax.nn.one_hot(chosen_experts, nb_experts)
+# print("X is:\n", X, "\nIts Pinv shape is:", jnp.linalg.pinv(X).shape)
+# print("Y is:\n", Y)
+# #Find W such that XW = Y
+# W = jnp.linalg.pinv(X) @ Y
+# print("W is:\n", W)
+# print("Check the solution:\n", X @ W)
+
+# ## 6. Check that the gating function works for the raw contexs as well
+# print("CHecking the gating function ...\n", learner.contexts.params@W)
+
+
+## 5. Define the gating problem to solve: X=centroids, Y=chosen_experts (one-hoe)
+X = learner.contexts.params
+## Duplicate Ys to match the number of environments. Use the cluster assigments
+Y = jnp.zeros((X.shape[0], nb_experts))
+Y = Y.at[cluster_assignments==0].set(jax.nn.one_hot(chosen_experts[0], nb_experts))
+Y = Y.at[cluster_assignments==1].set(jax.nn.one_hot(chosen_experts[1], nb_experts))
+print("Y is:\n", Y)
+
+print("X is:\n", X, "\nIts Pinv shape is:", jnp.linalg.pinv(X).shape)
+print("Y is:\n", Y)
+W = jnp.linalg.lstsq(X, Y, rcond=None)[0]
+print("W is:\n", W)
+print("Check the solution:\n", X @ W)
 
 
 #%%
@@ -891,80 +1032,6 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
 
 
 
-
-#%%
-
-X = learner.contexts.params # of shape (nb_envs, context_size)
-
-## Perform k-means clustering, to find 2 clusters. DO not use sklearn. Implement from scratch, using JAX as much as possible
-
-def kmeans(X, k, max_iter=100):
-    """
-    X: (nb_envs, context_size)
-    k: number of clusters
-    """
-    nb_envs, context_size = X.shape
-
-    ## Randomly initialise the centroids
-    centroids = jax.random.uniform(jax.random.PRNGKey(time.time_ns()), (k, context_size), minval=-1, maxval=1)
-
-    # for i in range(max_iter):
-    #     ## Assign each point to the nearest centroid
-    #     distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
-    #     cluster_assignments = jnp.argmin(distances, axis=-1)
-
-    #     ## Update the centroids
-    #     for j in range(k):
-    #         cluster_points = X[cluster_assignments == j]
-    #         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
-
-    ## Use a JAX fori loop
-    # @eqx.filter_jit(static_argnums=(2,))
-    def cluster_fun(x, cluster_id, j):
-        return jax.lax.cond(cluster_id == j, 
-                            lambda x: x, 
-                            lambda x: jnp.zeros_like(x), 
-                            x)
-
-    def body_fun(i, in_data):
-        centroids = in_data[0]
-        distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
-        cluster_assignments = jnp.argmin(distances, axis=-1)
-
-        ## Update the centroids
-        for j in range(k):
-            # cluster_points = X[cluster_assignments == j]
-            ## Use jax.lax.cond to handle cluster assignment
-            cluster_points = eqx.filter_vmap(cluster_fun, in_axes=(0,0,None))(X, cluster_assignments, j)
-
-            centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
-        return centroids, cluster_assignments
-
-    ## Just for init
-    distances = jnp.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=-1)
-    cluster_assignments = jnp.argmin(distances, axis=-1)
-    centroids, cluster_assignments = jax.lax.fori_loop(0, max_iter, body_fun, (centroids, cluster_assignments))
-
-    return centroids, cluster_assignments
-
-centroids, cluster_assignments = kmeans(X, 2, max_iter=5)
-
-## Visualise the clusters
-fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-
-# ax.scatter(X[:, 0], X[:, 2], c=cluster_assignments)
-## Plot the points, different colors for different clusters
-for k in range(2):
-    ax.scatter(X[cluster_assignments==k, 0], X[cluster_assignments==k, 2], label=f"Cluster {k}")
-
-ax.scatter(centroids[:, 0], centroids[:, 2], c='red', s=100)
-ax.legend()
-plt.draw()
-plt.savefig(run_folder+"kmeans_clusters.png")
-
-# print("Centroids are:", centroids)
-print("Number of points in each cluster:", jnp.bincount(cluster_assignments))
-print("Cluster assignments are:", cluster_assignments)
 
 
 

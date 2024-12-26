@@ -589,92 +589,66 @@ class NCFTrainer(Trainer):
         #     return gates, contexts, opt_state, loss, aux_data
 
 
-        @eqx.filter_jit
-        def train_step_gates(model, contexts, expert_losses_old, batch, key):
+        # @eqx.filter_jit
+        def train_step_gates(model, contexts, init_centroids, batch, key):
             print('     ### Compiling function "train_step" for the contexts ...  ')
 
-            # ############ Strategy 1 to select the best expert - Use the previous losses ############
-            # loss, aux_data = self.learner.loss_fn_multitask(model, contexts, batch, key)
-            # expert_losses_new = aux_data[0]     ## Shape: (nb_envs, nb_experts) i.e. for each environment, we know the loss of each expert
-            # ## Let's calculate the rate of improvement of each expert (for each environment)
-            # if expert_losses_old is None:
-            #     expert_improvements = -expert_losses_new
-            # else:
-            #     # expert_improvements = (expert_losses_old - expert_losses_new) / expert_losses_old       ## Must be positive
-            #     expert_improvements = jnp.abs((expert_losses_old - expert_losses_new) / expert_losses_old)       ## Must be positive
-            # best_experts = jnp.argmax(expert_improvements, axis=1)       ## The best expert for each environment
-            # #############################################
+            ############ Strategy to select the best expert ############
 
-            ### Strategy 2 to select the best expert - Use the gradients ###
-            # thew weights and ctx were updated in other steps before, so the diff is nos uitable. use the normal of the gradient wrt withe weights only. It will be the weight that is being used, befause the others are fixed. Check this first please !!!!
-            @eqx.filter_value_and_grad
-            def grad_loss_fn(model, ctx, batch, key):
-                loss, _ = self.learner.env_loss_fn_multitask(model, batch, ctx, ctx, key)
-                return loss
-            def get_mean_loss(model, ctxs, batchs, keys):
-                loss, _ = eqx.filter_vmap(self.learner.env_loss_fn_multitask, in_axes=(None, 0, 0, 0, 0))(model, batchs, ctxs, ctxs, keys)
-                return jnp.mean(loss)
-            keys = jax.random.split(key, num=contexts.params.shape[0])
-            loss, all_grads = eqx.filter_vmap(grad_loss_fn, in_axes=(None, 0, 0, 0))(model, contexts.params, batch, keys)
-            def get_expert_grad_norm(grads):    ## For a single context
-                all_norms = []
-                for expert in grads.vectorfield.neuralnet.experts:
-                    all_norms.append(params_norm_squared(expert))
-                return jnp.array(all_norms)
-            all_envs_expert_norms = eqx.filter_vmap(get_expert_grad_norm)(all_grads)
-            best_experts = jnp.argmax(all_envs_expert_norms, axis=1)       ## The best expert for each environment
-            expert_losses_new = all_envs_expert_norms
+            ## Step 1. See how each expert performs on each environment individually
+            loss, aux_data = self.learner.loss_fn_multitask(model, contexts, batch, key)
+            expert_losses = aux_data[0]     ## Shape: (nb_envs, nb_experts) i.e. for each environment, we know the loss of each expert
 
-            # ## Update the model with the gradients, for a few steps, all while accumulating the losses and 
-            # fake_losses = [expert_losses_old]
-            # fake_grads_norms = []
-            # fake_model = model
-            # fake_model_params, fake_model_static = eqx.partition(fake_model, eqx.is_array)
-            # for _ in range(10):
-            #     keys = jax.random.split(key, num=contexts.params.shape[0])
-            #     loss, fake_loss = self.learner.loss_fn_multitask(model, contexts, batch, key)
-            #     # fake_loss, all_grads = eqx.filter_vmap(grad_loss_fn, in_axes=(None, 0, 0, 0))(fake_model, contexts.params, batch, keys)
-            #     fake_losses.append(fake_loss[0])
+            ## Step 2. Find environment clusters
+            nb_envs, context_size = contexts.params.shape
+            nb_experts = nb_clusters = expert_losses.shape[1]
+            max_iter = 5
+            ctx = contexts.params
+            if init_centroids is None:
+                centroids = jax.random.uniform(jax.random.PRNGKey(time.time_ns()), (nb_clusters, context_size), minval=-1, maxval=1)
+            else:
+                centroids = init_centroids
 
-            #     fake_grads = eqx.filter_grad(get_mean_loss)(fake_model, contexts.params, batch, keys)
-            #     # fake_grads_norms.append(eqx.filter_vmap(get_expert_grad_norm)(all_grads))
-            #     fake_model_params = jax.tree.map(lambda x, y: x-y, fake_model_params, eqx.partition(fake_grads, eqx.is_array)[0])
-            #     fake_model = eqx.combine(fake_model_params, fake_model_static)
+            for i in range(max_iter):
+                ## Assign each point to the nearest centroid
+                distances = jnp.linalg.norm(ctx[:, None, :] - centroids[None, :, :], axis=-1)
+                cluster_assignments = jnp.argmin(distances, axis=-1)
 
-            # all_fake_losses = fake_losses
-            # ## Let's calculate the ema of the EMA over the fake_losses, and select the experts that produce the best improvements in losses
-            # if expert_losses_old is None:
-            #     expert_improvements = jnp.abs((all_fake_losses[-1] - all_fake_losses[1]) / all_fake_losses[1])       ## Must be positive
-            # else:
-            #     expert_improvements = jnp.abs((all_fake_losses[-1] - all_fake_losses[0]) / all_fake_losses[0])       ## Must be positive
+                ## Update the centroids
+                for j in range(nb_clusters):
+                    cluster_points = ctx[cluster_assignments == j]
+                    centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
 
-            # ## Return values
-            # print("The shape of the expert improvements is: ", expert_improvements.shape, all_fake_losses[-1].shape, all_fake_losses[1].shape)
-            # best_experts = jnp.argmax(expert_improvements, axis=1)
-            # expert_losses_new = all_fake_losses[-1]
-            # # loss = fake_loss
-            #############################################
+            ## Step 3. Calculate the average loss for each cluster for each expert
+            expert_cluster_losses = []
+            for j in range(nb_clusters):
+                expert_cluster_losses.append(expert_losses[cluster_assignments==j].mean(axis=0))
+            all_expert_cluster_losses = jnp.stack(expert_cluster_losses, axis=0)
 
-            ## Let's setup the gating problem
-            X = jnp.concatenate([contexts.params, jnp.ones((contexts.params.shape[0], 1))], axis=1)  ## Shape: (nb_envs, nb_features+1)
-            # Y = 2*jax.nn.one_hot(best_experts, num_classes=expert_losses_new.shape[1])-1.      ## Shape: (nb_envs, nb_experts)  varies between -1 and 1 .. TODO: set this differently
-            Y = jax.nn.one_hot(best_experts, num_classes=expert_losses_new.shape[1])      ## Shape: (nb_envs, nb_experts)
-            Y = 2*Y-1       ## Shape: (nb_envs, nb_experts)
-            Y = jax.nn.softmax(Y, axis=1)       ## Shape: (nb_envs, nb_experts)
-            Y = Y + 0.0*jax.random.normal(shape=Y.shape, key=key)     ## Add some noise to the labels TODO
+            ## Step 4. Assign clusters to the experts
+            used_experts = []  ## The experts that have been assigned to a cluster
+            chosen_experts = [] ## The experts that have been chosen as the best expert for a cluster
+            for j in range(nb_clusters):
+                ## Find the expert with the lowest loss in the cluster
+                sorted_mins = jnp.argsort(all_expert_cluster_losses[j])
+                min_expert = sorted_mins[0]
+                while min_expert in used_experts:
+                    sorted_mins = sorted_mins[1:]
+                    min_expert = sorted_mins[0]
+                used_experts.append(min_expert)
+                chosen_experts.append(min_expert)
 
-            ## The matrix that maps X to Y is the gate matrix (with the bias)
-            gate_weight = jnp.linalg.lstsq(X, Y, rcond=None)[0]       ## Shape: (nb_features+1, nb_experts)
+            ## Step 5. Define the gating problem to solve: X=ctx, Y=chosen_experts (one-hoe)
+            X = contexts.params + jax.random.normal(key, contexts.params.shape) * 1e-3
+            Y = jnp.zeros((nb_envs, nb_experts))
+            for j in range(nb_clusters):
+                Y = Y.at[cluster_assignments==j].set(jax.nn.one_hot(chosen_experts[j], nb_experts))
+            W = jnp.linalg.lstsq(X, Y, rcond=None)[0]
 
-            # ## interpolate beetween the current gate and the new one
-            # old_gate_weight = model.vectorfield.neuralnet.gate["weight"]
-            # gate_factor = model.vectorfield.neuralnet.gate["lsqr_factor"]
-            # gate_weight = (1.-gate_factor)*old_gate_weight + gate_factor*gate_weight
+            ## Step 6. Update the gating weights
+            model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.gate["weight"], model, W)
 
-            ## Let's update the gate in the model       TODO: put this back
-            model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.gate["weight"], model, gate_weight)
-
-            return model, contexts, loss, expert_losses_new
+            return model, contexts, loss, centroids
 
 
         # if not isinstance(dataloader, DataLoader):
@@ -752,13 +726,13 @@ class NCFTrainer(Trainer):
                     # gates_old = jax.tree_util.tree_map(lambda x: x, gates)
                     # gates = model.vectorfield.neuralnet.gate        ## TODO for now !
 
-                    expert_losses = None    ## TODO, we don't have the expert losses yet
+                    centroids = None    ## TODO, we don't have the expert losses yet
 
                     ######### Gates proximal innner minimization #########
                     for in_step_gates in range(nb_inner_steps_gates):
                         loss_key, _ = jax.random.split(loss_key)
 
-                        model, contexts, loss_gates, expert_losses = train_step_gates(model, contexts, expert_losses, batch, loss_key)
+                        model, contexts, loss_gates, centroids = train_step_gates(model, contexts, centroids, batch, loss_key)
 
                         loss_epochs_gates.append(loss_gates)
 

@@ -38,7 +38,7 @@ taylor_orders = (0, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-2, "atol":1e-4, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 skip_steps = 4
-# loss_contributors = 16*5//2
+# loss_contributors = 16*1
 loss_contributors = 16*ode_count
 # loss_contributors = 46*1
 max_ret_env_states = num_envs[0]
@@ -261,21 +261,21 @@ class Model(eqx.Module):
         # gate_weight = jnp.zeros((context_size+1, nb_experts))
 
         lim = 1 / np.sqrt(context_size)
-        gate_weight = jax.random.uniform(keys[-1], (context_size+1, nb_experts), minval=-lim, maxval=lim)
+        gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
 
         gate_temp = [0.01]     ## The more the experts, the lower the temp
 
         def gating_function(gate, ctx):
             # H = gate["weight"](ctx)
-            ctx = jnp.concatenate([ctx, jnp.ones((1,))], axis=0)
+            # ctx = jnp.concatenate([ctx, jnp.ones((1,))], axis=0)
             # H = gate["weight"].T @ ctx      ## TODO check this
             H = jax.lax.stop_gradient(gate["weight"].T) @ ctx
 
-            # G = jax.nn.softmax(H)       ## This works, but above doesn't
+            G = jax.nn.softmax(H)       ## This works, but above doesn't
             # G = jax.nn.softmax(H / gate["temperature"][0])
             # G = H
             ## Normalise the gate values
-            G = jnp.abs(H) / jnp.sum(jnp.abs(H))
+            # G = jnp.abs(H) / jnp.sum(jnp.abs(H))
 
             return G
             # return H
@@ -305,7 +305,7 @@ class Model(eqx.Module):
                                         lambda in_dat: self.experts[i](*in_dat), 
                                         lambda in_dat: jnp.zeros_like(in_dat[1]), 
                                         # (t, y, ctx))
-                                        (t, y, i+ctx_pieces[i]))
+                                        (t, y, 0.+ctx_pieces[i]))
             # dy += G[i]*contribution     ##TODO: remove the weigthing
             # dy += SM[i]*contribution
             # dy += jnp.round(G[i], 1)*contribution
@@ -476,16 +476,18 @@ network = trainer.learner.model.vectorfield.neuralnet
 
 @eqx.filter_vmap
 def gate_fn(ctx):
-    ctx_fam, ctx_env = jnp.split(ctx, 2, axis=0)
-
-    in_dat = jnp.concatenate((jnp.array([0.]), jnp.array([0.,0.]), ctx_fam), axis=0)
+    # ctx_fam, ctx_env = jnp.split(ctx, 2, axis=0)
+    # in_dat = jnp.concatenate((jnp.array([0.]), jnp.array([0.,0.]), ctx_fam), axis=0)
     # H = network.gate_weight@ctx
+
     H = network.gate["function"](network.gate, ctx)
 
-    topk_vals, topk_idx = jax.lax.top_k(H, top_k)
-    infs = jnp.full_like(H, -jnp.inf)
-    infs = infs.at[topk_idx].set(topk_vals)
-    G = jax.nn.softmax(infs)
+    # topk_vals, topk_idx = jax.lax.top_k(H, top_k)
+    # infs = jnp.full_like(H, -jnp.inf)
+    # infs = infs.at[topk_idx].set(topk_vals)
+    # G = jax.nn.softmax(infs)
+
+    G = jax.nn.softmax(H)
 
     return G
 
