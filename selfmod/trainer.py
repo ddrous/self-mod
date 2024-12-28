@@ -489,10 +489,38 @@ class NCFTrainer(Trainer):
 
         if isinstance(nb_inner_steps, int):
             nb_inner_steps = (nb_inner_steps, nb_inner_steps, nb_inner_steps)
-        nb_inner_steps_model, nb_inner_steps_ctx, nb_inner_steps_gates = nb_inner_steps
+        # nb_inner_steps_model, nb_inner_steps_ctx, nb_inner_steps_gates = nb_inner_steps
+        nb_inner_steps_model_max, nb_inner_steps_ctx_max, nb_inner_steps_gates = nb_inner_steps
+        ## Let's define inner_steps function that grows from 1 to max
+        # def sigmoid(x):
+        #     return 1 / (1 + np.exp(-x))
+
+        @eqx.filter_jit
+        def inner_steps_fn(current_outer_step, max_outer_step, max_inner_steps):
+            """ A function that returns the number of inner steps to take based on the current outer step 
+            This is a sigmoid function that grows from 1 to max_inner_steps, with a smooth transition starting a third into the iterations
+            params:
+                current_outer_step: int - The current outer step
+                max_outer_step: int - The maximum number of outer steps
+                max_inner_steps: int - The maximum number of inner steps to take
+            """
+            start_growth = max_outer_step//3
+            squashing_level = max_outer_step//30
+            num_inner_step = 1 + (max_inner_steps-1) * jax.nn.sigmoid((current_outer_step-start_growth) / squashing_level)
+            # return int(num_inner_step)
+            return num_inner_step.astype(int)
 
         inner_tol_model, inner_tol_ctx, inner_tol_gates = inner_tols
-        proximal_reg_model, proximal_reg_ctx, proximal_reg_gates = proximal_betas
+        proximal_reg_model_max, proximal_reg_ctx_max, proximal_reg_gates = proximal_betas
+        ## Define the proximal regularisation function
+        @eqx.filter_jit
+        def proximal_reg_fn(current_outer_step, max_outer_step, max_proximal_reg):
+            """ A function that returns the proximal regularisation to apply based on the current outer step """
+            start_growth = max_outer_step//3
+            squashing_level = max_outer_step//30
+            prox_reg = max_proximal_reg * jax.nn.sigmoid((current_outer_step-start_growth) / squashing_level)
+            return prox_reg
+
 
         loss_fn = self.learner.loss_fn
         model = self.learner.model
@@ -512,8 +540,10 @@ class NCFTrainer(Trainer):
                 os.makedirs(backup_folder)
 
         @eqx.filter_jit
-        def train_step_model(model, model_old, contexts, batch, weightings, opt_state, key):            ## TODO stop the model from updateing the weights
+        def train_step_model(model, model_aux, contexts, batch, weightings, opt_state, key):            ## TODO stop the model from updateing the weights
             print('     ### Compiling function "train_step" for the model ...  ')
+
+            model_old, proximal_reg_model = model_aux
 
             def prox_loss_fn(model, contexts, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
@@ -534,8 +564,10 @@ class NCFTrainer(Trainer):
 
 
         @eqx.filter_jit
-        def train_step_ctx(model, contexts, contexts_old, batch, weightings, opt_state, key):
+        def train_step_ctx(model, contexts, contexts_aux, batch, weightings, opt_state, key):
             print('     ### Compiling function "train_step" for the contexts ...  ')
+
+            contexts_old, proximal_reg_ctx = contexts_aux
 
             def prox_loss_fn(contexts, model, batch, weightings, key):
                 loss, aux_data = loss_fn(model, contexts, batch, weightings, key)
@@ -605,7 +637,7 @@ class NCFTrainer(Trainer):
             max_iter = 5
             ctx = contexts.params
             if init_centroids is None:
-                centroids = jax.random.uniform(jax.random.PRNGKey(time.time_ns()), (nb_clusters, context_size), minval=-1, maxval=1)
+                centroids = jax.random.uniform(key, (nb_clusters, context_size), minval=-1, maxval=1)
             else:
                 centroids = init_centroids
 
@@ -663,7 +695,7 @@ class NCFTrainer(Trainer):
         print(f"    Maximum number of batches (along envs): {dataloader.num_batches}")
         print(f"    Total number of epochs: {nb_epochs}")
         print(f"    Number of outer minimizations: {nb_outer_steps}")
-        print(f"    Maximum numbers of inner steps per outer minimizations: {nb_inner_steps_model, nb_inner_steps_ctx}")
+        print(f"    Maximum numbers of inner steps per outer minimizations: {nb_inner_steps_model_max, nb_inner_steps_ctx_max}")
 
         if max_train_batches is None or max_train_batches<1 or max_train_batches>dataloader.num_batches:
             max_train_batches = dataloader.num_batches
@@ -759,11 +791,14 @@ class NCFTrainer(Trainer):
 
                     ######### Model proximal innner minimization #########
                     # model_prev = jax.tree_util.tree_map(lambda x: x, model)
+                    nb_inner_steps_model = inner_steps_fn(out_step, nb_outer_steps, nb_inner_steps_model_max)
                     for in_step_model in range(nb_inner_steps_model):
 
                         loss_key, _ = jax.random.split(loss_key)
 
-                        model, contexts, opt_state_model, loss_model, (term1, term2, _, loss_contrs, _) = train_step_model(model, model_old, contexts, batch, all_env_losses, opt_state_model, loss_key)
+                        proximal_reg_model = proximal_reg_fn(out_step, nb_outer_steps, proximal_reg_model_max)
+
+                        model, contexts, opt_state_model, loss_model, (term1, term2, _, loss_contrs, _) = train_step_model(model, (model_old, proximal_reg_model), contexts, batch, all_env_losses, opt_state_model, loss_key)
 
                         # ###========== Approach #2
                         all_env_losses = all_env_losses.at[loss_contrs].set(term1)
@@ -782,11 +817,17 @@ class NCFTrainer(Trainer):
 
                     ######### Contexts proximal innner minimization #########
                     # contexts_prev = jax.tree_util.tree_map(lambda x: x, contexts)
+                    nb_inner_steps_ctx = inner_steps_fn(out_step, nb_outer_steps, nb_inner_steps_ctx_max)
                     for in_step_ctx in range(nb_inner_steps_ctx):
 
                         loss_key, _ = jax.random.split(loss_key)
 
-                        model, contexts, opt_state_ctx, loss_ctx, (term1, term2, term3, loss_contrs, _) = train_step_ctx(model, contexts, contexts_old, batch, all_env_losses, opt_state_ctx, loss_key)
+                        proximal_reg_ctx = proximal_reg_fn(out_step, nb_outer_steps, proximal_reg_ctx_max)
+
+                        model, contexts, opt_state_ctx, loss_ctx, (term1, term2, term3, loss_contrs, _) = train_step_ctx(model, contexts, (contexts_old, proximal_reg_ctx), batch, all_env_losses, opt_state_ctx, loss_key)
+
+                        # TODO Update the gating here !!
+                        # model, contexts, loss_gates, centroids = train_step_gates(model, contexts, centroids, batch, loss_key)
 
                         # ###========== Approach #1
                         # all_env_losses = all_env_losses.at[loss_contrs].set(term1)

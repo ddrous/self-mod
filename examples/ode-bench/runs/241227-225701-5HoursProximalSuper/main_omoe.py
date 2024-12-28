@@ -3,6 +3,8 @@
 # %autoreload 2
 
 import os
+
+from matplotlib import animation
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
@@ -58,7 +60,7 @@ validate_every = 100*1
 
 print_error_every = (10*1, 10*1)
 
-meta_train = True
+meta_train = False
 save_trainer = True
 meta_test = True
 
@@ -451,8 +453,8 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
                                     max_adapt_batches=max_adapt_batches,
                                     stochastic=False)
 
-visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
-print("Loss per InD environment:", all_ind_crit[0].tolist())
+# visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
+# print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 
 
@@ -465,14 +467,14 @@ print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].rescaler)
 print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].rescaler)
 
 #%%
-visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
-                                data_loader=val_dataloader,
-                                # nb_envs=16*ode_count,
-                                # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                envs=jnp.arange(0, 16*ode_count).tolist(),
-                                traj=0,
-                                share_axes=False,
-                                key=test_key)
+# visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
+#                                 data_loader=val_dataloader,
+#                                 # nb_envs=16*ode_count,
+#                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
+#                                 envs=jnp.arange(0, 16*ode_count).tolist(),
+#                                 traj=0,
+#                                 share_axes=False,
+#                                 key=test_key)
 
 
 #%%
@@ -495,9 +497,9 @@ def gate_fn(ctx):
     # infs = infs.at[topk_idx].set(topk_vals)
     # G = jax.nn.softmax(infs)
 
-    G = jax.nn.softmax(H)
+    # G = jax.nn.softmax(H)
 
-    return G
+    return H
 
 gate_vals = gate_fn(contexts.params)
 
@@ -510,7 +512,7 @@ ax.set_title(f"Gate Histogram with Top-K = {top_k}")
 # print(gate_vals)
 
 ## inshow on ax2
-img = ax2.imshow(gate_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
+img = ax2.imshow(gate_vals, aspect='auto', cmap='turbo', interpolation=None)
 plt.colorbar(img)
 ax2.set_xlabel("Experts")
 ax2.set_ylabel("Environments")
@@ -560,6 +562,49 @@ plt.savefig(run_folder+"gate_histogram_big.png")
 # ax.set_title("Rescale Factors")
 # plt.draw()
 # plt.savefig(run_folder+"rescale_factors.png")
+
+
+
+
+#%%
+
+@eqx.filter_vmap(in_axes=(None, 0))
+def gate_anim_fn(network, ctx):
+    return network.gate["function"](network.gate, ctx)
+
+## We want to do an animation of how the gate values change over time
+all_gate_vals = []
+for outer_step in list(range(0, nb_outer_steps, print_error_every[0]))+[nb_outer_steps-1]:
+    contexts_ = eqx.tree_deserialise_leaves(run_folder+f"checkpoints/contexts_outstep_{outer_step:06d}.eqx", learner.contexts)
+    network_ = eqx.tree_deserialise_leaves(run_folder+f"checkpoints/model_outstep_{outer_step:06d}.eqx", learner.model).vectorfield.neuralnet
+
+    all_gate_vals.append(gate_anim_fn(network_, contexts_.params))
+
+all_gate_vals = jnp.stack(all_gate_vals, axis=0)
+
+#%%
+## Plot the gate values as an animation
+fig, ax = plt.subplots(1, 1, figsize=(6, 7))
+img = ax.imshow(all_gate_vals[0], aspect='auto', cmap='turbo', interpolation="nearest")
+plt.colorbar(img)
+ax.set_xlabel("Experts")
+ax.set_ylabel("Environments")
+
+ax.set_title(f"Outer Step {0}")
+
+ax.set_yticks(y_labels)
+ax.set_yticklabels(y_labels)
+
+ax.set_xticks(x_labels)
+
+def animate(i):
+    img.set_data(all_gate_vals[i])
+    ax.set_title(f"Outer Step {i*print_error_every[0]}")
+    return img,
+
+ani = animation.FuncAnimation(fig, animate, frames=len(all_gate_vals), interval=100, blit=True)
+ani.save(run_folder+"gate_vals_animation.gif", writer='pillow', fps=20)
+
 
 
 
