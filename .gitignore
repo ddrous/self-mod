@@ -134,3 +134,6 @@ examples/ode-bench/runs/241223-103857-TestingGround/checkpoints
 
 !examples/ode-bench/runs/241227-225701-5HoursProximalSuper/
 examples/ode-bench/runs/241227-225701-5HoursProximalSuper/checkpoints
+
+!examples/ode-bench/runs/241229-141910-UnbelievableDivergence/
+examples/ode-bench/runs/241229-141910-UnbelievableDivergence/checkpoints
