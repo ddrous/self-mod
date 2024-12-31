@@ -110,6 +110,9 @@ examples/lotka-v/runs/*
 ## The Foundational dataset
 examples/ode-bench/data_2D/*
 examples/ode-bench/data_2D_tiny/*
+examples/ode-bench/data_2D_mid/*
+examples/ode-bench/data_2D_super_small/*
+examples/ode-bench/data_2D_small/*
 examples/ode-bench/runs/*
 !examples/ode-bench/runs/241017-231954-BestNCF*/
 !examples/ode-bench/runs/241019-183954-CoDAH-9Envs/
@@ -137,3 +140,6 @@ examples/ode-bench/runs/241227-225701-5HoursProximalSuper/checkpoints
 
 !examples/ode-bench/runs/241229-141910-UnbelievableDivergence/
 examples/ode-bench/runs/241229-141910-UnbelievableDivergence/checkpoints
+
+!examples/ode-bench/runs/241231-033843-9Hours-Awesome/
+examples/ode-bench/runs/241231-033843-9Hours-Awesome/checkpoints
