@@ -143,3 +143,6 @@ examples/ode-bench/runs/241229-141910-UnbelievableDivergence/checkpoints
 
 !examples/ode-bench/runs/241231-033843-9Hours-Awesome/
 examples/ode-bench/runs/241231-033843-9Hours-Awesome/checkpoints
+
+!examples/ode-bench/runs/250101-131325-BiggerContexts/
+examples/ode-bench/runs/250101-131325-BiggerContexts/checkpoints
