@@ -664,6 +664,8 @@ class NCFTrainer(Trainer):
             if i == max_iter-1:
                 print(f"❌ Gating k-means did not converge despite {max_iter} iterations.", flush=False)
 
+                # raise ValueError("Following gating k-means will likely not converge as well.")      ## TODO remove this
+
             # if False:
             #     # Y = old_least_squares_labels
             #     pass

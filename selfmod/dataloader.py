@@ -638,9 +638,76 @@ class ODEBenchDataset:
             return (new_trajs[:,0,:], new_ts), new_trajs
 
 
-
-
     def __len__(self):
         return self.total_envs
         # return 16*1      ### TODO this is temporary
+
+
+class EpilepsyDataset:
+    """
+    For the epilepsy dataset from Time Series Classification
+    """
+
+    def __init__(self, data_dir, skip_steps=-1, adaptation=False, traj_prop_min=1.0):
+
+        self.data_dir = data_dir
+        self.skip_steps = skip_steps
+        self.adaptation = adaptation
+
+        try:
+            raw_data = np.load(data_dir)
+        except:
+            raise ValueError(f"Data not found at {data_dir}")
+
+        dataset = raw_data['signal'][:, None, ::self.skip_steps, None]
+        self.dataset = dataset
+
+        n_envs, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
+
+        ## normalise the dataset ?
+
+        ## Duplicate t_eval for each environment
+        t_eval = np.linspace(0, 1., n_timesteps)
+        self.t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
+
+        self.total_envs = n_envs
+
+        if traj_prop_min < 0 or traj_prop_min > 1:
+            raise ValueError("The smallest proportion of the trajectory to use must be between 0 and 1")
+        self.traj_prop_min = traj_prop_min
+
+        self.num_steps = n_timesteps
+        self.data_size = n_dimensions
+        self.num_shots = 1
+
+    def __getitem__(self, idx):
+        inputs = self.dataset[idx, :self.num_shots, :, :]
+        outputs = self.dataset[idx, :self.num_shots, :, :]
+        t_evals = self.t_eval[idx]
+
+        if self.traj_prop_min == 1.0:
+            ### STRAIGHFORWARD APPROACH ###
+            return (inputs, t_evals), outputs
+        else:
+            ### SAMPLING APPROACH ###
+            ## Sample a start and end time step for the task, and interpolate to produce new timesteps
+            ### The minimum distance between the start and finish is min_len
+            traj_len = t_evals.shape[0]
+            new_traj_len = traj_len ## We always want traj_len samples
+            min_len = int(traj_len * self.traj_prop_min)
+            start_idx = np.random.randint(0, traj_len - min_len)
+            end_idx = np.random.randint(start_idx + min_len, traj_len)
+
+            ts = t_evals[start_idx:end_idx]
+            trajs = outputs[:, start_idx:end_idx, :]
+            new_ts = np.linspace(ts[0], ts[-1], new_traj_len)
+            new_trajs = np.zeros((self.num_shots, new_traj_len, self.data_size))
+            for i in range(self.num_shots):
+                for j in range(self.data_size):
+                    new_trajs[i, :, j] = np.interp(new_ts, ts, trajs[i, :, j])
+
+            return (new_trajs[:,:,:], new_ts), new_trajs
+
+    def __len__(self):
+        return self.total_envs
 

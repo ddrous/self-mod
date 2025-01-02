@@ -146,3 +146,13 @@ examples/ode-bench/runs/241231-033843-9Hours-Awesome/checkpoints
 
 !examples/ode-bench/runs/250101-131325-BiggerContexts/
 examples/ode-bench/runs/250101-131325-BiggerContexts/checkpoints
+
+
+## The Epilptic dataset
+examples/epilepsy/data/*
+examples/epilepsy/runs/*
+
+## The Vortal (breathing) dataset
+examples/vortal/data/*
+examples/vortal/runs/*
+*core

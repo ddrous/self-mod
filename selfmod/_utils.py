@@ -469,7 +469,7 @@ def make_run_folder(parent_path='./runs/'):
     return run_folder
 
 
-def setup_run_folder(folder_path, script_name, script_folder=None):
+def setup_run_folder(folder_path, script_name, script_folder=None, copy_ode_gen=True):
     """ Copy the run script, the module files, and create a folder for the adaptation results. """
 
     if not os.path.exists(folder_path):
@@ -497,14 +497,15 @@ def setup_run_folder(folder_path, script_name, script_folder=None):
         os.mkdir(checkpoints_folder)
         print("Created a new checkpoints folder at:", checkpoints_folder)
 
-    ## Create a folder for the generation data scripts
-    if script_folder is not None:
-        data_folder = os.path.join(folder_path, "data/")
-        if not os.path.exists(data_folder):
-            os.mkdir(data_folder)
-            print("Created a new data folder at:", data_folder)
-        os.system(f"cp {script_folder}/data_gen/ode_generation.py {data_folder}")
-        [os.system(f"cp {script_folder}/data_gen/ode_definitions_{n}D.json {data_folder}") for n in range(1, 5)]
-        print("Copied the data generation scripts")
+    if copy_ode_gen == True:
+        ## Create a folder for the generation data scripts
+        if script_folder is not None:
+            data_folder = os.path.join(folder_path, "data/")
+            if not os.path.exists(data_folder):
+                os.mkdir(data_folder)
+                print("Created a new data folder at:", data_folder)
+            os.system(f"cp {script_folder}/data_gen/ode_generation.py {data_folder}")
+            [os.system(f"cp {script_folder}/data_gen/ode_definitions_{n}D.json {data_folder}") for n in range(1, 5)]
+            print("Copied the data generation scripts")
 
     return adapt_folder

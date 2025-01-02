@@ -1,11 +1,13 @@
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+# os.environ["CUDA_VISIBLE_DEVICES"] = ''
+os.environ["JAX_PLATFORMS"] = 'cpu'
 
 from selfmod import *
+# jax.config.update('jax_platform_name', 'cpu')
 
 from matplotlib import animation
 # ## Import jax and debug NaNs
@@ -21,31 +23,26 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-ode_count = 4          ## Total number of ODEs in the dataset
+ode_count = 2          ## Total number of ODEs in the dataset
 nb_experts = ode_count
-nb_envs_per_fam = (5, 1)
+nb_envs_per_fam = (40, 40)
 top_k = 1
 
 num_envs = (nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[1]*ode_count)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 0.4  ## Min proporrion of the trajectory for training
+train_proportion = 0.5  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 4
 context_size = 16*ode_count*1
 taylor_orders = (2, 0)
-# ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
-# ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-skip_steps = 4
-# loss_contributors = int(nb_envs_per_fam[0]*1.5)
-loss_contributors = nb_envs_per_fam[0]*4
-# loss_contributors = 16*ode_count
-# loss_contributors = 46*1
+skip_steps = 1
+loss_contributors = nb_envs_per_fam[0]*1
 max_ret_env_states = num_envs[0]
 split_contexts = False
 
@@ -69,10 +66,7 @@ save_trainer = True
 meta_test = True
 
 run_folder = None if meta_train else "./"
-# run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
-# data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
-data_folder = "./data_2D_small/" if meta_train else "../../data_2D_small/"
-# data_folder = "./data_2D/" if meta_train else "../../data_2D/"
+data_folder = "./data/" if meta_train else "../../data/"
 
 
 #%%
@@ -82,7 +76,7 @@ if run_folder==None:
 else:
     print("Using existing run folder:", run_folder)
 
-adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.dirname(__file__))
+adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.dirname(__file__), copy_ode_gen=False)
 
 #%%
 
@@ -90,9 +84,7 @@ adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz", 
-                                            #    norm_consts=data_folder+"train_bounds.npy",   ## since more data in test/val sets
-                                               num_shots=num_shots[0], 
+train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
                                                skip_steps=skip_steps, 
                                                traj_prop_min=train_proportion), 
                               batch_size=num_envs[0],
@@ -100,9 +92,7 @@ train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz",
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz", 
-                                            #  norm_consts=data_folder+"train_bounds.npy",
-                                             num_shots=num_shots[1], 
+val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
                                              skip_steps=skip_steps,
                                              traj_prop_min=test_proportion),
                               batch_size=num_envs[0],
@@ -112,38 +102,30 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz",
 
 #%%
 
-# ## Plot all trajectories in the first 9 environments
-# plt_data = train_dataloader.dataset.dataset
-# plt_t = train_dataloader.dataset.t_eval
+# ## Plot the trajectories in the a few environments
 
 ## Alternative way to gather the data
-(ins, ts), outs = next(iter(train_dataloader))
-plt_data = outs
-plt_t = ts
+(outs, ts), _ = next(iter(train_dataloader))
 
-print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
+print("Shapes of data and t_eval:", outs.shape, ts.shape)
 
-E_plot = ode_count
-E_ = nb_envs_per_fam[0]
+E_plot = 5
 
 # fig, ax = plt.subplots(E_plot, 1, figsize=(6, E_plot*3))
-fig, ax = plt.subplots(2, E_plot//2, figsize=(6*E_plot//2, 3*2))
+fig, ax = plt.subplots(1, E_plot, figsize=(6*E_plot, 3))
 ax = ax.flatten()
 if E_plot==1:
     ax = [ax]
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
-for e in range(E_plot):
-    e_plot_data = plt_data[e*E_:(e+1)*E_, :, :, 0]
-    e_t_eval = plt_t[e*E_:(e+1)*E_]
-    for e_ in range(E_):
-        # ax[e].plot(e_plot_data[e_].T, '-', color=colors[e_])
-        ax[e].plot(e_t_eval[e_], e_plot_data[e_].T, '-', color=colors[e_])
-        # if e==1:
-        #     print("t_eval is:", e_t_eval[e_])
-    # ax[e].set_title(f"Environment {23+e}")
-    ax[e].set_title(f"Family {e}")
-    ax[e].set_xlabel("Time")
-    ax[e].set_ylabel(f"$y_0$")
+ylim = outs.min(), outs.max()
+xlim = 0, 1
+for e, e_ in enumerate(np.random.choice(outs.shape[0], E_plot)):
+    ax[e].plot(ts[e_], outs[e_].squeeze(), '-', color=colors[e])
+    ax[e].set_title(f"Env {e}")
+    ax[e].set_xlabel("Normalised Time")
+    ax[e].set_ylabel(f"$EEG$")
+    ax[e].set_ylim(ylim)
+    ax[e].set_xlim(xlim)
 
 plt.tight_layout()
 plt.draw()
