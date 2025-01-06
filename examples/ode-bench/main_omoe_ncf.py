@@ -3,7 +3,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
 
@@ -35,7 +35,7 @@ test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 4
-context_size = 16*ode_count*1
+context_size = 64*ode_count*1
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
@@ -57,7 +57,7 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 2000
+nb_outer_steps = 1000
 nb_inner_steps = (25, 25, 1)
 nb_adapt_epochs = 1000
 validate_every = 10*1
@@ -247,8 +247,8 @@ class Model(eqx.Module):
         gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
 
         def gating_function(gate, ctx):
-            H = jax.lax.stop_gradient(gate["weight"].T) @ ctx
-            # H = gate["weight"].T @ ctx
+            # H = jax.lax.stop_gradient(gate["weight"].T) @ ctx       ## TODO: remove stop-gradient and rerun !!
+            H = gate["weight"].T @ ctx
 
             G = jax.nn.softmax(H)       ## This works, but above doesn't
             # G = jnp.abs(H) / jnp.sum(jnp.abs(H))

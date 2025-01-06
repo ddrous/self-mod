@@ -1,3 +1,6 @@
+#%%[markdown]
+## Teacher-Forcing Neural ODEs for Epilepsy Dataset
+
 #%%
 # %load_ext autoreload
 # %autoreload 2
@@ -40,14 +43,14 @@ context_pool_size = 6
 context_size = 32
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
-ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
+# ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
+ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":RK4, "subdivisions": 1}
 skip_steps = 1
 loss_contributors = nb_envs_per_fam[0]*1
 max_ret_env_states = num_envs[0]
 split_contexts = False
 
 data_size = 1
-latent_size = 32
 hidden_size = 64
 depth = 3
 
@@ -59,8 +62,8 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 100
-nb_inner_steps = (10, 10, 1)
+nb_outer_steps = 50
+nb_inner_steps = (15, 15, 1)
 nb_adapt_epochs = 10
 validate_every = 10*1
 
@@ -93,7 +96,8 @@ data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
 train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
                                                skip_steps=skip_steps, 
-                                               traj_prop_min=train_proportion), 
+                                               traj_prop_min=train_proportion,
+                                               use_full_traj=True), 
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
@@ -101,7 +105,8 @@ train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz",
 
 val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
                                              skip_steps=skip_steps,
-                                             traj_prop_min=test_proportion),
+                                             traj_prop_min=test_proportion,
+                                             use_full_traj=True),
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
@@ -112,7 +117,7 @@ val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz",
 # ## Plot the trajectories in the a few environments
 
 ## Alternative way to gather the data
-(outs, ts), _ = next(iter(train_dataloader))
+(_, ts), outs = next(iter(train_dataloader))
 
 print("Shapes of data and t_eval:", outs.shape, ts.shape)
 
@@ -145,30 +150,26 @@ plt.savefig(run_folder+"train_trajectories.png")
 
 # ## Define model and loss function for the learner
 class Expert(eqx.Module):
-    # layers_data: list
-    # activations_data: list
-    # layers_ctx: list
-    # activations_ctx: list
+    layers_data: list
+    activations_data: list
     layers_main: list
+    # layers_ctx: list
     activations_main: list
-    latent_size:int
+    # activations_ctx: list
     data_size:int
 
     ctx_utils:any
     depth_data:int
     depth_main:int
 
-    def __init__(self, data_size, latent_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
+    def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
         self.ctx_utils = ctx_utils
         self.depth_data = depth_data
         self.depth_main = depth_main
         depth_ctx = depth_data
-        self.latent_size = latent_size
         self.data_size = data_size
 
-        # intermediate_size = hidden_size//2
-        assert context_size == latent_size, "Context size and latent size must be the same !"
-        intermediate_size = context_size//2
+        intermediate_size = hidden_size//2
 
         # keys_ctx = jax.random.split(key, num=depth_ctx+1)
         # hid_ctx_size = (context_size + intermediate_size) // 2
@@ -178,34 +179,38 @@ class Expert(eqx.Module):
         # self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys_ctx[depth_ctx])]
 
         keys = jax.random.split(key, num=depth_data+depth_main+2)
-        # hid_ctx_size = (latent_size + intermediate_size) // 2
-        # self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
-        # self.layers_data = [eqx.nn.Linear(latent_size, hid_ctx_size, key=keys[0])]
-        # self.layers_data += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys[i]) for i in range(1, depth_data)]
-        # self.layers_data += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys[depth_data])]
+        hid_ctx_size = (data_size + intermediate_size) // 2
+        self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
+        self.layers_data = [eqx.nn.Linear(data_size, hid_ctx_size, key=keys[0])]
+        self.layers_data += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys[i]) for i in range(1, depth_data)]
+        self.layers_data += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys[depth_data])]
 
         self.activations_main = [Swish(key=k) for k in keys[depth_data+2:]]
         self.layers_main = [eqx.nn.Linear(2*intermediate_size, hidden_size, key=keys[depth_data+1])]
         self.layers_main += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[depth_data+i+1]) for i in range(1, depth_main)]
-        self.layers_main += [eqx.nn.Linear(hidden_size, (data_size+1)*latent_size, key=keys[depth_data+depth_main+1])]
+        self.layers_main += [eqx.nn.Linear(hidden_size, data_size, key=keys[depth_data+depth_main+1])]
 
-        # assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
-        # assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
+        assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
+        assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
 
-    def __call__(self, t, y, ctx):
+    def __call__(self, t, y, ctx_flat):
         # for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
         #     ctx = activation(layer(ctx))
         # ctx = self.layers_ctx[-1](ctx)
 
-        # # y = jnp.concatenate([t_arr, y], axis=0)
-        # for layer, activation in zip(self.layers_data[:-1], self.activations_data):
-        #     y = activation(layer(y))
-        # y = self.layers_data[-1](y)
+        ex_shapes, ex_treedef, ex_static, _ = self.ctx_utils
+        params = unflatten_pytree(ctx_flat, ex_shapes, ex_treedef)
+        ctx_fun = eqx.combine(params, ex_static)
+        ctx = ctx_fun(jnp.array([t]))
+
+        # y = jnp.concatenate([t_arr, y], axis=0)
+        for layer, activation in zip(self.layers_data[:-1], self.activations_data):
+            y = activation(layer(y))
+        y = self.layers_data[-1](y)
 
         ## Apply the context at each layer (except the very last)
-        # y = jnp.concatenate([y, ctx], axis=0)
-        y = jnp.maximum(y, ctx)
+        y = jnp.concatenate([y, ctx], axis=0)
         for layer, activation in zip(self.layers_main[:-1], self.activations_main):
             y = activation(layer(y))
         y = self.layers_main[-1](y)
@@ -215,23 +220,25 @@ class Expert(eqx.Module):
 
 
 # ## Define model and loss function for the learner
-class Generator(eqx.Module):
+class NeuralNet(eqx.Module):
     experts: list
     n_experts: int
     gate:dict
     is_moe: bool
     split_contexts: bool
+    ctx_utils: any
 
-    def __init__(self, data_size, latent_size, hidden_size, depth, context_size, nb_experts, top_k, key=None):
+    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts, top_k, ctx_utils, key=None):
         keys = jax.random.split(key, nb_experts+2)
         self.split_contexts = False
+        self.ctx_utils = ctx_utils
 
         ## Whether the context is split into tiny chunks for each expert
         if self.split_contexts:
             eff_context_size = context_size//nb_experts
         else:
             eff_context_size = context_size
-        self.experts = [Expert(data_size, latent_size, hidden_size, 2, depth, eff_context_size, key=keys[0]) for i in range(nb_experts)]
+        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, ctx_utils=ctx_utils, key=keys[0]) for i in range(nb_experts)]
 
         lim = 1 / np.sqrt(context_size)
         gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
@@ -248,33 +255,31 @@ class Generator(eqx.Module):
         self.is_moe = True     ## Fix this !
 
     def __call__(self, t, y, ctx):
-        G = self.gate["function"](self.gate, ctx)
-        # G = jax.lax.stop_gradient(self.gate["function"](self.gate, ctx))
-        ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
+        # G = self.gate["function"](self.gate, ctx)
+        # # G = jax.lax.stop_gradient(self.gate["function"](self.gate, ctx))
+        # ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
 
-        latent_size = y.shape[0]
-        data_size = self.experts[0].data_size
+        # latent_size = y.shape[0]
+        # data_size = self.experts[0].data_size
 
-        max_G = jnp.max(G)
-        dy = jnp.zeros(latent_size*(data_size+1), )
-        for i in range(self.n_experts):
-            if self.split_contexts:
-                ctx_i = ctx_pieces[i]
-            else:
-                ctx_i = ctx
+        # max_G = jnp.max(G)
+        # dy = jnp.zeros(latent_size*(data_size+1), )
+        # for i in range(self.n_experts):
+        #     if self.split_contexts:
+        #         ctx_i = ctx_pieces[i]
+        #     else:
+        #         ctx_i = ctx
 
-            contribution = jax.lax.cond(G[i]>max_G-1e-6, 
-                                        lambda in_dat: self.experts[i](*in_dat), 
-                                        # lambda in_dat: jnp.zeros((latent_size, data_size+1)), 
-                                        lambda in_dat: jnp.zeros(latent_size*(data_size+1), ), 
-                                        (t, y, ctx_i))
-            dy += contribution
+        #     contribution = jax.lax.cond(G[i]>max_G-1e-6, 
+        #                                 lambda in_dat: self.experts[i](*in_dat), 
+        #                                 # lambda in_dat: jnp.zeros((latent_size, data_size+1)), 
+        #                                 lambda in_dat: jnp.zeros(latent_size*(data_size+1), ), 
+        #                                 (t, y, ctx_i))
+        #     dy += contribution
 
-        return dy
+        # return dy
 
-        # return self.experts[0](t, y, ctx) 
-
-
+        return self.experts[0](t, y, ctx) 
 
 
 def env_loss_fn(model, ctx, y_hat, y):
@@ -282,7 +287,7 @@ def env_loss_fn(model, ctx, y_hat, y):
     Loss function for one environment. Leading dimension of y_hat corresponds to the pool size !
     """
 
-    term1 = jnp.mean((y_hat-y)**2)
+    term1 = jnp.mean((y_hat[...,-1]-y[...,-1])**2)
     term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
 
@@ -295,35 +300,23 @@ def env_loss_fn(model, ctx, y_hat, y):
     return loss_val, (term1, term2, 0.)
 
 ## Example context to use
-contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
+# contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
+contexts = InfDimContextParams(nb_envs=num_envs[0], input_dim=1, output_dim=hidden_size//2, hidden_size=32, depth=3, key=None)
 
 gen_key, enc_key, dec_key = jax.random.split(model_key, num=3)
-neuralnet = Generator(data_size=data_size,
-                        latent_size=latent_size,
-                        hidden_size=hidden_size, 
-                        depth=depth,
-                        context_size=context_size, 
-                        nb_experts=nb_experts, 
-                        top_k=top_k, 
-                        key=gen_key) 
-encoder = eqx.nn.MLP(in_size=data_size,     ## For the initial conditions only !
-                    out_size=latent_size, 
-                    width_size=hidden_size, 
-                    depth=depth, 
-                    use_bias=True, 
-                    activation=jax.nn.softplus,
-                    key=enc_key)
-decoder = eqx.nn.Linear(in_features=latent_size,           ## For all time steps !
-                        out_features=data_size, 
-                        use_bias=True, 
-                        key=dec_key)
+neuralnet = NeuralNet(data_size=data_size,
+                    hidden_size=hidden_size, 
+                    depth=depth,
+                    context_size=contexts.eff_context_size, 
+                    nb_experts=nb_experts, 
+                    top_k=top_k, 
+                    ctx_utils=contexts.ctx_utils,
+                    key=gen_key)
 
-model = NeuralCDE(neuralnet=neuralnet,
-                taylor_order=taylor_orders[0],
-                ivp_args=ivp_args,
-                encoder=encoder,
-                decoder=decoder,
-                taylor_ad_mode="forward")
+model = TFNeuralODE(neuralnet=neuralnet,
+                    taylor_order=taylor_orders[0],
+                    ivp_args=ivp_args,
+                    taylor_ad_mode="forward")
 
 learner = Learner(model=model,
                 context_size=contexts.eff_context_size, 

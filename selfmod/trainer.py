@@ -504,10 +504,9 @@ class NCFTrainer(Trainer):
                 max_outer_step: int - The maximum number of outer steps
                 max_inner_steps: int - The maximum number of inner steps to take
             """
-            start_growth = 2*max_outer_step//3
-            squashing_level = max_outer_step//30
-            num_inner_step = 1 + (max_inner_steps-1) * jax.nn.sigmoid((current_outer_step-start_growth) / squashing_level)
-            # return int(num_inner_step)
+            # start_growth = 2*max_outer_step//3
+            # squashing_level = max_outer_step//30
+            # num_inner_step = 1 + (max_inner_steps-1) * jax.nn.sigmoid((current_outer_step-start_growth) / squashing_level)
             # return num_inner_step.astype(int)
             return max_inner_steps     ## TODO remove this line
 
@@ -517,9 +516,9 @@ class NCFTrainer(Trainer):
         @eqx.filter_jit
         def proximal_reg_fn(current_outer_step, max_outer_step, max_proximal_reg):
             """ A function that returns the proximal regularisation to apply based on the current outer step """
-            start_growth = 2*max_outer_step//3
-            squashing_level = max_outer_step//30
-            prox_reg = max_proximal_reg * jax.nn.sigmoid((current_outer_step-start_growth) / squashing_level)
+            # start_growth = 2*max_outer_step//3
+            # squashing_level = max_outer_step//30
+            # prox_reg = max_proximal_reg * jax.nn.sigmoid((current_outer_step-start_growth) / squashing_level)
             # return prox_reg
             return max_proximal_reg     ## TODO remove this line
 
@@ -636,10 +635,15 @@ class NCFTrainer(Trainer):
             ## Step 2. Find environment clusters
             nb_envs, context_size = contexts.params.shape
             nb_experts = nb_clusters = expert_losses.shape[1]
-            max_iter = 10
+            max_iter = 20
             ctx = contexts.params
             if init_centroids is None:
                 centroids = jax.random.uniform(key, (nb_clusters, context_size), minval=-1e-3, maxval=1e-3)
+                # ## Sort the contexts by norm, then take nb_clusters equally spaced points
+                # norms = jnp.linalg.norm(ctx, axis=-1)
+                # sorted_indices = jnp.argsort(norms)
+                # sorted_ctx = ctx[sorted_indices]
+                # centroids = sorted_ctx[::nb_envs//nb_clusters]
             else:
                 centroids = init_centroids
 
@@ -654,12 +658,23 @@ class NCFTrainer(Trainer):
                 ## Update the centroids
                 for j in range(nb_clusters):
                     cluster_points = ctx[cluster_assignments == j]
-                    centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
+                    # centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
+
+                    ## if cluster_points is empty, then use a random centroid
+                    if cluster_points.shape[0] == 0:
+                        # key, _ = jax.random.split(key)
+                        # centroids = centroids.at[j].set(jax.random.uniform(key, (context_size,), minval=-1e-3, maxval=1e-3))
+                        print(f"Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
+                        return model, contexts, loss, None, jnp.zeros((nb_envs, nb_experts))
+                    else:
+                        centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
 
                 ## Check for convergence
-                if jnp.allclose(centroids, old_centroids, atol=1e-4):
+                if jnp.allclose(centroids, old_centroids, atol=1e-3):
                     print(f"✔️ Gating k-means converged after {i+1} iterations", flush=False)
                     break
+
+                # print(f"Current centroids: \n{centroids}", flush=False)
 
             if i == max_iter-1:
                 print(f"❌ Gating k-means did not converge despite {max_iter} iterations.", flush=False)
@@ -694,7 +709,7 @@ class NCFTrainer(Trainer):
             for j in range(nb_clusters):
                 Y = Y.at[cluster_assignments==j].set(jax.nn.one_hot(chosen_experts[j], nb_experts))
 
-            X = contexts.params + jax.random.normal(key, contexts.params.shape) * 1e-4
+            X = contexts.params + jax.random.normal(key, contexts.params.shape) * 1e-5
             W = jnp.linalg.lstsq(X, Y, rcond=None)[0]
 
             ## Step 6. Update the gating weights

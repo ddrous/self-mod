@@ -648,7 +648,7 @@ class EpilepsyDataset:
     For the epilepsy dataset from Time Series Classification
     """
 
-    def __init__(self, data_dir, skip_steps=-1, adaptation=False, traj_prop_min=1.0):
+    def __init__(self, data_dir, skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
 
         self.data_dir = data_dir
         self.skip_steps = skip_steps
@@ -679,9 +679,13 @@ class EpilepsyDataset:
         self.num_steps = n_timesteps
         self.data_size = n_dimensions
         self.num_shots = 1
+        self.use_full_traj = use_full_traj      ## If True, we use the full trajectory, else we only return the initial condition
 
     def __getitem__(self, idx):
-        inputs = self.dataset[idx, :self.num_shots, :, :]
+        if self.use_full_traj:
+            inputs = self.dataset[idx, :self.num_shots, :, :]
+        else:
+            inputs = self.dataset[idx, :self.num_shots, 0, :]
         outputs = self.dataset[idx, :self.num_shots, :, :]
         t_evals = self.t_eval[idx]
 
@@ -706,7 +710,11 @@ class EpilepsyDataset:
                 for j in range(self.data_size):
                     new_trajs[i, :, j] = np.interp(new_ts, ts, trajs[i, :, j])
 
-            return (new_trajs[:,:,:], new_ts), new_trajs
+            if self.use_full_traj:
+                return (new_trajs[:,:,:], new_ts), new_trajs
+            else:
+                return (new_trajs[:,0,:], new_ts), new_trajs
+
 
     def __len__(self):
         return self.total_envs

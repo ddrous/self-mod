@@ -391,6 +391,18 @@ class Learner:
                                     taylor_ad_mode=self.model.taylor_ad_mode, 
                                     ivp_args=self.model.ivp_args,
                                     t_eval=self.model.t_eval)
+            elif isinstance(self.model, NeuralCDE):
+                model = NeuralCDE(neuralnet=self.model.vectorfield.neuralnet, 
+                                    taylor_order=taylor_order,
+                                    taylor_ad_mode=self.model.taylor_ad_mode, 
+                                    ivp_args=self.model.ivp_args,
+                                    encoder=self.model.encoder,
+                                    decoder=self.model.decoder)
+            elif isinstance(self.model, TFNeuralODE):
+                model = TFNeuralODE(neuralnet=self.model.vectorfield.neuralnet, 
+                                    taylor_order=taylor_order,
+                                    taylor_ad_mode=self.model.taylor_ad_mode, 
+                                    ivp_args=self.model.ivp_args)
             elif isinstance(self.model, BatchedNeuralContextFlow):
                 if hasattr(self.model, "taylor_scale"):
                     model = BatchedNeuralContextFlow(neuralnet=self.model.neuralnet, 
@@ -414,6 +426,18 @@ class Learner:
                             taylor_ad_mode=model.taylor_ad_mode, 
                             ivp_args=model.ivp_args,
                             t_eval=model.t_eval)
+        elif isinstance(model, NeuralCDE):
+            new_model = NeuralCDE(neuralnet=expert, 
+                            taylor_order=0,
+                            taylor_ad_mode=model.taylor_ad_mode, 
+                            ivp_args=model.ivp_args,
+                            encoder=model.encoder,
+                            decoder=model.decoder)
+        elif isinstance(model, TFNeuralODE):
+            new_model = TFNeuralODE(neuralnet=expert, 
+                            taylor_order=0,
+                            taylor_ad_mode=model.taylor_ad_mode, 
+                            ivp_args=model.ivp_args)
         else:
             raise ValueError(f"The model type {type(model)} is not supported")
         return new_model
@@ -1294,6 +1318,238 @@ class NeuralODE(eqx.Module):
         batched_results = eqx.filter_vmap(integrate)(xs)
 
         return jnp.nan_to_num(batched_results, nan=0., posinf=0., neginf=0.)
+
+
+
+
+
+
+
+
+# def interp_signal(tau, xs_, t_evals):
+#     return jnp.interp(tau, t_evals, xs_, left="extrapolate", right="extrapolate").squeeze()
+
+
+class TFSelfModVectorField(eqx.Module):
+    """ A vector field with fixed Taylor order """
+    neuralnet: eqx.Module
+    taylor_order: int
+    taylor_ad_mode: str
+
+    def __init__(self, neuralnet, taylor_order, taylor_ad_mode):
+        self.neuralnet = neuralnet
+        self.taylor_order = taylor_order
+        self.taylor_ad_mode = taylor_ad_mode
+
+    def interp_signal(self, tau, xs_, t_evals):
+        return jnp.interp(tau, t_evals, xs_, left="extrapolate", right="extrapolate").squeeze()
+
+    def __call__(self, t, hat_x, args):
+        ctx, ctx_, true_xs, t_evals = args
+
+        # dt = t_evals[1] - t_evals[0]
+        x = eqx.filter_vmap(self.interp_signal, in_axes=(None, 0, None))(t, true_xs.T, t_evals).T       ## Big difference with the previous version
+
+        vf = lambda xi: self.neuralnet(t, x, xi)
+
+        if self.taylor_order==0:
+            return vf(ctx)
+
+        elif self.taylor_order==1:
+            if self.taylor_ad_mode=="forward":
+                gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+                taylor_exp = vf(ctx_) + 1.0*gradvf(ctx_)
+            elif self.taylor_ad_mode=="reverse":
+                jac = eqx.filter_jacrev(vf)(ctx_)
+                taylor_exp = vf(ctx_) + jac @ (ctx-ctx_)
+            else:
+                raise ValueError("Invalid AD mode provided.")
+
+            return taylor_exp
+
+        elif self.taylor_order==2:
+            if self.taylor_ad_mode=="forward":
+                gradvf = lambda xi_: eqx.filter_jvp(vf, (xi_,), (ctx-xi_,))[1]
+                scd_order_term = eqx.filter_jvp(gradvf, (ctx_,), (ctx-ctx_,))[1]
+                taylor_exp = vf(ctx_) + 1.5*gradvf(ctx_) + 0.5*scd_order_term
+            elif self.taylor_ad_mode=="reverse":
+                print("WARNING: Reverse-mode AD for 2nd order Taylor expansion materialises the Hessian and is unstable for the CAVIA algorithm. Consider reducing the Taylor order or using forward-mode AD.")
+                jac = eqx.filter_jacrev(vf)(ctx_)
+                hess = eqx.filter_jacrev(eqx.filter_jacrev(vf))(ctx_)
+                taylor_exp = vf(ctx_) + jac @ (ctx-ctx_) + 0.5 * (hess @ (ctx-ctx_)) @ (ctx-ctx_)
+            else:
+                raise ValueError("Invalid AD mode provided.")
+
+            return taylor_exp
+
+        else:
+            if self.taylor_ad_mode=="forward":
+                h0 = ctx_
+                h1 = ctx-ctx_
+                h2 = jnp.zeros_like(h0)
+
+                hs = [h1, h2]
+                coeffs = [1, 0.5]
+                for order in range(2+1, self.taylor_order+1):
+                    hs.append(jnp.zeros_like(h0))
+                    coeffs.append(1 / factorial(order))
+
+                f0, fs = jet(vf, (h0,), (hs,))
+                taylor_exp = f0 + jnp.sum(jnp.stack(fs, axis=-1) * jnp.array(coeffs)[None,:], axis=-1)
+            else:
+                raise ValueError("Higher order terms are only implemented for forward mode AD.")
+
+            return taylor_exp
+
+
+
+class TFNeuralODE(eqx.Module):
+    """ A teacher-forced Neural ODE: the vector field ignores the current state and uses the (interpolated) target state """
+    vectorfield: eqx.Module
+    ivp_args: dict
+    taylor_order: int
+    taylor_ad_mode: str
+
+    def __init__(self, neuralnet, taylor_order, ivp_args=None, taylor_ad_mode="forward"):
+        self.ivp_args = ivp_args if ivp_args is not None else {}
+        self.vectorfield = TFSelfModVectorField(neuralnet, taylor_order=taylor_order, taylor_ad_mode=taylor_ad_mode)
+        self.taylor_order = taylor_order
+        self.taylor_ad_mode = taylor_ad_mode
+
+    def __call__(self, xts, ctx, ctx_):
+
+        integrator = self.ivp_args.get("integrator", diffrax.Dopri5())
+
+        # if isinstance(integrator, type(eqx.Module)):
+        if not callable(integrator):
+            def integrate(ys, ts):
+                y0, t_eval = ys[0], ts
+
+                sol = diffrax.diffeqsolve(
+                        terms=diffrax.ODETerm(self.vectorfield),
+                        solver=integrator,
+                        args=(ctx, ctx_.squeeze(), ys, t_eval),
+                        t0=t_eval[0],
+                        t1=t_eval[-1],
+                        dt0=self.ivp_args.get("dt_init", t_eval[1]-t_eval[0]),
+                        y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 0),))], axis=0),
+                        stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
+                                                                    atol=self.ivp_args.get("atol", 1e-6),
+                                                                    dtmin=self.ivp_args.get("dt_min", None)),
+                        saveat=diffrax.SaveAt(ts=t_eval),
+                        adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
+                        max_steps=self.ivp_args.get("max_steps", 4096*1),
+                        throw=True,    ## Keep the nans and infs, don't throw and error ?
+                    )
+                # jax.debug.print("SOL {}", sol.ys)
+                ys = sol.ys
+                clip = self.ivp_args.get("clip_sol", None)
+                if clip is not None:
+                    ys = jnp.clip(ys, clip[0], clip[1])
+
+                if self.ivp_args.get("return_traj", False):
+                    return ys[:, :y0.shape[0]]
+                else:
+                    return ys[-1, :y0.shape[0]]
+
+        else:   ## Custom-made integrator
+            def integrate(ys, ts):
+                y0, t_eval = ys[0], ts
+                ys = integrator(fun=self.vectorfield, 
+                                t_span=(t_eval[0], t_eval[-1]), 
+                                y0=y0,
+                                args=(ctx, ctx_.squeeze(), ys, t_eval),
+                                t_eval=t_eval, 
+                                **self.ivp_args
+                                )
+                if self.ivp_args.get("return_traj", False):
+                    return ys
+                else:
+                    return ys[-1]
+
+        xs = xts[0]
+        ts = jnp.broadcast_to(xts[1][None,:], (xts[0].shape[0], xts[1].shape[0]))     ## Broadcast along trajectories in the same environment
+
+        batched_results = eqx.filter_vmap(integrate)(xs, ts)
+
+        # return jnp.nan_to_num(batched_results, nan=0., posinf=0., neginf=0.)
+        return batched_results
+
+
+
+
+
+
+
+
+
+
+
+
+class NeuralCDE(eqx.Module):
+    vectorfield: eqx.Module
+    ivp_args: dict
+    taylor_order: int
+    taylor_ad_mode: str
+
+    encoder: eqx.Module
+    decoder: eqx.Module
+
+    def __init__(self, neuralnet, taylor_order, ivp_args=None, taylor_ad_mode="forward", encoder=None, decoder=None):
+        self.ivp_args = ivp_args if ivp_args is not None else {}
+        self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order, taylor_ad_mode=taylor_ad_mode)
+        self.taylor_order = taylor_order
+        self.taylor_ad_mode = taylor_ad_mode
+
+        self.encoder = encoder
+        self.decoder = decoder
+
+    def __call__(self, xts, ctx, ctx_):
+        """ Forward call of the Neural CDE """
+
+        def vectorfield(t, x, args):
+            y = self.vectorfield(t, x, args)
+            return jnp.reshape(jax.nn.tanh(y), (x.shape[0], -1))
+
+        def integrate(z0, xs, t_eval):
+
+            coeffs = diffrax.backward_hermite_coefficients(t_eval, xs)
+            control = diffrax.CubicInterpolation(t_eval, coeffs)
+
+            sol = diffrax.diffeqsolve(
+                    # diffrax.ControlTerm(self.vectorfield, control).to_ode(),
+                    diffrax.ControlTerm(vectorfield, control).to_ode(),
+                    diffrax.Tsit5(),
+                    args=(ctx, ctx_.squeeze()),
+                    t0=t_eval[0],
+                    t1=t_eval[-1],
+                    dt0=t_eval[1]-t_eval[0],
+                    y0=z0,
+                    stepsize_controller=diffrax.PIDController(rtol=1e-3, atol=1e-6),
+                    saveat=diffrax.SaveAt(ts=t_eval),
+                    adjoint=diffrax.RecursiveCheckpointAdjoint(),
+                    max_steps=4096*5
+                )
+
+            return sol.ys
+
+
+        if not isinstance(xts, tuple) and not isinstance(xts, list):
+            return ValueError("The Neural CDE expects both trajctories and times as inputs.")
+
+        xs = xts[0]
+        ts = jnp.broadcast_to(xts[1][None,:], (xts[0].shape[0], xts[1].shape[0]))     ## Broadcast along trajectories in the same environment
+
+        z0s = eqx.filter_vmap(self.encoder)(xs[:, 0, ...])        ## Shape: (batch, latent_size)
+
+        ## Add time as a channel to all_xs
+        # all_ts = jnp.ones((xs.shape[0], xs.shape[1], 1)) * ts[None, :, None]
+        xts = jnp.concatenate((ts[...,None], xs), axis=-1)
+
+        zs = eqx.filter_vmap(integrate)(z0s, xts, ts)        ## Shape: (batch, T, latent_size)
+        x_recons = eqx.filter_vmap(eqx.filter_vmap(self.decoder))(zs)        ## Shape: (batch, T, data_size)
+
+        return x_recons
 
 
 
