@@ -664,7 +664,7 @@ class NCFTrainer(Trainer):
                     if cluster_points.shape[0] == 0:
                         # key, _ = jax.random.split(key)
                         # centroids = centroids.at[j].set(jax.random.uniform(key, (context_size,), minval=-1e-3, maxval=1e-3))
-                        print(f"Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
+                        print(f"🔁 Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
                         return model, contexts, loss, None, jnp.zeros((nb_envs, nb_experts))
                     else:
                         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
@@ -865,7 +865,8 @@ class NCFTrainer(Trainer):
                         model, contexts, opt_state_ctx, loss_ctx, (term1, term2, term3, loss_contrs, _) = train_step_ctx(model, contexts, (contexts_old, proximal_reg_ctx), batch, all_env_losses, opt_state_ctx, loss_key)
 
                         # # TODO Update the gating here !!
-                        model, contexts, loss_gates, centroids, least_squares_labels = train_step_gates(model, contexts, centroids, least_squares_labels, batch, loss_key)
+                        if in_step_ctx%1 == 0:
+                            model, contexts, loss_gates, centroids, least_squares_labels = train_step_gates(model, contexts, centroids, least_squares_labels, batch, loss_key)
 
                         # ###========== Approach #1
                         # all_env_losses = all_env_losses.at[loss_contrs].set(term1)

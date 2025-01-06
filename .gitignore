@@ -147,6 +147,11 @@ examples/ode-bench/runs/241231-033843-9Hours-Awesome/checkpoints
 !examples/ode-bench/runs/250101-131325-BiggerContexts/
 examples/ode-bench/runs/250101-131325-BiggerContexts/checkpoints
 
+!examples/ode-bench/runs/250106-120447-HyperGolden*/
+examples/ode-bench/runs/250106-120447-HyperGolden*/checkpoints
+
+!examples/ode-bench/runs/250105-203708-10ExpertsGreat/
+examples/ode-bench/runs/250105-203708-10ExpertsGreat/checkpoints
 
 ## The Epilptic dataset
 examples/epilepsy/data/*
