@@ -16,12 +16,12 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 10202
+seed = 102020
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-ode_count = 4          ## Total number of ODEs in the dataset
+ode_count = 1          ## Total number of ODEs in the dataset
 nb_experts = ode_count
 nb_envs_per_fam = (5, 1)
 top_k = 1
@@ -34,8 +34,8 @@ train_proportion = 0.4  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 3
-context_size = 64*ode_count*1
+context_pool_size = 2
+context_size = 64*ode_count*4
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*2, "dt_min":1e-4, "integrator":diffrax.Tsit5()}
 # ivp_args = {"return_traj":True, "max_steps":256*16, "dt_init":1e-2, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
@@ -43,7 +43,7 @@ taylor_orders = (2, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 4
 # loss_contributors = int(nb_envs_per_fam[0]*1.5)
-loss_contributors = nb_envs_per_fam[0]*2
+loss_contributors = nb_envs_per_fam[0]*1
 # loss_contributors = 16*ode_count
 # loss_contributors = 46*1
 max_ret_env_states = num_envs[0]
@@ -51,13 +51,13 @@ split_contexts = False
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
-sched_factor = 0.4
+sched_factor = 1.0
 # transition_steps = 150
 max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 1000
+nb_outer_steps = 100
 nb_inner_steps = (25, 25, 1)
 nb_adapt_epochs = 1000
 validate_every = 10*1
@@ -100,7 +100,7 @@ train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz",
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz", 
+val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz", 
                                             #  norm_consts=data_folder+"train_bounds.npy",
                                              num_shots=num_shots[1], 
                                              skip_steps=skip_steps,
@@ -112,42 +112,42 @@ val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz",
 
 #%%
 
-# ## Plot all trajectories in the first 9 environments
-# plt_data = train_dataloader.dataset.dataset
-# plt_t = train_dataloader.dataset.t_eval
+# # ## Plot all trajectories in the first 9 environments
+# # plt_data = train_dataloader.dataset.dataset
+# # plt_t = train_dataloader.dataset.t_eval
 
-## Alternative way to gather the data
-(ins, ts), outs = next(iter(train_dataloader))
-plt_data = outs
-plt_t = ts
+# ## Alternative way to gather the data
+# (ins, ts), outs = next(iter(train_dataloader))
+# plt_data = outs
+# plt_t = ts
 
-print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
+# print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
 
-E_plot = ode_count
-E_ = nb_envs_per_fam[0]
+# E_plot = ode_count
+# E_ = nb_envs_per_fam[0]
 
-# fig, ax = plt.subplots(E_plot, 1, figsize=(6, E_plot*3))
-fig, ax = plt.subplots(2, E_plot//2, figsize=(6*E_plot//2, 3*2))
-ax = ax.flatten()
-if E_plot==1:
-    ax = [ax]
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
-for e in range(E_plot):
-    e_plot_data = plt_data[e*E_:(e+1)*E_, :, :, 0]
-    e_t_eval = plt_t[e*E_:(e+1)*E_]
-    for e_ in range(E_):
-        # ax[e].plot(e_plot_data[e_].T, '-', color=colors[e_])
-        ax[e].plot(e_t_eval[e_], e_plot_data[e_].T, '-', color=colors[e_])
-        # if e==1:
-        #     print("t_eval is:", e_t_eval[e_])
-    # ax[e].set_title(f"Environment {23+e}")
-    ax[e].set_title(f"Family {e}")
-    ax[e].set_xlabel("Time")
-    ax[e].set_ylabel(f"$y_0$")
+# # fig, ax = plt.subplots(E_plot, 1, figsize=(6, E_plot*3))
+# fig, ax = plt.subplots(2, E_plot//2, figsize=(6*E_plot//2, 3*2))
+# ax = ax.flatten()
+# if E_plot==1:
+#     ax = [ax]
+# colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
+# for e in range(E_plot):
+#     e_plot_data = plt_data[e*E_:(e+1)*E_, :, :, 0]
+#     e_t_eval = plt_t[e*E_:(e+1)*E_]
+#     for e_ in range(E_):
+#         # ax[e].plot(e_plot_data[e_].T, '-', color=colors[e_])
+#         ax[e].plot(e_t_eval[e_], e_plot_data[e_].T, '-', color=colors[e_])
+#         # if e==1:
+#         #     print("t_eval is:", e_t_eval[e_])
+#     # ax[e].set_title(f"Environment {23+e}")
+#     ax[e].set_title(f"Family {e}")
+#     ax[e].set_xlabel("Time")
+#     ax[e].set_ylabel(f"$y_0$")
 
-plt.tight_layout()
-plt.draw()
-plt.savefig(run_folder+"train_trajectories.png")
+# plt.tight_layout()
+# plt.draw()
+# plt.savefig(run_folder+"train_trajectories.png")
 
 
 
@@ -297,8 +297,8 @@ def env_loss_fn(model, ctx, y_hat, y):
     # term2 = jnp.abs(model.vectorfield.neuralnet.gate(ctx).squeeze())
 
     # loss_val = term1 + 1e-3*term2 + 1e-3*term3
-    loss_val = term1 + 1e-3*term2
-    # loss_val = term1
+    # loss_val = term1 + 1e-3*term2
+    loss_val = term1
 
     return loss_val, (term1, term2, 0.)
 
@@ -306,7 +306,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
 neuralnet = Model(data_size=2,
-                hidden_size=32*1, 
+                hidden_size=32*4, 
                 depth=3,
                 context_size=context_size,
                 nb_experts=nb_experts,
@@ -379,7 +379,7 @@ if meta_train == True:
                         save_checkpoints=True, 
                         validate_every=validate_every, 
                         save_path=trainer_save_path, 
-                        val_dataloader=val_dataloader, 
+                        val_dataloader=train_dataloader, 
                         val_nb_steps=nb_adapt_epochs,
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
@@ -414,7 +414,7 @@ print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 print("After training, the rescaler are:\n")
 print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].rescaler)
-print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].rescaler)
+# print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].rescaler)
 
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
