@@ -18,14 +18,14 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 2028
+seed = 2022
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
 ode_count = 2          ## Total number of ODEs in the dataset
 nb_experts = ode_count
-nb_envs_per_fam = (80//nb_experts, 80//nb_experts)
+nb_envs_per_fam = (40, 40)
 top_k = 1
 
 num_envs = (nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[1]*ode_count)
@@ -37,7 +37,7 @@ test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 3
-context_size = 10
+context_size = 128
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Dopri5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
@@ -47,8 +47,8 @@ max_ret_env_states = num_envs[0]
 split_contexts = False
 
 data_size = 1
-latent_size = 16
-hidden_size = 32*2
+latent_size = 128
+hidden_size = 64
 depth = 3
 
 ## Train and adapt hps
@@ -59,7 +59,7 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 40
+nb_outer_steps = 300
 nb_inner_steps = (10, 10, 1)
 nb_adapt_epochs = 10
 validate_every = 10*1
@@ -143,56 +143,75 @@ plt.savefig(run_folder+"train_trajectories.png")
 
 #%%
 
-class RootNetwork(eqx.Module):
-    network: list
-    root_utils: any
-    network_size: int     ## The effective/actual size of a root network (flattened neural network)
-
-    def __init__(self, input_dim, output_dim, hidden_size, depth, activation=jax.nn.softplus, key=None):
-        key = key if key is not None else jax.random.PRNGKey(0)
-        self.network = MLP(input_dim, output_dim, hidden_size, depth, activation, key=key)
-        
-        props = (input_dim, output_dim, hidden_size, depth, activation)
-        params, static = eqx.partition(self.network, eqx.is_array)
-        _, shapes, treedef = flatten_pytree(params)
-        self.root_utils = (shapes, treedef, static, props)
-
-        self.network_size = sum(x.size for x in jax.tree_util.tree_leaves(params) if x is not None)
-
-    def __call__(self, x):
-        return self.network(x)
-
-
 # ## Define model and loss function for the learner
 class Expert(eqx.Module):
-    root_weights: jnp.ndarray
-    hyperlayer: list
-    root_utils: list
+    # layers_data: list
+    # activations_data: list
+    # layers_ctx: list
+    # activations_ctx: list
+    layers_main: list
+    activations_main: list
+    latent_size:int
+    data_size:int
 
-    data_size: int
-    latent_size: int
+    ctx_utils:any
+    depth_data:int
+    depth_main:int
 
-    def __init__(self, data_size, latent_size, hidden_size, depth, context_size, key=None):
-        self.data_size = data_size
+    def __init__(self, data_size, latent_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
+        self.ctx_utils = ctx_utils
+        self.depth_data = depth_data
+        self.depth_main = depth_main
+        depth_ctx = depth_data
         self.latent_size = latent_size
+        self.data_size = data_size
 
-        root = RootNetwork(latent_size, (data_size+1)*latent_size, hidden_size, depth, Swish(key=key), key=key)
-        self.root_utils = root.root_utils
-        root_params, static = eqx.partition(root.network, eqx.is_array)
-        self.root_weights = flatten_pytree(root_params)[0]
+        # intermediate_size = hidden_size//2
+        assert context_size == latent_size, "Context size and latent size must be the same !"
+        intermediate_size = context_size//2
 
-        in_hyper, out_hyper = context_size, root.network_size
-        self.hyperlayer = eqx.nn.Linear(in_hyper, out_hyper, key=key, use_bias=False)
+        # keys_ctx = jax.random.split(key, num=depth_ctx+1)
+        # hid_ctx_size = (context_size + intermediate_size) // 2
+        # self.activations_ctx = [Swish(key=k) for k in keys_ctx[:depth_ctx]]
+        # self.layers_ctx = [eqx.nn.Linear(context_size, hid_ctx_size, key=keys_ctx[0])]
+        # self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys_ctx[i]) for i in range(1, depth_ctx)]
+        # self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys_ctx[depth_ctx])]
+
+        keys = jax.random.split(key, num=depth_data+depth_main+2)
+        # hid_ctx_size = (latent_size + intermediate_size) // 2
+        # self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
+        # self.layers_data = [eqx.nn.Linear(latent_size, hid_ctx_size, key=keys[0])]
+        # self.layers_data += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys[i]) for i in range(1, depth_data)]
+        # self.layers_data += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys[depth_data])]
+
+        self.activations_main = [Swish(key=k) for k in keys[depth_data+2:]]
+        self.layers_main = [eqx.nn.Linear(2*intermediate_size, hidden_size, key=keys[depth_data+1])]
+        self.layers_main += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[depth_data+i+1]) for i in range(1, depth_main)]
+        self.layers_main += [eqx.nn.Linear(hidden_size, (data_size+1)*latent_size, key=keys[depth_data+depth_main+1])]
+
+        # assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
+        # assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
+
 
     def __call__(self, t, y, ctx):
-        delta_arr = self.hyperlayer(ctx)
-        final_arr = self.root_weights + delta_arr
+        # for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
+        #     ctx = activation(layer(ctx))
+        # ctx = self.layers_ctx[-1](ctx)
 
-        shapes, treedef, static, _ = self.root_utils
-        params = unflatten_pytree(final_arr, shapes, treedef)
-        root_fun = eqx.combine(params, static)
+        # # y = jnp.concatenate([t_arr, y], axis=0)
+        # for layer, activation in zip(self.layers_data[:-1], self.activations_data):
+        #     y = activation(layer(y))
+        # y = self.layers_data[-1](y)
 
-        return root_fun(y)
+        ## Apply the context at each layer (except the very last)
+        # y = jnp.concatenate([y, ctx], axis=0)
+        y = jnp.minimum(y, ctx)
+        for layer, activation in zip(self.layers_main[:-1], self.activations_main):
+            y = activation(layer(y))
+        y = self.layers_main[-1](y)
+
+        # return jax.nn.tanh(y).reshape((self.latent_size, -1))
+        return y
 
 
 # ## Define model and loss function for the learner
@@ -212,7 +231,7 @@ class Generator(eqx.Module):
             eff_context_size = context_size//nb_experts
         else:
             eff_context_size = context_size
-        self.experts = [Expert(data_size, latent_size, hidden_size, depth, eff_context_size, key=keys[0]) for i in range(nb_experts)]
+        self.experts = [Expert(data_size, latent_size, hidden_size, 2, depth, eff_context_size, key=keys[0]) for i in range(nb_experts)]
 
         lim = 1 / np.sqrt(context_size)
         gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
@@ -264,17 +283,16 @@ def env_loss_fn(model, ctx, y_hat, y):
     """
 
     term1 = jnp.mean((y_hat-y)**2)
-    # term2 = jnp.mean(jnp.abs(ctx))
+    term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
 
     # term2 = jnp.abs(model.vectorfield.neuralnet.gate(ctx).squeeze())
 
     # loss_val = term1 + 1e-3*term2 + 1e-3*term3
-    # loss_val = term1 + 1e-3*term2
-    loss_val = term1
+    loss_val = term1 + 1e-3*term2
+    # loss_val = term1
 
-    # return loss_val, (term1, term2, 0.)
-    return loss_val, (term1, 0., 0.)
+    return loss_val, (term1, term2, 0.)
 
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
