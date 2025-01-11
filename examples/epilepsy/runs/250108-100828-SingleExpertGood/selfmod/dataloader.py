@@ -586,8 +586,8 @@ class ODEBenchDataset:
         self.t_eval = np.repeat(t_eval, n_envs_per_ode, axis=0)
 
         # # ## Ignore the first 16*2 TODO temporary
-        # self.dataset = self.dataset[5*2:, :, :, :]
-        # self.t_eval = self.t_eval[5*2:, :]
+        # self.dataset = self.dataset[16*5:, :, :, :]
+        # self.t_eval = self.t_eval[16*5:, :]
 
         self.total_envs = n_odes*n_envs_per_ode
 
@@ -640,7 +640,7 @@ class ODEBenchDataset:
 
     def __len__(self):
         return self.total_envs
-        # return 5*1      ### TODO this is temporary
+        # return 16*1      ### TODO this is temporary
 
 
 class EpilepsyDataset:
@@ -719,166 +719,3 @@ class EpilepsyDataset:
     def __len__(self):
         return self.total_envs
 
-
-
-
-class CrowdsourceDataset:
-    """
-    For the EEG crowdsource dataset from Navid and Amarpal
-    """
-
-    def __init__(self, data_dir, data_split="train", skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
-
-        self.data_dir = data_dir
-        self.skip_steps = skip_steps
-        self.adaptation = adaptation
-
-        try:
-            raw_data = np.load(data_dir+"Crowdsource.npy", allow_pickle=True).item()
-        except:
-            raise ValueError(f"Data not found at {data_dir}")
-
-        key = data_split+"_data" if data_split in ["train", "val"] else "test_data"
-
-        dataset = raw_data[key].transpose(0, 2, 1)[:, None, ::self.skip_steps, :]
-        self.dataset = dataset
-
-        n_envs, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
-        print("Dataset shape:", dataset.shape)
-
-        ## normalise the dataset ?
-
-        ## Duplicate t_eval for each environment
-        t_eval = np.linspace(0, 1., n_timesteps)
-        self.t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
-
-        self.total_envs = n_envs
-
-        if traj_prop_min < 0 or traj_prop_min > 1:
-            raise ValueError("The smallest proportion of the trajectory to use must be between 0 and 1")
-        self.traj_prop_min = traj_prop_min
-
-        self.num_steps = n_timesteps
-        self.data_size = n_dimensions
-        self.num_shots = 1
-        self.use_full_traj = use_full_traj      ## If True, we use the full trajectory, else we only return the initial condition
-
-    def __getitem__(self, idx):
-        if self.use_full_traj:
-            inputs = self.dataset[idx, :self.num_shots, :, :]
-        else:
-            inputs = self.dataset[idx, :self.num_shots, 0, :]
-        outputs = self.dataset[idx, :self.num_shots, :, :]
-        t_evals = self.t_eval[idx]
-
-        if self.traj_prop_min == 1.0:
-            ### STRAIGHFORWARD APPROACH ###
-            return (inputs, t_evals), outputs
-        else:
-            ### SAMPLING APPROACH ###
-            ## Sample a start and end time step for the task, and interpolate to produce new timesteps
-            ### The minimum distance between the start and finish is min_len
-            traj_len = t_evals.shape[0]
-            new_traj_len = traj_len ## We always want traj_len samples
-            min_len = int(traj_len * self.traj_prop_min)
-            start_idx = np.random.randint(0, traj_len - min_len)
-            end_idx = np.random.randint(start_idx + min_len, traj_len)
-
-            ts = t_evals[start_idx:end_idx]
-            trajs = outputs[:, start_idx:end_idx, :]
-            new_ts = np.linspace(ts[0], ts[-1], new_traj_len)
-            new_trajs = np.zeros((self.num_shots, new_traj_len, self.data_size))
-            for i in range(self.num_shots):
-                for j in range(self.data_size):
-                    new_trajs[i, :, j] = np.interp(new_ts, ts, trajs[i, :, j])
-
-            if self.use_full_traj:
-                return (new_trajs[:,:,:], new_ts), new_trajs
-            else:
-                return (new_trajs[:,0,:], new_ts), new_trajs
-
-
-    def __len__(self):
-        return self.total_envs
-
-
-
-class TrendsDataset:
-    """
-    For the synthetic control dataset from Time Series Classification
-    """
-
-    def __init__(self, data_dir, skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
-
-        self.data_dir = data_dir
-        self.skip_steps = skip_steps
-        self.adaptation = adaptation
-
-        try:
-            time_series = []
-            with open(data_dir+"synthetic_control.data", 'r') as f:
-                for line in f:
-                    time_series.append(list(map(float, line.split())))
-            raw_data = np.array(time_series, dtype=np.float32)
-        except:
-            raise ValueError(f"Data not found at {data_dir}")
-
-        dataset = raw_data[:, None, ::self.skip_steps, None]
-        self.dataset = dataset
-
-        n_envs, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
-
-        ## normalise the dataset ?
-
-        ## Duplicate t_eval for each environment
-        t_eval = np.linspace(0, 1., n_timesteps)
-        self.t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
-
-        self.total_envs = n_envs
-
-        if traj_prop_min < 0 or traj_prop_min > 1:
-            raise ValueError("The smallest proportion of the trajectory to use must be between 0 and 1")
-        self.traj_prop_min = traj_prop_min
-
-        self.num_steps = n_timesteps
-        self.data_size = n_dimensions
-        self.num_shots = 1
-        self.use_full_traj = use_full_traj      ## If True, we use the full trajectory, else we only return the initial condition
-
-    def __getitem__(self, idx):
-        if self.use_full_traj:
-            inputs = self.dataset[idx, :self.num_shots, :, :]
-        else:
-            inputs = self.dataset[idx, :self.num_shots, 0, :]
-        outputs = self.dataset[idx, :self.num_shots, :, :]
-        t_evals = self.t_eval[idx]
-
-        if self.traj_prop_min == 1.0:
-            ### STRAIGHFORWARD APPROACH ###
-            return (inputs, t_evals), outputs
-        else:
-            ### SAMPLING APPROACH ###
-            ## Sample a start and end time step for the task, and interpolate to produce new timesteps
-            ### The minimum distance between the start and finish is min_len
-            traj_len = t_evals.shape[0]
-            new_traj_len = traj_len ## We always want traj_len samples
-            min_len = int(traj_len * self.traj_prop_min)
-            start_idx = np.random.randint(0, traj_len - min_len)
-            end_idx = np.random.randint(start_idx + min_len, traj_len)
-
-            ts = t_evals[start_idx:end_idx]
-            trajs = outputs[:, start_idx:end_idx, :]
-            new_ts = np.linspace(ts[0], ts[-1], new_traj_len)
-            new_trajs = np.zeros((self.num_shots, new_traj_len, self.data_size))
-            for i in range(self.num_shots):
-                for j in range(self.data_size):
-                    new_trajs[i, :, j] = np.interp(new_ts, ts, trajs[i, :, j])
-
-            if self.use_full_traj:
-                return (new_trajs[:,:,:], new_ts), new_trajs
-            else:
-                return (new_trajs[:,0,:], new_ts), new_trajs
-
-
-    def __len__(self):
-        return self.total_envs

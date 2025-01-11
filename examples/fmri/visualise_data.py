@@ -13,7 +13,7 @@ data = sio.loadmat('data/NBKO_PLRNN_dataset.mat')
 
 X = data['Data'] ## shape (1,26)
 print(type(X[0,0]))
-# print(X)
+print(X[0])
 
 
 

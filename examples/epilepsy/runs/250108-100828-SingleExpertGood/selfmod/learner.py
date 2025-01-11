@@ -281,8 +281,7 @@ class Learner:
 
                 expert_losses = []
                 nb_experts = len(model.vectorfield.neuralnet.experts)
-                if model.vectorfield.neuralnet.split_contexts:
-                    ctx_pieces = jnp.split(ctx, nb_experts, axis=0)
+                ctx_pieces = jnp.split(ctx, nb_experts, axis=0)
 
                 for i, expert in enumerate(model.vectorfield.neuralnet.experts):
                     if model.vectorfield.neuralnet.split_contexts:

@@ -185,7 +185,7 @@ class VisualTester:
         else:
             xis_adapt = SimpleNamespace(params=jnp.zeros((1, self.trainer.learner.context_size)))
 
-        print("\n==  Begining context clusters visualisation ... ==")
+        print("\n==  Begining context clusters visualisation with t-SNE ... ==")
 
         fig, ax = plt.subplot_mosaic('ABC;DEF', figsize=(4*3, 3.7*2))
 
@@ -194,10 +194,7 @@ class VisualTester:
         from sklearn.manifold import TSNE
         reducer = TSNE(n_components=3, perplexity=perplexities[0], random_state=int(key[0]))
         X = jnp.concatenate([xis_train.params, xis_adapt.params], axis=0)
-        if X.shape[1] > 2:
-            X_embedded = reducer.fit_transform(X)
-        else:
-            X_embedded = X
+        X_embedded = reducer.fit_transform(X)
 
         nb_train_envs = xis_train.params.shape[0]
         nb_total_envs = X.shape[0]
@@ -223,7 +220,7 @@ class VisualTester:
 
             # ax[p_id].set_xlabel(f't-SNE ${dim0}$')
             # ax[p_id].set_ylabel(f't-SNE ${dim1}$')
-            ax[p_id].set_title(f"t-SNE ${dim0}$ vs t-SNE ${dim1}$" if X.shape[1] > 2 else f"dim ${dim0}$ vs dim ${dim1}$")
+            ax[p_id].set_title(f"t-SNE ${dim0}$ vs t-SNE ${dim1}$")
             ax[p_id].legend(fontsize=8, loc='upper right')
 
         print("    Visualising predictions from the contexts (reconstituted as functions)")
@@ -256,7 +253,7 @@ class VisualTester:
         colors = ['royalblue', 'orangered', 'darkgreen', 'darkviolet']
         for j, (t, p_id) in enumerate(zip(ts[:,0].tolist(), plot_ids)):
             X = jnp.concatenate([train_dat[..., j], adapt_dat[..., j],], axis=0)
-            if perplexities[1] > 0 and X.shape[1] > 2:
+            if perplexities[1] > 0:
                 reducer = TSNE(n_components=2, perplexity=perplexities[1], random_state=int(key[1]))
                 X_embedded = reducer.fit_transform(X)
                 dim0, dim1 = 0, 1
@@ -277,7 +274,7 @@ class VisualTester:
                 for i in range(nb_train_envs, nb_total_envs):
                     ax[p_id].text(X_embedded[i, dim0]+20, X_embedded[i, dim1]+20, str(i-9), fontsize=10, ha='left', va='top')
 
-            if perplexities[1] > 0 and X.shape[1] > 2:
+            if perplexities[1] > 0:
                 ax[p_id].set_xlabel(f't-SNE ${dim0}$', fontsize=8)
                 ax[p_id].set_ylabel(f't-SNE ${dim1}$', fontsize=8)
             else:

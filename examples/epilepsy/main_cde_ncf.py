@@ -18,17 +18,17 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 202800
+seed = 2022
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
 ode_count = 2          ## Total number of ODEs in the dataset
 nb_experts = ode_count
-nb_envs_per_fam = (80//nb_experts, 11420//nb_experts)
+nb_envs_per_fam = (40, 40)
 top_k = 1
 
-num_envs = (nb_envs_per_fam[0]*ode_count, 11420)
+num_envs = (nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[1]*ode_count)
 num_shots = (-1, -1)
 num_workers = 24
 shuffle = False
@@ -36,8 +36,8 @@ train_proportion = 1.0  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 5
-context_size = 2
+context_pool_size = 3
+context_size = 128
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Dopri5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
@@ -47,8 +47,8 @@ max_ret_env_states = num_envs[0]
 split_contexts = False
 
 data_size = 1
-latent_size = 32
-hidden_size = 32*4
+latent_size = 128
+hidden_size = 64
 depth = 3
 
 ## Train and adapt hps
@@ -59,12 +59,12 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 100
+nb_outer_steps = 300
 nb_inner_steps = (10, 10, 1)
-nb_adapt_epochs = 100
-validate_every = 1*1
+nb_adapt_epochs = 10
+validate_every = 10*1
 
-print_error_every = (1, 1)
+print_error_every = (10*1, 10*1)
 
 meta_train = True
 save_trainer = True
@@ -143,62 +143,75 @@ plt.savefig(run_folder+"train_trajectories.png")
 
 #%%
 
-class RootNetwork(eqx.Module):
-    network: list
-    root_utils: any
-    network_size: int     ## The effective/actual size of a root network (flattened neural network)
-
-    def __init__(self, input_dim, output_dim, hidden_size, depth, activation=jax.nn.softplus, key=None):
-        key = key if key is not None else jax.random.PRNGKey(0)
-        self.network = MLP(input_dim, output_dim, hidden_size, depth, activation, key=key)
-        
-        props = (input_dim, output_dim, hidden_size, depth, activation)
-        params, static = eqx.partition(self.network, eqx.is_array)
-        _, shapes, treedef = flatten_pytree(params)
-        self.root_utils = (shapes, treedef, static, props)
-
-        self.network_size = sum(x.size for x in jax.tree_util.tree_leaves(params) if x is not None)
-
-    def __call__(self, x):
-        return self.network(x)
-
-
 # ## Define model and loss function for the learner
 class Expert(eqx.Module):
-    root_weights: jnp.ndarray
-    hyperlayer: list
-    root_utils: list
+    # layers_data: list
+    # activations_data: list
+    # layers_ctx: list
+    # activations_ctx: list
+    layers_main: list
+    activations_main: list
+    latent_size:int
+    data_size:int
 
-    data_size: int
-    latent_size: int
-    ctx_shift: jnp.ndarray
+    ctx_utils:any
+    depth_data:int
+    depth_main:int
 
-    def __init__(self, data_size, latent_size, hidden_size, depth, context_size, ctx_shift, key=None):
-        self.data_size = data_size
+    def __init__(self, data_size, latent_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
+        self.ctx_utils = ctx_utils
+        self.depth_data = depth_data
+        self.depth_main = depth_main
+        depth_ctx = depth_data
         self.latent_size = latent_size
+        self.data_size = data_size
 
-        root = RootNetwork(latent_size, (data_size+1)*latent_size, hidden_size, depth, Swish(key=key), key=key)
-        self.root_utils = root.root_utils
-        root_params, static = eqx.partition(root.network, eqx.is_array)
-        self.root_weights = flatten_pytree(root_params)[0]
+        # intermediate_size = hidden_size//2
+        assert context_size == latent_size, "Context size and latent size must be the same !"
+        intermediate_size = context_size//2
 
-        in_hyper, out_hyper = context_size, root.network_size
-        self.hyperlayer = eqx.nn.Linear(in_hyper, out_hyper, key=key, use_bias=False)
+        # keys_ctx = jax.random.split(key, num=depth_ctx+1)
+        # hid_ctx_size = (context_size + intermediate_size) // 2
+        # self.activations_ctx = [Swish(key=k) for k in keys_ctx[:depth_ctx]]
+        # self.layers_ctx = [eqx.nn.Linear(context_size, hid_ctx_size, key=keys_ctx[0])]
+        # self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys_ctx[i]) for i in range(1, depth_ctx)]
+        # self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys_ctx[depth_ctx])]
 
-        self.ctx_shift = jnp.array([ctx_shift], dtype=jnp.float32)     ## Shift the context by this much
+        keys = jax.random.split(key, num=depth_data+depth_main+2)
+        # hid_ctx_size = (latent_size + intermediate_size) // 2
+        # self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
+        # self.layers_data = [eqx.nn.Linear(latent_size, hid_ctx_size, key=keys[0])]
+        # self.layers_data += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys[i]) for i in range(1, depth_data)]
+        # self.layers_data += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys[depth_data])]
+
+        self.activations_main = [Swish(key=k) for k in keys[depth_data+2:]]
+        self.layers_main = [eqx.nn.Linear(2*intermediate_size, hidden_size, key=keys[depth_data+1])]
+        self.layers_main += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[depth_data+i+1]) for i in range(1, depth_main)]
+        self.layers_main += [eqx.nn.Linear(hidden_size, (data_size+1)*latent_size, key=keys[depth_data+depth_main+1])]
+
+        # assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
+        # assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
+
 
     def __call__(self, t, y, ctx):
+        # for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
+        #     ctx = activation(layer(ctx))
+        # ctx = self.layers_ctx[-1](ctx)
 
-        ctx = ctx + self.ctx_shift
+        # # y = jnp.concatenate([t_arr, y], axis=0)
+        # for layer, activation in zip(self.layers_data[:-1], self.activations_data):
+        #     y = activation(layer(y))
+        # y = self.layers_data[-1](y)
 
-        delta_arr = self.hyperlayer(ctx)
-        final_arr = self.root_weights + delta_arr
+        ## Apply the context at each layer (except the very last)
+        # y = jnp.concatenate([y, ctx], axis=0)
+        y = jnp.minimum(y, ctx)
+        for layer, activation in zip(self.layers_main[:-1], self.activations_main):
+            y = activation(layer(y))
+        y = self.layers_main[-1](y)
 
-        shapes, treedef, static, _ = self.root_utils
-        params = unflatten_pytree(final_arr, shapes, treedef)
-        root_fun = eqx.combine(params, static)
-
-        return root_fun(y)
+        # return jax.nn.tanh(y).reshape((self.latent_size, -1))
+        return y
 
 
 # ## Define model and loss function for the learner
@@ -218,7 +231,7 @@ class Generator(eqx.Module):
             eff_context_size = context_size//nb_experts
         else:
             eff_context_size = context_size
-        self.experts = [Expert(data_size, latent_size, hidden_size, depth, eff_context_size, ctx_shift=i/(nb_experts-1), key=keys[0]) for i in range(nb_experts)]
+        self.experts = [Expert(data_size, latent_size, hidden_size, 2, depth, eff_context_size, key=keys[0]) for i in range(nb_experts)]
 
         lim = 1 / np.sqrt(context_size)
         gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
@@ -270,17 +283,16 @@ def env_loss_fn(model, ctx, y_hat, y):
     """
 
     term1 = jnp.mean((y_hat-y)**2)
-    # term2 = jnp.mean(jnp.abs(ctx))
+    term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
 
     # term2 = jnp.abs(model.vectorfield.neuralnet.gate(ctx).squeeze())
 
     # loss_val = term1 + 1e-3*term2 + 1e-3*term3
-    # loss_val = term1 + 1e-3*term2
-    loss_val = term1
+    loss_val = term1 + 1e-3*term2
+    # loss_val = term1
 
-    # return loss_val, (term1, term2, 0.)
-    return loss_val, (term1, 0., 0.)
+    return loss_val, (term1, term2, 0.)
 
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
@@ -323,6 +335,7 @@ learner = Learner(model=model,
                 pool_filling="NF",      ## TODO. Put back NF as soon as mem permits
                 loss_filling="NF",      ## The environment with the biggest loss is picked up
                 key=model_key)
+
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
@@ -397,10 +410,6 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
 print("Loss per InD environment:", all_ind_crit[0].tolist())
-
-print("After training, the context shifts are:")
-print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].ctx_shift)
-print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].ctx_shift)
 
 
 #%%
@@ -507,6 +516,79 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
                                         # key=jax.random.PRNGKey(time.time_ns()),
                                         save_path=run_folder+"context_clusters.png")
 
+#%%
+X = learner.contexts.params
+labels = np.load(data_folder+"train.npz")["condition"].astype(int)
+print("Labels:", labels)
+color_table = {0:"royalblue", 1:"crimson"}
+colors = [color_table[l] for l in labels]
+
+conditions = {0:"Healthy", 1:"Epileptic"}
+
+# import umap
+# umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=0.0, spread=1.0, metric="euclidean")
+# Fit and transform the data
+# X_reduced = umap_reducer.fit_transform(X)
+
+## Use PCA instead
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+X_reduced = pca.fit_transform(X)
+
+# Plotting
+plt.figure(figsize=(10, 7))
+# plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
+
+for class_label in [0,1]:
+    marker = "o" if class_label==0 else "x"
+    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+
+plt.legend()
+
+plt.title("Training Context Dimensionality Reduction", fontsize=24)
+# plt.xlabel("UMAP 1")
+# plt.ylabel("UMAP 2")
+plt.xlabel("PC 1")
+plt.ylabel("PC 2")
+
+# # Adding annotations for each point
+# for i in range(0, X_reduced.shape[0], nb_envs_per_fam[0]):
+#     label = labels[i]
+#     # label = i
+#     plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
+
+plt.draw()
+plt.savefig(run_folder+"pc_contexts.png", bbox_inches='tight');
+
+print("X0", X[0])
+print("X1", X[1])
+
+
+#%%
+
+X = learner.contexts.params
+y = np.load(data_folder+"train.npz")["condition"].astype(int)
+
+## Let's use Gaussian Mixture Models to cluster the contexts
+from sklearn.mixture import GaussianMixture
+# gmm = GaussianMixture(n_components=2, random_state=seed)
+gmm = GaussianMixture(n_components=2)
+gmm.fit(X)
+
+## Predict the clusters
+y_pred = gmm.predict(X)
+
+## Calculate accuracy with sklearn metrics
+from sklearn.metrics import accuracy_score
+acc = accuracy_score(y, y_pred)
+print("Accuracy:", acc)
+
+
+print("Y = ", y)
+print("Y_pred = ", y_pred)
+
+
+
 
 
 
@@ -524,190 +606,67 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
 #%%
 ## Adapt the model to the new dataset
 if meta_test:
+    adapt_id = nb_envs_per_fam[1]*1+1     ## The single environment to adapt to (the difficult rectangular one)
 
-    adapt_contexts = []
-    all_losses = []
+    adapt_dataset = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
+                                             skip_steps=skip_steps,
+                                             traj_prop_min=test_proportion,
+                                             adaptation=True)
+    adapt_dataset.total_envs = 1
+    adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
+    adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
 
-    labels_adapt = []
+    adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
+                                # batch_size=num_envs[1], 
+                                batch_size=1, 
+                                shuffle=shuffle,
+                                num_workers=num_workers,
+                                drop_last=False)
 
-    ## We want to adapt in batches of 5 environments
-    envs_per_batch = 571
-    for batch_id, i in enumerate(range(0, num_envs[1], envs_per_batch)):
-    # for batch_id, i in enumerate([0, num_envs[1]-envs_per_batch]):
-        print("iteration:", batch_id, "Out of total:", np.ceil(num_envs[1]/envs_per_batch).astype(int))
-        print("Adapting on environments:", i, "to", i+envs_per_batch)
+    adapt_dataset_test = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
+                                             skip_steps=skip_steps,
+                                             traj_prop_min=test_proportion,
+                                             adaptation=True)
+    adapt_dataset_test.total_envs = 1
+    adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:, :, :, :]
+    adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
 
-        adapt_dataset = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
-        adapt_dataset.total_envs = envs_per_batch
-        adapt_dataset.dataset = adapt_dataset.dataset[i:i+envs_per_batch, :, :, :]
-        adapt_dataset.t_eval = adapt_dataset.t_eval[i:i+envs_per_batch:, :]
+    adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
+                                batch_size=1,
+                                shuffle=shuffle,
+                                num_workers=num_workers,
+                                drop_last=False)
 
-        print("Adaptation dataset shape:", adapt_dataset.dataset.shape)
-        nb_adapt_envs, _, _, _ = adapt_dataset.dataset.shape
-
-        adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
-                                    # batch_size=num_envs[1], 
-                                    batch_size=envs_per_batch, 
-                                    shuffle=shuffle,
-                                    num_workers=num_workers,
-                                    drop_last=False)
-
-        adapt_dataset_test = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
-        adapt_dataset_test.total_envs = envs_per_batch
-        adapt_dataset_test.dataset = adapt_dataset_test.dataset[i:i+envs_per_batch, :, :, :]
-        adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[i:i+envs_per_batch:, :]
-
-        adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
-                                    # batch_size=num_envs[1], 
-                                    batch_size=envs_per_batch,
-                                    shuffle=shuffle,
-                                    num_workers=num_workers,
-                                    drop_last=False)
-
-        ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
-                                            taylor_order=taylor_orders[1], 
-                                            nb_steps=nb_adapt_epochs,
-                                            print_error_every=(nb_adapt_epochs, nb_adapt_epochs), 
-                                            criterion_id=0,
-                                            verbose=True,
-                                            val_dataloader=adapt_dataloader_test,
-                                            max_ret_env_states=envs_per_batch,
-                                            max_adapt_batches=max_adapt_batches,
-                                            stochastic=False)
-        print("Loss per OoD environment:", all_ood_crit[0].tolist())
-
-        adapt_contexts.append(learner.contexts_latest.params)
-        all_losses.append(all_ood_crit[0].tolist())
-
-        labels = np.load(data_folder+"adapt.npz")["condition"].astype(int)[i:i+envs_per_batch]
-        labels_adapt.append(labels)
-
-    adapt_contexts = jnp.concatenate(adapt_contexts, axis=0)
-    all_losses = jnp.array(all_losses)
-    labels_adapt = jnp.concatenate(labels_adapt, axis=0)
-
-    ## Save these to files
-    np.save(adapt_folder+"adapt_losses.npy", all_losses)
-    np.save(adapt_folder+"adapt_contexts.npy", adapt_contexts)
-    np.save(adapt_folder+"adapt_labels.npy", labels_adapt)
-
+    ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
+                                        taylor_order=taylor_orders[1], 
+                                        nb_steps=nb_adapt_epochs,
+                                        print_error_every=print_error_every, 
+                                        criterion_id=0,
+                                        verbose=True,
+                                        val_dataloader=adapt_dataloader_test,
+                                        max_ret_env_states=1,
+                                        max_adapt_batches=max_adapt_batches,
+                                        stochastic=False)
+    print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
 #%%
-if meta_test:
-    visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_adapt.png", adaptation=True)
+visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_adapt.png", adaptation=True)
 
-    visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_adapt.png",
-                                    data_loader=adapt_dataloader_test,
-                                    nb_envs=1,
-                                    traj=0,
-                                    dims=(0,0),     ## The Data is 1-dimensional
-                                    share_axes=False,
-                                    key=test_key)
-
-    perp = ode_count if ode_count > 1 else 4
-    visualtester.visualize_context_clusters(perplexities=(perp, perp),
-                                            # key=test_key,
-                                            key=jax.random.PRNGKey(time.time_ns()),
-                                            save_path=adapt_folder+"context_clusters.png")
-
-    # X_adapt = learner.contexts_latest.params
-    X_adapt = np.load(adapt_folder+"adapt_contexts.npy")
-
-    # y_test = labels_adapt
-    y_test = np.load(adapt_folder+"adapt_labels.npy")
-
-
-
-
-
-
-
-
-
-
-
-
-#%%
-X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)
-
-color_table = {0:"royalblue", 1:"crimson"}
-colors = [color_table[l] for l in labels]
-
-conditions = {0:"Healthy", 1:"Epileptic"}
-
-# import umap
-# umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=0.0, spread=1.0, metric="euclidean")
-# Fit and transform the data
-# X_reduced = umap_reducer.fit_transform(X)
-
-## Use PCA instead
-from sklearn.decomposition import PCA
-pca = PCA(n_components=2)
-# X_reduced = pca.fit_transform(X)
-X_reduced = X
-# X_reduced = jnp.concatenate([X, X_adapt], axis=0)
-
-# Plotting
-plt.figure(figsize=(10, 7))
-
-for class_label in [0,1]:
-    marker = "^" if class_label==0 else "x"
-    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
-
-if meta_test:
-    labels_adapt = y_test
-    for class_label in [0,1]:
-        marker = "." if class_label==0 else "."
-        plt.scatter(X_adapt[labels_adapt==class_label, 0], X_adapt[labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
-
-
-plt.legend()
-
-plt.title("Contexts Clustering", fontsize=24)
-# plt.xlabel("UMAP 1")
-# plt.ylabel("UMAP 2")
-plt.xlabel("Ctx 1")
-plt.ylabel("Ctx 2")
-
-plt.draw()
-plt.savefig(run_folder+"pc_contexts.png", bbox_inches='tight');
-
+visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_adapt.png",
+                                data_loader=adapt_dataloader_test,
+                                nb_envs=1,
+                                traj=0,
+                                dims=(0,0),     ## The Data is 1-dimensional
+                                share_axes=False,
+                                key=test_key)
 
 #%%
 
-X = learner.contexts.params
-y = np.load(data_folder+"train.npz")["condition"].astype(int)
-
-print("shapes:", X.shape, y.shape)
-
-
-## Let's do the classification with SVM and a non-linear kernel
-from sklearn.svm import SVC
-clf = SVC(kernel='rbf', random_state=seed)
-clf.fit(X, y)
-
-
-if meta_test:
-    y_pred = clf.predict(X_adapt)
-    print("Results shapes ", y_pred.shape, y_test.shape)
-
-    ## Calculate accuracy with sklearn metrics
-    from sklearn.metrics import accuracy_score
-    acc = accuracy_score(y_test, y_pred)
-    print("Accuracy:", acc)
-
-    print("Y_test = ", y_test)
-    print("Y_pred = ", y_pred)
-
-
-
+perp = ode_count if ode_count > 1 else 4
+visualtester.visualize_context_clusters(perplexities=(perp, perp),
+                                        # key=test_key,
+                                        key=jax.random.PRNGKey(time.time_ns()),
+                                        save_path=adapt_folder+"context_clusters.png")
 
 #%%
 ## After training, copy nohup.log to the runfolder

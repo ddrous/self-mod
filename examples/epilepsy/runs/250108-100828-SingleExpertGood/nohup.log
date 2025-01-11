@@ -1,0 +1,1008 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.35
+Available devices: [CudaDevice(id=0)]
+Created a new run folder at: ./runs/250108-100828/
+Completed copied scripts 
+Created a new adaptation folder at: ./runs/250108-100828/adapt/
+Created a new checkpoints folder at: ./runs/250108-100828/checkpoints/
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Shapes of data and t_eval: (80, 1, 178, 1) (80, 178)
+
+Using 40 environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 170788
+Total number of parameters in one context: 10
+
+Loading model and results from ./runs/250108-100828/ folder ...
+
+WARNING: No training history found at all. Using tens.
+WARNING: No validation history found at all. Using ten.
+WARNING: No optimiser state found in the provided path.
+No checkpoints or error when attempting to load training configs - '[Errno 2] No such file or directory: 'runs/250108-100828/model.eqx'' - Starting from scratch ...
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch along envs: 80
+    Maximum number of batches (along envs): 1
+    Total number of epochs: 1
+    Number of outer minimizations: 40
+    Maximum numbers of inner steps per outer minimizations: (10, 10)
+    Training on 1 batches
+    Validating on 1 batches
+     ### Compiling function "train_step" for the model ...  
+     ### Compiling function "train_step" for the contexts ...  
+✔️ Gating k-means converged after 3 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+10:09:54      Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.09386927     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 83.5380Contributing envs to the losses:  [15 27 36 33 39  7 24 35 31 21 13 37 38 10  4  5 14 16 40 29  9 34 30 11 19 32  0 12 28  2 20 41 18  1  3  6 23 77 70 50]
+Gate kernel values: 
+ [[  310.39917   -221.88795 ]
+ [ -214.67868    139.59953 ]
+ [-5672.549     3285.7437  ]
+ [   39.75125    -47.0007  ]
+ [   28.31028    -20.903717]
+ [   62.45488    -36.312607]
+ [  -36.25718     51.57112 ]
+ [ 5895.0645   -3255.8774  ]
+ [  253.28613   -202.92908 ]
+ [  -48.222717    76.44423 ]]
+The factor: how much of the new gate kernel do I used ? [0.001]
+Gate values for each environment (all envs): 
+ [[0.3014081  0.6985919 ]
+ [0.39353254 0.6064675 ]
+ [0.38962427 0.6103757 ]
+ [0.3367614  0.66323864]
+ [0.3549557  0.6450443 ]
+ [0.362497   0.63750297]
+ [0.44846326 0.55153674]
+ [0.2965872  0.70341283]
+ [0.4705629  0.5294371 ]
+ [0.34503824 0.6549618 ]
+ [0.26560095 0.7343991 ]
+ [0.2570988  0.7429012 ]
+ [0.5570134  0.44298664]
+ [0.3865633  0.61343676]
+ [0.25671285 0.74328715]
+ [0.24110712 0.7588929 ]
+ [0.21665417 0.7833459 ]
+ [0.5226171  0.4773829 ]
+ [0.36005515 0.63994485]
+ [0.25856808 0.7414319 ]
+ [0.26483256 0.7351675 ]
+ [0.31757212 0.6824279 ]
+ [0.8498444  0.15015551]
+ [0.13933861 0.8606613 ]
+ [0.32773212 0.67226785]
+ [0.7685236  0.23147637]
+ [0.5143016  0.48569834]
+ [0.2036929  0.7963071 ]
+ [0.25422665 0.7457734 ]
+ [0.37380007 0.6261999 ]
+ [0.42008734 0.57991266]
+ [0.42422998 0.57576996]
+ [0.37172174 0.62827826]
+ [0.36240938 0.6375906 ]
+ [0.3365139  0.6634862 ]
+ [0.31486654 0.68513346]
+ [0.33823594 0.66176414]
+ [0.28602278 0.7139772 ]
+ [0.3028266  0.69717336]
+ [0.44092748 0.5590726 ]
+ [0.69417405 0.30582598]
+ [0.6881051  0.31189486]
+ [0.6595346  0.34046552]
+ [0.46589082 0.53410923]
+ [0.5759904  0.42400956]
+ [0.5023751  0.49762487]
+ [0.55522746 0.4447726 ]
+ [0.64037883 0.35962117]
+ [0.5989462  0.4010538 ]
+ [0.6020898  0.3979102 ]
+ [0.4845201  0.51547986]
+ [0.57756186 0.42243814]
+ [0.56139255 0.43860742]
+ [0.5237715  0.4762285 ]
+ [0.57018924 0.42981082]
+ [0.44686797 0.55313206]
+ [0.52749133 0.4725087 ]
+ [0.5401832  0.4598167 ]
+ [0.6147164  0.38528365]
+ [0.6493206  0.35067934]
+ [0.6026372  0.39736283]
+ [0.716891   0.283109  ]
+ [0.6055662  0.39443383]
+ [0.6227757  0.37722436]
+ [0.57313925 0.42686078]
+ [0.6606841  0.33931592]
+ [0.52950364 0.47049636]
+ [0.5947809  0.40521905]
+ [0.47618538 0.5238147 ]
+ [0.6159452  0.38405484]
+ [0.37885976 0.6211403 ]
+ [0.55479485 0.44520512]
+ [0.61527306 0.3847269 ]
+ [0.57876784 0.4212322 ]
+ [0.5932318  0.40676823]
+ [0.62865406 0.3713459 ]
+ [0.6270624  0.37293762]
+ [0.5159918  0.48400813]
+ [0.6254892  0.37451085]
+ [0.5042043  0.49579564]]
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+10:19:17      Epoch:   0      Batch:   0      OuterStep:  10      LossModel: 0.00164391     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 61.8693Contributing envs to the losses:  [79 33 36 29 42 59 39 54 76 49 72 35 70 43 50 34 37 60 11 75 38 78 77 73 74 53 32 55 31  2 24 12 19 71 52 40 44 63 64 57]
+Gate kernel values: 
+ [[ -49.911903    55.928295 ]
+ [   4.0439734   36.04374  ]
+ [ -66.39031     59.82863  ]
+ [  68.31942   -103.018745 ]
+ [  -6.2095003    3.5700743]
+ [ -39.440636    63.62996  ]
+ [ 143.32684    -16.985815 ]
+ [ 182.59254     12.735756 ]
+ [-283.2014     182.22925  ]
+ [ 392.82678   -113.17682  ]]
+The factor: how much of the new gate kernel do I used ? [0.001]
+Gate values for each environment (all envs): 
+ [[0.20875722 0.7912428 ]
+ [0.4848542  0.51514584]
+ [0.47243202 0.527568  ]
+ [0.31860453 0.6813955 ]
+ [0.36131677 0.6386833 ]
+ [0.43991384 0.5600862 ]
+ [0.2521602  0.7478398 ]
+ [0.24373005 0.75626993]
+ [0.31851438 0.6814856 ]
+ [0.5454599  0.4545401 ]
+ [0.16802745 0.83197254]
+ [0.5316275  0.46837258]
+ [0.6835653  0.31643462]
+ [0.68678486 0.31321517]
+ [0.46115005 0.53885   ]
+ [0.20938887 0.790611  ]
+ [0.31320432 0.6867957 ]
+ [0.83406484 0.16593514]
+ [0.65613484 0.3438652 ]
+ [0.69439256 0.3056074 ]
+ [0.14991641 0.8500836 ]
+ [0.31676713 0.68323284]
+ [0.63150436 0.36849567]
+ [0.271208   0.728792  ]
+ [0.40436122 0.5956388 ]
+ [0.8580857  0.14191425]
+ [0.25108796 0.74891204]
+ [0.3690429  0.63095707]
+ [0.4671706  0.53282946]
+ [0.6138508  0.38614923]
+ [0.71452934 0.28547066]
+ [0.42218173 0.5778183 ]
+ [0.6728512  0.32714885]
+ [0.46873644 0.53126365]
+ [0.5602999  0.43970016]
+ [0.46614042 0.5338596 ]
+ [0.47608867 0.52391136]
+ [0.4298313  0.5701688 ]
+ [0.3937408  0.6062592 ]
+ [0.58408225 0.4159177 ]
+ [0.63657916 0.3634209 ]
+ [0.3366211  0.6633789 ]
+ [0.5021034  0.4978967 ]
+ [0.5450937  0.45490628]
+ [0.32614604 0.67385393]
+ [0.1767494  0.82325065]
+ [0.7005404  0.29945955]
+ [0.80864733 0.1913527 ]
+ [0.22530779 0.7746923 ]
+ [0.4053296  0.5946704 ]
+ [0.68721735 0.31278262]
+ [0.36379734 0.63620263]
+ [0.35171878 0.64828116]
+ [0.36055204 0.6394479 ]
+ [0.43075782 0.5692421 ]
+ [0.41421112 0.5857889 ]
+ [0.7253638  0.27463624]
+ [0.6494571  0.3505429 ]
+ [0.7874508  0.21254922]
+ [0.5284563  0.47154373]
+ [0.61498004 0.38502   ]
+ [0.2862173  0.7137827 ]
+ [0.24684606 0.7531539 ]
+ [0.7078496  0.2921504 ]
+ [0.53415304 0.46584696]
+ [0.2670665  0.7329335 ]
+ [0.86200744 0.13799264]
+ [0.3402906  0.65970945]
+ [0.22641619 0.77358377]
+ [0.2322216  0.7677784 ]
+ [0.6204064  0.37959367]
+ [0.3638552  0.6361449 ]
+ [0.34170812 0.6582919 ]
+ [0.28273717 0.7172628 ]
+ [0.4309892  0.56901073]
+ [0.5881825  0.41181746]
+ [0.52293086 0.47706914]
+ [0.6659938  0.3340061 ]
+ [0.3698314  0.63016856]
+ [0.50337183 0.49662817]]
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.00162794
+E0108 10:26:19.293343  507181 hlo_lexer.cc:443] Failed to parse int literal: 29138799360410471985077
+        Saving best model so far ...
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 3 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 4 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+10:29:42      Epoch:   0      Batch:   0      OuterStep:  20      LossModel: 0.00084350     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 60.7597Contributing envs to the losses:  [43 44 35 38 59 76 37 73 54 11 33 53 55 78 39 79 49 36 57 60 71 40 64 50 70 19 46 30 34 18  2 31 29 62 75 42 77 58 51  9]
+Gate kernel values: 
+ [[  44.220013   -96.54146  ]
+ [ -24.812508    82.40068  ]
+ [ -84.47446      5.9499664]
+ [ -25.787994    -6.7759056]
+ [ -17.2955       9.494325 ]
+ [  49.38212    -18.750517 ]
+ [  65.98113     40.565624 ]
+ [ 157.775      120.80163  ]
+ [ -83.75335   -126.72705  ]
+ [ 227.0948      74.078224 ]]
+The factor: how much of the new gate kernel do I used ? [0.001]
+Gate values for each environment (all envs): 
+ [[0.13671695 0.8632831 ]
+ [0.27347344 0.72652656]
+ [0.6733215  0.32667848]
+ [0.37075838 0.62924165]
+ [0.37268606 0.6273139 ]
+ [0.7385733  0.26142672]
+ [0.7677054  0.23229457]
+ [0.16411574 0.83588433]
+ [0.75686085 0.24313913]
+ [0.7515177  0.24848232]
+ [0.25276363 0.74723643]
+ [0.6292922  0.37070778]
+ [0.71686405 0.28313595]
+ [0.8336483  0.16635166]
+ [0.4346663  0.5653338 ]
+ [0.19813757 0.8018624 ]
+ [0.6083512  0.39164886]
+ [0.69304717 0.30695283]
+ [0.6800343  0.3199657 ]
+ [0.66646063 0.3335394 ]
+ [0.5106488  0.48935124]
+ [0.44939247 0.5506076 ]
+ [0.7697514  0.23024859]
+ [0.27552938 0.7244707 ]
+ [0.5148438  0.4851562 ]
+ [0.7212691  0.27873093]
+ [0.5400987  0.45990124]
+ [0.5589578  0.4410423 ]
+ [0.28681928 0.7131807 ]
+ [0.7717949  0.22820514]
+ [0.70448583 0.2955142 ]
+ [0.61018586 0.3898141 ]
+ [0.70997775 0.29002222]
+ [0.6654568  0.3345432 ]
+ [0.71538013 0.2846199 ]
+ [0.76055807 0.23944195]
+ [0.63165325 0.3683467 ]
+ [0.74748325 0.2525168 ]
+ [0.73287785 0.26712212]
+ [0.69037753 0.3096225 ]
+ [0.6782679  0.32173204]
+ [0.38761467 0.6123853 ]
+ [0.6971346  0.30286533]
+ [0.6857165  0.31428346]
+ [0.64825344 0.35174656]
+ [0.27846068 0.7215393 ]
+ [0.7222214  0.27777863]
+ [0.7451218  0.25487816]
+ [0.3170852  0.68291473]
+ [0.6245906  0.37540942]
+ [0.76919705 0.23080298]
+ [0.4352619  0.56473815]
+ [0.33946756 0.6605324 ]
+ [0.6260964  0.3739035 ]
+ [0.7602411  0.23975891]
+ [0.76596004 0.23403999]
+ [0.7481096  0.2518904 ]
+ [0.63156736 0.36843258]
+ [0.7293387  0.2706613 ]
+ [0.7075049  0.29249504]
+ [0.682217   0.317783  ]
+ [0.26937705 0.73062295]
+ [0.63996893 0.360031  ]
+ [0.75397795 0.24602206]
+ [0.6108794  0.38912055]
+ [0.56462586 0.43537414]
+ [0.8279764  0.17202367]
+ [0.610741   0.389259  ]
+ [0.27880207 0.72119796]
+ [0.37618038 0.62381965]
+ [0.794214   0.20578602]
+ [0.6942873  0.30571276]
+ [0.39894053 0.60105956]
+ [0.727452   0.27254802]
+ [0.40192258 0.59807736]
+ [0.6329141  0.36708584]
+ [0.7867087  0.2132913 ]
+ [0.75621396 0.24378608]
+ [0.7175643  0.28243566]
+ [0.6265672  0.37343282]]
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.00129078
+        Saving best model so far ...
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 4 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 3 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+10:40:17      Epoch:   0      Batch:   0      OuterStep:  30      LossModel: 0.00079717     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 60.2644Contributing envs to the losses:  [71 38 70 79 57 35 31 73 59 30 33 75 49 36 54 37 50 55 34 43 53 40 77 47 39 11 58 46 42 76 78 19 64 44 12 65 60 74 63 32]
+Gate kernel values: 
+ [[ -33.785725   -36.64104  ]
+ [  32.14977     72.49005  ]
+ [ -96.759155    -7.1786385]
+ [ -32.219864   -52.873955 ]
+ [ -12.628621    21.714073 ]
+ [  46.64462     10.513341 ]
+ [  42.25766     50.758503 ]
+ [ 213.017       95.91521  ]
+ [-154.906       39.23799  ]
+ [ 205.2563     -13.912094 ]]
+The factor: how much of the new gate kernel do I used ? [0.001]
+Gate values for each environment (all envs): 
+ [[0.13634948 0.8636505 ]
+ [0.359605   0.640395  ]
+ [0.6158293  0.38417074]
+ [0.40162387 0.5983761 ]
+ [0.4117357  0.5882642 ]
+ [0.6782641  0.32173592]
+ [0.74925625 0.25074375]
+ [0.1957918  0.8042082 ]
+ [0.6996046  0.30039543]
+ [0.7457198  0.25428015]
+ [0.264125   0.735875  ]
+ [0.5878362  0.41216388]
+ [0.6799129  0.3200871 ]
+ [0.69863635 0.30136365]
+ [0.4156982  0.5843019 ]
+ [0.18731156 0.8126884 ]
+ [0.6160335  0.38396648]
+ [0.68822193 0.31177807]
+ [0.71357805 0.28642192]
+ [0.72238004 0.27761996]
+ [0.35935107 0.64064896]
+ [0.3614835  0.6385165 ]
+ [0.8050552  0.19494481]
+ [0.33463353 0.6653665 ]
+ [0.4362836  0.5637165 ]
+ [0.8112358  0.18876417]
+ [0.47861567 0.52138436]
+ [0.50936997 0.49063003]
+ [0.2709904  0.72900957]
+ [0.77884465 0.22115533]
+ [0.6785833  0.32141668]
+ [0.67400885 0.32599112]
+ [0.6602541  0.33974582]
+ [0.684638   0.31536198]
+ [0.66668785 0.3333121 ]
+ [0.6822464  0.31775358]
+ [0.6537455  0.34625456]
+ [0.6191027  0.38089734]
+ [0.7342757  0.26572433]
+ [0.5232074  0.47679254]
+ [0.7150146  0.28498545]
+ [0.42259964 0.5774004 ]
+ [0.68206483 0.3179351 ]
+ [0.7230181  0.27698192]
+ [0.6841786  0.31582135]
+ [0.3707972  0.6292027 ]
+ [0.72638786 0.27361214]
+ [0.7620174  0.2379826 ]
+ [0.3408633  0.6591368 ]
+ [0.6094525  0.39054754]
+ [0.7765571  0.22344293]
+ [0.45329148 0.5467086 ]
+ [0.3500163  0.6499837 ]
+ [0.605133   0.39486703]
+ [0.69802815 0.30197185]
+ [0.70206094 0.29793906]
+ [0.78504276 0.21495727]
+ [0.73500746 0.26499254]
+ [0.77232116 0.22767879]
+ [0.67590487 0.32409513]
+ [0.71823335 0.28176662]
+ [0.28048155 0.7195184 ]
+ [0.55442625 0.4455737 ]
+ [0.7440102  0.25598982]
+ [0.63463175 0.36536825]
+ [0.6468209  0.3531791 ]
+ [0.8373306  0.16266946]
+ [0.5682353  0.43176472]
+ [0.35782108 0.64217895]
+ [0.21076596 0.78923404]
+ [0.7615919  0.23840809]
+ [0.76131904 0.23868097]
+ [0.41126135 0.5887386 ]
+ [0.6560266  0.34397343]
+ [0.47684565 0.5231544 ]
+ [0.6077935  0.39220652]
+ [0.74886024 0.25113976]
+ [0.79598206 0.20401794]
+ [0.6854115  0.3145885 ]
+ [0.7033235  0.29667655]]
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.00092528
+        Saving best model so far ...
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 3 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 3 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 2 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+✔️ Gating k-means converged after 1 iterations
+10:49:54      Epoch:   0      Batch:   0      OuterStep:  39      LossModel: 0.00081361     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 60.5442Contributing envs to the losses:  [78 71 65 53 64 35 31 73 79 33 30 54 59 11 74 37 43 70 12 76 55 49 19 44 62 57 50 56  2 39 77 24 51 46 36 38  4 40 58 34]
+Gate kernel values: 
+ [[ -54.22      -32.871048]
+ [  94.75841    24.211678]
+ [ -15.755402  -67.214294]
+ [ -59.67174   -40.73478 ]
+ [  21.17902   -11.841051]
+ [  13.606358   51.78384 ]
+ [  56.429165   28.382668]
+ [ 137.13153   154.27856 ]
+ [  10.002018 -119.71639 ]
+ [  11.498509  151.0057  ]]
+The factor: how much of the new gate kernel do I used ? [0.001]
+Gate values for each environment (all envs): 
+ [[0.88553464 0.1144653 ]
+ [0.6828436  0.31715646]
+ [0.41699484 0.58300525]
+ [0.5785029  0.4214971 ]
+ [0.57904273 0.4209573 ]
+ [0.32187688 0.6781231 ]
+ [0.23777692 0.76222306]
+ [0.81536746 0.18463254]
+ [0.25362146 0.74637854]
+ [0.24455182 0.75544816]
+ [0.68495977 0.3150403 ]
+ [0.43636274 0.5636372 ]
+ [0.35372895 0.64627105]
+ [0.32153043 0.67846966]
+ [0.61941814 0.3805819 ]
+ [0.7572185  0.24278153]
+ [0.38827044 0.6117296 ]
+ [0.31066966 0.68933034]
+ [0.269938   0.730062  ]
+ [0.3010679  0.69893205]
+ [0.56938404 0.43061596]
+ [0.61714524 0.38285476]
+ [0.2241869  0.7758131 ]
+ [0.7417839  0.25821608]
+ [0.6269578  0.3730423 ]
+ [0.19286655 0.80713344]
+ [0.4739869  0.5260131 ]
+ [0.5084538  0.49154624]
+ [0.78341985 0.21658018]
+ [0.23134442 0.76865566]
+ [0.3579963  0.64200366]
+ [0.36484176 0.63515824]
+ [0.3784153  0.6215847 ]
+ [0.34984392 0.65015614]
+ [0.25934038 0.74065953]
+ [0.33030492 0.6696951 ]
+ [0.4045533  0.5954467 ]
+ [0.28889546 0.7111046 ]
+ [0.35048398 0.64951605]
+ [0.4148807  0.58511937]
+ [0.26972717 0.7302728 ]
+ [0.5986715  0.40132847]
+ [0.30144906 0.6985509 ]
+ [0.2701404  0.72985965]
+ [0.34686756 0.65313256]
+ [0.60819435 0.3918057 ]
+ [0.2470091  0.7529909 ]
+ [0.22058475 0.77941525]
+ [0.6838388  0.3161612 ]
+ [0.33038792 0.66961205]
+ [0.21857874 0.78142124]
+ [0.57295805 0.4270419 ]
+ [0.6169696  0.38303047]
+ [0.3518076  0.6481924 ]
+ [0.33516294 0.66483706]
+ [0.251655   0.748345  ]
+ [0.23380503 0.76619494]
+ [0.230629   0.769371  ]
+ [0.21543716 0.7845629 ]
+ [0.31506947 0.68493056]
+ [0.21943699 0.78056306]
+ [0.7249957  0.27500433]
+ [0.3660321  0.63396794]
+ [0.2674733  0.73252666]
+ [0.3605219  0.6394781 ]
+ [0.29247442 0.7075256 ]
+ [0.18836957 0.8116304 ]
+ [0.41825742 0.5817426 ]
+ [0.6835226  0.31647745]
+ [0.73265576 0.26734424]
+ [0.22410077 0.77589923]
+ [0.2425569  0.7574431 ]
+ [0.60832113 0.39167884]
+ [0.34904104 0.65095896]
+ [0.49282223 0.5071777 ]
+ [0.37768295 0.622317  ]
+ [0.23958541 0.7604146 ]
+ [0.2011252  0.7988748 ]
+ [0.2640533  0.7359468 ]
+ [0.30713245 0.6928676 ]]
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.00097003
+
+Total gradient descent training time: 0 hours 41 mins 27 secs
+    Creating a new model with taylor order 0 ...
+Using any previously defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 80
+    Maximum number of batches (along envs): 1
+    Reusing contexts for adaptation on the single bach
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+
+    Test loss value: 8.19e-04 ± 2.19e-03
+    Train loss value for criterion 0: 0.00e+00
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [8 2 0]
+    Visualized context dimensions along y: [5 5 2]
+Saving artefacts in: ./runs/250108-100828/artefacts.png
+Loss per InD environment: [0.004728997126221657, 0.003644751152023673, 0.000643776380456984, 0.0030713516753166914, 0.001467802212573588, 0.0005885232822038233, 0.001098522450774908, 0.004130150191485882, 0.0017840962391346693, 0.007922651246190071, 0.0008768098778091371, 0.001209996291436255, 0.0005940500996075571, 0.000566620787139982, 0.0012093569384887815, 0.0011796029284596443, 0.00028704392025247216, 0.003841228084638715, 0.0030401418916881084, 0.0005873299087397754, 0.0007277741678990424, 0.0034250295720994473, 0.004294354002922773, 0.013396617025136948, 0.00035609237966127694, 0.0032414633315056562, 0.0004745729675050825, 0.0008616754203103483, 0.0012776394141837955, 0.00037207940476946533, 0.0010319091379642487, 0.00038199115078896284, 0.0020111880730837584, 0.003354523330926895, 0.005898474249988794, 0.0005598359857685864, 0.0009675762848928571, 0.000996793620288372, 0.0004716489929705858, 0.0007772158714942634, 0.0007538760546594858, 0.0007625918951816857, 0.00046620433568023145, 0.0002748272381722927, 0.00048643266200087965, 0.000825005117803812, 0.0007168961456045508, 0.0008123964071273804, 0.00040016439743340015, 0.00042310115532018244, 0.0002980336139444262, 0.0012460051802918315, 0.000873032258823514, 0.00034882299951277673, 0.0011116492096334696, 0.00029237507260404527, 0.0007577561773359776, 0.0014913487248122692, 0.0006757847731932998, 0.0004034282173961401, 0.000561992172151804, 0.008352136239409447, 0.0008028071606531739, 0.001120783039368689, 0.0004370395909063518, 0.001538840588182211, 0.003923128359019756, 0.00028484524227678776, 0.0010044531663879752, 0.007514499593526125, 0.000411170010920614, 0.0009504239424131811, 0.0018112881807610393, 0.0006121997139416635, 0.00024206576927099377, 0.0005200731684453785, 0.00028804404428228736, 0.00044147728476673365, 0.0011108311591669917, 0.0003305134014226496]
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+
+==  Begining in-domain dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 0)
+    Using contexts from meta-training.
+Testing finished. Figure saved in: ./runs/250108-100828/dynamics.png
+
+==  Begining context clusters visualisation with t-SNE ... ==
+    Visualising the parameters (either vectors or function weights)
+    Visualising predictions from the contexts (reconstituted as functions)
+WARNING: No context utilities found, meaning inf dim context are not used. Using randoms.
+Saving context clusters in: ./runs/250108-100828/context_clusters.png
+Labels: [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1]
+X0 [ 0.03689339 -0.04006097  0.0250094  -0.06054603  0.0181905  -0.05856068  0.01922453  0.03176699 -0.03943788 -0.03950483]
+X1 [ 0.02010467  0.00803319 -0.00520299 -0.03992614 -0.03917385 -0.03980436  0.00642077 -0.00158578 -0.01718715 -0.0138856 ]
+Accuracy: 0.3625
+Y =  [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1]
+Y_pred =  [1 1 0 1 1 0 0 1 0 0 1 0 0 1 1 1 0 0 0 0 1 1 0 1 1 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 1 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 1 0 0 1 0 1 0 0 0 0 0]
+    Creating a new model with taylor order 0 ...
+Using any previously defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 1
+    Maximum number of batches (along envs): 1
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Epoch:   0      Batch:   0      Loss: 0.00244921     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 0.00342475     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 0.00662898     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 0.00333129     ContextsNorm: 0.00000000
+Epoch:   9      Batch:   0      Loss: 0.00175778     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 13 secs
+
+    Test loss value: 2.39e-03 ± 0.00e+00
+    Train loss value for criterion 0: 1.76e-03
+Loss per OoD environment: [0.0023859385401010513]
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [8 2 0]
+    Visualized context dimensions along y: [5 5 2]
+No adaptation contexts found. Using latest found.
+Saving artefacts in: ./runs/250108-100828/adapt/artefacts_adapt.png
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+
+==  Begining out-of-distribution dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 0)
+WARNING: No specific adaptation contexts found. Using latest found.
+Testing finished. Figure saved in: ./runs/250108-100828/adapt/dynamics_adapt.png
+
+==  Begining context clusters visualisation with t-SNE ... ==
+    Visualising the parameters (either vectors or function weights)
+    Visualising predictions from the contexts (reconstituted as functions)
+WARNING: No context utilities found, meaning inf dim context are not used. Using randoms.
+Saving context clusters in: ./runs/250108-100828/adapt/context_clusters.png

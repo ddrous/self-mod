@@ -99,6 +99,22 @@ examples/forced-o/runs/*
 !examples/forced-o/runs/Experiment-InfDim
 
 
+## The Epilptic EEG dataset
+examples/epilepsy/data/*
+examples/epilepsy/runs/*
+
+## The Crowdsource EEG dataset
+examples/crowdsource/data/*
+examples/crowdsource/runs/*
+
+## The Synthetic Trends dataset
+examples/trends/data/*
+examples/trends/runs/*
+
+## The Vortal (breathing) dataset
+examples/vortal/data/*
+examples/vortal/runs/*
+*core
 
 ## Lotka volterra experiment runs
 examples/lotka-v/runs/*
@@ -131,6 +147,7 @@ examples/ode-bench/runs/241129-230513-MegaGolden*/checkpoints/
 examples/ode-bench/runs/241207-204554-PerfectT0/runs/
 examples/ode-bench/runs/241207-204554-PerfectT0/checkpoints
 examples/ode-bench/core
+examples/ode-bench/nohup.logs
 
 !examples/ode-bench/runs/241223-103857-TestingGround/
 examples/ode-bench/runs/241223-103857-TestingGround/checkpoints
@@ -152,15 +169,6 @@ examples/ode-bench/runs/250106-120447-HyperGolden*/checkpoints
 
 !examples/ode-bench/runs/250105-203708-10ExpertsGreat/
 examples/ode-bench/runs/250105-203708-10ExpertsGreat/checkpoints
-!examples/ode-bench/runs/250107-131644-1EnvOnlyGreat/
-examples/ode-bench/runs/250107-131644-1EnvOnlyGreat/checkpoints
 
-
-## The Epilptic dataset
-examples/epilepsy/data/*
-examples/epilepsy/runs/*
-
-## The Vortal (breathing) dataset
-examples/vortal/data/*
-examples/vortal/runs/*
-*core
+!examples/epilepsy/runs/250108-100828-SingleExpertGood/
+examples/epilepsy/runs/250108-100828-SingleExpertGood/checkpoints
