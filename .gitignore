@@ -107,6 +107,10 @@ examples/epilepsy/runs/*
 examples/crowdsource/data/*
 examples/crowdsource/runs/*
 
+## The Synthetic Trends dataset
+examples/trends/data/*
+examples/trends/runs/*
+
 ## The Vortal (breathing) dataset
 examples/vortal/data/*
 examples/vortal/runs/*

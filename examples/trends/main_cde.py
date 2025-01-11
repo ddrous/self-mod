@@ -18,27 +18,27 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 202800
+seed = 202809
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-ode_count = 2          ## Total number of ODEs in the dataset
+ode_count = 3          ## Total number of ODEs in the dataset
 nb_experts = ode_count
-nb_envs_per_fam = (80//nb_experts, 11420//nb_experts)
+nb_envs_per_fam = (600//nb_experts, 600//nb_experts)
 top_k = 1
 
-num_envs = (nb_envs_per_fam[0]*ode_count, 11420)
+num_envs = (nb_envs_per_fam[0]*ode_count, 600)
 num_shots = (-1, -1)
-num_workers = 24
+num_workers = 0
 shuffle = False
 train_proportion = 1.0  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 5
+context_pool_size = 1
 context_size = 2
-taylor_orders = (2, 0)
+taylor_orders = (0, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Dopri5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 1
@@ -47,8 +47,8 @@ max_ret_env_states = num_envs[0]
 split_contexts = False
 
 data_size = 1
-latent_size = 32
-hidden_size = 32*4
+latent_size = 4
+hidden_size = 32*2
 depth = 3
 
 ## Train and adapt hps
@@ -59,8 +59,8 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 100
-nb_inner_steps = (10, 10, 1)
+nb_outer_steps = 2
+nb_inner_steps = (5, 5, 1)
 nb_adapt_epochs = 100
 validate_every = 1*1
 
@@ -70,8 +70,8 @@ meta_train = True
 save_trainer = True
 meta_test = True
 
-run_folder = None if meta_train else "./"
-# run_folder = "./runs/250103-123848-Test/" if meta_train else "./"
+# run_folder = None if meta_train else "./"
+run_folder = "./runs/250110-115030-Test/" if meta_train else "./"
 
 data_folder = "./data/" if meta_train else "../../data/"
 
@@ -87,11 +87,49 @@ adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.
 
 #%%
 
+# ## Open the data file as a space saparated file
+# import pandas as pd
+# data = pd.read_csv(data_folder+"synthetic_control.data", sep=" ", header=None)
+# print(data)
+
+## Read the file line by line
+time_series = []
+with open(data_folder+"synthetic_control.data", 'r') as f:
+    for line in f:
+        time_series.append(list(map(float, line.split())))
+
+print("Number of time series:", len(time_series))
+print("Time series 0", time_series[0])
+time_series = np.array(time_series)
+
+## Plot 6 randomly chosen time series
+fig, ax = plt.subplots(2, 3, figsize=(6*3, 6))
+ax = ax.flatten()
+
+## Set the samme y limits for all plots
+ylim = np.min(time_series), np.max(time_series)
+
+for i in range(6):
+    ts_id = np.random.randint(0, len(time_series))
+    ax[i].plot(time_series[ts_id])
+    ax[i].set_title(f"Time Series {ts_id}")
+    ax[i].set_ylim(ylim)
+
+plt.tight_layout()
+plt.savefig(run_folder+"train_trajectories.png")
+
+
+print("Time series shape:", type(time_series[0]), time_series.dtype, time_series.shape)
+
+
+
+#%%
+
 ## Define 4 keys for dataloader(s), learner(s), trainer(s) and visualtester(s)
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
+train_dataloader = NumpyLoader(TrendsDataset(data_dir=data_folder, 
                                                skip_steps=skip_steps, 
                                                traj_prop_min=train_proportion), 
                               batch_size=num_envs[0],
@@ -99,47 +137,13 @@ train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz",
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
+val_dataloader = NumpyLoader(TrendsDataset(data_dir=data_folder, 
                                              skip_steps=skip_steps,
                                              traj_prop_min=test_proportion),
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
-
-#%%
-
-# ## Plot the trajectories in the a few environments
-
-## Alternative way to gather the data
-(outs, ts), _ = next(iter(train_dataloader))
-
-print("Shapes of data and t_eval:", outs.shape, ts.shape)
-
-E_plot = 5
-
-# fig, ax = plt.subplots(E_plot, 1, figsize=(6, E_plot*3))
-fig, ax = plt.subplots(1, E_plot, figsize=(6*E_plot, 3))
-ax = ax.flatten()
-if E_plot==1:
-    ax = [ax]
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
-ylim = outs.min(), outs.max()
-xlim = 0, 1
-for e, e_ in enumerate(np.random.choice(outs.shape[0], E_plot)):
-    ax[e].plot(ts[e_], outs[e_].squeeze(), '-', color=colors[e])
-    ax[e].set_title(f"Env {e}")
-    ax[e].set_xlabel("Normalised Time")
-    ax[e].set_ylabel(f"$EEG$")
-    ax[e].set_ylim(ylim)
-    ax[e].set_xlim(xlim)
-
-plt.tight_layout()
-plt.draw()
-plt.savefig(run_folder+"train_trajectories.png")
-
-
-
 
 #%%
 
@@ -237,7 +241,9 @@ class Generator(eqx.Module):
     def __call__(self, t, y, ctx):
         G = self.gate["function"](self.gate, ctx)
         # G = jax.lax.stop_gradient(self.gate["function"](self.gate, ctx))
-        ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
+
+        if self.split_contexts:
+            ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
 
         latent_size = y.shape[0]
         data_size = self.experts[0].data_size
@@ -398,16 +404,12 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
 print("Loss per InD environment:", all_ind_crit[0].tolist())
 
-print("After training, the context shifts are:")
-print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].ctx_shift)
-print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].ctx_shift)
-
 
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                envs=jnp.arange(0, nb_envs_per_fam[0]*ode_count, 10).tolist(),
+                                envs=jnp.arange(0, nb_envs_per_fam[0]*ode_count, 100).tolist(),
                                 dims=(0,0),
                                 traj=0,
                                 share_axes=False,
@@ -516,157 +518,42 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
 
 
 
-
-
-
-
-
-#%%
-## Adapt the model to the new dataset
-if meta_test:
-
-    adapt_contexts = []
-    all_losses = []
-
-    labels_adapt = []
-
-    ## We want to adapt in batches of 5 environments
-    envs_per_batch = 571
-    for batch_id, i in enumerate(range(0, num_envs[1], envs_per_batch)):
-    # for batch_id, i in enumerate([0, num_envs[1]-envs_per_batch]):
-        print("iteration:", batch_id, "Out of total:", np.ceil(num_envs[1]/envs_per_batch).astype(int))
-        print("Adapting on environments:", i, "to", i+envs_per_batch)
-
-        adapt_dataset = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
-        adapt_dataset.total_envs = envs_per_batch
-        adapt_dataset.dataset = adapt_dataset.dataset[i:i+envs_per_batch, :, :, :]
-        adapt_dataset.t_eval = adapt_dataset.t_eval[i:i+envs_per_batch:, :]
-
-        print("Adaptation dataset shape:", adapt_dataset.dataset.shape)
-        nb_adapt_envs, _, _, _ = adapt_dataset.dataset.shape
-
-        adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
-                                    # batch_size=num_envs[1], 
-                                    batch_size=envs_per_batch, 
-                                    shuffle=shuffle,
-                                    num_workers=num_workers,
-                                    drop_last=False)
-
-        adapt_dataset_test = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
-        adapt_dataset_test.total_envs = envs_per_batch
-        adapt_dataset_test.dataset = adapt_dataset_test.dataset[i:i+envs_per_batch, :, :, :]
-        adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[i:i+envs_per_batch:, :]
-
-        adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
-                                    # batch_size=num_envs[1], 
-                                    batch_size=envs_per_batch,
-                                    shuffle=shuffle,
-                                    num_workers=num_workers,
-                                    drop_last=False)
-
-        ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
-                                            taylor_order=taylor_orders[1], 
-                                            nb_steps=nb_adapt_epochs,
-                                            print_error_every=(nb_adapt_epochs, nb_adapt_epochs), 
-                                            criterion_id=0,
-                                            verbose=True,
-                                            val_dataloader=adapt_dataloader_test,
-                                            max_ret_env_states=envs_per_batch,
-                                            max_adapt_batches=max_adapt_batches,
-                                            stochastic=False)
-        print("Loss per OoD environment:", all_ood_crit[0].tolist())
-
-        adapt_contexts.append(learner.contexts_latest.params)
-        all_losses.append(all_ood_crit[0].tolist())
-
-        labels = np.load(data_folder+"adapt.npz")["condition"].astype(int)[i:i+envs_per_batch]
-        labels_adapt.append(labels)
-
-    adapt_contexts = jnp.concatenate(adapt_contexts, axis=0)
-    all_losses = jnp.array(all_losses)
-    labels_adapt = jnp.concatenate(labels_adapt, axis=0)
-
-    ## Save these to files
-    np.save(adapt_folder+"adapt_losses.npy", all_losses)
-    np.save(adapt_folder+"adapt_contexts.npy", adapt_contexts)
-    np.save(adapt_folder+"adapt_labels.npy", labels_adapt)
-
-
-#%%
-if meta_test:
-    visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_adapt.png", adaptation=True)
-
-    visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_adapt.png",
-                                    data_loader=adapt_dataloader_test,
-                                    nb_envs=1,
-                                    traj=0,
-                                    dims=(0,0),     ## The Data is 1-dimensional
-                                    share_axes=False,
-                                    key=test_key)
-
-    perp = ode_count if ode_count > 1 else 4
-    visualtester.visualize_context_clusters(perplexities=(perp, perp),
-                                            # key=test_key,
-                                            key=jax.random.PRNGKey(time.time_ns()),
-                                            save_path=adapt_folder+"context_clusters.png")
-
-    # X_adapt = learner.contexts_latest.params
-    X_adapt = np.load(adapt_folder+"adapt_contexts.npy")
-
-    # y_test = labels_adapt
-    y_test = np.load(adapt_folder+"adapt_labels.npy")
-
-
-
-
-
-
-
-
-
-
-
-
 #%%
 X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)
+# 1-100   Normal
+# 101-200 Cyclic
+# 201-300 Increasing trend
+# 301-400 Decreasing trend
+# 401-500 Upward shift
+# 501-600 Downward shift
 
-color_table = {0:"royalblue", 1:"crimson"}
+## We have 600 samples and 6 classes as above. Create the labels
+labels = np.zeros((600,), dtype=int)
+labels[100:200] = 1 
+labels[200:300] = 2
+labels[300:400] = 3
+labels[400:500] = 4
+labels[500:600] = 5
+
+color_table = {0:"royalblue", 1:"crimson", 2:"forestgreen", 3:"darkorange", 4:"purple", 5:"black"}
 colors = [color_table[l] for l in labels]
 
-conditions = {0:"Healthy", 1:"Epileptic"}
-
-# import umap
-# umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=0.0, spread=1.0, metric="euclidean")
-# Fit and transform the data
-# X_reduced = umap_reducer.fit_transform(X)
+conditions = {0:"Normal", 1:"Cyclic", 2:"Increasing trend", 3:"Decreasing trend", 4:"Upward shift", 5:"Downward shift"}
 
 ## Use PCA instead
-from sklearn.decomposition import PCA
-pca = PCA(n_components=2)
+# from sklearn.decomposition import PCA
+# pca = PCA(n_components=2)
 # X_reduced = pca.fit_transform(X)
 X_reduced = X
-# X_reduced = jnp.concatenate([X, X_adapt], axis=0)
 
 # Plotting
 plt.figure(figsize=(10, 7))
+# plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
 
-for class_label in [0,1]:
-    marker = "^" if class_label==0 else "x"
+markers = {0:'o', 1:'x', 2:'^', 3:'s', 4:'D', 5:'P'}
+for class_label in range(6):
+    marker = markers[class_label]
     plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
-
-if meta_test:
-    labels_adapt = y_test
-    for class_label in [0,1]:
-        marker = "." if class_label==0 else "."
-        plt.scatter(X_adapt[labels_adapt==class_label, 0], X_adapt[labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
-
 
 plt.legend()
 
@@ -679,32 +566,6 @@ plt.ylabel("Ctx 2")
 plt.draw()
 plt.savefig(run_folder+"pc_contexts.png", bbox_inches='tight');
 
-
-#%%
-
-X = learner.contexts.params
-y = np.load(data_folder+"train.npz")["condition"].astype(int)
-
-print("shapes:", X.shape, y.shape)
-
-
-## Let's do the classification with SVM and a non-linear kernel
-from sklearn.svm import SVC
-clf = SVC(kernel='rbf', random_state=seed)
-clf.fit(X, y)
-
-
-if meta_test:
-    y_pred = clf.predict(X_adapt)
-    print("Results shapes ", y_pred.shape, y_test.shape)
-
-    ## Calculate accuracy with sklearn metrics
-    from sklearn.metrics import accuracy_score
-    acc = accuracy_score(y_test, y_pred)
-    print("Accuracy:", acc)
-
-    print("Y_test = ", y_test)
-    print("Y_pred = ", y_pred)
 
 
 

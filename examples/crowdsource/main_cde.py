@@ -25,7 +25,7 @@ torch.manual_seed(seed)
 ## Dataloader hps
 ode_count = 2          ## Total number of ODEs in the dataset
 nb_experts = ode_count
-nb_envs_per_fam = (80//nb_experts, 80//nb_experts)
+nb_envs_per_fam = (947//nb_experts, 947//nb_experts)
 top_k = 1
 
 num_envs = (nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[1]*ode_count)
@@ -37,7 +37,7 @@ test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 3
-context_size = 10
+context_size = 2
 taylor_orders = (2, 0)
 # ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Dopri5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
@@ -46,7 +46,7 @@ loss_contributors = nb_envs_per_fam[0]*1
 max_ret_env_states = num_envs[0]
 split_contexts = False
 
-data_size = 1
+data_size = 14
 latent_size = 16
 hidden_size = 32*2
 depth = 3
@@ -59,12 +59,12 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 40
-nb_inner_steps = (10, 10, 1)
+nb_outer_steps = 50
+nb_inner_steps = (5, 5, 1)
 nb_adapt_epochs = 10
-validate_every = 10*1
+validate_every = 1*1
 
-print_error_every = (10*1, 10*1)
+print_error_every = (1*1, 1*1)
 
 meta_train = True
 save_trainer = True
@@ -91,15 +91,17 @@ adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
-                                               skip_steps=skip_steps, 
-                                               traj_prop_min=train_proportion), 
+train_dataloader = NumpyLoader(CrowdsourceDataset(data_dir=data_folder, 
+                                                  data_split="val",
+                                                skip_steps=skip_steps, 
+                                                traj_prop_min=train_proportion), 
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
+val_dataloader = NumpyLoader(CrowdsourceDataset(data_dir=data_folder,
+                                                data_split="val", 
                                              skip_steps=skip_steps,
                                              traj_prop_min=test_proportion),
                               batch_size=num_envs[0],
@@ -399,7 +401,7 @@ visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
                                 envs=jnp.arange(0, nb_envs_per_fam[0]*ode_count, 10).tolist(),
-                                dims=(0,0),
+                                dims=(0,1),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
@@ -590,10 +592,11 @@ print("Y_pred = ", y_pred)
 if meta_test:
     adapt_id = nb_envs_per_fam[1]*1+1     ## The single environment to adapt to (the difficult rectangular one)
 
-    adapt_dataset = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                             skip_steps=skip_steps,
-                                             traj_prop_min=test_proportion,
-                                             adaptation=True)
+    adapt_dataset = CrowdsourceDataset(data_dir=data_folder, 
+                                       data_split="adapt",
+                                        skip_steps=skip_steps,
+                                        traj_prop_min=test_proportion,
+                                        adaptation=True)
     adapt_dataset.total_envs = 1
     adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
     adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
@@ -605,7 +608,8 @@ if meta_test:
                                 num_workers=num_workers,
                                 drop_last=False)
 
-    adapt_dataset_test = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
+    adapt_dataset_test = CrowdsourceDataset(data_dir=data_folder,
+                                            data_split="adapt", 
                                              skip_steps=skip_steps,
                                              traj_prop_min=test_proportion,
                                              adaptation=True)
@@ -638,7 +642,7 @@ visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_adapt.png",
                                 data_loader=adapt_dataloader_test,
                                 nb_envs=1,
                                 traj=0,
-                                dims=(0,0),     ## The Data is 1-dimensional
+                                dims=(0,1),     ## The Data is 1-dimensional
                                 share_axes=False,
                                 key=test_key)
 

@@ -66,7 +66,7 @@ validate_every = 10*1
 
 print_error_every = (10*1, 10*1)
 
-meta_train = True
+meta_train = False
 save_trainer = True
 meta_test = True
 
@@ -551,14 +551,23 @@ print("X1", X[1])
 X = learner.contexts.params
 y = np.load(data_folder+"train.npz")["condition"].astype(int)
 
-## Let's use Gaussian Mixture Models to cluster the contexts
-from sklearn.mixture import GaussianMixture
-# gmm = GaussianMixture(n_components=2, random_state=seed)
-gmm = GaussianMixture(n_components=2)
-gmm.fit(X)
+# ## Let's use Gaussian Mixture Models to cluster the contexts
+# from sklearn.mixture import GaussianMixture
+# # gmm = GaussianMixture(n_components=2, random_state=seed)
+# gmm = GaussianMixture(n_components=2)
+# ## Initialise the mean in a supervised way
+# gmm.means_ = np.array([X[y==i].mean(axis=0) for i in range(2)])
+# gmm.fit(X)
 
-## Predict the clusters
-y_pred = gmm.predict(X)
+# ## Predict the clusters
+# y_pred = gmm.predict(X)
+
+
+## Let's use Random Forest to classify the contexts
+from sklearn.ensemble import RandomForestClassifier
+clf = RandomForestClassifier(random_state=seed)
+clf.fit(X, y)
+y_pred = clf.predict(X)
 
 ## Calculate accuracy with sklearn metrics
 from sklearn.metrics import accuracy_score
