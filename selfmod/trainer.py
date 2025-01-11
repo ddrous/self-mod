@@ -691,6 +691,8 @@ class NCFTrainer(Trainer):
                 expert_cluster_losses.append(expert_losses[cluster_assignments==j].mean(axis=0))
             all_expert_cluster_losses = jnp.stack(expert_cluster_losses, axis=0)
 
+            print(f"Average expert losses per cluster: \n{all_expert_cluster_losses}\n", flush=False)
+
             ## Step 4. Assign clusters to the experts
             used_experts = []  ## The experts that have been assigned to a cluster
             chosen_experts = [] ## The experts that have been chosen as the best expert for a cluster
@@ -921,8 +923,8 @@ class NCFTrainer(Trainer):
                             # print("Term3 quantities: \n", term3[1], flush=True, end="\n")
                             print("Contributing envs to the losses: ", loss_contrs, flush=True, end="\n")
                             # print("Gate weights in model are: \n", model.vectorfield.neuralnet.gate_weight, flush=True, end="\n")
-                            print("Gate kernel values: \n", model.vectorfield.neuralnet.gate["weight"].squeeze(), flush=True, end="\n")
-                            print("The factor: how much of the new gate kernel do I used ?", model.vectorfield.neuralnet.gate["lsqr_factor"], flush=True, end="\n")
+                            # print("Gate kernel values: \n", model.vectorfield.neuralnet.gate["weight"].squeeze(), flush=True, end="\n")
+                            # print("The factor: how much of the new gate kernel do I used ?", model.vectorfield.neuralnet.gate["lsqr_factor"], flush=True, end="\n")
 
                             gate_fun = model.vectorfield.neuralnet.gate["function"]
                             gate_vals = eqx.filter_vmap(gate_fun, in_axes=(None, 0))(model.vectorfield.neuralnet.gate, contexts.params)

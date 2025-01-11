@@ -16,7 +16,7 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 10202
+seed = 102020
 np.random.seed(seed)
 torch.manual_seed(seed)
 
@@ -28,9 +28,9 @@ top_k = 1
 
 num_envs = (nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[1]*ode_count)
 num_shots = (-1, -1)
-num_workers = 0
+num_workers = 8
 shuffle = False
-train_proportion = 0.4  ## Min proporrion of the trajectory for training
+train_proportion = 0.6  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
@@ -58,7 +58,7 @@ max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
 nb_outer_steps = 1000
-nb_inner_steps = (25, 25, 1)
+nb_inner_steps = (5, 5, 1)
 nb_adapt_epochs = 1000
 validate_every = 10*1
 
@@ -71,7 +71,7 @@ meta_test = True
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
 # data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
-data_folder = "./data_2D_small/" if meta_train else "../../data_2D_small/"
+data_folder = "./data_2D_small*/" if meta_train else "../../data_2D_small*/"
 # data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
 
@@ -169,8 +169,9 @@ class Expert(eqx.Module):
     depth_main:int
 
     rescaler: eqx.Module
+    ctx_shift: jnp.ndarray
 
-    def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_utils=None, key=None):
+    def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_shift, ctx_utils=None, key=None):
         self.ctx_utils = ctx_utils
         self.depth_data = depth_data
         self.depth_main = depth_main
@@ -204,8 +205,11 @@ class Expert(eqx.Module):
         assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
         self.rescaler = jnp.array([1.])
+        self.ctx_shift = jnp.array([ctx_shift], dtype=jnp.float32)
 
     def __call__(self, t, y, ctx):
+        ctx = ctx + self.ctx_shift
+
         for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
             ctx = activation(layer(ctx))
         ctx = self.layers_ctx[-1](ctx)
@@ -234,6 +238,8 @@ class Model(eqx.Module):
 
     def __init__(self, data_size, hidden_size, depth, context_size, nb_experts, top_k, key=None):
         keys = jax.random.split(key, nb_experts+2)
+        # keys = keys.at[2].set(jax.random.split(key, 1+2)[0])       ## Just to make sure we key for env 3 works !
+
         self.split_contexts = False
 
         ## The context is now split into tiny chunks for each expert
@@ -241,7 +247,7 @@ class Model(eqx.Module):
             eff_context_size = context_size//nb_experts
         else:
             eff_context_size = context_size
-        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, key=keys[0]) for i in range(nb_experts)]
+        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, ctx_shift=i/(nb_experts-1), key=keys[0]) for i in range(nb_experts)]
 
         lim = 1 / np.sqrt(context_size)
         gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
@@ -291,22 +297,25 @@ def env_loss_fn(model, ctx, y_hat, y):
     """
 
     term1 = jnp.mean((y_hat-y)**2)
-    term2 = jnp.mean(jnp.abs(ctx))
+    ## Term 1 is relative L2 loss
+    # term1 = jnp.mean(((y_hat-y)**2) / (jnp.maximum(jnp.mean(y**2), 1e-6)))
+    # term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
 
     # term2 = jnp.abs(model.vectorfield.neuralnet.gate(ctx).squeeze())
 
     # loss_val = term1 + 1e-3*term2 + 1e-3*term3
-    loss_val = term1 + 1e-3*term2
-    # loss_val = term1
+    # loss_val = term1 + 1e-3*term2
+    loss_val = term1
 
-    return loss_val, (term1, term2, 0.)
+    return loss_val, (term1, 0., 0.)
+    # return loss_val, (term1, term2, 0.)
 
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
 neuralnet = Model(data_size=2,
-                hidden_size=32*1, 
+                hidden_size=32*4, 
                 depth=3,
                 context_size=context_size,
                 nb_experts=nb_experts,
@@ -412,9 +421,9 @@ print("Loss per InD environment:", all_ind_crit[0].tolist())
 # learner.contexts = eqx.tree_at(lambda c:c.params, learner.contexts, new_ctx)
 # eqx.tree_serialise_leaves(run_folder+"contexts.eqx", learner.contexts)
 
-print("After training, the rescaler are:\n")
-print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].rescaler)
-print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].rescaler)
+print("After training, the context shifts are:")
+print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].ctx_shift)
+print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].ctx_shift)
 
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",

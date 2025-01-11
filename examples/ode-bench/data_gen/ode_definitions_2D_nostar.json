@@ -11,16 +11,16 @@
     "35": {
       "name": "Rotational dynamics of an object in a shear flow",
       "function": "lambda t, y, c0: [np.cos(y[0])/np.tan(y[1]), np.sin(y[0])*(c0*np.sin(y[1])**2 + np.cos(y[1])**2)]",
-      "parameters": {"c0": 2.0},
+      "parameters": {"c0": 4.2},
       "initial_values": [[0.3, -0.3], [0.5, -0.5]],
-      "time_horizon": 6
+      "time_horizon": 4
     },
 
-    "32": {
-      "name": "Damped double well oscillator",
-      "function": "lambda t, y, c0: [y[1], -c0*y[1] - y[0]**3 + y[0]]",
-      "parameters": {"c0": 0.1},
-      "initial_values": [[-0.5, -0.5], [-0.7, -0.7]],
+    "38": {
+      "name": "Van der Pol oscillator (simplified form)",
+      "function": "lambda t, y, c0: [c0*(-y[0]**3/3 + y[0] + y[1]), -y[0]/c0]",
+      "parameters": {"c0": 3.37},
+      "initial_values": [[0.7, 0.0], [1.0, 0.3]],
       "time_horizon": 8
     },
 
