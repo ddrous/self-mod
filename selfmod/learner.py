@@ -1318,7 +1318,8 @@ class NeuralODE(eqx.Module):
 
         batched_results = eqx.filter_vmap(integrate)(xs)
 
-        return jnp.nan_to_num(batched_results, nan=0., posinf=0., neginf=0.)
+        # return jnp.nan_to_num(batched_results, nan=0., posinf=0., neginf=0.)
+        return batched_results
 
 
 
