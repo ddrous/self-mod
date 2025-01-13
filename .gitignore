@@ -172,3 +172,6 @@ examples/ode-bench/runs/250105-203708-10ExpertsGreat/checkpoints
 
 !examples/epilepsy/runs/250108-100828-SingleExpertGood/
 examples/epilepsy/runs/250108-100828-SingleExpertGood/checkpoints
+
+!examples/ode-bench/runs/250113-124059-SuperMassiveGold*/
+examples/ode-bench/runs/250113-124059-SuperMassiveGold*/checkpoints
