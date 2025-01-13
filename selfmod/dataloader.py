@@ -549,6 +549,49 @@ class DynamicsDataset:
 
 
 
+class MixerDynamicsDataset:
+    """
+    For all dynamics tasks as in Kirchmeyer et al. 2022
+    """
+
+    # def __init__(self, meta_tain=True, support_set=True):
+    def __init__(self, data_dir, num_shots=-1, skip_steps=1, adaptation=False):
+
+        self.data_dir = data_dir
+        self.skip_steps = skip_steps
+        # self.adaptation = data_dir.find("adapt") != -1 or data_dir.find("ood") != -1
+        self.adaptation = adaptation
+
+        try:
+            raw_data = np.load(data_dir)
+        except:
+            raise ValueError(f"Data not found at {data_dir}")
+
+        self.dataset, self.t_eval = raw_data['X'][...,::self.skip_steps,:], raw_data['t'][::skip_steps]
+
+        datashape = self.dataset.shape
+        self.total_envs = datashape[0]
+
+        if num_shots is None or num_shots == -1:
+            num_shots = datashape[1]
+        self.num_shots = num_shots
+        if num_shots > datashape[1]:
+            raise ValueError("Number of shots must be less than the total number of trajectories")
+
+        self.num_steps = datashape[2]
+        self.data_size = datashape[3]
+
+
+    def __getitem__(self, idx):
+        inputs = self.dataset[idx, :, 0, :]
+        outputs = self.dataset[idx, :, :, :]
+        return (inputs, self.t_eval), outputs
+
+    def __len__(self):
+        return self.total_envs
+
+
+
 
 class ODEBenchDataset:
     """
@@ -820,6 +863,8 @@ class TrendsDataset:
                 for line in f:
                     time_series.append(list(map(float, line.split())))
             raw_data = np.array(time_series, dtype=np.float32)
+            # raw_data = (raw_data - np.min(raw_data, axis=0)) / (np.max(raw_data, axis=0) - np.min(raw_data, axis=0))
+            raw_data = (raw_data - np.mean(raw_data, axis=0)) / np.std(raw_data, axis=0)
         except:
             raise ValueError(f"Data not found at {data_dir}")
 
