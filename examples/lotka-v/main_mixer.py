@@ -4,10 +4,8 @@
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-# os.environ["JAX_PLATFORMS"] = 'cpu'
 
 from selfmod import *
-# jax.config.update('jax_platform_name', 'cpu')
 
 from matplotlib import animation
 # ## Import jax and debug NaNs
@@ -18,38 +16,32 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 202809
+seed = 102020
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-ode_count = 6          ## Total number of ODEs in the dataset
+ode_count = 3          ## Total number of ODEs in the dataset
 nb_experts = ode_count
-nb_envs_per_fam = (600//nb_experts, 600//nb_experts)
+nb_envs_per_fam = (3, 1)
 top_k = 1
 
-num_envs = (nb_envs_per_fam[0]*ode_count, 600)
+num_envs = (nb_envs_per_fam[0]*ode_count, 4)
 num_shots = (-1, -1)
-num_workers = 24
+num_workers = 0
 shuffle = False
 train_proportion = 1.0  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 2
+context_pool_size = 3
 context_size = 256
 taylor_orders = (2, 0)
-# ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.BacksolveAdjoint()}
-ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Dopri5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
+ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 skip_steps = 1
-loss_contributors = 60
+loss_contributors = 9
 max_ret_env_states = num_envs[0]
 split_contexts = False
-
-data_size = 1
-latent_size = 4
-hidden_size = 32*2
-depth = 3
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -59,20 +51,19 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 200
-nb_inner_steps = (5, 5, 1)
-nb_adapt_epochs = 100
-validate_every = 1*1
+nb_outer_steps = 2
+nb_inner_steps = (12, 12, 1)
+nb_adapt_epochs = 1000
+validate_every = 10*1
 
-print_error_every = (1, 1)
+print_error_every = (10*1, 10*1)
 
 meta_train = True
 save_trainer = True
 meta_test = True
 
 run_folder = None if meta_train else "./"
-# run_folder = "./runs/250110-115030-Test/" if meta_train else "./"
-
+# run_folder = "./runs/241213-150028-Test/" if meta_train else "./"
 data_folder = "./data/" if meta_train else "../../data/"
 
 
@@ -83,52 +74,7 @@ if run_folder==None:
 else:
     print("Using existing run folder:", run_folder)
 
-adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.dirname(__file__), copy_ode_gen=False)
-
-#%%
-
-# ## Open the data file as a space saparated file
-# import pandas as pd
-# data = pd.read_csv(data_folder+"synthetic_control.data", sep=" ", header=None)
-# print(data)
-
-## Read the file line by line
-time_series = []
-with open(data_folder+"synthetic_control.data", 'r') as f:
-    for line in f:
-        time_series.append(list(map(float, line.split())))
-
-print("Number of time series:", len(time_series))
-print("Time series 0", time_series[0])
-time_series = np.array(time_series)
-
-## Normalise the time series
-time_series = (time_series - np.mean(time_series, axis=0)) / np.std(time_series, axis=0)
-# time_series = (time_series - np.mean(time_series, axis=0))
-## scale it between -1 and 1
-# time_series = (time_series - np.min(time_series, axis=0)) / (np.max(time_series, axis=0) - np.min(time_series, axis=0))
-
-## Plot 6 randomly chosen time series
-fig, ax = plt.subplots(2, 3, figsize=(6*3, 6))
-ax = ax.flatten()
-
-## Set the samme y limits for all plots
-ylim = np.min(time_series), np.max(time_series)
-
-np.random.seed(0)
-for i in range(6):
-    ts_id = np.random.randint(0, len(time_series))
-    ax[i].plot(time_series[ts_id])
-    ax[i].set_title(f"Time Series {ts_id}")
-    ax[i].set_ylim(ylim)
-
-plt.tight_layout()
-plt.savefig(run_folder+"train_trajectories.png")
-
-
-print("Time series shape:", type(time_series[0]), time_series.dtype, time_series.shape)
-
-
+adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.dirname(__file__))
 
 #%%
 
@@ -136,17 +82,19 @@ print("Time series shape:", type(time_series[0]), time_series.dtype, time_series
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_dataloader = NumpyLoader(TrendsDataset(data_dir=data_folder, 
+train_dataloader = NumpyLoader(MixerDynamicsDataset(data_dir=data_folder+"train_data.npz", 
+                                               num_shots=num_shots[0], 
                                                skip_steps=skip_steps, 
-                                               traj_prop_min=train_proportion), 
+                                               adaptation=False),
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(TrendsDataset(data_dir=data_folder, 
+val_dataloader = NumpyLoader(MixerDynamicsDataset(data_dir=data_folder+"test_data.npz", 
+                                             num_shots=num_shots[1], 
                                              skip_steps=skip_steps,
-                                             traj_prop_min=test_proportion),
+                                             adaptation=False),
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
@@ -154,32 +102,75 @@ val_dataloader = NumpyLoader(TrendsDataset(data_dir=data_folder,
 
 #%%
 
+# ## Plot all trajectories in the first 9 environments
+# plt_data = train_dataloader.dataset.dataset
+# plt_t = train_dataloader.dataset.t_eval
+
+## Alternative way to gather the data
+(ins, ts), outs = next(iter(train_dataloader))
+plt_data = outs
+plt_t = ts
+
+print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
+
+E_plot = ode_count
+E_ = nb_envs_per_fam[0]
+
+fig, ax = plt.subplots(1, E_plot , figsize=(E_plot*6, 3))
+# fig, ax = plt.subplots(2, E_plot//2, figsize=(6*E_plot//2, 3*2))
+ax = ax.flatten()
+if E_plot==1:
+    ax = [ax]
+colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
+for e in range(E_plot):
+    e_plot_data = plt_data[e*E_:(e+1)*E_, :, :, 0]
+    e_t_eval = plt_t[e*E_:(e+1)*E_]
+    for e_ in range(E_):
+        # ax[e].plot(e_plot_data[e_].T, '-', color=colors[e_])
+        ax[e].plot(e_t_eval[e_], e_plot_data[e_].T, '-', color=colors[e_])
+        # if e==1:
+        #     print("t_eval is:", e_t_eval[e_])
+    # ax[e].set_title(f"Environment {23+e}")
+    ax[e].set_title(f"Family {e}")
+    ax[e].set_xlabel("Time")
+    ax[e].set_ylabel(f"$y_0$")
+
+plt.tight_layout()
+plt.draw()
+plt.savefig(run_folder+"train_trajectories.png")
+
+
+
+
+#%%
+
+
 # ## Define model and loss function for the learner
 class Expert(eqx.Module):
     layers_data: list
     activations_data: list
-    layers_ctx: list
-    activations_ctx: list
     layers_main: list
+    layers_ctx: list
     activations_main: list
-    latent_size:int
-    data_size:int
+    activations_ctx: list
 
     ctx_utils:any
     depth_data:int
     depth_main:int
-    ctx_shift:float
 
-    def __init__(self, data_size, latent_size, hidden_size, depth_data, depth_main, context_size, ctx_shift, ctx_utils=None, key=None):
+    rescaler: eqx.Module
+    ctx_shift: jnp.ndarray
+
+    def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_shift, ctx_utils=None, key=None):
         self.ctx_utils = ctx_utils
         self.depth_data = depth_data
         self.depth_main = depth_main
         depth_ctx = depth_data
-        self.latent_size = latent_size
-        self.data_size = data_size
 
-        # assert context_size == latent_size, "Context size and latent size must be the same !"
-        intermediate_size = context_size//1
+        # layer_ctx_size = hidden_size
+        # layer_ctx_size = context_size//depth_main  ## Size of the context to modulate each shared/main layer
+        # assert context_size%depth_main==0, "Context size must be divisible by the depth of the main network"
+        intermediate_size = hidden_size//1
 
         keys_ctx = jax.random.split(key, num=depth_ctx+1)
         hid_ctx_size = (context_size + intermediate_size) // 2
@@ -189,22 +180,22 @@ class Expert(eqx.Module):
         self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys_ctx[depth_ctx])]
 
         keys = jax.random.split(key, num=depth_data+depth_main+2)
-        hid_ctx_size = (latent_size + intermediate_size) // 2
+        hid_ctx_size = (data_size + intermediate_size) // 2
         self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
-        self.layers_data = [eqx.nn.Linear(latent_size, hid_ctx_size, key=keys[0])]
+        self.layers_data = [eqx.nn.Linear(data_size, hid_ctx_size, key=keys[0])]
         self.layers_data += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys[i]) for i in range(1, depth_data)]
         self.layers_data += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys[depth_data])]
 
         self.activations_main = [Swish(key=k) for k in keys[depth_data+2:]]
         self.layers_main = [eqx.nn.Linear(2*intermediate_size, hidden_size, key=keys[depth_data+1])]
         self.layers_main += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[depth_data+i+1]) for i in range(1, depth_main)]
-        self.layers_main += [eqx.nn.Linear(hidden_size, (data_size+1)*latent_size, key=keys[depth_data+depth_main+1])]
+        self.layers_main += [eqx.nn.Linear(hidden_size, data_size, key=keys[depth_data+depth_main+1])]
 
-        # assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
-        # assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
+        assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
+        assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
 
-        self.ctx_shift = ctx_shift
-
+        self.rescaler = jnp.array([1.])
+        self.ctx_shift = jnp.array([ctx_shift], dtype=jnp.float32)
 
     def __call__(self, t, y, ctx):
         ctx = ctx + self.ctx_shift
@@ -220,41 +211,45 @@ class Expert(eqx.Module):
 
         ## Apply the context at each layer (except the very last)
         y = jnp.concatenate([y, ctx], axis=0)
-        # y = jnp.minimum(y, ctx)
         for layer, activation in zip(self.layers_main[:-1], self.activations_main):
             y = activation(layer(y))
         y = self.layers_main[-1](y)
 
-        # return jax.nn.tanh(y).reshape((self.latent_size, -1))
         return y
 
 
 # ## Define model and loss function for the learner
-class Generator(eqx.Module):
+class Model(eqx.Module):
     experts: list
     n_experts: int
     gate:dict
     is_moe: bool
     split_contexts: bool
 
-    def __init__(self, data_size, latent_size, hidden_size, depth, context_size, nb_experts, top_k, key=None):
+    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts, top_k, key=None):
         keys = jax.random.split(key, nb_experts+2)
+        # keys = keys.at[2].set(jax.random.split(key, 1+2)[0])       ## Just to make sure we key for env 3 works !
+
         self.split_contexts = False
 
-        ## Whether the context is split into tiny chunks for each expert
+        ## The context is now split into tiny chunks for each expert
         if self.split_contexts:
             eff_context_size = context_size//nb_experts
         else:
             eff_context_size = context_size
-        # self.experts = [Expert(data_size, latent_size, hidden_size, 2, depth, eff_context_size, ctx_shift=i/(nb_experts-1), key=keys[0]) for i in range(nb_experts)]
-        self.experts = [Expert(data_size, latent_size, hidden_size, 2, depth, eff_context_size, ctx_shift=0., key=keys[0]) for i in range(nb_experts)]
+        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, ctx_shift=0., key=keys[0]) for i in range(nb_experts)]
+        # self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, ctx_shift=i/(nb_experts-1), key=keys[0]) for i in range(nb_experts)]
 
         lim = 1 / np.sqrt(context_size)
         gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
 
         def gating_function(gate, ctx):
             H = jax.lax.stop_gradient(gate["weight"].T) @ ctx
+            # H = gate["weight"].T @ ctx
+
             G = jax.nn.softmax(H)       ## This works, but above doesn't
+            # G = jnp.abs(H) / jnp.sum(jnp.abs(H))
+
             return G
 
         # self.gate = {"weight":gate_weight, "temperature":gate_temp, "top_k":top_k, "function":gating_function}
@@ -266,15 +261,11 @@ class Generator(eqx.Module):
     def __call__(self, t, y, ctx):
         G = self.gate["function"](self.gate, ctx)
         # G = jax.lax.stop_gradient(self.gate["function"](self.gate, ctx))
-
         if self.split_contexts:
             ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
 
-        latent_size = y.shape[0]
-        data_size = self.experts[0].data_size
-
         max_G = jnp.max(G)
-        dy = jnp.zeros(latent_size*(data_size+1), )
+        dy = jnp.zeros_like(y)
         for i in range(self.n_experts):
             if self.split_contexts:
                 ctx_i = ctx_pieces[i]
@@ -283,14 +274,11 @@ class Generator(eqx.Module):
 
             contribution = jax.lax.cond(G[i]>max_G-1e-6, 
                                         lambda in_dat: self.experts[i](*in_dat), 
-                                        # lambda in_dat: jnp.zeros((latent_size, data_size+1)), 
-                                        lambda in_dat: jnp.zeros(latent_size*(data_size+1), ), 
+                                        lambda in_dat: jnp.zeros_like(in_dat[1]), 
                                         (t, y, ctx_i))
             dy += contribution
 
         return dy
-
-        # return self.experts[0](t, y, ctx) 
 
 
 
@@ -301,48 +289,38 @@ def env_loss_fn(model, ctx, y_hat, y):
     """
 
     term1 = jnp.mean((y_hat-y)**2)
-    # term2 = jnp.mean(jnp.abs(ctx))
+    ## Term 1 is relative L2 loss
+    # term1 = jnp.mean(((y_hat-y)**2) / (jnp.maximum(jnp.mean(y**2), 1e-6)))
+    term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
 
     # term2 = jnp.abs(model.vectorfield.neuralnet.gate(ctx).squeeze())
 
     # loss_val = term1 + 1e-3*term2 + 1e-3*term3
-    # loss_val = term1 + 1e-3*term2
-    loss_val = term1
+    loss_val = term1 + 1e-3*term2
+    # loss_val = term1
 
-    # return loss_val, (term1, term2, 0.)
-    return loss_val, (term1, 0., 0.)
+    # return loss_val, (term1, 0., 0.)
+    return loss_val, (term1, term2, 0.)
 
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
-gen_key, enc_key, dec_key = jax.random.split(model_key, num=3)
-neuralnet = Generator(data_size=data_size,
-                        latent_size=latent_size,
-                        hidden_size=hidden_size, 
-                        depth=depth,
-                        context_size=context_size, 
-                        nb_experts=nb_experts, 
-                        top_k=top_k, 
-                        key=gen_key) 
-encoder = eqx.nn.MLP(in_size=data_size,     ## For the initial conditions only !
-                    out_size=latent_size, 
-                    width_size=hidden_size, 
-                    depth=depth, 
-                    use_bias=True, 
-                    activation=jax.nn.softplus,
-                    key=enc_key)
-decoder = eqx.nn.Linear(in_features=latent_size,           ## For all time steps !
-                        out_features=data_size, 
-                        use_bias=True, 
-                        key=dec_key)
+neuralnet = Model(data_size=2,
+                hidden_size=32*4, 
+                depth=3,
+                context_size=context_size,
+                nb_experts=nb_experts,
+                top_k=top_k,
+                key=model_key) 
 
-model = NeuralCDE(neuralnet=neuralnet,
+model = NeuralODE(neuralnet=neuralnet,
                 taylor_order=taylor_orders[0],
                 ivp_args=ivp_args,
-                encoder=encoder,
-                decoder=decoder,
+                t_eval=None,    ## t_eval is provided with each model call
                 taylor_ad_mode="forward")
+
+# print("Model is ...", model)
 
 learner = Learner(model=model,
                 context_size=contexts.eff_context_size, 
@@ -354,6 +332,7 @@ learner = Learner(model=model,
                 pool_filling="NF",      ## TODO. Put back NF as soon as mem permits
                 loss_filling="NF",      ## The environment with the biggest loss is picked up
                 key=model_key)
+
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
@@ -370,9 +349,9 @@ total_steps = nb_outer_steps*nb_inner_steps[0]
 bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
 sched_ctx = optax.piecewise_constant_schedule(init_value=init_lr_ctx, boundaries_and_scales=bd_scales)
-opt_model = optax.adam(sched_model)
+opt_model = optax.adabelief(sched_model)
 # opt_model = optax.chain(optax.clip(1.), optax.adam(sched_model))
-opt_ctx = optax.adam(init_lr_ctx)
+opt_ctx = optax.adabelief(init_lr_ctx)
 # opt_ctx = optax.chain(optax.clip(1.), optax.adam(init_lr_ctx))
 
 # sched_model = optax.exponential_decay(init_value=init_lr_model, transition_steps=transition_steps, decay_rate=0.99)
@@ -430,12 +409,21 @@ visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None
 print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 
+# new_ctx = np.load(run_folder+"contexts_params.npy")
+# learner.contexts = eqx.tree_at(lambda c:c.params, learner.contexts, new_ctx)
+# eqx.tree_serialise_leaves(run_folder+"contexts.eqx", learner.contexts)
+
+print("After training, the context shifts are:")
+print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].ctx_shift)
+print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].ctx_shift)
+print(" Expert 2:", learner.model.vectorfield.neuralnet.experts[2].ctx_shift)
+
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
+                                # nb_envs=16*ode_count,
                                 # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                envs=jnp.arange(0, nb_envs_per_fam[0]*ode_count, 100).tolist(),
-                                dims=(0,0),
+                                envs=jnp.arange(0, nb_envs_per_fam[0]*ode_count).tolist(),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
@@ -481,6 +469,38 @@ ax2.set_title("Gate Values")
 
 plt.draw()
 plt.savefig(run_folder+"gate_histogram_big.png")
+
+
+
+# #### Plot the rescaling factors
+# @eqx.filter_vmap
+# def rescale_fn(ctx):
+#     scales = []
+#     ctx = jnp.split(ctx, nb_experts, axis=0)
+#     for i in range(nb_experts):
+#         factor = jax.nn.relu(network.experts[i].rescaler(ctx[i]).squeeze())
+#         # factor = jnp.clip(factor, 1, 1e2)
+#         scales.append(factor)
+#     return jnp.array(scales)
+
+# rescale_vals = rescale_fn(contexts.params)  ## (nb_envs, nb_experts)
+
+# ## Visualise as an imshow
+# fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+# img = ax.imshow(rescale_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
+# plt.colorbar(img)
+# ax.set_xlabel("Experts")
+# ax.set_ylabel("Environments")
+
+# ax.set_yticks(y_labels)
+# ax.set_yticklabels(y_labels)
+
+# ax.set_xticks(x_labels)
+# ax.set_xticklabels(x_labels)
+
+# ax.set_title("Rescale Factors")
+# plt.draw()
+# plt.savefig(run_folder+"rescale_factors.png")
 
 
 
@@ -534,90 +554,118 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
                                         # key=jax.random.PRNGKey(time.time_ns()),
                                         save_path=run_folder+"context_clusters.png")
 
-
-
-
-
-
-
-
-
-
 #%%
 X = learner.contexts.params
-# 1-100   Normal
-# 101-200 Cyclic
-# 201-300 Increasing trend
-# 301-400 Decreasing trend
-# 401-500 Upward shift
-# 501-600 Downward shift
-
-## We have 600 samples and 6 classes as above. Create the labels
-labels = np.zeros((600,), dtype=int)
-labels[100:200] = 1 
-labels[200:300] = 2
-labels[300:400] = 3
-labels[400:500] = 4
-labels[500:600] = 5
-
-color_table = {0:"royalblue", 1:"crimson", 2:"forestgreen", 3:"darkorange", 4:"purple", 5:"black"}
+labels = np.arange(ode_count).repeat(nb_envs_per_fam[0])
+color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
 colors = [color_table[l] for l in labels]
 
-conditions = {0:"Normal", 1:"Cyclic", 2:"Increasing trend", 3:"Decreasing trend", 4:"Upward shift", 5:"Downward shift"}
-
-## Use PCA instead
-from sklearn.decomposition import PCA
-pca = PCA(n_components=2)
-X_reduced = pca.fit_transform(X)
-# X_reduced = X
-
-# Plotting
-plt.figure(figsize=(10, 7))
-# plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
-
-markers = {0:'o', 1:'x', 2:'^', 3:'s', 4:'D', 5:'P'}
-for class_label in range(6):
-    marker = markers[class_label]
-    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
-
-plt.legend()
-
-plt.title("Contexts Clustering", fontsize=24)
-plt.xlabel("PC 1")
-plt.ylabel("PC 2")
-
-plt.draw()
-plt.savefig(run_folder+"pc_contexts.png", bbox_inches='tight');
-
-
-
-
-#%%
-
-## Use Umap instead
 import umap
-reducer = umap.UMAP(n_components=2)
-X_reduced = reducer.fit_transform(X)
+umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=0., metric="euclidean")
+
+# Fit and transform the data
+X_reduced = umap_reducer.fit_transform(X)
 
 # Plotting
 plt.figure(figsize=(10, 7))
-
-markers = {0:'o', 1:'x', 2:'^', 3:'s', 4:'D', 5:'P'}
-for class_label in range(6):
-    marker = markers[class_label]
-    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
-
-plt.legend()
-
-plt.title("Contexts Clustering", fontsize=24)
+plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
+plt.title("Training Context Dimensionality Reduction", fontsize=24)
 plt.xlabel("UMAP 1")
 plt.ylabel("UMAP 2")
 
+# Adding annotations for each point
+for i in range(0, X_reduced.shape[0], nb_envs_per_fam[0]):
+    label = labels[i]
+    # label = i
+    plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
+
 plt.draw()
-plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight');
+plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
 
 
 
+#%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Adapt the model to the new dataset
+if meta_test:
+    # adapt_id = 0     ## The single environment to adapt to (the difficult rectangular one)
+
+    adapt_dataset = MixerDynamicsDataset(data_dir=data_folder+"adapt_train.npz", 
+                                                   num_shots=num_shots[1], 
+                                                   skip_steps=skip_steps,
+                                                   adaptation=True)
+    # adapt_dataset.total_envs = 1
+    # adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
+    # # adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
+
+    adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
+                                batch_size=num_envs[1], 
+                                # batch_size=1, 
+                                shuffle=shuffle,
+                                num_workers=num_workers,
+                                drop_last=False)
+
+    adapt_dataset_test = MixerDynamicsDataset(data_dir=data_folder+"adapt_test.npz", 
+                                                   num_shots=num_shots[1], 
+                                                   skip_steps=skip_steps,
+                                                   adaptation=True)
+    # adapt_dataset_test.total_envs = 1
+    # adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:, :, :, :]
+    # # adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
+
+    adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
+                                batch_size=num_envs[1],
+                                shuffle=shuffle,
+                                num_workers=num_workers,
+                                drop_last=False)
+
+    ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
+                                        taylor_order=taylor_orders[1], 
+                                        nb_steps=nb_adapt_epochs,
+                                        print_error_every=print_error_every, 
+                                        criterion_id=0,
+                                        verbose=True,
+                                        val_dataloader=adapt_dataloader_test,
+                                        max_ret_env_states=num_envs[1],
+                                        max_adapt_batches=max_adapt_batches,
+                                        stochastic=False)
+    print("Loss per OoD environment:", all_ood_crit[0].tolist())
+
+#%%
+visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_0.png", adaptation=True)
+
+visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_0.png",
+                                data_loader=adapt_dataloader_test,
+                                nb_envs=1,
+                                traj=0,
+                                share_axes=False,
+                                key=test_key)
+
+#%%
+
+# perp = ode_count if ode_count > 1 else 4
+# visualtester.visualize_context_clusters(perplexities=(perp, perp),
+#                                         # key=test_key,
+#                                         key=jax.random.PRNGKey(time.time_ns()),
+#                                         save_path=adapt_folder+"context_clusters.png")
 
 #%%
 ## After training, copy nohup.log to the runfolder
@@ -627,3 +675,7 @@ except NameError:
     os.system(f"cp nohup.log {run_folder}")
 
 #%%
+
+# adapt_dataloader_test.dataset.dataset.max()
+# train_dataloader.dataset.dataset.max()
+# val_dataloader.dataset.dataset.max()
