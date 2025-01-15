@@ -664,7 +664,7 @@ class NCFTrainer(Trainer):
                     if cluster_points.shape[0] == 0:
                         # key, _ = jax.random.split(key)
                         # centroids = centroids.at[j].set(jax.random.uniform(key, (context_size,), minval=-1e-3, maxval=1e-3))
-                        print(f"❌ Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
+                        print(f"🔁 Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
                         return model, contexts, loss, None, jnp.zeros((nb_envs, nb_experts))
                     else:
                         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
@@ -693,7 +693,7 @@ class NCFTrainer(Trainer):
                 # expert_cluster_losses.append(expert_losses[cluster_assignments==j].min(axis=0))
             all_expert_cluster_losses = jnp.stack(expert_cluster_losses, axis=0)
 
-            # print(f"Average expert losses per cluster: \n{all_expert_cluster_losses}\n", flush=False)
+            print(f"Average expert losses per cluster: \n{all_expert_cluster_losses}\n", flush=False)
 
             ## Step 4. Assign clusters to the experts
             used_experts = []  ## The experts that have been assigned to a cluster

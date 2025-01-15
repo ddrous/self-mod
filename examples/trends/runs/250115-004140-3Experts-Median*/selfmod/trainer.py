@@ -664,14 +664,14 @@ class NCFTrainer(Trainer):
                     if cluster_points.shape[0] == 0:
                         # key, _ = jax.random.split(key)
                         # centroids = centroids.at[j].set(jax.random.uniform(key, (context_size,), minval=-1e-3, maxval=1e-3))
-                        print(f"❌ Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
+                        # print(f"🔁 Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
                         return model, contexts, loss, None, jnp.zeros((nb_envs, nb_experts))
                     else:
                         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
 
                 ## Check for convergence
                 if jnp.allclose(centroids, old_centroids, atol=1e-3):
-                    print(f"✔️ Gating k-means converged after {i+1} iterations", flush=False)
+                    # print(f"✔️ Gating k-means converged after {i+1} iterations", flush=False)
                     break
 
                 # print(f"Current centroids: \n{centroids}", flush=False)
@@ -933,9 +933,9 @@ class NCFTrainer(Trainer):
                             # print("Gate kernel values: \n", model.vectorfield.neuralnet.gate["weight"].squeeze(), flush=True, end="\n")
                             # print("The factor: how much of the new gate kernel do I used ?", model.vectorfield.neuralnet.gate["lsqr_factor"], flush=True, end="\n")
 
-                            gate_fun = model.vectorfield.neuralnet.gate["function"]
-                            gate_vals = eqx.filter_vmap(gate_fun, in_axes=(None, 0))(model.vectorfield.neuralnet.gate, contexts.params)
-                            print("Gate values for each environment (all envs): \n", gate_vals, flush=True, end="\n")
+                            # gate_fun = model.vectorfield.neuralnet.gate["function"]
+                            # gate_vals = eqx.filter_vmap(gate_fun, in_axes=(None, 0))(model.vectorfield.neuralnet.gate, contexts.params)
+                            # print("Gate values for each environment (all envs): \n", gate_vals, flush=True, end="\n")
 
                             if save_checkpoints:
                                 ## Save the context and model with the right suffix

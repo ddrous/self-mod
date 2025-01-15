@@ -664,7 +664,7 @@ class NCFTrainer(Trainer):
                     if cluster_points.shape[0] == 0:
                         # key, _ = jax.random.split(key)
                         # centroids = centroids.at[j].set(jax.random.uniform(key, (context_size,), minval=-1e-3, maxval=1e-3))
-                        print(f"❌ Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
+                        print(f"🔁 Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
                         return model, contexts, loss, None, jnp.zeros((nb_envs, nb_experts))
                     else:
                         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
@@ -688,12 +688,11 @@ class NCFTrainer(Trainer):
             ## Step 3. Calculate the average loss for each cluster for each expert
             expert_cluster_losses = []
             for j in range(nb_clusters):
-                # expert_cluster_losses.append(expert_losses[cluster_assignments==j].mean(axis=0))
-                expert_cluster_losses.append(jnp.median(expert_losses[cluster_assignments==j], axis=0))
+                expert_cluster_losses.append(expert_losses[cluster_assignments==j].mean(axis=0))
                 # expert_cluster_losses.append(expert_losses[cluster_assignments==j].min(axis=0))
             all_expert_cluster_losses = jnp.stack(expert_cluster_losses, axis=0)
 
-            # print(f"Average expert losses per cluster: \n{all_expert_cluster_losses}\n", flush=False)
+            print(f"Average expert losses per cluster: \n{all_expert_cluster_losses}\n", flush=False)
 
             ## Step 4. Assign clusters to the experts
             used_experts = []  ## The experts that have been assigned to a cluster
@@ -974,10 +973,10 @@ class NCFTrainer(Trainer):
                             print(f"        Saving best model so far ...")
                             self.save_trainer(save_path, ignore_losses=True)
                             # self.learner.save_learner(save_path)
-                        # ## Restore the learner at the last evaluation step
-                        # if out_step == nb_outer_steps-1:
-                        #     self.save_trainer(save_path, ignore_losses=True)
-                        #     # self.learner.load_learner(save_path)
+                        ## Restore the learner at the last evaluation step
+                        if out_step == nb_outer_steps-1:
+                            self.save_trainer(save_path, ignore_losses=True)
+                            # self.learner.load_learner(save_path)
 
                     ###========== Approach #2 to only sample relevent environments. Find the worst contributors
                     loss_sort = jnp.argsort(all_env_losses)

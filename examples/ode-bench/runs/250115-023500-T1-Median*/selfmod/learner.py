@@ -418,9 +418,6 @@ class Learner:
                 else:
                     model = BatchedNeuralContextFlow(neuralnet=self.model.neuralnet, 
                                                     taylor_order=taylor_order)
-            elif isinstance(self.model, CatchAllModel):
-                model = CatchAllModel(neuralnet=self.model.vectorfield.neuralnet,
-                                    taylor_order=self.model.taylor_order)
             else:
                 raise ValueError("The model type is not supported")
         return model
@@ -447,8 +444,6 @@ class Learner:
                             taylor_order=0,
                             taylor_ad_mode=model.taylor_ad_mode, 
                             ivp_args=model.ivp_args)
-        elif isinstance(model, CatchAllModel):
-            new_model = CatchAllModel(neuralnet=expert, taylor_order=0)
         else:
             raise ValueError(f"The model type {type(model)} is not supported")
         return new_model
@@ -1562,40 +1557,6 @@ class NeuralCDE(eqx.Module):
         x_recons = eqx.filter_vmap(eqx.filter_vmap(self.decoder))(zs)        ## Shape: (batch, T, data_size)
 
         return x_recons
-
-
-
-
-class CatchAllModel_VF(eqx.Module):
-    neuralnet: list
-    def __init__(self, neuralnet):
-        self.neuralnet = neuralnet
-    def __call__(self, xs, ctx, ctx_):
-        return self.neuralnet(xs, ctx, ctx_)
-
-# class CatchAllModel(eqx.Module):
-#     """ Fall Back Model in case neither NeuralODE, TFNeuralODE, NeuralCDE is used """
-#     vectorfield: list
-#     def __init__(self, neuralnet):
-#         self.vectorfield = CatchAllModel_VF(neuralnet)
-#     def __call__(self, xts, ctx, ctx_):
-#         # return self.vectorfield(xts, ctx, ctx_)
-#         return eqx.filter_vmap(self.vectorfield, in_axes=(0, None, None))(xts[0], ctx, ctx_.squeeze())
-
-
-
-class CatchAllModel(eqx.Module):
-    """ Fall Back Model in case neither NeuralODE, TFNeuralODE, NeuralCDE is used.
-    Presented like a NeuralODE (with a vf) but it's just a FeedForward NN
-    """
-    vectorfield: list
-    taylor_order: int
-    def __init__(self, neuralnet, taylor_order):
-        self.vectorfield = BatchedNeuralContextFlow(neuralnet, taylor_order=taylor_order)
-        self.taylor_order = taylor_order
-    def __call__(self, xts, ctx, ctx_):
-        # return self.vectorfield(xts, ctx, ctx_)
-        return eqx.filter_vmap(self.vectorfield, in_axes=(0, None, None))(xts[0], ctx, ctx_.squeeze())
 
 
 
