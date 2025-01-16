@@ -1,59 +1,55 @@
 #%%[markdown]
-# Neural ODE on ODE-Bench-Dataset
+# Hierarchical Shallow Piece-Wise Recurrent Neural Netwoek on Synthetic Control Data
 
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+# os.environ["JAX_PLATFORMS"] = 'cpu'
 
 from selfmod import *
+# jax.config.update('jax_platform_name', 'cpu')
 
 from matplotlib import animation
-
 # import jax
 # jax.config.update("jax_debug_nans", True)
+
 
 #%%
 
 ## For reproducibility
-seed = 202402
+seed = 2024
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 4          ## Total number of ODE families in the dataset
+nb_families = 3
 nb_experts = nb_families
-nb_envs_per_fam = (5, 1)
+nb_envs_per_fam = (600//nb_families, 600//nb_families)
 
-num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
+num_envs = (nb_envs_per_fam[0]*nb_families, 600)
 num_shots = (-1, -1)
-num_workers = 8
+num_workers = 24
 shuffle = False
-train_proportion = 0.6  ## Minimal proportion of the trajectory for training
+train_proportion = 1.0  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
-skip_steps = 5
-normalize_data = False
 
 ## Learner/model hps
-context_pool_size = 4
-context_size = 256
+context_pool_size = 20
+context_size = 10
 taylor_orders = (1, 0)
-ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-loss_contributors = nb_envs_per_fam[0]*1
+skip_steps = 1
+loss_contributors = 600
 max_ret_env_states = num_envs[0]
 split_context = False
 shift_context = False
 
-meta_learner="NCF"
-data_size = 2
-width_main = 32*4
-depth_main = 3
-depth_data = 1
-depth_ctx = 1
-intermediate_size = 32
-activation = "swish"
+meta_learner = "hier-shPLRNN"
+data_size = 1
+hidden_size = 16*2
+latent_size = data_size
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -64,23 +60,21 @@ proximal_betas = (10., 10.)       ## For the model, context and the gate, in tha
 
 nb_outer_steps = 2
 nb_inner_steps = (2, 2)
-nb_adapt_epochs = 1000
-validate_every = 10
+nb_adapt_epochs = 100
+validate_every = 10*1
 print_error_every = (10, 10)
 
-gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
+gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
 context_regularization = True               ## Regularize the context with an L1 penalty
 
 meta_train = True
 meta_test = True
 
-# run_folder = None if meta_train else "./"
-run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
+run_folder = None if meta_train else "./"
+# run_folder = "./runs/250110-115030-Test/" if meta_train else "./"
 
-# data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
-data_folder = "./data_2D_small*/" if meta_train else "../../data_2D_small*/"
-# data_folder = "./data_2D/" if meta_train else "../../data_2D/"
+data_folder = "./data/" if meta_train else "../../data/"
 
 
 #%%
@@ -90,9 +84,9 @@ if run_folder==None:
 else:
     print("Using existing run folder:", run_folder)
 
-adapt_folder, checkpoints_folder, _ = setup_run_folder(folder_path=run_folder, 
-                                                        script_name=os.path.basename(__file__), 
-                                                        datagen_folder=f"{os.path.dirname(__file__)}/data_gen")
+adapt_folder, checkpoints_folder, _ = setup_run_folder(run_folder, os.path.basename(__file__))
+
+
 
 #%%[markdown]
 # ## Meta-training
@@ -100,70 +94,70 @@ adapt_folder, checkpoints_folder, _ = setup_run_folder(folder_path=run_folder,
 
 
 
+
+
+#%%
+
+## Read the file line by line
+time_series = []
+with open(data_folder+"synthetic_control.data", 'r') as f:
+    for line in f:
+        time_series.append(list(map(float, line.split())))
+
+print("Number of time series:", len(time_series))
+print("Time series 0", time_series[0])
+time_series = np.array(time_series)
+
+## Normalise the time series (as the Dataset below will do as well)
+time_series = (time_series - np.mean(time_series, axis=0)) / np.std(time_series, axis=0)
+
+## Plot 6 randomly chosen time series
+fig, ax = plt.subplots(2, 3, figsize=(6*3, 6))
+ax = ax.flatten()
+
+## Set the samme y limits for all plots
+ylim = np.min(time_series), np.max(time_series)
+
+np.random.seed(0)
+for i in range(6):
+    ts_id = np.random.randint(0, len(time_series))
+    ax[i].plot(time_series[ts_id])
+    ax[i].set_title(f"Time Series {ts_id}")
+    ax[i].set_ylim(ylim)
+
+plt.tight_layout()
+plt.savefig(run_folder+"train_trajectories.png")
+
+print("Time series shape:", type(time_series[0]), time_series.dtype, time_series.shape)
+
 #%%
 
 ## Define 4 keys for dataloader(s), learner(s), trainer(s) and visualtester(s)
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz", 
-                                               norm_consts=data_folder+"train_bounds.npy" if normalize_data else None,
-                                               num_shots=num_shots[0], 
+train_dataloader = NumpyLoader(TrendsDataset(data_dir=data_folder, 
                                                skip_steps=skip_steps, 
-                                               traj_prop_min=train_proportion), 
+                                               traj_prop_min=train_proportion,
+                                               use_full_traj=True), 
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz", 
-                                             norm_consts=data_folder+"train_bounds.npy" if normalize_data else None,
-                                             num_shots=num_shots[1], 
+val_dataloader = NumpyLoader(TrendsDataset(data_dir=data_folder, 
                                              skip_steps=skip_steps,
-                                             traj_prop_min=test_proportion),
+                                             traj_prop_min=test_proportion,
+                                             use_full_traj=True),
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-#%%
-
-# ## Data exploration - plot all trajectories in the first environments
-(ins, ts), outs = next(iter(train_dataloader))
-plt_data = outs
-plt_t = ts
-
-print("Typical shapes of data and t_eval:", plt_data.shape, plt_t.shape)
-
-E_plot = nb_families
-E_ = nb_envs_per_fam[0]
-
-# fig, ax = plt.subplots(2, E_plot//2, figsize=(6*E_plot//2, 3*2))
-fig, ax = plt.subplots(E_plot, 1, figsize=(6, 3*E_plot))
-ax = ax.flatten() if E_plot>1 else [ax]
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
-for e in range(E_plot):
-    e_plot_data_0 = plt_data[e*E_:(e+1)*E_, 0:1, :, 0]
-    e_plot_data_1 = plt_data[e*E_:(e+1)*E_, 0:1, :, 1]
-    e_t_eval = plt_t[e*E_:(e+1)*E_]
-    for e_ in range(E_):
-        ax[e].plot(e_t_eval[e_], e_plot_data_0[e_].T, '-', color=colors[e_], markersize=5, lw=2)
-        ax[e].plot(e_t_eval[e_], e_plot_data_1[e_].T, '-', color=colors[e_], markersize=5, alpha=0.5, lw=3)
-    ax[e].set_title(f"Family {e+1}", fontsize=16)
-    if e==E_plot-1:
-        ax[e].set_xlabel("Time $t$")
-    ax[e].set_ylabel(f"$x$")
-
-plt.tight_layout()
-plt.draw()
-plt.savefig(run_folder+"train_trajectories.png")
-# plt.savefig(run_folder+"train_trajectories.pdf", bbox_inches='tight', dpi=100)
-
-## Get axes limits
-lims = [ax[e].get_ylim() for e in range(E_plot)]
 
 
 #%%
+
 
 
 def env_loss_fn(model, ctx, y_hat, y):
@@ -187,32 +181,23 @@ def env_loss_fn(model, ctx, y_hat, y):
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
-## Parameters for a built-in NCF model
+## Parameters for a built-in RNN model
 expert_params = {"data_size":data_size,
-                "width_main":width_main,
-                "depth_main":depth_main,
-                "depth_data":depth_data,
-                "depth_ctx":depth_ctx,
+                "hidden_size":hidden_size,
+                "latent_size":latent_size,
                 "context_size":context_size,
-                "intermediate_size":intermediate_size,
                 "ctx_utils":None,
-                "activation":"swish",
                 "shift_context":shift_context}
 
-neuralnet = MixER(key=model_key,
-                nb_experts=nb_experts,
-                meta_learner=meta_learner,
-                split_context=split_context,
-                same_expert_init=True,
-                use_gate_bias=True,
-                gate_update_strategy=gate_update_strategy,
-                **expert_params)
-
-model = NeuralODE(neuralnet=neuralnet,
-                taylor_order=taylor_orders[0],
-                ivp_args=ivp_args,
-                t_eval=None,
-                taylor_ad_mode="forward")
+model = DirectMapping(MixER_S2S(key=model_key,
+                                nb_experts=nb_experts,
+                                meta_learner=meta_learner,
+                                split_context=split_context,
+                                same_expert_init=True,
+                                use_gate_bias=True,
+                                gate_update_strategy=gate_update_strategy,
+                                **expert_params),
+                    taylor_order=taylor_orders[0])
 
 learner = Learner(model=model,
                 context_size=contexts.eff_context_size, 
@@ -225,7 +210,6 @@ learner = Learner(model=model,
                 loss_filling="NF",      ## The closest envs are used in the outer loss
                 self_reweighting=True,  ## Reweight the outer loss by its own softmax 
                 key=model_key)
-
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
@@ -273,6 +257,7 @@ else:
     trainer.restore_trainer(path=run_folder)
 
 
+
 #%%[markdown]
 # ## Post-training analysis
 
@@ -303,7 +288,8 @@ print("After training, the context shifts are:", jnp.array(ctx_shifts))
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                envs=jnp.arange(0, nb_envs_per_fam[0]*nb_families).tolist(),
+                                envs=jnp.arange(0, nb_envs_per_fam[0]*nb_families, 100).tolist(),
+                                dims=(0,0),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
@@ -390,121 +376,80 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
 
 #%%
 X = learner.contexts.params
-labels = np.arange(nb_families).repeat(nb_envs_per_fam[0])
-color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
+# 1-100   Normal
+# 101-200 Cyclic
+# 201-300 Increasing trend
+# 301-400 Decreasing trend
+# 401-500 Upward shift
+# 501-600 Downward shift
+
+## We have 600 samples and 6 classes as above. Create the labels
+labels = np.zeros((600,), dtype=int)
+labels[100:200] = 1 
+labels[200:300] = 2
+labels[300:400] = 3
+labels[400:500] = 4
+labels[500:600] = 5
+
+color_table = {0:"royalblue", 1:"crimson", 2:"forestgreen", 3:"darkorange", 4:"purple", 5:"black"}
 colors = [color_table[l] for l in labels]
 
-import umap
-umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]))
+conditions = {0:"Normal", 1:"Cyclic", 2:"Increasing trend", 3:"Decreasing trend", 4:"Upward shift", 5:"Downward shift"}
 
-# Fit and transform the data
-X_reduced = umap_reducer.fit_transform(X)
+## Use PCA instead
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+X_reduced = pca.fit_transform(X)
+# X_reduced = X
 
 # Plotting
 plt.figure(figsize=(10, 7))
-plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
-plt.title("Training Context Dimensionality Reduction", fontsize=24)
+# plt.scatter(X_reduced[:, 0], X_reduced[:, 1], s=50, c=colors)
+
+markers = {0:'o', 1:'x', 2:'^', 3:'s', 4:'D', 5:'P'}
+for class_label in range(6):
+    marker = markers[class_label]
+    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+
+plt.legend()
+
+plt.title("Contexts Clustering - PCA", fontsize=24)
+plt.xlabel("PC 1")
+plt.ylabel("PC 2")
+
+plt.draw()
+plt.savefig(run_folder+"clusters_pca.png", bbox_inches='tight');
+
+
+
+
+#%%
+
+## Use Umap instead
+import umap
+reducer = umap.UMAP(n_components=2)
+X_reduced = reducer.fit_transform(X)
+
+# Plotting
+plt.figure(figsize=(10, 7))
+
+markers = {0:'o', 1:'x', 2:'^', 3:'s', 4:'D', 5:'P'}
+for class_label in range(6):
+    marker = markers[class_label]
+    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+
+plt.legend()
+
+plt.title("Contexts Clustering - UMAP", fontsize=24)
 plt.xlabel("UMAP 1")
 plt.ylabel("UMAP 2")
-
-# Adding annotations for each point
-for i in range(0, X_reduced.shape[0], nb_envs_per_fam[0]):
-    label = labels[i]
-    # label = i
-    plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
 
 plt.draw()
 plt.savefig(run_folder+"clusters_umap.png", bbox_inches='tight')
 
 
 
-#%%[markdown]
-# ## Adaptation to a new dataset
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#%%
-## Adapt the model to the new dataset
-if meta_test:
-    # adapt_id = nb_envs_per_fam[1]*1+1     ## The single environment to adapt to (the difficult rectangular one)
-
-    adapt_dataset = ODEBenchDataset(data_dir=data_folder+"adapt_train.npz", 
-                                    adaptation=True,
-                                    norm_consts=data_folder+"adapt_train_bounds.npy" if normalize_data else None,
-                                    num_shots=num_shots[0], 
-                                    skip_steps=skip_steps,
-                                    traj_prop_min=train_proportion)
-    # adapt_dataset.total_envs = 1
-    # adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
-    # adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
-
-    adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
-                                batch_size=num_envs[1], 
-                                # batch_size=1, 
-                                shuffle=shuffle,
-                                num_workers=num_workers,
-                                drop_last=False)
-
-    adapt_dataset_test = ODEBenchDataset(data_dir=data_folder+"adapt_test.npz", 
-                                            adaptation=True,
-                                            norm_consts=data_folder+"adapt_train_bounds.npy" if normalize_data else None,
-                                            num_shots=num_shots[0], 
-                                            skip_steps=skip_steps,
-                                            traj_prop_min=test_proportion)
-    # adapt_dataset_test.total_envs = 1
-    # adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:, :, :, :]
-    # adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
-
-    adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
-                                batch_size=num_envs[1],
-                                shuffle=shuffle,
-                                num_workers=num_workers,
-                                drop_last=False)
-
-    ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
-                                        taylor_order=taylor_orders[1], 
-                                        nb_steps=nb_adapt_epochs,
-                                        print_error_every=print_error_every, 
-                                        criterion_id=0,
-                                        verbose=True,
-                                        val_dataloader=adapt_dataloader_test,
-                                        max_ret_env_states=1,
-                                        max_adapt_batches=max_adapt_batches,
-                                        stochastic=False)
-    print("Loss per OoD environment:", all_ood_crit[0].tolist())
-
-#%%
-visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
-
-visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png",
-                                data_loader=adapt_dataloader_test,
-                                # nb_envs=4,
-                                envs=[0,1,2,3],
-                                traj=0,
-                                share_axes=False,
-                                key=test_key)
-
-#%%
-
-perp = nb_families if nb_families > 1 else 4
-visualtester.visualize_context_clusters(perplexities=(perp, perp),
-                                        key=test_key,
-                                        save_path=adapt_folder+"context_clusters.png")
 
 
 
@@ -516,4 +461,3 @@ except NameError:
     os.system(f"cp nohup.log {run_folder}")
 
 #%%
-

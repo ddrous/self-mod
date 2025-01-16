@@ -1,6 +1,9 @@
+#%%[markdown]
+# Neural ODE on Lotka-Volterra Dataset
+
 #%%
-# %load_ext autoreload
-# %autoreload 2
+%load_ext autoreload
+%autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -8,29 +11,27 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 from selfmod import *
 
 from matplotlib import animation
-# ## Import jax and debug NaNs
+
 # import jax
 # jax.config.update("jax_debug_nans", True)
-
 
 #%%
 
 ## For reproducibility
-seed = 2024
+seed = 202402
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-ode_count = 3          ## Total number of ODEs in the dataset
-nb_experts = ode_count
+nb_families = 3          ## Total number of ODE families in the dataset
+nb_experts = nb_families
 nb_envs_per_fam = (3, 1)
-top_k = 1
 
-num_envs = (nb_envs_per_fam[0]*ode_count, 4)
+num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
-train_proportion = 1.0  ## Min proporrion of the trajectory for training
+train_proportion = 1.0  ## Minimal proportion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
@@ -41,29 +42,41 @@ ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5()
 skip_steps = 1
 loss_contributors = 9
 max_ret_env_states = num_envs[0]
-split_contexts = False
+split_context = False
+shift_context = True
+
+meta_learner="NCF"
+data_size = 2
+width_main = 32*4
+depth_main = 3
+depth_data = 1
+depth_ctx = 1
+intermediate_size = 32
+activation = "swish"
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
 sched_factor = 0.4
-# transition_steps = 150
 max_train_batches = 1
 max_adapt_batches = 1
-proximal_betas = (10., 10., 0.)       ## For the model, context and the gate, in that order
+proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 3600
-nb_inner_steps = (12, 12, 1)
-nb_adapt_epochs = 1000
-validate_every = 10*1
+nb_outer_steps = 2
+nb_inner_steps = (2, 2)
+nb_adapt_epochs = 100
+validate_every = 10
+print_error_every = (10, 10)
 
-print_error_every = (10*1, 10*1)
+gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
+gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
+context_regularization = True               ## Regularize the context with an L1 penalty
 
 meta_train = True
-save_trainer = True
 meta_test = True
 
-run_folder = None if meta_train else "./"
-# run_folder = "./runs/241213-150028-Test/" if meta_train else "./"
+# run_folder = None if meta_train else "./"
+run_folder = "./runs/241213-150028-Test/" if meta_train else "./"
+
 data_folder = "./data/" if meta_train else "../../data/"
 
 
@@ -74,7 +87,14 @@ if run_folder==None:
 else:
     print("Using existing run folder:", run_folder)
 
-adapt_folder = setup_run_folder(run_folder, os.path.basename(__file__), os.path.dirname(__file__), copy_ode_gen=False)
+adapt_folder, checkpoints_folder, _ = setup_run_folder(folder_path=run_folder, 
+                                                        script_name=os.path.basename(__file__))
+
+#%%[markdown]
+# ## Meta-training
+
+
+
 
 #%%
 
@@ -102,185 +122,40 @@ val_dataloader = NumpyLoader(MixerDynamicsDataset(data_dir=data_folder+"test_dat
 
 #%%
 
-# ## Plot all trajectories in the first 9 environments
-# plt_data = train_dataloader.dataset.dataset
-# plt_t = train_dataloader.dataset.t_eval
-
-## Alternative way to gather the data
+# ## Data exploration - plot all trajectories in the first environments
 (ins, ts), outs = next(iter(train_dataloader))
 plt_data = outs
 plt_t = ts
 
-print("Shapes of data and t_eval:", plt_data.shape, plt_t.shape)
+print("Typical shapes of data and t_eval:", plt_data.shape, plt_t.shape)
 
-E_plot = ode_count
-E_ = nb_envs_per_fam[0]
+E_plot = 9
+E_ = 1
 
-fig, ax = plt.subplots(1, E_plot , figsize=(E_plot*6, 3))
-# fig, ax = plt.subplots(2, E_plot//2, figsize=(6*E_plot//2, 3*2))
-ax = ax.flatten()
-if E_plot==1:
-    ax = [ax]
-colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
+y_lim = (plt_data.min(), plt_data.max())
+fig, ax = plt.subplots(3, E_plot//3, figsize=(6*E_plot//3, 3*3))
+ax = ax.flatten() if E_plot>1 else [ax]
+colors = ['indigo']
 for e in range(E_plot):
-    e_plot_data = plt_data[e*E_:(e+1)*E_, :, :, 0]
+    e_plot_data_0 = plt_data[e*E_:(e+1)*E_, 0:1, :, 0]
+    e_plot_data_1 = plt_data[e*E_:(e+1)*E_, 0:1, :, 1]
     e_t_eval = plt_t[e*E_:(e+1)*E_]
     for e_ in range(E_):
-        # ax[e].plot(e_plot_data[e_].T, '-', color=colors[e_])
-        ax[e].plot(e_t_eval[e_], e_plot_data[e_].T, '-', color=colors[e_])
-        # if e==1:
-        #     print("t_eval is:", e_t_eval[e_])
-    # ax[e].set_title(f"Environment {23+e}")
-    ax[e].set_title(f"Family {e}")
-    ax[e].set_xlabel("Time")
-    ax[e].set_ylabel(f"$y_0$")
+        ax[e].plot(e_t_eval[e_], e_plot_data_0[e_].T, '-', color=colors[e_], markersize=5, lw=2)
+        ax[e].plot(e_t_eval[e_], e_plot_data_1[e_].T, '-', color=colors[e_], markersize=5, alpha=0.5, lw=3)
+    ax[e].set_title(f"Env {e+1}", fontsize=16)
+    if e==E_plot-1:
+        ax[e].set_xlabel("Time $t$")
+    ax[e].set_ylabel(f"$x$")
+    ax[e].set_ylim(y_lim)
 
 plt.tight_layout()
 plt.draw()
 plt.savefig(run_folder+"train_trajectories.png")
-
-
+# plt.savefig(run_folder+"train_trajectories.pdf", bbox_inches='tight', dpi=100)
 
 
 #%%
-
-
-# ## Define model and loss function for the learner
-class Expert(eqx.Module):
-    layers_data: list
-    activations_data: list
-    layers_main: list
-    layers_ctx: list
-    activations_main: list
-    activations_ctx: list
-
-    ctx_utils:any
-    depth_data:int
-    depth_main:int
-
-    rescaler: eqx.Module
-    ctx_shift: jnp.ndarray
-
-    def __init__(self, data_size, hidden_size, depth_data, depth_main, context_size, ctx_shift, ctx_utils=None, key=None):
-        self.ctx_utils = ctx_utils
-        self.depth_data = depth_data
-        self.depth_main = depth_main
-        depth_ctx = depth_data
-
-        # layer_ctx_size = hidden_size
-        # layer_ctx_size = context_size//depth_main  ## Size of the context to modulate each shared/main layer
-        # assert context_size%depth_main==0, "Context size must be divisible by the depth of the main network"
-        intermediate_size = hidden_size//1
-
-        keys_ctx = jax.random.split(key, num=depth_ctx+1)
-        hid_ctx_size = (context_size + intermediate_size) // 2
-        self.activations_ctx = [Swish(key=k) for k in keys_ctx[:depth_ctx]]
-        self.layers_ctx = [eqx.nn.Linear(context_size, hid_ctx_size, key=keys_ctx[0])]
-        self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys_ctx[i]) for i in range(1, depth_ctx)]
-        self.layers_ctx += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys_ctx[depth_ctx])]
-
-        keys = jax.random.split(key, num=depth_data+depth_main+2)
-        hid_ctx_size = (data_size + intermediate_size) // 2
-        self.activations_data = [Swish(key=k) for k in keys[:depth_data]]
-        self.layers_data = [eqx.nn.Linear(data_size, hid_ctx_size, key=keys[0])]
-        self.layers_data += [eqx.nn.Linear(hid_ctx_size, hid_ctx_size, key=keys[i]) for i in range(1, depth_data)]
-        self.layers_data += [eqx.nn.Linear(hid_ctx_size, intermediate_size, key=keys[depth_data])]
-
-        self.activations_main = [Swish(key=k) for k in keys[depth_data+2:]]
-        self.layers_main = [eqx.nn.Linear(2*intermediate_size, hidden_size, key=keys[depth_data+1])]
-        self.layers_main += [eqx.nn.Linear(hidden_size, hidden_size, key=keys[depth_data+i+1]) for i in range(1, depth_main)]
-        self.layers_main += [eqx.nn.Linear(hidden_size, data_size, key=keys[depth_data+depth_main+1])]
-
-        assert len(self.layers_data) == len(self.activations_data)+1, f"Total number of layers {len(self.layers_data)} and activations {len(self.activations_data)} mismatch in the data network"
-        assert len(self.layers_main) == len(self.activations_main)+1, f"Total number of layers {len(self.layers_main)} and activations {len(self.activations_main)} mismatch in the main network"
-
-        self.rescaler = jnp.array([1.])
-        self.ctx_shift = jnp.array([ctx_shift], dtype=jnp.float32)
-
-    def __call__(self, t, y, ctx):
-        ctx = ctx + self.ctx_shift
-
-        for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
-            ctx = activation(layer(ctx))
-        ctx = self.layers_ctx[-1](ctx)
-
-        # y = jnp.concatenate([t_arr, y], axis=0)
-        for layer, activation in zip(self.layers_data[:-1], self.activations_data):
-            y = activation(layer(y))
-        y = self.layers_data[-1](y)
-
-        ## Apply the context at each layer (except the very last)
-        y = jnp.concatenate([y, ctx], axis=0)
-        for layer, activation in zip(self.layers_main[:-1], self.activations_main):
-            y = activation(layer(y))
-        y = self.layers_main[-1](y)
-
-        return y
-
-
-# ## Define model and loss function for the learner
-class Model(eqx.Module):
-    experts: list
-    n_experts: int
-    gate:dict
-    is_moe: bool
-    split_contexts: bool
-
-    def __init__(self, data_size, hidden_size, depth, context_size, nb_experts, top_k, key=None):
-        keys = jax.random.split(key, nb_experts+2)
-        # keys = keys.at[2].set(jax.random.split(key, 1+2)[0])       ## Just to make sure we key for env 3 works !
-
-        self.split_contexts = False
-
-        ## The context is now split into tiny chunks for each expert
-        if self.split_contexts:
-            eff_context_size = context_size//nb_experts
-        else:
-            eff_context_size = context_size
-        self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, ctx_shift=0., key=keys[0]) for i in range(nb_experts)]
-        # self.experts = [Expert(data_size, hidden_size, 2, depth, eff_context_size, ctx_shift=i/(nb_experts-1), key=keys[0]) for i in range(nb_experts)]
-
-        lim = 1 / np.sqrt(context_size)
-        gate_weight = jax.random.uniform(keys[-1], (context_size, nb_experts), minval=-lim, maxval=lim)
-
-        def gating_function(gate, ctx):
-            H = jax.lax.stop_gradient(gate["weight"].T) @ ctx
-            # H = gate["weight"].T @ ctx
-
-            G = jax.nn.softmax(H)       ## This works, but above doesn't
-            # G = jnp.abs(H) / jnp.sum(jnp.abs(H))
-
-            return G
-
-        # self.gate = {"weight":gate_weight, "temperature":gate_temp, "top_k":top_k, "function":gating_function}
-        self.gate = {"weight":gate_weight, "temperature":[0.001], "top_k":top_k, "function":gating_function, "lsqr_factor":jnp.array([1e-3])}
-
-        self.n_experts = nb_experts
-        self.is_moe = True     ## Fix this !
-
-    def __call__(self, t, y, ctx):
-        G = self.gate["function"](self.gate, ctx)
-        # G = jax.lax.stop_gradient(self.gate["function"](self.gate, ctx))
-        if self.split_contexts:
-            ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
-
-        max_G = jnp.max(G)
-        dy = jnp.zeros_like(y)
-        for i in range(self.n_experts):
-            if self.split_contexts:
-                ctx_i = ctx_pieces[i]
-            else:
-                ctx_i = ctx
-
-            contribution = jax.lax.cond(G[i]>max_G-1e-6, 
-                                        lambda in_dat: self.experts[i](*in_dat), 
-                                        lambda in_dat: jnp.zeros_like(in_dat[1]), 
-                                        (t, y, ctx_i))
-            dy += contribution
-
-        return dy
-
-
 
 
 def env_loss_fn(model, ctx, y_hat, y):
@@ -289,38 +164,47 @@ def env_loss_fn(model, ctx, y_hat, y):
     """
 
     term1 = jnp.mean((y_hat-y)**2)
-    ## Term 1 is relative L2 loss
-    # term1 = jnp.mean(((y_hat-y)**2) / (jnp.maximum(jnp.mean(y**2), 1e-6)))
-    term2 = jnp.mean(jnp.abs(ctx))
+    if context_regularization:
+        term2 = jnp.mean(jnp.abs(ctx))
+        loss_val = term1 + 1e-3*term2
+    else:
+        term2 = 0.
+        loss_val = term1
+
     # term3 = params_norm_squared(model)
-
-    # term2 = jnp.abs(model.vectorfield.neuralnet.gate(ctx).squeeze())
-
-    # loss_val = term1 + 1e-3*term2 + 1e-3*term3
-    loss_val = term1 + 1e-3*term2
     # loss_val = term1
 
-    # return loss_val, (term1, 0., 0.)
     return loss_val, (term1, term2, 0.)
 
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
-neuralnet = Model(data_size=2,
-                hidden_size=32*4, 
-                depth=3,
-                context_size=context_size,
+## Parameters for a built-in NCF model
+expert_params = {"data_size":data_size,
+                "width_main":width_main,
+                "depth_main":depth_main,
+                "depth_data":depth_data,
+                "depth_ctx":depth_ctx,
+                "context_size":context_size,
+                "intermediate_size":intermediate_size,
+                "ctx_utils":None,
+                "activation":"swish",
+                "shift_context":shift_context}
+
+neuralnet = MixER(key=model_key,
                 nb_experts=nb_experts,
-                top_k=top_k,
-                key=model_key) 
+                meta_learner=meta_learner,
+                split_context=split_context,
+                same_expert_init=True,
+                use_gate_bias=True,
+                gate_update_strategy=gate_update_strategy,
+                **expert_params)
 
 model = NeuralODE(neuralnet=neuralnet,
                 taylor_order=taylor_orders[0],
                 ivp_args=ivp_args,
-                t_eval=None,    ## t_eval is provided with each model call
+                t_eval=None,
                 taylor_ad_mode="forward")
-
-# print("Model is ...", model)
 
 learner = Learner(model=model,
                 context_size=contexts.eff_context_size, 
@@ -329,15 +213,15 @@ learner = Learner(model=model,
                 contexts=contexts,
                 reuse_contexts=True,
                 loss_contributors=loss_contributors,
-                pool_filling="NF",      ## TODO. Put back NF as soon as mem permits
-                loss_filling="NF",      ## The environment with the biggest loss is picked up
+                pool_filling="NF",      ## The closest envs are used in the inner loss
+                loss_filling="NF",      ## The closest envs are used in the outer loss
+                self_reweighting=True,  ## Reweight the outer loss by its own softmax 
                 key=model_key)
 
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
 print("Total number of parameters in one context:", contexts.eff_context_size)
-
 
 
 #%%
@@ -350,45 +234,42 @@ bd_scales = {total_steps//3:sched_factor, 2*total_steps//3:sched_factor}
 sched_model = optax.piecewise_constant_schedule(init_value=init_lr_model, boundaries_and_scales=bd_scales)
 sched_ctx = optax.piecewise_constant_schedule(init_value=init_lr_ctx, boundaries_and_scales=bd_scales)
 opt_model = optax.adabelief(sched_model)
-# opt_model = optax.chain(optax.clip(1.), optax.adam(sched_model))
 opt_ctx = optax.adabelief(init_lr_ctx)
-# opt_ctx = optax.chain(optax.clip(1.), optax.adam(init_lr_ctx))
-
-# sched_model = optax.exponential_decay(init_value=init_lr_model, transition_steps=transition_steps, decay_rate=0.99)
-# opt_model = optax.adam(sched_model)
-# sched_ctx = optax.exponential_decay(init_value=init_lr_ctx, transition_steps=transition_steps, decay_rate=0.99)
-# opt_ctx = optax.adam(sched_ctx)
 
 trainer = NCFTrainer(learner, (opt_model, opt_ctx), key=trainer_key)
 
 #%%
 
-## Use this loss criterion instead ...
-# loss_criterion = lambda y, y_hat: jnp.quantile((y - y_hat)**2, q=q, axis=(-1, -2, -3))
-
 ## Meta-training
 if meta_train == True:
-    trainer_save_path = run_folder if save_trainer == True else False
     trainer.meta_train_gated(dataloader=train_dataloader, 
                         nb_epochs=1, 
                         nb_outer_steps=nb_outer_steps, 
                         nb_inner_steps=nb_inner_steps, 
-                        inner_tols=(1e-16, 1e-16, 1e-16), 
                         proximal_betas=proximal_betas, 
                         max_train_batches=max_train_batches, 
                         print_error_every=print_error_every, 
                         save_checkpoints=True, 
                         validate_every=validate_every, 
-                        save_path=trainer_save_path, 
+                        save_path=run_folder, 
                         val_dataloader=val_dataloader, 
                         val_nb_steps=nb_adapt_epochs,
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
+                        update_gate_every=gate_update_every,
+                        verbose=False,
                         key=trainer_key)
 else:
     print("Skipping meta-training ...")
     restore_folder = run_folder
     trainer.restore_trainer(path=run_folder)
+
+
+#%%[markdown]
+# ## Post-training analysis
+
+
+
 
 #%%
 ## Test and visualise the results on a test dataloader
@@ -408,22 +289,13 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
 print("Loss per InD environment:", all_ind_crit[0].tolist())
 
-
-# new_ctx = np.load(run_folder+"contexts_params.npy")
-# learner.contexts = eqx.tree_at(lambda c:c.params, learner.contexts, new_ctx)
-# eqx.tree_serialise_leaves(run_folder+"contexts.eqx", learner.contexts)
-
-print("After training, the context shifts are:")
-print(" Expert 0:", learner.model.vectorfield.neuralnet.experts[0].ctx_shift)
-print(" Expert 1:", learner.model.vectorfield.neuralnet.experts[1].ctx_shift)
-print(" Expert 2:", learner.model.vectorfield.neuralnet.experts[2].ctx_shift)
+ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift.squeeze() for e in range(nb_experts)]
+print("After training, the context shifts are:", jnp.array(ctx_shifts))
 
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                # nb_envs=16*ode_count,
-                                # envs=[142, 143, 192, 193, 199, 200, 202, 203, 215, 232, 240, 242],
-                                envs=jnp.arange(0, nb_envs_per_fam[0]*ode_count).tolist(),
+                                envs=jnp.arange(0, nb_envs_per_fam[0]*nb_families).tolist(),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
@@ -434,21 +306,11 @@ visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
 contexts = learner.contexts
 network = trainer.learner.model.vectorfield.neuralnet
 
-# print("These the gate weights:", network.gate.weight.squeeze())
-
-@eqx.filter_vmap
-def gate_fn(ctx):
-    return network.gate["function"](network.gate, ctx)
-
-gate_vals = gate_fn(contexts.params)
+gate_vals = eqx.filter_vmap(network.gating_function)(contexts.params)
 
 fig, (ax, ax2) = plt.subplots(1, 2, figsize=(7*2, 6))
-## sort and plot histogram of gate values
-# gate_vals = jnp.sort(gate_vals.flatten())
 ax.hist(gate_vals.flatten(), bins=50);
-
-ax.set_title(f"Gate Histogram with Top-K = {top_k}")
-# print(gate_vals)
+ax.set_title("Gate Values Histogram")
 
 ## inshow on ax2
 img = ax2.imshow(gate_vals, aspect='auto', cmap='turbo', interpolation=None)
@@ -456,8 +318,8 @@ plt.colorbar(img)
 ax2.set_xlabel("Experts")
 ax2.set_ylabel("Environments")
 
-## Set yticks in steps of 16
-y_labels = np.arange(0, nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[0])
+## Set yticks in steps of nb_envs_per_fam[0]
+y_labels = np.arange(0, nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[0])
 ax2.set_yticks(y_labels)
 ax2.set_yticklabels(y_labels)
 
@@ -465,43 +327,10 @@ x_labels = np.arange(0, nb_experts, 1)
 ax2.set_xticks(x_labels)
 ax2.set_xticklabels(x_labels)
 
-ax2.set_title("Gate Values")
+ax2.set_title("Gate Values Heatmap")
 
 plt.draw()
-plt.savefig(run_folder+"gate_histogram_big.png")
-
-
-
-# #### Plot the rescaling factors
-# @eqx.filter_vmap
-# def rescale_fn(ctx):
-#     scales = []
-#     ctx = jnp.split(ctx, nb_experts, axis=0)
-#     for i in range(nb_experts):
-#         factor = jax.nn.relu(network.experts[i].rescaler(ctx[i]).squeeze())
-#         # factor = jnp.clip(factor, 1, 1e2)
-#         scales.append(factor)
-#     return jnp.array(scales)
-
-# rescale_vals = rescale_fn(contexts.params)  ## (nb_envs, nb_experts)
-
-# ## Visualise as an imshow
-# fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-# img = ax.imshow(rescale_vals, aspect='auto', cmap='turbo', origin='lower', interpolation=None)
-# plt.colorbar(img)
-# ax.set_xlabel("Experts")
-# ax.set_ylabel("Environments")
-
-# ax.set_yticks(y_labels)
-# ax.set_yticklabels(y_labels)
-
-# ax.set_xticks(x_labels)
-# ax.set_xticklabels(x_labels)
-
-# ax.set_title("Rescale Factors")
-# plt.draw()
-# plt.savefig(run_folder+"rescale_factors.png")
-
+plt.savefig(run_folder+"gate_values.png")
 
 
 
@@ -509,19 +338,18 @@ plt.savefig(run_folder+"gate_histogram_big.png")
 
 @eqx.filter_vmap(in_axes=(None, 0))
 def gate_anim_fn(network, ctx):
-    return network.gate["function"](network.gate, ctx)
+    return network.gating_function(ctx)
 
 ## We want to do an animation of how the gate values change over time
 all_gate_vals = []
 for outer_step in list(range(0, nb_outer_steps, print_error_every[0]))+[nb_outer_steps-1]:
-    contexts_ = eqx.tree_deserialise_leaves(run_folder+f"checkpoints/contexts_outstep_{outer_step:06d}.eqx", learner.contexts)
-    network_ = eqx.tree_deserialise_leaves(run_folder+f"checkpoints/model_outstep_{outer_step:06d}.eqx", learner.model).vectorfield.neuralnet
+    contexts_ = eqx.tree_deserialise_leaves(checkpoints_folder+f"contexts_outstep_{outer_step:06d}.eqx", learner.contexts)
+    network_ = eqx.tree_deserialise_leaves(checkpoints_folder+f"model_outstep_{outer_step:06d}.eqx", learner.model).vectorfield.neuralnet
 
     all_gate_vals.append(gate_anim_fn(network_, contexts_.params))
 
 all_gate_vals = jnp.stack(all_gate_vals, axis=0)
 
-#%%
 ## Plot the gate values as an animation
 fig, ax = plt.subplots(1, 1, figsize=(6, 7))
 img = ax.imshow(all_gate_vals[0], aspect='auto', cmap='turbo', interpolation="nearest")
@@ -542,26 +370,26 @@ def animate(i):
     return img,
 
 ani = animation.FuncAnimation(fig, animate, frames=len(all_gate_vals), interval=100, blit=True)
-ani.save(run_folder+"gate_vals_animation.gif", writer='pillow', fps=20)
-
+ani.save(run_folder+"gate_values_animation.gif", writer='pillow', fps=20)
 
 
 #%%
 
-# perp = ode_count if ode_count > 1 else 4
-# visualtester.visualize_context_clusters(perplexities=(perp, perp),
-#                                         key=test_key,
-#                                         # key=jax.random.PRNGKey(time.time_ns()),
-#                                         save_path=run_folder+"context_clusters.png")
+print("Adaptation contexts", trainer.learner.contexts_latest.params)
+
+perp = nb_families if nb_families > 1 else 3
+visualtester.visualize_context_clusters(perplexities=(perp, perp),
+                                        key=test_key,
+                                        save_path=run_folder+"context_clusters.png")
 
 #%%
 X = learner.contexts.params
-labels = np.arange(ode_count).repeat(nb_envs_per_fam[0])
+labels = np.arange(nb_families).repeat(nb_envs_per_fam[0])
 color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
 colors = [color_table[l] for l in labels]
 
 import umap
-umap_reducer = umap.UMAP(n_components=2, random_state=time.time_ns()%(2**32), min_dist=0., metric="euclidean")
+umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]))
 
 # Fit and transform the data
 X_reduced = umap_reducer.fit_transform(X)
@@ -580,33 +408,34 @@ for i in range(0, X_reduced.shape[0], nb_envs_per_fam[0]):
     plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
 
 plt.draw()
-plt.savefig(run_folder+"umap_contexts.png", bbox_inches='tight')
+plt.savefig(run_folder+"clusters_umap.png", bbox_inches='tight')
+
+
+
+#%%[markdown]
+# ## Adaptation to a new dataset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 #%%
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Adapt the model to the new dataset
 if meta_test:
-    # adapt_id = 0     ## The single environment to adapt to (the difficult rectangular one)
+    # adapt_id = nb_envs_per_fam[1]*1+1     ## The single environment to adapt to (the difficult rectangular one)
 
     adapt_dataset = MixerDynamicsDataset(data_dir=data_folder+"adapt_train.npz", 
                                                    num_shots=num_shots[1], 
@@ -614,11 +443,10 @@ if meta_test:
                                                    adaptation=True)
     # adapt_dataset.total_envs = 1
     # adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
-    # # adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
+    # adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
 
     adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
                                 batch_size=num_envs[1], 
-                                # batch_size=1, 
                                 shuffle=shuffle,
                                 num_workers=num_workers,
                                 drop_last=False)
@@ -629,7 +457,7 @@ if meta_test:
                                                    adaptation=True)
     # adapt_dataset_test.total_envs = 1
     # adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:, :, :, :]
-    # # adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
+    # adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
 
     adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
                                 batch_size=num_envs[1],
@@ -644,28 +472,28 @@ if meta_test:
                                         criterion_id=0,
                                         verbose=True,
                                         val_dataloader=adapt_dataloader_test,
-                                        max_ret_env_states=num_envs[1],
+                                        max_ret_env_states=1,
                                         max_adapt_batches=max_adapt_batches,
                                         stochastic=False)
     print("Loss per OoD environment:", all_ood_crit[0].tolist())
 
 #%%
-visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts_0.png", adaptation=True)
+visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
-visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_ood_0.png",
+visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png",
                                 data_loader=adapt_dataloader_test,
-                                nb_envs=1,
+                                envs=[0,1,2,3],
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
 
 #%%
 
-# perp = ode_count if ode_count > 1 else 4
-# visualtester.visualize_context_clusters(perplexities=(perp, perp),
-#                                         # key=test_key,
-#                                         key=jax.random.PRNGKey(time.time_ns()),
-#                                         save_path=adapt_folder+"context_clusters.png")
+perp = nb_families if nb_families > 1 else 3
+visualtester.visualize_context_clusters(perplexities=(perp, perp),
+                                        key=test_key,
+                                        save_path=adapt_folder+"context_clusters.png")
+
 
 #%%
 ## After training, copy nohup.log to the runfolder
@@ -676,6 +504,3 @@ except NameError:
 
 #%%
 
-# adapt_dataloader_test.dataset.dataset.max()
-# train_dataloader.dataset.dataset.max()
-# val_dataloader.dataset.dataset.max()

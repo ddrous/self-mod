@@ -12,7 +12,7 @@ from PIL import Image
 
 class DataLoader:
     """
-    A bas class generator of generators for general-purpose meta-learning regression tasks.
+    A base class generator of generators for general-purpose meta-learning regression tasks.
     """
     def __init__(self, 
                  data_path, 
@@ -512,12 +512,13 @@ class DynamicsDataset:
     """
 
     # def __init__(self, meta_tain=True, support_set=True):
-    def __init__(self, data_dir, num_shots=-1, skip_steps=1, adaptation=False):
+    def __init__(self, data_dir, num_shots=-1, skip_steps=1, adaptation=False, return_t_eval=False):
 
         self.data_dir = data_dir
         self.skip_steps = skip_steps
         # self.adaptation = data_dir.find("adapt") != -1 or data_dir.find("ood") != -1
         self.adaptation = adaptation
+        self.return_t_eval = return_t_eval
 
         try:
             raw_data = np.load(data_dir)
@@ -542,53 +543,23 @@ class DynamicsDataset:
     def __getitem__(self, idx):
         inputs = self.dataset[idx, :, 0, :]
         outputs = self.dataset[idx, :, :, :]
-        return inputs, outputs
+
+        if self.return_t_eval:
+            return (inputs, self.t_eval), outputs
+        else:
+            return inputs, outputs
 
     def __len__(self):
         return self.total_envs
 
 
 
-class MixerDynamicsDataset:
+class MixerDynamicsDataset(DynamicsDataset):
     """
-    For all dynamics tasks as in Kirchmeyer et al. 2022
+    For all dynamics tasks as in Kirchmeyer et al. 2022, always returns the evaluation time stamps
     """
-
-    # def __init__(self, meta_tain=True, support_set=True):
     def __init__(self, data_dir, num_shots=-1, skip_steps=1, adaptation=False):
-
-        self.data_dir = data_dir
-        self.skip_steps = skip_steps
-        # self.adaptation = data_dir.find("adapt") != -1 or data_dir.find("ood") != -1
-        self.adaptation = adaptation
-
-        try:
-            raw_data = np.load(data_dir)
-        except:
-            raise ValueError(f"Data not found at {data_dir}")
-
-        self.dataset, self.t_eval = raw_data['X'][...,::self.skip_steps,:], raw_data['t'][::skip_steps]
-
-        datashape = self.dataset.shape
-        self.total_envs = datashape[0]
-
-        if num_shots is None or num_shots == -1:
-            num_shots = datashape[1]
-        self.num_shots = num_shots
-        if num_shots > datashape[1]:
-            raise ValueError("Number of shots must be less than the total number of trajectories")
-
-        self.num_steps = datashape[2]
-        self.data_size = datashape[3]
-
-
-    def __getitem__(self, idx):
-        inputs = self.dataset[idx, :, 0, :]
-        outputs = self.dataset[idx, :, :, :]
-        return (inputs, self.t_eval), outputs
-
-    def __len__(self):
-        return self.total_envs
+        super().__init__(data_dir, num_shots, skip_steps, adaptation, return_t_eval=True)
 
 
 
@@ -619,6 +590,7 @@ class ODEBenchDataset:
             # raise ValueError("Normalisation constants must be provided, unique per environment across train and test")
             pass
         else:
+            print("Normalising the dataset (one constant per family of environments)")
             norm_consts = np.load(norm_consts)
             dataset = dataset / norm_consts
 
@@ -686,33 +658,19 @@ class ODEBenchDataset:
         # return 5*1      ### TODO this is temporary
 
 
-class EpilepsyDataset:
+
+
+
+
+class TimeSeriesDataset:
     """
-    For the epilepsy dataset from Time Series Classification
+    For any time series dataset, from which the others will inherit
     """
+    def __init__(self, dataset, t_eval, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
 
-    def __init__(self, data_dir, skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
-
-        self.data_dir = data_dir
-        self.skip_steps = skip_steps
-        self.adaptation = adaptation
-
-        try:
-            raw_data = np.load(data_dir)
-        except:
-            raise ValueError(f"Data not found at {data_dir}")
-
-        dataset = raw_data['signal'][:, None, ::self.skip_steps, None]
         self.dataset = dataset
-
         n_envs, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
-
-        ## normalise the dataset ?
-
-        ## Duplicate t_eval for each environment
-        t_eval = np.linspace(0, 1., n_timesteps)
-        self.t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
-
+        self.t_eval = t_eval
         self.total_envs = n_envs
 
         if traj_prop_min < 0 or traj_prop_min > 1:
@@ -723,6 +681,7 @@ class EpilepsyDataset:
         self.data_size = n_dimensions
         self.num_shots = 1
         self.use_full_traj = use_full_traj      ## If True, we use the full trajectory, else we only return the initial condition
+        self.adaptation = adaptation
 
     def __getitem__(self, idx):
         if self.use_full_traj:
@@ -758,24 +717,40 @@ class EpilepsyDataset:
             else:
                 return (new_trajs[:,0,:], new_ts), new_trajs
 
-
     def __len__(self):
         return self.total_envs
 
 
+class EpilepsyDataset(TimeSeriesDataset):
+    """
+    For the Epilepsy2 dataset from Time Series Classification
+    """
+
+    def __init__(self, data_dir, skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
+        try:
+            raw_data = np.load(data_dir)
+        except:
+            raise ValueError(f"Data not found at {data_dir}")
+
+        dataset = raw_data['signal'][:, None, ::skip_steps, None]
+
+        n_envs, _, n_timesteps, _ = dataset.shape
+
+        ## Duplicate t_eval for each environment
+        t_eval = np.linspace(0, 1., n_timesteps)
+        t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
+
+        super().__init__(dataset, t_eval, adaptation, traj_prop_min, use_full_traj)
 
 
-class CrowdsourceDataset:
+
+
+class CrowdsourceDataset(TimeSeriesDataset):
     """
     For the EEG crowdsource dataset from Navid and Amarpal
     """
 
     def __init__(self, data_dir, data_split="train", skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
-
-        self.data_dir = data_dir
-        self.skip_steps = skip_steps
-        self.adaptation = adaptation
-
         try:
             raw_data = np.load(data_dir+"Crowdsource.npy", allow_pickle=True).item()
         except:
@@ -783,147 +758,39 @@ class CrowdsourceDataset:
 
         key = data_split+"_data" if data_split in ["train", "val"] else "test_data"
 
-        dataset = raw_data[key].transpose(0, 2, 1)[:, None, ::self.skip_steps, :]
-        self.dataset = dataset
+        dataset = raw_data[key].transpose(0, 2, 1)[:, None, ::skip_steps, :]
 
         n_envs, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
-        print("Dataset shape:", dataset.shape)
-
-        ## normalise the dataset ?
 
         ## Duplicate t_eval for each environment
         t_eval = np.linspace(0, 1., n_timesteps)
-        self.t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
+        t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
 
-        self.total_envs = n_envs
-
-        if traj_prop_min < 0 or traj_prop_min > 1:
-            raise ValueError("The smallest proportion of the trajectory to use must be between 0 and 1")
-        self.traj_prop_min = traj_prop_min
-
-        self.num_steps = n_timesteps
-        self.data_size = n_dimensions
-        self.num_shots = 1
-        self.use_full_traj = use_full_traj      ## If True, we use the full trajectory, else we only return the initial condition
-
-    def __getitem__(self, idx):
-        if self.use_full_traj:
-            inputs = self.dataset[idx, :self.num_shots, :, :]
-        else:
-            inputs = self.dataset[idx, :self.num_shots, 0, :]
-        outputs = self.dataset[idx, :self.num_shots, :, :]
-        t_evals = self.t_eval[idx]
-
-        if self.traj_prop_min == 1.0:
-            ### STRAIGHFORWARD APPROACH ###
-            return (inputs, t_evals), outputs
-        else:
-            ### SAMPLING APPROACH ###
-            ## Sample a start and end time step for the task, and interpolate to produce new timesteps
-            ### The minimum distance between the start and finish is min_len
-            traj_len = t_evals.shape[0]
-            new_traj_len = traj_len ## We always want traj_len samples
-            min_len = int(traj_len * self.traj_prop_min)
-            start_idx = np.random.randint(0, traj_len - min_len)
-            end_idx = np.random.randint(start_idx + min_len, traj_len)
-
-            ts = t_evals[start_idx:end_idx]
-            trajs = outputs[:, start_idx:end_idx, :]
-            new_ts = np.linspace(ts[0], ts[-1], new_traj_len)
-            new_trajs = np.zeros((self.num_shots, new_traj_len, self.data_size))
-            for i in range(self.num_shots):
-                for j in range(self.data_size):
-                    new_trajs[i, :, j] = np.interp(new_ts, ts, trajs[i, :, j])
-
-            if self.use_full_traj:
-                return (new_trajs[:,:,:], new_ts), new_trajs
-            else:
-                return (new_trajs[:,0,:], new_ts), new_trajs
+        super().__init__(dataset, t_eval, adaptation, traj_prop_min, use_full_traj)
 
 
-    def __len__(self):
-        return self.total_envs
-
-
-
-class TrendsDataset:
+class TrendsDataset(TimeSeriesDataset):
     """
     For the synthetic control dataset from Time Series Classification
     """
 
     def __init__(self, data_dir, skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
-
-        self.data_dir = data_dir
-        self.skip_steps = skip_steps
-        self.adaptation = adaptation
-
         try:
             time_series = []
             with open(data_dir+"synthetic_control.data", 'r') as f:
                 for line in f:
                     time_series.append(list(map(float, line.split())))
             raw_data = np.array(time_series, dtype=np.float32)
-            # raw_data = (raw_data - np.min(raw_data, axis=0)) / (np.max(raw_data, axis=0) - np.min(raw_data, axis=0))
-            raw_data = (raw_data - np.mean(raw_data, axis=0)) / np.std(raw_data, axis=0)
+            raw_data = (raw_data - np.mean(raw_data, axis=0)) / np.std(raw_data, axis=0)        ## normalise the dataset
         except:
             raise ValueError(f"Data not found at {data_dir}")
 
-        dataset = raw_data[:, None, ::self.skip_steps, None]
-        self.dataset = dataset
+        dataset = raw_data[:, None, ::skip_steps, None]
 
         n_envs, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
 
-        ## normalise the dataset ?
-
         ## Duplicate t_eval for each environment
         t_eval = np.linspace(0, 1., n_timesteps)
-        self.t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
+        t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
 
-        self.total_envs = n_envs
-
-        if traj_prop_min < 0 or traj_prop_min > 1:
-            raise ValueError("The smallest proportion of the trajectory to use must be between 0 and 1")
-        self.traj_prop_min = traj_prop_min
-
-        self.num_steps = n_timesteps
-        self.data_size = n_dimensions
-        self.num_shots = 1
-        self.use_full_traj = use_full_traj      ## If True, we use the full trajectory, else we only return the initial condition
-
-    def __getitem__(self, idx):
-        if self.use_full_traj:
-            inputs = self.dataset[idx, :self.num_shots, :, :]
-        else:
-            inputs = self.dataset[idx, :self.num_shots, 0, :]
-        outputs = self.dataset[idx, :self.num_shots, :, :]
-        t_evals = self.t_eval[idx]
-
-        if self.traj_prop_min == 1.0:
-            ### STRAIGHFORWARD APPROACH ###
-            return (inputs, t_evals), outputs
-        else:
-            ### SAMPLING APPROACH ###
-            ## Sample a start and end time step for the task, and interpolate to produce new timesteps
-            ### The minimum distance between the start and finish is min_len
-            traj_len = t_evals.shape[0]
-            new_traj_len = traj_len ## We always want traj_len samples
-            min_len = int(traj_len * self.traj_prop_min)
-            start_idx = np.random.randint(0, traj_len - min_len)
-            end_idx = np.random.randint(start_idx + min_len, traj_len)
-
-            ts = t_evals[start_idx:end_idx]
-            trajs = outputs[:, start_idx:end_idx, :]
-            new_ts = np.linspace(ts[0], ts[-1], new_traj_len)
-            new_trajs = np.zeros((self.num_shots, new_traj_len, self.data_size))
-            for i in range(self.num_shots):
-                for j in range(self.data_size):
-                    new_trajs[i, :, j] = np.interp(new_ts, ts, trajs[i, :, j])
-
-            if self.use_full_traj:
-                return (new_trajs[:,:,:], new_ts), new_trajs
-            else:
-                return (new_trajs[:,0,:], new_ts), new_trajs
-
-
-    def __len__(self):
-        return self.total_envs
+        super().__init__(dataset, t_eval, adaptation, traj_prop_min, use_full_traj)

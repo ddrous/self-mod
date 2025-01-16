@@ -1,6 +1,3 @@
-#%%[markdown]
-# Neural ODE on ODE-Bench-Dataset
-
 #%%
 # %load_ext autoreload
 # %autoreload 2
@@ -23,17 +20,17 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 4          ## Total number of ODE families in the dataset
-nb_experts = nb_families
+ode_count = 4          ## Total number of ODE families in the dataset
+nb_experts = ode_count
 nb_envs_per_fam = (5, 1)
 
-num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
+num_envs = (nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[1]*ode_count)
 num_shots = (-1, -1)
 num_workers = 8
 shuffle = False
 train_proportion = 0.6  ## Minimal proportion of the trajectory for training
 test_proportion = 1.0
-skip_steps = 5
+skip_steps = 1
 normalize_data = False
 
 ## Learner/model hps
@@ -43,10 +40,8 @@ taylor_orders = (1, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 loss_contributors = nb_envs_per_fam[0]*1
 max_ret_env_states = num_envs[0]
-split_context = False
-shift_context = False
+split_contexts = False
 
-meta_learner="NCF"
 data_size = 2
 width_main = 32*4
 depth_main = 3
@@ -54,6 +49,8 @@ depth_data = 1
 depth_ctx = 1
 intermediate_size = 32
 activation = "swish"
+shift_context = True
+
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -63,14 +60,14 @@ max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
 nb_outer_steps = 2
-nb_inner_steps = (2, 2)
+nb_inner_steps = (12, 12)
 nb_adapt_epochs = 1000
 validate_every = 10
-print_error_every = (10, 10)
 
-gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
-gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
-context_regularization = True               ## Regularize the context with an L1 penalty
+gate_update_strategy = "least_squares"  ## "least_squares" or "gradient_descent"
+gate_update_every = 5                   ## Update the gate every x inner steps (useful in least_squares mode)
+
+print_error_every = (10, 10)
 
 meta_train = True
 meta_test = True
@@ -116,7 +113,7 @@ train_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"train.npz",
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"test.npz", 
+val_dataloader = NumpyLoader(ODEBenchDataset(data_dir=data_folder+"adapt_test.npz", 
                                              norm_consts=data_folder+"train_bounds.npy" if normalize_data else None,
                                              num_shots=num_shots[1], 
                                              skip_steps=skip_steps,
@@ -135,7 +132,7 @@ plt_t = ts
 
 print("Typical shapes of data and t_eval:", plt_data.shape, plt_t.shape)
 
-E_plot = nb_families
+E_plot = ode_count
 E_ = nb_envs_per_fam[0]
 
 # fig, ax = plt.subplots(2, E_plot//2, figsize=(6*E_plot//2, 3*2))
@@ -164,6 +161,37 @@ lims = [ax[e].get_ylim() for e in range(E_plot)]
 
 
 #%%
+(ins, ts), outs = next(iter(val_dataloader))
+plt_data = outs
+plt_t = ts
+
+print("Typical shapes of data and t_eval:", plt_data.shape, plt_t.shape)
+
+E_plot = ode_count
+E_ = nb_envs_per_fam[1]
+
+fig, ax = plt.subplots(E_plot, 1, figsize=(6, 3*E_plot))
+ax = ax.flatten() if E_plot>1 else [ax]
+colors = ['orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
+for e in range(E_plot):
+    e_plot_data_0 = plt_data[e*E_:(e+1)*E_, 0:1, :, 0]
+    e_plot_data_1 = plt_data[e*E_:(e+1)*E_, 0:1, :, 1]
+    e_t_eval = plt_t[e*E_:(e+1)*E_]
+    for e_ in range(E_):
+        ax[e].plot(e_t_eval[e_], e_plot_data_0[e_].T, '-', color=colors[e_], markersize=5, lw=2)
+        ax[e].plot(e_t_eval[e_], e_plot_data_1[e_].T, '-', color=colors[e_], markersize=5, alpha=0.5, lw=3)
+    ax[e].set_title(f"Family {e+1}", fontsize=16)
+    if e==E_plot-1:
+        ax[e].set_xlabel("Time $t$")
+    ax[e].set_ylabel(f"$x$")
+    ax[e].set_ylim(lims[e])
+
+plt.tight_layout()
+plt.draw()
+plt.savefig(adapt_folder+"adapt_trajectories.png")
+plt.savefig(adapt_folder+"adapt_trajectories.pdf", bbox_inches='tight', dpi=100)
+
+#%%
 
 
 def env_loss_fn(model, ctx, y_hat, y):
@@ -172,22 +200,20 @@ def env_loss_fn(model, ctx, y_hat, y):
     """
 
     term1 = jnp.mean((y_hat-y)**2)
-    if context_regularization:
-        term2 = jnp.mean(jnp.abs(ctx))
-        loss_val = term1 + 1e-3*term2
-    else:
-        term2 = 0.
-        loss_val = term1
-
+    # term1 = jnp.mean(((y_hat-y)**2) / (jnp.maximum(jnp.mean(y**2), 1e-6)))
+    term2 = jnp.mean(jnp.abs(ctx))
     # term3 = params_norm_squared(model)
+
+    # loss_val = term1 + 1e-3*term2 + 1e-3*term3
+    loss_val = term1 + 1e-3*term2
     # loss_val = term1
 
+    # return loss_val, (term1, 0., 0.)
     return loss_val, (term1, term2, 0.)
 
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
-## Parameters for a built-in NCF model
 expert_params = {"data_size":data_size,
                 "width_main":width_main,
                 "depth_main":depth_main,
@@ -201,8 +227,8 @@ expert_params = {"data_size":data_size,
 
 neuralnet = MixER(key=model_key,
                 nb_experts=nb_experts,
-                meta_learner=meta_learner,
-                split_context=split_context,
+                meta_learner="NCF",
+                split_contexts=split_contexts,
                 same_expert_init=True,
                 use_gate_bias=True,
                 gate_update_strategy=gate_update_strategy,
@@ -211,8 +237,11 @@ neuralnet = MixER(key=model_key,
 model = NeuralODE(neuralnet=neuralnet,
                 taylor_order=taylor_orders[0],
                 ivp_args=ivp_args,
-                t_eval=None,
+                t_eval=None,    ## t_eval is provided with each model call
                 taylor_ad_mode="forward")
+
+print("Model is ...", neuralnet)
+print("Test the model evaluation ...", neuralnet(0., jnp.array([1., 1.]), jnp.zeros(context_size)).shape)
 
 learner = Learner(model=model,
                 context_size=contexts.eff_context_size, 
@@ -254,6 +283,7 @@ if meta_train == True:
                         nb_epochs=1, 
                         nb_outer_steps=nb_outer_steps, 
                         nb_inner_steps=nb_inner_steps, 
+                        inner_tols=(1e-16, 1e-16), 
                         proximal_betas=proximal_betas, 
                         max_train_batches=max_train_batches, 
                         print_error_every=print_error_every, 
@@ -265,7 +295,7 @@ if meta_train == True:
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
-                        verbose=False,
+                        verbose=True,
                         key=trainer_key)
 else:
     print("Skipping meta-training ...")
@@ -297,13 +327,13 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
 print("Loss per InD environment:", all_ind_crit[0].tolist())
 
-ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift.squeeze() for e in range(nb_experts)]
+ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift for e in range(nb_experts)]
 print("After training, the context shifts are:", jnp.array(ctx_shifts))
 
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                envs=jnp.arange(0, nb_envs_per_fam[0]*nb_families).tolist(),
+                                envs=jnp.arange(0, nb_envs_per_fam[0]*ode_count).tolist(),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
@@ -327,7 +357,7 @@ ax2.set_xlabel("Experts")
 ax2.set_ylabel("Environments")
 
 ## Set yticks in steps of nb_envs_per_fam[0]
-y_labels = np.arange(0, nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[0])
+y_labels = np.arange(0, nb_envs_per_fam[0]*ode_count, nb_envs_per_fam[0])
 ax2.set_yticks(y_labels)
 ax2.set_yticklabels(y_labels)
 
@@ -383,19 +413,19 @@ ani.save(run_folder+"gate_values_animation.gif", writer='pillow', fps=20)
 
 #%%
 
-perp = nb_families if nb_families > 1 else 4
+perp = ode_count if ode_count > 1 else 4
 visualtester.visualize_context_clusters(perplexities=(perp, perp),
                                         key=test_key,
                                         save_path=run_folder+"context_clusters.png")
 
 #%%
 X = learner.contexts.params
-labels = np.arange(nb_families).repeat(nb_envs_per_fam[0])
+labels = np.arange(ode_count).repeat(nb_envs_per_fam[0])
 color_table = {0:"red", 1:"royalblue", 2:"green", 3:"orange", 4:"purple", 5:"brown", 6:"pink", 7:"gray", 8:"cyan", 9:"magenta"}
 colors = [color_table[l] for l in labels]
 
 import umap
-umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]))
+umap_reducer = umap.UMAP(n_components=2, random_state=test_key, min_dist=0., metric="euclidean")
 
 # Fit and transform the data
 X_reduced = umap_reducer.fit_transform(X)
@@ -414,7 +444,7 @@ for i in range(0, X_reduced.shape[0], nb_envs_per_fam[0]):
     plt.text(X_reduced[i, 0], X_reduced[i, 1]+5e-1, str(label), fontsize=16, ha='left', va='bottom', color='black', weight='bold')
 
 plt.draw()
-plt.savefig(run_folder+"clusters_umap.png", bbox_inches='tight')
+plt.savefig(run_folder+"umap_clusters.png", bbox_inches='tight')
 
 
 
@@ -493,15 +523,14 @@ visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptat
 
 visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png",
                                 data_loader=adapt_dataloader_test,
-                                # nb_envs=4,
-                                envs=[0,1,2,3],
+                                nb_envs=1,
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
 
 #%%
 
-perp = nb_families if nb_families > 1 else 4
+perp = ode_count if ode_count > 1 else 4
 visualtester.visualize_context_clusters(perplexities=(perp, perp),
                                         key=test_key,
                                         save_path=adapt_folder+"context_clusters.png")

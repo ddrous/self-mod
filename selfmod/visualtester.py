@@ -50,6 +50,10 @@ class VisualTester:
         # ## state_data: (X, Y, Y_hat)
         # ## Y, Y_hat: (envs, trajs_per_envs, steps_per_traj, data_size)
 
+        ## If adaptation and reuse_contexts, then set the context_adapt addtribute
+        if dataloader.dataset.adaptation and self.trainer.learner.reuse_contexts:
+            self.trainer.learner.contexts_adapt = self.trainer.learner.contexts_latest
+
         ## Compute the confidence intervals on the losses
         _, Y, Y_hat = state_data
         # TODO fix this cleanly plz - print("State data is: let's analysse it ...", jax.tree_map(lambda x: x.shape, state_data))
@@ -183,7 +187,7 @@ class VisualTester:
         #     print("No contexts found. Using zeros.")
         #     xis_adapt = jnp.zeros((10, self.trainer.learner.context_size))
         else:
-            xis_adapt = SimpleNamespace(params=jnp.zeros((1, self.trainer.learner.context_size)))
+            xis_adapt = SimpleNamespace(params=jnp.zeros((0, self.trainer.learner.context_size)))
 
         print("\n==  Begining context clusters visualisation ... ==")
 
@@ -217,9 +221,9 @@ class VisualTester:
 
             if nb_total_envs <= 20: ## Otherwise it gets too cluttered
                 for i in range(nb_train_envs):
-                    ax[p_id].text(X_embedded[i, dim0], X_embedded[i, dim1], str(i), fontsize=10, ha='center', va='center')
+                    ax[p_id].text(X_embedded[i, dim0]-10, X_embedded[i, dim1]+5, str(i), fontsize=10, ha='center', va='center')
                 for i in range(nb_train_envs, nb_total_envs):
-                    ax[p_id].text(X_embedded[i, dim0]+20, X_embedded[i, dim1]+20, str(i-9), fontsize=10, ha='left', va='top')
+                    ax[p_id].text(X_embedded[i, dim0]+10, X_embedded[i, dim1]+10, str(i-nb_train_envs), fontsize=10, ha='left', va='top')
 
             # ax[p_id].set_xlabel(f't-SNE ${dim0}$')
             # ax[p_id].set_ylabel(f't-SNE ${dim1}$')
@@ -271,11 +275,11 @@ class VisualTester:
                 ax[p_id].scatter(X_embedded[:nb_train_envs, dim0], X_embedded[:nb_train_envs, dim1], label='Training', marker=markers[j], s=mkss[j], color=colors[j])
                 ax[p_id].scatter(X_embedded[nb_train_envs:, dim0], X_embedded[nb_train_envs:, dim1], label='Adaptation', marker=markers[-1], s=mkss[-1], color=colors[-1])
 
-            if nb_total_envs <= 20:
-                for i in range(nb_train_envs):
-                    ax[p_id].text(X_embedded[i, dim0], X_embedded[i, dim1], str(i), fontsize=10, ha='center', va='center')
-                for i in range(nb_train_envs, nb_total_envs):
-                    ax[p_id].text(X_embedded[i, dim0]+20, X_embedded[i, dim1]+20, str(i-9), fontsize=10, ha='left', va='top')
+            # if nb_total_envs <= 20:
+            #     for i in range(nb_train_envs):
+            #         ax[p_id].text(X_embedded[i, dim0], X_embedded[i, dim1], str(i), fontsize=10, ha='center', va='center')
+            #     for i in range(nb_train_envs, nb_total_envs):
+            #         ax[p_id].text(X_embedded[i, dim0]+20, X_embedded[i, dim1]+20, str(i-9), fontsize=10, ha='left', va='top')
 
             if perplexities[1] > 0 and X.shape[1] > 2:
                 ax[p_id].set_xlabel(f't-SNE ${dim0}$', fontsize=8)

@@ -16,6 +16,7 @@ class Learner:
                  loss_filling="NF", 
                  model_reg="l2",
                  context_reg="l1",
+                 self_reweighting=True,
                  loss_contributors=-1,
                  key=None):
         if key is None:
@@ -33,120 +34,23 @@ class Learner:
         self.context_reg = context_reg
         self.loss_filling = loss_filling
 
+        self.self_reweighting = self_reweighting
+
         if contexts is not None:
             self.contexts = contexts
         else:
             print("    No context template provides, using arrays ...")
             self.contexts = ArrayContextParams(nb_envs=1, context_size=context_size)
 
-        # def moe_cv_loss_fn(model, ctxs):
-        #     # If the model is a mixture of experts, then minimize its coefficient of variation
-        #     is_moe = False
-        #     gating_function = None
-        #     if hasattr(model, "vectorfield") and model.vectorfield.neuralnet.is_moe:
-        #         is_moe = True
-        #         network = model.vectorfield.neuralnet
-        #     elif hasattr(model, "neuralnet") and model.neuralnet.is_moe:
-        #         is_moe = True
-        #         network = model.neuralnet
-
-        #     if is_moe:
-        #         print("    Minimizing coefficient of variation in the loss function ...")
-        #         batched_gates = eqx.filter_vmap(network.gating_function)(ctxs)
-        #         # jax.debug.print("The batched gates are:  {}  ", batched_gates)
-
-        #         ## count the non-zeros along axis 0
-        #         non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
-        #         non_zeros = jnp.where(non_zeros==0, 1, non_zeros)
-        #         importances = jnp.sum(batched_gates, axis=0) / non_zeros
-
-        #         cv = jnp.var(importances) / jnp.mean(importances)**2
-
-        #     else:
-        #         cv = 0.0
-        #         importances = None
-
-        #     # jax.debug.print("The coefficient of variation is:  {} {}  ", cv, importances)
-
-        #     return 0., batched_gates          ## TODO remove this
-        #     # return 1.*cv, batched_gates
-
-
-        def loss_fn_gates(gates, ctxs, key):
+        ## A loss function for the gates
+        def loss_fn_gates(model, ctxs, key):
             print("    Compiling gating loss function - coefficient of variation ...")
-            batched_gates = eqx.filter_vmap(gates["function"], in_axes=(None, 0))(gates, ctxs.params)
-
-            # gate_weight = eqx.nn.Conv1d(1, 1, 
-            #                             kernel_size=4, 
-            #                             padding="valid", 
-            #                             stride=4, 
-            #                             use_bias=False,
-            #                             key=key)
-            # def gating_function(gate, ctx):
-            #     ctx = jnp.abs(ctx)**2 / 0.1
-            #     # H = jax.lax.stop_gradient(gate["weight"])(ctx[None,:]).squeeze()
-            #     # H = gate["weight"](ctx[None,:]).squeeze()
-            #     H = gate_weight(ctx[None,:]).squeeze()
-
-            #     # topk_vals, topk_idx = jax.lax.top_k(H, gate["top_k"])
-            #     # infs = jnp.full_like(H, -jnp.inf)
-            #     # infs = infs.at[topk_idx].set(topk_vals / 1.)
-            #     # G = jax.nn.softmax(infs)
-
-            #     return H
-            #     # return ctx[:10]
-            # batched_gates = eqx.filter_vmap(gating_function, in_axes=(None, 0))(gates, ctxs.params)
-
-            # ## count the non-zeros along axis 0
-            # non_zeros = jnp.count_nonzero(batched_gates, axis=0, keepdims=True)
-            # non_zeros = jnp.where(non_zeros==0, 1, non_zeros)   ## Avoid division by zero
-            # importances = jnp.sum(batched_gates, axis=0) / non_zeros
-
-            # coef_var = jnp.var(importances) / jnp.mean(importances)**2
-            # # l1_reg = jnp.mean(jnp.abs(gates["weight"].weight)) + jnp.mean(jnp.abs(gates["weight"].bias))
+            batched_gates = eqx.filter_vmap(model.gating_function)(ctxs.params)
 
             importances = jnp.mean(batched_gates, axis=0)
             coef_var = jnp.var(importances) / jnp.mean(importances)**2
-            # coef_var = jnp.var(importances) - jnp.mean(importances)**2
-            # coef_var = jnp.mean(importances)
-            # l1_reg = jnp.mean(jnp.sum(jnp.abs(ctxs.params), axis=-1))
 
-            # return coef_var + 1e+2*l1_reg, (batched_gates, )
             return coef_var, (batched_gates, )
-            # return jnp.mean((ctxs.params-1.)**2), (batched_gates, ) ## Test
-            # return (batched_gates[0, 5]-1.0)**2, (batched_gates, ) ## Test
-
-            ## Simple: penalize the exitence of zero after summation along the batch axis
-            # expert_count = jnp.sum(batched_gates, axis=0)   ## Shape: (nb_experts,)
-            # return -jnp.mean(expert_count<1e-4), (batched_gates, )
-            # return jnp.mean((batched_gates-1.)**2), (batched_gates, )
-
-
-
-        # def loss_fn_gates(gates, ctxs, key):
-        #     print("    Compiling gating loss function - coefficient of variation ...")
-        #     batched_gates = eqx.filter_vmap(gates["function"], in_axes=(None, 0))(gates, ctxs.params)
-
-        #     ## The gating function simply penalizes the structure of the context
-        #     contexts = jnp.abs(ctxs.params) ## Shape: (nb_envs:160, context_size:40)
-        #     families = 2
-        #     envs_per_fam = 16 
-        #     experts = families
-        #     eff_ctx_size = 4
-        #     ## We put in the square shape of nb_families x nb_experts, each block of size 16x4
-
-        #     # block_contexts = jnp.reshape(contexts, (nb_families, nb_experts, -1))  ## Shape: (nb_families:10, nb_experts:10, everything_else:16*4)
-
-        #     block_contexts = einops.rearrange(contexts, "(fams e) (exps f) -> fams exps (e f)", fams=families, exps=experts)
-        #     ## We sum the quantities in each block
-        #     block_sums = jnp.sum(block_contexts, axis=(-1,))
-
-        #     ## We penalize the off-diagonal elements
-        #     off_diagonals = jnp.mean(jnp.abs(block_sums - jnp.diag(jnp.diagonal(block_sums))), axis=None)
-
-        #     return off_diagonals, (batched_gates, )
-
-
 
         self.loss_fn_gates = loss_fn_gates
 
@@ -173,26 +77,18 @@ class Learner:
             else:
                 raise ValueError("Invalid pool filling strategy provided. Use one of 'RA', 'NF', 'NF*', 'SF'.")
 
-            # if isinstance(X, tuple) or isinstance(X, list):    ## The input X comes with time steps
-            #     X = (X[0], jnp.broadcast_to(X[1], (X[0].shape[0], X[1].shape[0])))
-
             Y_hat = jax.vmap(model, in_axes=(None, None, 0))(X, ctx, ctx_pool)
             Y_new = jnp.broadcast_to(Y, Y_hat.shape)
 
             return env_loss_fn(model, ctx, Y_new, Y_hat)
 
-        # print("    Using all environments to estimate the global loss function ...")
+        ## Full loss function, using all environments
         def loss_fn_full(model, contexts, batch, weightings, key):
             keys = jax.random.split(key, num=contexts.params.shape[0])
 
             losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, batch, contexts.params, contexts.params, keys)
             base_loss = jnp.mean(losses)
 
-            # cv, importances = moe_cv_loss_fn(model, contexts.params)
-            # terms3 = (terms3, importances)
-            # base_loss += cv
-
-            # return jnp.sum(losses*weightings), (term1, terms2, terms3, np.arange(contexts.params.shape[0]))
             return base_loss, (term1, terms2, terms3, np.arange(contexts.params.shape[0]))
 
         if loss_contributors > 0:
@@ -238,74 +134,42 @@ class Learner:
 
                 random_contexts = contexts.params[indices, :]
 
-                # random_batch = (batch[0][indices], batch[1][indices])
-
                 ## the full batch is now a pytree, the input is a tuple itself
                 random_batch = jax.tree_map(lambda x: x[indices], batch)
 
-                # keys = keys[indices]
-
                 losses, (term1, terms2, terms3) = jax.vmap(env_loss_fn_, in_axes=(None, 0, 0, None, 0))(model, random_batch, random_contexts, random_contexts, keys)
-                # base_loss = jnp.sum(losses) / loss_contributors  ## TODO testing CV
-                # base_loss = 0.
-
-                # weightings = prev_losses[indices] / jnp.sum(prev_losses[indices])
-                # base_loss = jnp.sum(weightings * losses)
-
-                ## More weights to the 16 first environments
-                # weightings = jnp.ones(indices.shape) / indices.shape[0]
-                # base_loss = jnp.sum(weightings * losses)
-
-                ## Let's make the weightings gradually increase
-                # weightings = jax.nn.softmax((jnp.arange(1, indices.shape[0]+1) / indices.shape[0]) / 0.1)
-                # base_loss = jnp.sum(weightings * jnp.sort(losses))
 
                 ## Let's assign weights based on the loss values
-                weightings = jax.nn.softmax(losses / 1.0)
+                if self.self_reweighting:
+                    weightings = jax.nn.softmax(losses / 1.0)
+                else:
+                    weightings = jnp.ones(indices.shape) / indices.shape[0]
                 base_loss = jnp.sum(weightings * losses)
-
-                # cv, importances = moe_cv_loss_fn(model, random_contexts)
-                # base_loss += cv
-                # terms3 = (terms3, importances)
 
                 return base_loss, (term1, terms2, terms3, indices)
 
 
 
-
-
-
-
-
+            ## Loss function for each expert treated individually
             def env_loss_fn_multitask_(model, batch, ctx, ctxs, key):
                 """ Wrapping the env loss function without CSM, for each expert individualy """
                 X, Y = batch
-                # jax.debug.print("SHape of X, Y: {} {}", X.shape, Y.shape)
 
                 new_model = self.reset_model_expert(model, model.vectorfield.neuralnet.experts[0])    ## Reset the expert model without CSM
 
                 expert_losses = []
                 nb_experts = len(model.vectorfield.neuralnet.experts)
-                if model.vectorfield.neuralnet.split_contexts:
+                if model.vectorfield.neuralnet.split_context:
                     ctx_pieces = jnp.split(ctx, nb_experts, axis=0)
 
                 for i, expert in enumerate(model.vectorfield.neuralnet.experts):
-                    if model.vectorfield.neuralnet.split_contexts:
+                    if model.vectorfield.neuralnet.split_context:
                         ctx_i = ctx_pieces[i]
                     else:
                         ctx_i = ctx
 
-                    # jax.debug.print("A weight in the learned expert \n {}", expert.layers_data[0].weight)
-
-                    # make a copy of the expert
-                    # expert = jax.tree.map(lambda x: x, expert)
-                    # new_model = self.reset_model_expert(model, expert)    ## Reset the expert model without CSM
-
-                    ## SUrgery on new_model to replace the expert
+                    ## Surgery on new_model to replace the expert
                     new_model = eqx.tree_at(lambda m: m.vectorfield.neuralnet, new_model, expert)
-
-                    # Y_hat = jax.vmap(new_model, in_axes=(None, None, 0))(X, ctxs[i], ctx[None, :])  ## No CSM
-                    # Y_new = jnp.broadcast_to(Y, Y_hat.shape)
 
                     Y_hat = new_model(X, ctx_i, ctx_i)
                     Y_new = jnp.broadcast_to(Y, Y_hat.shape)
@@ -316,20 +180,16 @@ class Learner:
                 expert_losses = jnp.array(expert_losses)
 
                 return jnp.mean(expert_losses), (expert_losses, )
-                # return jnp.min(expert_losses), (expert_losses, )        ## The min so that only one expert might contribute
 
 
+            @eqx.filter_jit
             def loss_fn_multitask(model, contexts, batch, key):
                 """ This loss computes the loss function for each expert invidually, and then combines them """
-                # indices = select_indices(self.loss_filling, contexts, prev_losses, key)
-                # print("We're using all the environments for each expert ...")
+                print("    ### Compiling function 'loss_fn_multitask' for the experts  ...")
 
-                ## Actually, let's use all the environments for each expert
+                ## Let's use all the environments for each expert
                 indices = jnp.arange(contexts.params.shape[0])
-
                 random_contexts = contexts.params[indices, :]
-
-                # random_batch = (batch[0][indices], batch[1][indices])
 
                 ## the full batch is now a pytree, the input is a tuple itself
                 random_batch = jax.tree_map(lambda x: x[indices], batch)
@@ -418,8 +278,8 @@ class Learner:
                 else:
                     model = BatchedNeuralContextFlow(neuralnet=self.model.neuralnet, 
                                                     taylor_order=taylor_order)
-            elif isinstance(self.model, CatchAllModel):
-                model = CatchAllModel(neuralnet=self.model.vectorfield.neuralnet,
+            elif isinstance(self.model, DirectMapping):
+                model = DirectMapping(neuralnet=self.model.vectorfield.neuralnet,
                                     taylor_order=self.model.taylor_order)
             else:
                 raise ValueError("The model type is not supported")
@@ -447,26 +307,11 @@ class Learner:
                             taylor_order=0,
                             taylor_ad_mode=model.taylor_ad_mode, 
                             ivp_args=model.ivp_args)
-        elif isinstance(model, CatchAllModel):
-            new_model = CatchAllModel(neuralnet=expert, taylor_order=0)
+        elif isinstance(model, DirectMapping):
+            new_model = DirectMapping(neuralnet=expert, taylor_order=0)
         else:
             raise ValueError(f"The model type {type(model)} is not supported")
         return new_model
-
-
-    # def reset_contexts(self, nb_envs):
-    #     if hasattr(self.model.vectorfield.neuralnet, "ctx_utils"):
-    #         mlp_utils = self.model.vectorfield.neuralnet.ctx_utils[3]
-    #         contexts = InfDimContextParams(nb_envs=nb_envs, 
-    #                                 context_size=self.context_size,
-    #                                 hidden_size=mlp_utils[1],
-    #                                 depth=mlp_utils[2], 
-    #                                 key=None)
-    #     else:
-    #         contexts = ArrayContextParams(nb_envs=nb_envs, 
-    #                                     context_size=self.context_size)
-
-    #     return contexts
 
     def reset_contexts(self, nb_envs):
         if isinstance(self.contexts, InfDimContextParams):
@@ -522,17 +367,6 @@ class Learner:
 
 
     # @eqx.filter_jit
-    # def batch_predict(self, model, contexts, batch):
-    #     """ Predict Y_hat for a batch issued from a dataloader
-    #         CSM may or may not be deleted from the model; 
-    #         as this function ensures the deactivation of CSM"""
-    #     X, Y = batch
-    #     Y_hat = eqx.filter_vmap(model, in_axes=(0, 0, 0))(X, contexts.params, contexts.params)
-    #     return X, Y, Y_hat
-
-
-
-    # @eqx.filter_jit
     def batch_predict(self, model, contexts, batch, max_envs=-1):
         """ Predict Y_hat for a batch issued from a dataloader
             CSM may or may not be deleted from the model; 
@@ -580,39 +414,6 @@ class Learner:
             Y = Y[:max_envs]
 
         return X, Y, Y_hat
-
-
-
-    # # @eqx.filter_jit
-    # def batch_predict_multi(self, model, contexts, batch, max_envs=-1):
-    #     """ Predict multiple Y_hats for a batch issued from a dataloader
-    #         CSM should be active in the model;
-    #         max_envs=6 means do not predict more than 6 environments, even if we have more in the batch
-    #         """
-
-    #     X, Y = batch
-    #     batched_model = eqx.filter_vmap(model, in_axes=(0, 0, 0))
-
-    #     if max_envs==-1 or max_envs>=X.shape[0] or self.loss_contributors==-1:
-    #         Y_hat = []
-    #         for e in range(contexts.params.shape[0]):
-    #             X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
-    #             ctxs = jnp.broadcast_to(contexts.params[e:e+1], contexts.params.shape)
-    #             Y_hat.append(batched_model(X_ctx, ctxs, contexts.params))
-
-    #     else:
-    #         X = X[:max_envs]
-    #         Y = Y[:max_envs]
-    #         contexts_ = contexts.params[:max_envs]
-
-    #         Y_hat = []
-    #         for e in range(contexts_.shape[0]):
-    #             X_ctx = jnp.broadcast_to(X[e:e+1], X.shape)
-    #             ctxs = jnp.broadcast_to(contexts_[e:e+1], contexts_.shape)
-    #             Y_hat.append(batched_model(X_ctx, ctxs, contexts_))
-
-    #     return X, Y, jnp.stack(Y_hat, axis=0)
-
 
 
     # @eqx.filter_jit
@@ -732,14 +533,6 @@ class ConvNet(eqx.Module):
 
 
 
-
-
-# class ArrayContextParams(eqx.Module):
-#     params: jnp.ndarray
-#     def __init__(self, nb_envs, context_size):
-#         self.params = jnp.zeros((nb_envs, context_size))
-#     def __call__(self):
-#         return self.params
 
 
 class ArrayContextParams(eqx.Module):
@@ -1180,70 +973,6 @@ class SelfModVectorField(eqx.Module):
             return taylor_exp
 
 
-
-# class NeuralODE(eqx.Module):
-#     vectorfield: eqx.Module
-#     ivp_args: dict
-#     taylor_order: int
-#     taylor_ad_mode: str
-#     t_eval: tuple
-
-#     def __init__(self, neuralnet, taylor_order, ivp_args=None, t_eval=None, taylor_ad_mode="forward"):
-#         self.ivp_args = ivp_args if ivp_args is not None else {}
-#         self.vectorfield = SelfModVectorField(neuralnet, taylor_order=taylor_order, taylor_ad_mode=taylor_ad_mode)
-#         self.taylor_order = taylor_order
-#         self.taylor_ad_mode = taylor_ad_mode
-
-#         if t_eval is None:
-#             self.t_eval = (0., ivp_args.get("T", 1.))
-#         else:
-#             self.t_eval = t_eval
-
-#     def __call__(self, xs, ctx, ctx_):
-
-#         integrator = self.ivp_args.get("integrator", diffrax.Dopri5())
-
-#         # if isinstance(integrator, type(eqx.Module)):
-#         if not callable(integrator):
-#             def integrate(y0):
-#                 sol = diffrax.diffeqsolve(
-#                         terms=diffrax.ODETerm(self.vectorfield),
-#                         solver=integrator,
-#                         args=(ctx, ctx_.squeeze()),
-#                         t0=self.t_eval[0],
-#                         t1=self.t_eval[-1],
-#                         dt0=self.ivp_args.get("dt_init", 1e-2),
-#                         y0=jnp.concat([y0, jnp.zeros((self.ivp_args.get("y0_pad_size", 0),))], axis=0),
-#                         stepsize_controller=diffrax.PIDController(rtol=self.ivp_args.get("rtol", 1e-3), 
-#                                                                     atol=self.ivp_args.get("atol", 1e-6)),
-#                         saveat=diffrax.SaveAt(ts=jnp.array(self.t_eval)),
-#                         adjoint=self.ivp_args.get("adjoint", diffrax.RecursiveCheckpointAdjoint()),
-#                         max_steps=self.ivp_args.get("max_steps", 4096*1)
-#                     )
-
-#                 if self.ivp_args.get("return_traj", False):
-#                     return sol.ys[:, :y0.shape[0]]
-#                 else:
-#                     return sol.ys[-1, :y0.shape[0]]
-
-#         else:   ## Custom-made integrator
-#             def integrate(y0):
-#                 ys = integrator(fun=self.vectorfield, 
-#                                 t_span=(self.t_eval[0], self.t_eval[-1]), 
-#                                 y0=y0,
-#                                 args=(ctx, ctx_.squeeze()),
-#                                 t_eval=jnp.array(self.t_eval), 
-#                                 **self.ivp_args
-#                                 )
-#                 if self.ivp_args.get("return_traj", False):
-#                     return ys
-#                 else:
-#                     return ys[-1]
-
-#         return eqx.filter_vmap(integrate)(xs)
-
-
-
 class NeuralODE(eqx.Module):
     vectorfield: eqx.Module
     ivp_args: dict
@@ -1333,17 +1062,8 @@ class NeuralODE(eqx.Module):
 
 
 
-
-
-
-
-
-# def interp_signal(tau, xs_, t_evals):
-#     return jnp.interp(tau, t_evals, xs_, left="extrapolate", right="extrapolate").squeeze()
-
-
 class TFSelfModVectorField(eqx.Module):
-    """ A vector field with fixed Taylor order """
+    """ A vector field for the teacher-forced Neural ODE """
     neuralnet: eqx.Module
     taylor_order: int
     taylor_ad_mode: str
@@ -1416,7 +1136,9 @@ class TFSelfModVectorField(eqx.Module):
 
 
 class TFNeuralODE(eqx.Module):
-    """ A teacher-forced Neural ODE: the vector field ignores the current state and uses the (interpolated) target state """
+    """ A teacher-forced Neural ODE: the vector field ignores the current state and uses the (interpolated) target state 
+    TODO: Add the possibility to use the current state as well in a linear combination, as in Generalized Teacher-Forcing
+    """
     vectorfield: eqx.Module
     ivp_args: dict
     taylor_order: int
@@ -1432,7 +1154,6 @@ class TFNeuralODE(eqx.Module):
 
         integrator = self.ivp_args.get("integrator", diffrax.Dopri5())
 
-        # if isinstance(integrator, type(eqx.Module)):
         if not callable(integrator):
             def integrate(ys, ts):
                 y0, t_eval = ys[0], ts
@@ -1453,7 +1174,6 @@ class TFNeuralODE(eqx.Module):
                         max_steps=self.ivp_args.get("max_steps", 4096*1),
                         throw=True,    ## Keep the nans and infs, don't throw and error ?
                     )
-                # jax.debug.print("SOL {}", sol.ys)
                 ys = sol.ys
                 clip = self.ivp_args.get("clip_sol", None)
                 if clip is not None:
@@ -1488,16 +1208,6 @@ class TFNeuralODE(eqx.Module):
         return batched_results
 
 
-
-
-
-
-
-
-
-
-
-
 class NeuralCDE(eqx.Module):
     vectorfield: eqx.Module
     ivp_args: dict
@@ -1524,7 +1234,6 @@ class NeuralCDE(eqx.Module):
             return jnp.reshape(jax.nn.tanh(y), (x.shape[0], -1))
 
         def integrate(z0, xs, t_eval):
-
             coeffs = diffrax.backward_hermite_coefficients(t_eval, xs)
             control = diffrax.CubicInterpolation(t_eval, coeffs)
 
@@ -1545,7 +1254,6 @@ class NeuralCDE(eqx.Module):
 
             return sol.ys
 
-
         if not isinstance(xts, tuple) and not isinstance(xts, list):
             return ValueError("The Neural CDE expects both trajctories and times as inputs.")
 
@@ -1564,27 +1272,7 @@ class NeuralCDE(eqx.Module):
         return x_recons
 
 
-
-
-class CatchAllModel_VF(eqx.Module):
-    neuralnet: list
-    def __init__(self, neuralnet):
-        self.neuralnet = neuralnet
-    def __call__(self, xs, ctx, ctx_):
-        return self.neuralnet(xs, ctx, ctx_)
-
-# class CatchAllModel(eqx.Module):
-#     """ Fall Back Model in case neither NeuralODE, TFNeuralODE, NeuralCDE is used """
-#     vectorfield: list
-#     def __init__(self, neuralnet):
-#         self.vectorfield = CatchAllModel_VF(neuralnet)
-#     def __call__(self, xts, ctx, ctx_):
-#         # return self.vectorfield(xts, ctx, ctx_)
-#         return eqx.filter_vmap(self.vectorfield, in_axes=(0, None, None))(xts[0], ctx, ctx_.squeeze())
-
-
-
-class CatchAllModel(eqx.Module):
+class DirectMapping(eqx.Module):
     """ Fall Back Model in case neither NeuralODE, TFNeuralODE, NeuralCDE is used.
     Presented like a NeuralODE (with a vf) but it's just a FeedForward NN
     """
@@ -1594,10 +1282,9 @@ class CatchAllModel(eqx.Module):
         self.vectorfield = BatchedNeuralContextFlow(neuralnet, taylor_order=taylor_order)
         self.taylor_order = taylor_order
     def __call__(self, xts, ctx, ctx_):
-        # return self.vectorfield(xts, ctx, ctx_)
-        return eqx.filter_vmap(self.vectorfield, in_axes=(0, None, None))(xts[0], ctx, ctx_.squeeze())
-
-
+        xs, ts = xts
+        new_ts = jnp.broadcast_to(ts[None,:], (xs.shape[0], *ts.shape))     ## Expand/Repead ts to match the xs
+        return eqx.filter_vmap(self.vectorfield, in_axes=(0, None, None))((xs, new_ts), ctx, ctx_.squeeze())
 
 
 class Swish(eqx.Module):
@@ -1624,6 +1311,10 @@ class NeuroModulatedSwish(eqx.Module):
     def __call__(self, x, ctx):
         y = ctx.T @ (x * self.w_s + self.w_b)
         return y * jax.nn.sigmoid(self.beta * y)
+
+
+
+
 
 
 
@@ -1675,9 +1366,6 @@ class VAEDecoder(eqx.Module):
         for layer in self.layers:
             x = layer(x)
         return x
-    
-
-
 
 class Decoder(eqx.Module):
     """ Decoder with dense layers and deconvolutions"""
@@ -1762,11 +1450,6 @@ class FuncContextParams(eqx.Module):
             context = jax.flatten_util.unravel_pytree(ctx, self.treedef)
             return context(z)
         return jax.vmap(unravel_and_call)(self.params, z)
-
-
-
-
-
 
 
 
@@ -1907,3 +1590,389 @@ class VNet(eqx.Module):
         return self.final_activation(self.final_conv(right))
 
 ############################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ## Define model and loss function for the learner
+class Expert_NCF(eqx.Module):
+    """ Expert Neural Context Flow. Can be one that uses array contextts, or functional contexts """
+    layers_ctx: list
+    activations_ctx: list
+    layers_data: list
+    activations_data: list
+    layers_main: list
+    activations_main: list
+
+    ctx_utils:any
+    depth_ctx:int
+    depth_data:int
+    depth_main:int
+    intermediate_size:int
+
+    shift_context:bool
+    ctx_shift: jnp.ndarray
+
+    def __init__(self, 
+                 data_size, 
+                 width_main, 
+                 depth_main, 
+                 depth_data, 
+                 depth_ctx, 
+                 context_size, 
+                 intermediate_size, 
+                 ctx_utils=None, 
+                 activation="swish", 
+                 shift_context=True, 
+                 key=None):
+        self.ctx_utils = ctx_utils      ## TODO If not none, then use InfDim NCF 
+
+        self.depth_data = depth_data
+        self.depth_main = depth_main
+        self.depth_ctx = depth_ctx
+
+        ## Activation functions directly from jax
+        builtin_fns = {"relu":jax.nn.relu, "tanh":jax.nn.tanh, 'softplus':jax.nn.softplus}
+
+        self.intermediate_size = width_main//2 if intermediate_size is None else intermediate_size
+
+        ## Setup a context processing network with gradual increase/decrease in width
+        keys_ctx = jax.random.split(key, num=depth_ctx+2)
+        phi = np.linspace(0, 1, depth_ctx+2)
+        widths_ctx = [int(context_size * (np.exp(p * np.log(intermediate_size/context_size)))) for p in phi]
+        widths_ctx = [int(np.ceil(h/2)*2) for h in widths_ctx]        ## Nearest multiple of 2
+        self.activations_ctx = [Swish(key=k) if activation=="swish" else builtin_fns[activation] for k in keys_ctx[:depth_ctx]]
+        self.layers_ctx = [eqx.nn.Linear(widths_ctx[i-1], widths_ctx[i], key=keys_ctx[i]) for i in range(1, depth_ctx+2)]
+
+        ## Setup a data processing network with gradual increase/decrease in width
+        keys_data = jax.random.split(keys_ctx[-1], num=depth_data+2)
+        phi = np.linspace(0, 1, depth_data+2)
+        widths_data = [int(data_size * (np.exp(p * np.log(intermediate_size/data_size)))) for p in phi]
+        widths_data = [int(np.ceil(h/2)*2) for h in widths_data]
+        self.activations_data = [Swish(key=k) if activation=="swish" else builtin_fns[activation] for k in keys_data[:depth_data]]
+        self.layers_data = [eqx.nn.Linear(widths_data[i-1], widths_data[i], key=keys_data[i]) for i in range(1, depth_data+2)]
+
+        ## Setup a main processing network with gradualfixed width
+        keys_main = jax.random.split(keys_data[-1], num=depth_main+2)
+        self.activations_main = [Swish(key=k) if activation=="swish" else builtin_fns[activation] for k in keys_main[:depth_main]]
+        self.layers_main = [eqx.nn.Linear(2*intermediate_size, width_main, key=keys_main[1])]
+        self.layers_main += [eqx.nn.Linear(width_main, width_main, key=keys_main[i+1]) for i in range(1, depth_main)]
+        self.layers_main += [eqx.nn.Linear(width_main, data_size, key=keys_main[depth_main+1])]
+
+        ## Context shift
+        self.shift_context = shift_context
+        self.ctx_shift = jnp.array([0.])
+
+    def __call__(self, t, y, ctx):
+
+        ## Shift and process the context
+        if self.shift_context:
+            ctx = ctx + self.ctx_shift
+        for layer, activation in zip(self.layers_ctx[:-1], self.activations_ctx):
+            ctx = activation(layer(ctx))
+        ctx = self.layers_ctx[-1](ctx)
+
+        ## Process the input data
+        for layer, activation in zip(self.layers_data[:-1], self.activations_data):
+            y = activation(layer(y))
+        y = self.layers_data[-1](y)
+
+        ## Merge and process the data and context
+        y = jnp.concatenate([y, ctx], axis=0)
+        for layer, activation in zip(self.layers_main[:-1], self.activations_main):
+            y = activation(layer(y))
+        y = self.layers_main[-1](y)
+
+        return y
+
+
+# ## Define model and loss function for the learner
+class MixER(eqx.Module):
+    """ MixER Vector Field. Used for State to Sequence modeling """
+    experts: list
+    gate:jnp.ndarray
+
+    n_experts: int
+    split_context: bool
+    meta_learner: str
+    use_gate_bias: bool
+    gate_update_strategy: str
+    is_moe: bool
+
+    def __init__(self, 
+                 key, 
+                 nb_experts=1,
+                 meta_learner="NCF",
+                 split_context=False, 
+                 same_expert_init=True, 
+                 use_gate_bias=True, 
+                 gate_update_strategy="least_squares", 
+                 **expert_params):
+
+        self.split_context = split_context
+
+        ## The context is now split into tiny chunks for each expert
+        context_size = expert_params["context_size"]
+        if self.split_context:
+            eff_context_size = context_size//nb_experts
+        else:
+            eff_context_size = context_size
+
+        ## Replace the context_size in the expert_params
+        expert_params["context_size"] = eff_context_size
+
+        keys = [key]*nb_experts if same_expert_init else jax.random.split(key, num=nb_experts+1)
+
+        self.meta_learner = meta_learner
+        if self.meta_learner == "NCF":
+            self.experts = [Expert_NCF(**expert_params, key=keys[i]) for i in range(nb_experts)]
+        elif self.meta_learner == "CoDA":
+            # self.experts = [ExpertCoDA(**expert_params, key=keys[i]) for i in range(nb_experts)]
+            pass
+        elif self.meta_learner == "GEPS":
+            # self.experts = [ExpertGEPS(**expert_params, key=keys[i]) for i in range(nb_experts)]
+            pass
+        else:
+            raise ValueError("Meta-learner not recognised !")
+
+        self.use_gate_bias = use_gate_bias
+        gate_in_size = context_size+1 if use_gate_bias else context_size
+        lim = 1 / np.sqrt(gate_in_size)
+        self.gate = jax.random.uniform(keys[-1], (gate_in_size, nb_experts), minval=-lim, maxval=lim)
+
+        self.n_experts = nb_experts
+        self.is_moe = True     ## Helps the framework distinguish MoE models
+        self.gate_update_strategy = gate_update_strategy
+
+    def gating_function(self, ctx):
+        """ Gating function for the MoE model """
+        gate_input = jnp.concatenate([ctx, jnp.ones((1,))], axis=0) if self.use_gate_bias else ctx
+
+        if self.gate_update_strategy == "gradient_descent":
+            G = self.gate.T @ gate_input
+        else:
+            G = jax.lax.stop_gradient(self.gate.T) @ gate_input
+
+        return jax.nn.softmax(G)
+
+
+    def __call__(self, t, y, ctx):
+        if self.split_context:
+            ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
+
+        G = self.gating_function(ctx)
+        max_G = jnp.max(G)
+        dy = jnp.zeros_like(y)
+        for i in range(self.n_experts):
+            if self.split_context:
+                ctx_i = ctx_pieces[i]
+            else:
+                ctx_i = ctx
+
+            contribution = jax.lax.cond(G[i]>max_G-1e-6, 
+                                        lambda in_dat: self.experts[i](*in_dat), 
+                                        lambda in_dat: jnp.zeros_like(in_dat[1]), 
+                                        (t, y, ctx_i))
+            dy += contribution
+
+        return dy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def xavier_uniform(key, shape):
+    lim = 1 / np.sqrt(shape[0])
+    return jax.random.uniform(key, shape, minval=-lim, maxval=lim)
+
+class RootRNN(eqx.Module):
+    root_utils: any
+    network_size: int
+
+    def __init__(self, data_size, latent_size, hidden_size, key=None):
+        """ Shallow piece-wise linear RNN from Mannuel Brenner et al. 2024. Encoders and Decoders are identiy functions (for now) """
+        super().__init__()
+        D, L, M = data_size, hidden_size, latent_size
+
+        ## Example leanable params for the hier-plSLRNN
+        keys = jax.random.split(key, 7)
+        A = xavier_uniform(keys[0], (M, M))
+        W1 = xavier_uniform(keys[1], (M, L))
+        W2 = xavier_uniform(keys[2], (L, M))
+        h2 = xavier_uniform(keys[3], (L,))
+        h1 = xavier_uniform(keys[4], (M,))
+        alpha = jnp.array([0.1])
+
+        props = (data_size, latent_size, hidden_size, None, None)
+        params = (A, W1, W2, h1, h2, alpha)
+
+        _, shapes, treedef = flatten_pytree(params)
+        self.root_utils = (shapes, treedef, props)
+        self.network_size = sum(x.size for x in jax.tree_util.tree_leaves(params) if x is not None)
+
+    def __call__(self, xs_gt, params):
+        """ Predict based on the observation 
+        x_gt: (T, D) 
+        params: (A, W1, W2, h1, h2, alpha)
+        """
+        A, W1, W2, h1, h2, alpha = params
+        z0 = jnp.zeros(xs_gt.shape[1])
+
+        def f(z, x_gt):
+            z_curr = alpha*z + (1-alpha)*x_gt     ## Teacher-Forcing
+            z_next = A@z_curr + W1@jax.nn.relu(W2@z_curr + h2) + h1
+            return z_next, z_next
+
+        _, zs = jax.lax.scan(f, z0, xs_gt)
+
+        return zs
+
+
+# ## Define model and loss function for the learner
+class Expert_HierShPLRNN(eqx.Module):
+    root_network: eqx.Module
+    hyperlayer: list
+
+    data_size: int
+    latent_size: int
+
+    shift_context:bool
+    ctx_shift: jnp.ndarray
+
+    def __init__(self, data_size, latent_size, hidden_size, context_size, shift_context=None, ctx_utils=None, key=None):
+        self.data_size = data_size
+        self.latent_size = latent_size
+
+        self.root_network = RootRNN(data_size, data_size, hidden_size, key=key)
+
+        in_hyper, out_hyper = context_size, self.root_network.network_size
+        self.hyperlayer = eqx.nn.Linear(in_hyper, out_hyper, key=key, use_bias=True)
+
+        self.shift_context = shift_context
+        self.ctx_shift = jnp.array([0.])
+
+    def __call__(self, xts, ctx):
+        if self.shift_context:
+            ctx = ctx + self.ctx_shift
+
+        subject_weights = self.hyperlayer(ctx)
+
+        shapes, treedef, _ = self.root_network.root_utils
+        subject_params = unflatten_pytree(subject_weights, shapes, treedef)
+
+        return self.root_network(xts[0], subject_params)
+
+# ## Define model and loss function for the learner
+class MixER_S2S(eqx.Module):
+    """ MixER, but to sequence to sequence models """
+    experts: list
+    gate:jnp.ndarray
+
+    n_experts: int
+    split_context: bool
+    meta_learner: str
+    use_gate_bias: bool
+    gate_update_strategy: str
+    is_moe: bool
+
+    def __init__(self, 
+                 key, 
+                 nb_experts=1,
+                 meta_learner="hier-shPLRNN",
+                 split_context=False, 
+                 same_expert_init=True, 
+                 use_gate_bias=True, 
+                 gate_update_strategy="least_squares", 
+                 **expert_params):
+
+        self.split_context = split_context
+
+        ## The context is now split into tiny chunks for each expert
+        context_size = expert_params["context_size"]
+        if self.split_context:
+            eff_context_size = context_size//nb_experts
+        else:
+            eff_context_size = context_size
+
+        ## Replace the context_size in the expert_params
+        expert_params["context_size"] = eff_context_size
+
+        keys = [key]*nb_experts if same_expert_init else jax.random.split(key, num=nb_experts+1)
+
+        self.meta_learner = meta_learner
+        if self.meta_learner == "hier-shPLRNN":
+            self.experts = [Expert_HierShPLRNN(**expert_params, key=keys[i]) for i in range(nb_experts)]
+            pass
+        else:
+            raise ValueError("Meta-learner not recognised !")
+
+        self.use_gate_bias = use_gate_bias
+        gate_in_size = context_size+1 if use_gate_bias else context_size
+        lim = 1 / np.sqrt(gate_in_size)
+        self.gate = jax.random.uniform(keys[-1], (gate_in_size, nb_experts), minval=-lim, maxval=lim)
+
+        self.n_experts = nb_experts
+        self.is_moe = True     ## Helps the framework distinguish MoE models
+        self.gate_update_strategy = gate_update_strategy
+
+    def gating_function(self, ctx):
+        """ Gating function for the MoE model """
+        gate_input = jnp.concatenate([ctx, jnp.ones((1,))], axis=0) if self.use_gate_bias else ctx
+
+        if self.gate_update_strategy == "gradient_descent":
+            G = self.gate.T @ gate_input
+        else:
+            G = jax.lax.stop_gradient(self.gate.T) @ gate_input
+
+        return jax.nn.softmax(G)
+
+    def __call__(self, xts, ctx):
+        if self.split_context:
+            ctx_pieces = jnp.split(ctx, self.n_experts, axis=0)
+
+        G = self.gating_function(ctx)
+        max_G = jnp.max(G)
+        ys = jnp.zeros(xts[0].shape)
+        for i in range(self.n_experts):
+            if self.split_context:
+                ctx_i = ctx_pieces[i]
+            else:
+                ctx_i = ctx
+
+            contribution = jax.lax.cond(G[i]>max_G-1e-6, 
+                                        lambda in_dat: self.experts[i](*in_dat), 
+                                        lambda in_dat: jnp.zeros(in_dat[0][0].shape), 
+                                        (xts, ctx_i))
+            ys += contribution
+
+        return ys
