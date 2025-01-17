@@ -185,7 +185,7 @@ class Learner:
             @eqx.filter_jit
             def loss_fn_multitask(model, contexts, batch, key):
                 """ This loss computes the loss function for each expert invidually, and then combines them """
-                print("    ### Compiling function 'loss_fn_multitask' for the experts  ...")
+                print("     ### Compiling function 'loss_fn_multitask' for the experts  ...")
 
                 ## Let's use all the environments for each expert
                 indices = jnp.arange(contexts.params.shape[0])
@@ -987,7 +987,6 @@ class NeuralODE(eqx.Module):
         self.taylor_ad_mode = taylor_ad_mode
         self.t_eval = t_eval
 
-
     def get_t_eval(self, y0):
         """ Determines the appropriate t-eval based on the input y0 """
         if self.t_eval is None:     
@@ -1008,7 +1007,7 @@ class NeuralODE(eqx.Module):
         # if isinstance(integrator, type(eqx.Module)):
         if not callable(integrator):
             def integrate(y0):
-                y0, t_eval = self.get_t_eval(y0)
+                y0, t_eval = self.get_t_eval(y0)    ## y0 might be a tuple (y0, t_eval)
 
                 sol = diffrax.diffeqsolve(
                         terms=diffrax.ODETerm(self.vectorfield),

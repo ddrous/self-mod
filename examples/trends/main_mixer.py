@@ -2,8 +2,8 @@
 # Hierarchical Shallow Piece-Wise Recurrent Neural Netwoek on Synthetic Control Data
 
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -58,10 +58,10 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 2
-nb_inner_steps = (2, 2)
+nb_outer_steps = 500
+nb_inner_steps = (12, 12)
 nb_adapt_epochs = 100
-validate_every = 10*1
+validate_every = 10
 print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"

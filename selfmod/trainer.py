@@ -600,7 +600,7 @@ class NCFTrainer(Trainer):
             all_expert_cluster_losses = jnp.stack(expert_cluster_losses, axis=0)
 
             if verbose:
-                print(f"Average expert losses per cluster: \n{all_expert_cluster_losses}\n", flush=False)
+                print(f"Median expert losses per cluster: \n{all_expert_cluster_losses}\n", flush=False)
 
             ## Step 4. Assign clusters to the experts
             used_experts = []  ## The experts that have been assigned to a cluster

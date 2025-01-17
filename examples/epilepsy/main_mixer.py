@@ -36,20 +36,20 @@ train_proportion = 1.0  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 20
+context_pool_size = 10
 context_size = 10
 taylor_orders = (1, 0)
 skip_steps = 1
-loss_contributors = num_envs[0]//2
+loss_contributors = num_envs[0]//10
 max_ret_env_states = num_envs[0]
 split_context = False
-shift_context = False
+shift_context = True
 
 meta_learner = "hier-shPLRNN"
 data_size = 1
 hidden_size = 32
 latent_size = data_size
-same_expert_init = True
+same_expert_init = False
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -58,7 +58,7 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 400
+nb_outer_steps = 280
 nb_inner_steps = (12, 12)
 nb_adapt_epochs = 100
 validate_every = 10
@@ -66,7 +66,7 @@ print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
-context_regularization = True               ## Regularize the context with an L1 penalty
+context_regularization = False               ## Regularize the context with an L1 penalty
 
 meta_train = True
 meta_test = False

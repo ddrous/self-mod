@@ -9,11 +9,10 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
+# jax.config.update("jax_debug_nans", True)
 
 from matplotlib import animation
 
-# import jax
-# jax.config.update("jax_debug_nans", True)
 
 #%%
 
@@ -24,14 +23,14 @@ torch.manual_seed(seed)
 
 ## Dataloader hps
 nb_families = 4          ## Total number of ODE families in the dataset
-nb_experts = nb_families
+nb_experts = 4
 nb_envs_per_fam = (5, 1)
 
 num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
 num_shots = (-1, -1)
 num_workers = 8
 shuffle = False
-train_proportion = 0.6  ## Minimal proportion of the trajectory for training
+train_proportion = 1.0  ## Minimal proportion of the trajectory for training
 test_proportion = 1.0
 skip_steps = 5
 normalize_data = False
@@ -62,8 +61,8 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 2
-nb_inner_steps = (2, 2)
+nb_outer_steps = 1200
+nb_inner_steps = (12, 12)
 nb_adapt_epochs = 1000
 validate_every = 10
 print_error_every = (10, 10)
@@ -75,8 +74,8 @@ context_regularization = True               ## Regularize the context with an L1
 meta_train = True
 meta_test = True
 
-# run_folder = None if meta_train else "./"
-run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
+run_folder = None if meta_train else "./"
+# run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
 
 # data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
 data_folder = "./data_2D_small*/" if meta_train else "../../data_2D_small*/"
@@ -265,7 +264,7 @@ if meta_train == True:
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
-                        verbose=False,
+                        verbose=True,
                         key=trainer_key)
 else:
     print("Skipping meta-training ...")
