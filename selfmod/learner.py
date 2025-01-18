@@ -1867,8 +1867,9 @@ class Expert_HierShPLRNN(eqx.Module):
 
     shift_context:bool
     ctx_shift: jnp.ndarray
+    tf_alpha_min: float
 
-    def __init__(self, data_size, latent_size, hidden_size, context_size, shift_context=None, ctx_utils=None, key=None):
+    def __init__(self, data_size, latent_size, hidden_size, context_size, shift_context=None, ctx_utils=None, tf_alpha_min=1.0, key=None):
         self.data_size = data_size
         self.latent_size = latent_size
 
@@ -1879,12 +1880,14 @@ class Expert_HierShPLRNN(eqx.Module):
 
         self.shift_context = shift_context
         self.ctx_shift = jnp.array([0.])
+        self.tf_alpha_min = tf_alpha_min
 
     def __call__(self, xts, ctx):
         if self.shift_context:
             ctx = ctx + self.ctx_shift
 
         subject_weights = self.hyperlayer(ctx)
+        subject_weights = subject_weights.at[-1].max(self.tf_alpha_min)    ## Clip the alpha value
 
         shapes, treedef, _ = self.root_network.root_utils
         subject_params = unflatten_pytree(subject_weights, shapes, treedef)

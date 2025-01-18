@@ -30,7 +30,7 @@ num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
 num_shots = (-1, -1)
 num_workers = 8
 shuffle = False
-train_proportion = 1.0  ## Minimal proportion of the trajectory for training
+train_proportion = 0.6  ## Minimal proportion of the trajectory for training
 test_proportion = 1.0
 skip_steps = 5
 normalize_data = False
@@ -40,12 +40,14 @@ context_pool_size = 4
 context_size = 256
 taylor_orders = (1, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-loss_contributors = nb_envs_per_fam[0]*1
+loss_contributors = nb_envs_per_fam[0]*2
 max_ret_env_states = num_envs[0]
 split_context = False
 shift_context = False
+self_reweighting = False
+same_expert_optstate = True                  ## Use the same optstate for all experts
 
-meta_learner="NCF"
+meta_learner = "NCF"
 data_size = 2
 width_main = 32*4
 depth_main = 3
@@ -56,16 +58,16 @@ activation = "swish"
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
-sched_factor = 0.4
+sched_factor = 1.0
 max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 1200
+nb_outer_steps = 3000
 nb_inner_steps = (12, 12)
 nb_adapt_epochs = 1000
-validate_every = 10
-print_error_every = (10, 10)
+validate_every = 100
+print_error_every = (100, 100)
 
 gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
 gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
@@ -222,7 +224,7 @@ learner = Learner(model=model,
                 loss_contributors=loss_contributors,
                 pool_filling="NF",      ## The closest envs are used in the inner loss
                 loss_filling="NF",      ## The closest envs are used in the outer loss
-                self_reweighting=True,  ## Reweight the outer loss by its own softmax 
+                self_reweighting=self_reweighting,  ## Reweight the outer loss by its own softmax 
                 key=model_key)
 
 
@@ -264,6 +266,7 @@ if meta_train == True:
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
+                        same_expert_optstate=same_expert_optstate,
                         verbose=True,
                         key=trainer_key)
 else:

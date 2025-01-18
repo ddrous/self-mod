@@ -19,12 +19,12 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 2024
+seed = 2022
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 2
+nb_families = 3
 nb_experts = nb_families
 nb_envs_per_fam = (80//nb_experts, 11420//nb_experts)   ## (Expected)
 
@@ -36,40 +36,42 @@ train_proportion = 1.0  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 10
+context_pool_size = 1
 context_size = 10
-taylor_orders = (1, 0)
+taylor_orders = (0, 0)
 skip_steps = 1
-loss_contributors = num_envs[0]//10
+loss_contributors = num_envs[0]//1
 max_ret_env_states = num_envs[0]
 split_context = False
-shift_context = True
+shift_context = False
 
 meta_learner = "hier-shPLRNN"
 data_size = 1
-hidden_size = 32
+hidden_size = 16
 latent_size = data_size
-same_expert_init = False
+same_expert_init = True
+tf_alpha_min = 0.5  ## Teacher forcing alpha (1. means no teacher forcing)
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
-sched_factor = 0.4
+sched_factor = 1.0
 max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 280
+nb_outer_steps = 5000
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 100
+nb_adapt_epochs = 5000
 validate_every = 10
 print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
 context_regularization = False               ## Regularize the context with an L1 penalty
+same_expert_optstate = True                  ## Use the same optstate for all experts
 
 meta_train = True
-meta_test = False
+meta_test = True
 
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/250103-123848-Test/" if meta_train else "./"
@@ -178,6 +180,7 @@ expert_params = {"data_size":data_size,
                 "latent_size":latent_size,
                 "context_size":context_size,
                 "ctx_utils":None,
+                "tf_alpha_min":tf_alpha_min,
                 "shift_context":shift_context}
 
 model = DirectMapping(MixER_S2S(key=model_key,
@@ -241,6 +244,7 @@ if meta_train == True:
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
                         verbose=False,
+                        same_expert_optstate=same_expert_optstate,
                         key=trainer_key)
 else:
     print("Skipping meta-training ...")
@@ -500,19 +504,23 @@ conditions = {0:"Healthy", 1:"Epileptic"}
 ## Use PCA 
 from sklearn.decomposition import PCA
 pca = PCA(n_components=2)
-X_reduced = pca.fit_transform(X) if X.shape[1] > 2 else X
+
+nb_train_samples = X.shape[0]
+X_total = np.concatenate([X, X_adapt], axis=0) if meta_test else X
+X_reduced = pca.fit_transform(X_total) if X.shape[1] > 2 else X
 
 plt.figure(figsize=(10, 7))
 
 for class_label in [0,1]:
     marker = "^" if class_label==0 else "x"
-    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
 
 if meta_test:
+    X_adapt_rec = pca.transform(X_adapt) if X_adapt.shape[1] > 2 else X_adapt
     labels_adapt = y_test
     for class_label in [0,1]:
         marker = "." if class_label==0 else "."
-        plt.scatter(X_adapt[labels_adapt==class_label, 0], X_adapt[labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
+        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
 
 plt.legend()
 
@@ -524,6 +532,7 @@ plt.draw()
 plt.savefig(run_folder+"clusters_pca.png", bbox_inches='tight');
 
 
+#%%
 
 
 #%%
@@ -535,20 +544,23 @@ colors = [color_table[l] for l in labels]
 conditions = {0:"Healthy", 1:"Epileptic"}
 
 import umap
+nb_train_samples = X.shape[0]
 umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]), min_dist=0.0, spread=1.0, metric="euclidean")
-X_reduced = umap_reducer.fit_transform(X) if X.shape[1] > 2 else X
+X_total = np.concatenate([X, X_adapt], axis=0) if meta_test else X
+X_reduced = umap_reducer.fit_transform(X_total) if X.shape[1] > 2 else X
 
 plt.figure(figsize=(10, 7))
 
 for class_label in [0,1]:
     marker = "^" if class_label==0 else "x"
-    plt.scatter(X_reduced[labels==class_label, 0], X_reduced[labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
 
 if meta_test:
+    X_adapt_rec = pca.transform(X_adapt) if X_adapt.shape[1] > 2 else X_adapt
     labels_adapt = y_test
     for class_label in [0,1]:
         marker = "." if class_label==0 else "."
-        plt.scatter(X_adapt[labels_adapt==class_label, 0], X_adapt[labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
+        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
 
 plt.legend()
 
@@ -593,3 +605,5 @@ try:
     __IPYTHON__ ## in a jupyter notebook
 except NameError:
     os.system(f"cp nohup.log {run_folder}")
+
+# %%

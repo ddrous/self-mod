@@ -472,6 +472,7 @@ class NCFTrainer(Trainer):
                         max_val_batches=None,
                         val_nb_steps=10,
                         update_gate_every=1,
+                        same_expert_optstate=False,
                         verbose=False,
                         key=None):
         """ Train the model using the proximal gradient descent algorithm (PAM) """
@@ -492,9 +493,18 @@ class NCFTrainer(Trainer):
 
         loss_fn = self.learner.loss_fn
         model = self.learner.model
-        opt_state_model = self.opt_state_model
         loss_filling = self.learner.loss_filling
         nb_loss_contr = self.learner.loss_contributors
+
+        if same_expert_optstate and model.vectorfield.neuralnet.is_moe:
+            ## 1 optimizer state is used for all the experts, and the gate dealt with seperately
+            expert_0 = model.vectorfield.neuralnet.experts[0]
+            gate = model.vectorfield.neuralnet.gate
+            opt_state_model = self.opt_model.init(eqx.filter(expert_0, eqx.is_array))
+            opt_state_gate = self.opt_model.init(eqx.filter(gate, eqx.is_array))
+            opt_state_model = (opt_state_model, opt_state_gate)
+        else:
+            opt_state_model = self.opt_state_model
 
         if save_checkpoints:
             backup_folder = save_path+"checkpoints/"
@@ -514,8 +524,26 @@ class NCFTrainer(Trainer):
 
             (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(model, contexts, batch, weightings, key)
 
-            updates, opt_state = self.opt_model.update(grads, opt_state)
-            model = eqx.apply_updates(model, updates)
+            if same_expert_optstate:
+                ## Let's make all experts share the same opt_state
+                opt_state_expt, opt_state_gate = opt_state
+                experts = []
+                for e in range(model.vectorfield.neuralnet.n_experts):
+                    updates, opt_state_expt = self.opt_model.update(grads.vectorfield.neuralnet.experts[e], opt_state_expt)
+                    expert_e = eqx.apply_updates(model.vectorfield.neuralnet.experts[e], updates)
+                    experts.append(expert_e)
+                model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.experts, model, experts)
+
+                ## Update the gate weights
+                if not least_squares_update:
+                    updates, opt_state_gate = self.opt_model.update(grads.vectorfield.neuralnet.gate, opt_state_gate)
+                    gate = eqx.apply_updates(model.vectorfield.neuralnet.gate, updates)
+                    model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.gate, model, gate)
+
+                opt_state = (opt_state_expt, opt_state_gate)
+            else:
+                updates, opt_state = self.opt_model.update(grads, opt_state)
+                model = eqx.apply_updates(model, updates)
 
             return model, contexts, opt_state, loss, aux_data
 
