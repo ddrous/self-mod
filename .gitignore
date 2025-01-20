@@ -125,6 +125,10 @@ examples/crowdsource/runs/*
 examples/trends/data/*
 examples/trends/runs/*
 
+## The sleep dataset
+examples/sleep/data/*
+examples/sleep/runs/*
+
 ## The Vortal (breathing) dataset
 examples/vortal/data/*
 examples/vortal/runs/*

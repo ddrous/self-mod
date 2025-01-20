@@ -794,3 +794,30 @@ class TrendsDataset(TimeSeriesDataset):
         t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
 
         super().__init__(dataset, t_eval, adaptation, traj_prop_min, use_full_traj)
+
+
+class SleepDataset(TimeSeriesDataset):
+    """
+    For the EEG crowdsource dataset from Navid and Amarpal
+    """
+
+    def __init__(self, data_dir, data_split="train", skip_steps=-1, adaptation=False, traj_prop_min=1.0, use_full_traj=True):
+        import h5py
+
+        try:
+            with h5py.File(data_dir+'dataset.h5', "r") as f:
+                if data_split in ["train", "test"]:
+                    raw_data = np.array(f['train_encod_data'])
+                elif data_split in ["adapt"]:
+                    raw_data = np.array(f['valid_encod_data'])
+        except:
+            raise ValueError(f"Data not found at {data_dir}")
+
+        dataset = raw_data[:, None, ::skip_steps, :]
+        n_envs, n_trajs_per_env, n_timesteps, n_dimensions = dataset.shape
+
+        ## Duplicate t_eval for each environment
+        t_eval = np.linspace(0, 1., n_timesteps)
+        t_eval = np.repeat(t_eval[None,:], n_envs, axis=0)
+
+        super().__init__(dataset, t_eval, adaptation, traj_prop_min, use_full_traj)
