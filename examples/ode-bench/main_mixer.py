@@ -6,7 +6,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = '2'
 
 from selfmod import *
 # jax.config.update("jax_debug_nans", True)
@@ -17,13 +17,13 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 202402
+seed = 20960
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 4          ## Total number of ODE families in the dataset
-nb_experts = 4
+nb_families = 2          ## Total number of ODE families in the dataset
+nb_experts = 2
 nb_envs_per_fam = (5, 1)
 
 num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
@@ -36,20 +36,20 @@ skip_steps = 5
 normalize_data = False
 
 ## Learner/model hps
-context_pool_size = 4
-context_size = 256
-taylor_orders = (1, 0)
+context_pool_size = 1
+context_size = 4
+taylor_orders = (0, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-loss_contributors = nb_envs_per_fam[0]*2
+loss_contributors = nb_envs_per_fam[0]*1
 max_ret_env_states = num_envs[0]
-split_context = False
-shift_context = False
+split_context = True
+shift_context = True
 self_reweighting = False
-same_expert_optstate = True                  ## Use the same optstate for all experts
+same_expert_optstate = False                  ## Use the same optstate for all experts
 
-meta_learner = "NCF"
+meta_learner = "GEPS"
 data_size = 2
-width_main = 32*4
+width_main = 32*2
 depth_main = 3
 depth_data = 1
 depth_ctx = 1
@@ -63,15 +63,15 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 3000
+nb_outer_steps = 250
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 1000
-validate_every = 100
-print_error_every = (100, 100)
+nb_adapt_epochs = 500
+validate_every = 1
+print_error_every = (1, 1)
 
 gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
-gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
-context_regularization = True               ## Regularize the context with an L1 penalty
+gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
+context_regularization = False               ## Regularize the context with an L1 penalty
 
 meta_train = True
 meta_test = True
@@ -79,15 +79,22 @@ meta_test = True
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
 
-# data_folder = "./data_2D_tiny/" if meta_train else "../../data_2D_tiny/"
-data_folder = "./data_2D_small*/" if meta_train else "../../data_2D_small*/"
+data_folder = "./data_2D_invs/" if meta_train else "../../../data_2D_invs/"
 # data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
 
 #%%
 
 if run_folder==None:
-    run_folder = make_run_folder('./runs/')
+    if meta_learner=="NCF":
+        base_folder = "./runs/_02_NCFRuns/"
+    elif meta_learner=="CoDA":
+        base_folder = "./runs/_03_CoDARuns/"
+    elif meta_learner=="GEPS":
+        base_folder = "./runs/_04_GEPSRuns/"
+    else:
+        base_folder = "./runs/"
+    run_folder = make_run_folder(base_folder)
 else:
     print("Using existing run folder:", run_folder)
 
@@ -189,16 +196,26 @@ def env_loss_fn(model, ctx, y_hat, y):
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
 ## Parameters for a built-in NCF model
-expert_params = {"data_size":data_size,
-                "width_main":width_main,
-                "depth_main":depth_main,
-                "depth_data":depth_data,
-                "depth_ctx":depth_ctx,
-                "context_size":context_size,
-                "intermediate_size":intermediate_size,
-                "ctx_utils":None,
-                "activation":"swish",
-                "shift_context":shift_context}
+if meta_learner == "NCF":
+    expert_params = {"data_size":data_size,
+                    "width_main":width_main,
+                    "depth_main":depth_main,
+                    "depth_data":depth_data,
+                    "depth_ctx":depth_ctx,
+                    "context_size":context_size,
+                    "intermediate_size":intermediate_size,
+                    "ctx_utils":None,
+                    "activation":"swish",
+                    "shift_context":shift_context}
+elif meta_learner in ["CoDA", "GEPS"]:
+    expert_params = {"data_size":data_size,
+                    "width":width_main,
+                    "depth":depth_main,
+                    "context_size":context_size,
+                    "activation":"swish",
+                    "shift_context":shift_context}
+else:
+    raise ValueError("Unknown meta-learner")
 
 neuralnet = MixER(key=model_key,
                 nb_experts=nb_experts,
@@ -305,6 +322,7 @@ print("After training, the context shifts are:", jnp.array(ctx_shifts))
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
+                                dims=(0,1),
                                 envs=jnp.arange(0, nb_envs_per_fam[0]*nb_families).tolist(),
                                 traj=0,
                                 share_axes=False,
@@ -495,8 +513,8 @@ visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptat
 
 visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png",
                                 data_loader=adapt_dataloader_test,
-                                # nb_envs=4,
-                                envs=[0,1,2,3],
+                                dims=(0,1),
+                                envs=list(range(num_envs[1])),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)

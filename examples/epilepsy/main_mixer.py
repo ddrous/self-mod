@@ -19,12 +19,12 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 2022
+seed = 122022
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 3
+nb_families = 5
 nb_experts = nb_families
 nb_envs_per_fam = (80//nb_experts, 11420//nb_experts)   ## (Expected)
 
@@ -61,14 +61,14 @@ proximal_betas = (10., 10.)       ## For the model, context and the gate, in tha
 
 nb_outer_steps = 5000
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 5000
+nb_adapt_epochs = 10000
 validate_every = 10
 print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
 context_regularization = False               ## Regularize the context with an L1 penalty
-same_expert_optstate = True                  ## Use the same optstate for all experts
+same_expert_optstate = False                  ## Use the same optstate for all experts
 
 meta_train = True
 meta_test = True
@@ -389,7 +389,7 @@ if meta_test:
     labels_adapt = []
 
     ## We want to adapt in batches of 5 environments
-    envs_per_batch = 571
+    envs_per_batch = 11420 // 5
     for batch_id, i in enumerate(range(0, num_envs[1], envs_per_batch)):
     # for batch_id, i in enumerate([0, num_envs[1]-envs_per_batch]):
         print("iteration:", batch_id, "Out of total:", np.ceil(num_envs[1]/envs_per_batch).astype(int))
@@ -581,6 +581,11 @@ y = np.load(data_folder+"train.npz")["condition"].astype(int)
 from sklearn.svm import SVC
 clf = SVC(kernel='rbf', random_state=seed)
 clf.fit(X, y)
+
+# ## Let's clasify with a GMM instead
+# from sklearn.mixture import GaussianMixture
+# clf = GaussianMixture(n_components=2, random_state=seed)
+# clf.fit(X)
 
 if meta_test:
     print("SVM trained on the contexts")

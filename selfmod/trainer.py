@@ -31,7 +31,7 @@ class Trainer:
         self.losses_model = []
         self.losses_ctx = []
  
-    def save_trainer(self, path, ignore_losses=False):
+    def save_trainer(self, path, ignore_losses=False, ignore_learner=False):
         assert path[-1] == "/", "ERROR: The path must end with /"
         # print(f"\nSaving model and results into {path} folder ...\n")
 
@@ -41,13 +41,19 @@ class Trainer:
                     losses_ctx=jnp.vstack(self.losses_ctx))
 
             if hasattr(self, 'val_losses'):
-                np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
+                try:
+                    np.save(path+"val_losses.npy", jnp.vstack(self.val_losses))
+                except Exception as e:
+                    # print(f"Error when saving the validation losses - {e}")
+                    ## Print fail silently
+                    pass
 
         pickle.dump(self.opt_state_model, open(path+"opt_state_model.pkl", "wb"))
         pickle.dump(self.opt_state_ctx, open(path+"opt_state_ctx.pkl", "wb"))
 
         # if not hasattr(self, 'val_losses'):
-        self.learner.save_learner(path)
+        if not ignore_learner:
+            self.learner.save_learner(path)
 
     def restore_trainer(self, path):
         assert path[-1] == "/", "ERROR: Invalidn parovided. The path must end with /"
@@ -769,8 +775,7 @@ class NCFTrainer(Trainer):
 
                             if save_checkpoints:
                                 ## Save the context and model with the right suffix
-                                context_save_path = backup_folder+f"contexts_outstep_{out_step:06d}.eqx"
-                                eqx.tree_serialise_leaves(context_save_path, contexts)
+                                eqx.tree_serialise_leaves(backup_folder+f"contexts_outstep_{out_step:06d}.eqx", contexts)
                                 eqx.tree_serialise_leaves(backup_folder+f"model_outstep_{out_step:06d}.eqx", model)
                                 np.savez(backup_folder+"train_histories.npz",
                                     losses_model=jnp.vstack([jnp.vstack(losses_model)]), 
@@ -798,7 +803,7 @@ class NCFTrainer(Trainer):
                         ## Check if val loss is lowest to save the model
                         if ind_crit <= jnp.stack(val_losses)[:,1].min() and save_path:
                             print(f"        Saving best model so far ...")
-                            self.save_trainer(save_path, ignore_losses=True)
+                            self.save_trainer(save_path, ignore_losses=False)
 
                     ###========== Impute 'previous losses' to not seen environments
                     loss_sort = jnp.argsort(all_env_losses)
@@ -829,7 +834,7 @@ class NCFTrainer(Trainer):
 
         # Save the model and results
         if save_path:
-            self.save_trainer(save_path)
+            self.save_trainer(save_path, ignore_learner=True)
 
 
 

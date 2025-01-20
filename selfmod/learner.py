@@ -1637,7 +1637,7 @@ class Expert_NCF(eqx.Module):
                  intermediate_size, 
                  ctx_utils=None, 
                  activation="swish", 
-                 shift_context=True, 
+                 shift_context=False, 
                  key=None):
         self.ctx_utils = ctx_utils      ## TODO If not none, then use InfDim NCF 
 
@@ -1654,7 +1654,7 @@ class Expert_NCF(eqx.Module):
         keys_ctx = jax.random.split(key, num=depth_ctx+2)
         phi = np.linspace(0, 1, depth_ctx+2)
         widths_ctx = [int(context_size * (np.exp(p * np.log(intermediate_size/context_size)))) for p in phi]
-        widths_ctx = [int(np.ceil(h/2)*2) for h in widths_ctx]        ## Nearest multiple of 2
+        widths_ctx = [context_size] + [int(np.ceil(h/2)*2) for h in widths_ctx[1:-1]] + [intermediate_size]    ## Nearest multiple of 2
         self.activations_ctx = [Swish(key=k) if activation=="swish" else builtin_fns[activation] for k in keys_ctx[:depth_ctx]]
         self.layers_ctx = [eqx.nn.Linear(widths_ctx[i-1], widths_ctx[i], key=keys_ctx[i]) for i in range(1, depth_ctx+2)]
 
@@ -1662,7 +1662,7 @@ class Expert_NCF(eqx.Module):
         keys_data = jax.random.split(keys_ctx[-1], num=depth_data+2)
         phi = np.linspace(0, 1, depth_data+2)
         widths_data = [int(data_size * (np.exp(p * np.log(intermediate_size/data_size)))) for p in phi]
-        widths_data = [int(np.ceil(h/2)*2) for h in widths_data]
+        widths_data = [data_size] + [int(np.ceil(h/2)*2) for h in widths_data[1:-1]] + [intermediate_size]
         self.activations_data = [Swish(key=k) if activation=="swish" else builtin_fns[activation] for k in keys_data[:depth_data]]
         self.layers_data = [eqx.nn.Linear(widths_data[i-1], widths_data[i], key=keys_data[i]) for i in range(1, depth_data+2)]
 
@@ -1698,6 +1698,182 @@ class Expert_NCF(eqx.Module):
         y = self.layers_main[-1](y)
 
         return y
+
+
+
+class CoDARootMLP(eqx.Module):
+    network: list
+    root_utils: any
+    network_size: int     ## The effective/actual size of a root network (flattened neural network)
+
+    def __init__(self, input_dim, output_dim, hidden_size, depth, activation=jax.nn.softplus, key=None):
+        key = key if key is not None else jax.random.PRNGKey(0)
+        self.network = MLP(input_dim, output_dim, hidden_size, depth, activation, key=key)
+        
+        props = (input_dim, output_dim, hidden_size, depth, activation)
+        params, static = eqx.partition(self.network, eqx.is_array)
+        _, shapes, treedef = flatten_pytree(params)
+        self.root_utils = (shapes, treedef, static, props)
+
+        self.network_size = sum(x.size for x in jax.tree_util.tree_leaves(params) if x is not None)
+
+    def __call__(self, x):
+        return self.network(x)
+
+
+# ## Define model and loss function for the learner
+class Expert_CoDA(eqx.Module):
+    """ Expert CoDA, following Kirchmeyer et al. 2022 """
+    root_weights: jnp.ndarray
+    hyperlayer: list
+    root_utils: list
+
+    shift_context: bool
+    ctx_shift: jnp.ndarray
+
+    def __init__(self, 
+                 data_size, 
+                 width, 
+                 depth, 
+                 context_size, 
+                 activation="swish",
+                 shift_context=False,
+                 key=None):
+
+        keys = jax.random.split(key, num=3)
+        builtin_fns = {"relu":jax.nn.relu, "tanh":jax.nn.tanh, 'softplus':jax.nn.softplus}
+        act_fn = Swish(key=keys[0]) if activation=="swish" else builtin_fns[activation]
+
+        root = CoDARootMLP(data_size, data_size, width, depth, act_fn, key=keys[1])
+        self.root_utils = root.root_utils
+        root_params, static = eqx.partition(root.network, eqx.is_array)
+        self.root_weights = flatten_pytree(root_params)[0]
+
+        in_hyper, out_hyper = context_size, root.network_size
+        self.hyperlayer = eqx.nn.Linear(in_hyper, out_hyper, use_bias=False, key=keys[2])
+        ## Initialise these weights to zero
+        # self.hyperlayer = jax.tree.map(lambda x: jnp.zeros_like(x), self.hyperlayer)
+
+        self.shift_context = shift_context
+        self.ctx_shift = jnp.array([0.])
+
+    def __call__(self, t, y, ctx):
+
+        if self.shift_context:
+            ctx = ctx + self.ctx_shift
+
+        delta_arr = self.hyperlayer(ctx)
+        final_arr = self.root_weights + delta_arr
+
+        shapes, treedef, static, _ = self.root_utils
+        params = unflatten_pytree(final_arr, shapes, treedef)
+        root_fun = eqx.combine(params, static)
+
+        return root_fun(y)
+
+
+
+
+
+
+
+
+
+
+class GEPSRootMLP(eqx.Module):
+    network: list
+
+    def __init__(self, input_dim, output_dim, hidden_size, depth, activation=jax.nn.softplus, key=None):
+        key = key if key is not None else jax.random.PRNGKey(0)
+        self.network = MLP(input_dim, output_dim, hidden_size, depth, activation, key=key)
+
+    def __call__(self, x):
+        return self.network(x)
+
+
+# ## Define model and loss function for the learner
+class Expert_GEPS(eqx.Module):
+    """ Expert GEPS, following Kassaï-Koupaï et al. 2024 """
+    root_weights: eqx.Module
+    left_weights: eqx.Module        ## A matices
+    right_weights: eqx.Module       ## B matrices
+
+    shift_context: bool
+    ctx_shift: jnp.ndarray
+
+    def __init__(self, 
+                 data_size, 
+                 width, 
+                 depth, 
+                 context_size, 
+                 activation="swish",
+                 shift_context=False,
+                 key=None):
+
+        keys = jax.random.split(key, num=3)
+        builtin_fns = {"relu":jax.nn.relu, "tanh":jax.nn.tanh, 'softplus':jax.nn.softplus}
+        act_fn = Swish(key=keys[0]) if activation=="swish" else builtin_fns[activation]
+
+        root = GEPSRootMLP(data_size, data_size, width, depth, act_fn, key=keys[1])
+        root_params, root_static = eqx.partition(root, eqx.is_array)
+        _, root_shapes, root_treedef = flatten_pytree(root_params)
+        self.root_weights = root
+
+        r = context_size
+        def generate_weights(leaf, key, side="left"):
+            """ We form A, B, c such that A@c@B is the weight matrix """
+
+            if leaf is not None:
+                if leaf.ndim == 2:
+                    d_out, d_in = leaf.shape
+                    A = xavier_uniform(key, (d_out, r))
+                    B = xavier_uniform(key, (r, d_in))
+                    if side=="left":
+                        return A
+                    elif side=="right":
+                        return B
+                    else:
+                        raise ValueError("Side not recognised")
+                elif leaf.ndim == 1:
+                    d_out = leaf.shape[0]
+                    A = xavier_uniform(key, (d_out, r))
+                    B = None
+                    if side=="left":
+                        return A
+                    elif side=="right":
+                        return B
+                    else:
+                        raise ValueError("Side not recognised")
+
+        flat_keys = jax.random.split(keys[2], num=root_treedef.num_leaves)
+        root_keys = jax.tree.unflatten(root_treedef, flat_keys)
+
+        self.left_weights = jax.tree.map(partial(generate_weights, side="left"), root_params, root_keys)
+        self.right_weights = jax.tree.map(partial(generate_weights, side="right"), root_params, root_keys)
+
+        self.shift_context = shift_context
+        self.ctx_shift = jnp.array([0.])
+
+    def __call__(self, t, y, ctx):
+
+        if self.shift_context:
+            ctx = ctx + self.ctx_shift
+
+        def multiplication_fn(W, A, B):
+            if W.ndim == 2:
+                return W + A @ jnp.diag(ctx) @ B
+            elif W.ndim == 1:
+                return W + A @ ctx
+
+        root_weights_d, root_weights_s = eqx.partition(self.root_weights, eqx.is_array)
+        final_params = jax.tree.map(multiplication_fn, root_weights_d, self.left_weights, self.right_weights)
+        root_fun = eqx.combine(final_params, root_weights_s)
+
+        return root_fun(y)
+
+
+
+
 
 
 # ## Define model and loss function for the learner
@@ -1741,10 +1917,10 @@ class MixER(eqx.Module):
         if self.meta_learner == "NCF":
             self.experts = [Expert_NCF(**expert_params, key=keys[i]) for i in range(nb_experts)]
         elif self.meta_learner == "CoDA":
-            # self.experts = [ExpertCoDA(**expert_params, key=keys[i]) for i in range(nb_experts)]
+            self.experts = [Expert_CoDA(**expert_params, key=keys[i]) for i in range(nb_experts)]
             pass
         elif self.meta_learner == "GEPS":
-            # self.experts = [ExpertGEPS(**expert_params, key=keys[i]) for i in range(nb_experts)]
+            self.experts = [Expert_GEPS(**expert_params, key=keys[i]) for i in range(nb_experts)]
             pass
         else:
             raise ValueError("Meta-learner not recognised !")
@@ -1810,9 +1986,6 @@ class MixER(eqx.Module):
 
 
 
-def xavier_uniform(key, shape):
-    lim = 1 / np.sqrt(shape[0])
-    return jax.random.uniform(key, shape, minval=-lim, maxval=lim)
 
 class RootRNN(eqx.Module):
     root_utils: any
@@ -1876,7 +2049,7 @@ class Expert_HierShPLRNN(eqx.Module):
         self.root_network = RootRNN(data_size, data_size, hidden_size, key=key)
 
         in_hyper, out_hyper = context_size, self.root_network.network_size
-        self.hyperlayer = eqx.nn.Linear(in_hyper, out_hyper, key=key, use_bias=True)
+        self.hyperlayer = eqx.nn.Linear(in_hyper, out_hyper, key=key, use_bias=False)
 
         self.shift_context = shift_context
         self.ctx_shift = jnp.array([0.])

@@ -3,7 +3,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 # print("svailables stules", plt.style.available)
-# plt.style.use("seaborn-v0_8-white")
+plt.style.use("seaborn-v0_8-white")
+
 from scipy.integrate import solve_ivp
 import argparse
 import json
@@ -20,7 +21,7 @@ def parse_arguments():
 
     if _in_ipython_session:
         args = argparse.Namespace(split='adapt_train', 
-                                  savepath="../data_2D_small*/", 
+                                  savepath="../data_2D_invs/", 
                                   seed=2024, 
                                   verbose=1, 
                                   dimension=2,
@@ -50,7 +51,7 @@ def load_ode_definitions(dimension):
     # Parse the lambda functions
     for ode in ode_defs.values():
         ode['function'] = parse_lambda(ode['function'])
-    
+
     return ode_defs
 
 def generate_environments(reference_params, n_envs, adaptation=False):
@@ -91,7 +92,7 @@ def generate_environments(reference_params, n_envs, adaptation=False):
         ## Make a grid with log(nenvs)/log(nparams) points in each dimension
         n_params = len(reference_params)
         n_per_dim = math.ceil(n_envs ** (1/n_params))
-        param_values = [np.round(np.linspace(0.8*ref, 1.2*ref, n_per_dim), 2) for ref in reference_params.values()]
+        param_values = [np.round(np.linspace(0.9*ref, 1.1*ref, n_per_dim), 2) for ref in reference_params.values()]
 
         # print("param_values", param_values)
         # for param_values_comb in np.meshgrid(*param_values):
@@ -164,7 +165,6 @@ def generate_initial_conditions(reference_ic, n_ic):
 
 def simulate_ode(ode_func, t_span, initial_state, args, dt):
     t_eval = np.arange(t_span[0], t_span[1], dt)
-    # print("t_eval", t_eval.shape)
     solution = solve_ivp(ode_func, t_span, initial_state, args=args, t_eval=t_eval, method='RK45')
     # print("solution", solution.y.shape, t_eval.shape, t_eval[-1], solution.t[-1])
     return solution.t, solution.y.T
@@ -205,7 +205,9 @@ def main():
         T = ode_info.get("time_horizon", 1)
         dt = T / args.nb_steps  # Approximately 20 time steps per ODE
 
-        ode_data = np.zeros((n_envs, n_ic, int(T/dt), len(ode_info['initial_values'])))
+        # print("Dimension of the ODE", len(ode_info['initial_values']), int(T/dt))
+        # print("Current ODE", ode_id, ode_info['name'], "T", T, "dt", dt, "n_envs", n_envs, "n_ic", n_ic)
+        ode_data = np.zeros((n_envs, n_ic, int(T/dt), len(ode_info['initial_values'][0])))
 
         for i, env in enumerate(environments):
             for j, ic in enumerate(initial_conditions):
@@ -263,10 +265,10 @@ if __name__ == "__main__":
         plt.figure(figsize=(10, 4))
 
         ## Plot all environments from the same initial condition
+        colors = ['royalblue', 'crimson', 'forestgreen', 'darkorange']
         for i in range(X.shape[1]):
-            # print('IC is ', X[0, i, 0])
-            plt.plot(t, X[:, i, :, 0].T, color="royalblue", alpha=(i+1)/(X.shape[1]+1))
-            plt.plot(t, X[:, i, :, 1].T, color="crimson", alpha=(i+1)/(X.shape[1]+1))
+            for j in range(X.shape[-1]):
+                plt.plot(t, X[:, i, :, j].T, color=colors[j], alpha=(i+1)/(X.shape[1]+1))
 
         plt.title(f"ODEBench - {ode_def}")
 
@@ -280,5 +282,5 @@ if __name__ == "__main__":
         all_plots.append(Image.open(f"../tmp/odebench_{ode_def}.png"))
 
     ## Save the plots as a gif
-    all_plots[0].save("odebench_2D.gif", save_all=True, append_images=all_plots[1:], duration=100, loop=0, optimize=True)
+    all_plots[0].save("odebench_3D.gif", save_all=True, append_images=all_plots[1:], duration=100, loop=0, optimize=True)
 

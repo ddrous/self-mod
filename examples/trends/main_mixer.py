@@ -20,7 +20,7 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 2024
+seed = 20248
 np.random.seed(seed)
 torch.manual_seed(seed)
 
@@ -39,17 +39,19 @@ test_proportion = 1.0
 ## Learner/model hps
 context_pool_size = 20
 context_size = 10
-taylor_orders = (1, 0)
+taylor_orders = (2, 0)
 skip_steps = 1
 loss_contributors = 600
 max_ret_env_states = num_envs[0]
 split_context = False
-shift_context = False
+shift_context = True
+self_reweighting = False
 
 meta_learner = "hier-shPLRNN"
 data_size = 1
 hidden_size = 16*2
 latent_size = data_size
+tf_alpha_min = 0.0  ## Teacher forcing alpha (1. means no teacher forcing)
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -65,11 +67,12 @@ validate_every = 10
 print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
-gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
-context_regularization = True               ## Regularize the context with an L1 penalty
+gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
+context_regularization = False               ## Regularize the context with an L1 penalty
+same_expert_optstate = False                  ## Use the same optstate for all experts
 
 meta_train = True
-meta_test = True
+meta_test = False
 
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/250110-115030-Test/" if meta_train else "./"
@@ -187,6 +190,7 @@ expert_params = {"data_size":data_size,
                 "latent_size":latent_size,
                 "context_size":context_size,
                 "ctx_utils":None,
+                "tf_alpha_min":tf_alpha_min,
                 "shift_context":shift_context}
 
 model = DirectMapping(MixER_S2S(key=model_key,
@@ -208,7 +212,7 @@ learner = Learner(model=model,
                 loss_contributors=loss_contributors,
                 pool_filling="NF",      ## The closest envs are used in the inner loss
                 loss_filling="NF",      ## The closest envs are used in the outer loss
-                self_reweighting=True,  ## Reweight the outer loss by its own softmax 
+                self_reweighting=self_reweighting,  ## Reweight the outer loss by its own softmax 
                 key=model_key)
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
@@ -249,6 +253,7 @@ if meta_train == True:
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
+                        same_expert_optstate=same_expert_optstate,
                         verbose=False,
                         key=trainer_key)
 else:

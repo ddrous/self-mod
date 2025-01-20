@@ -489,20 +489,20 @@ def setup_run_folder(folder_path, script_name, datagen_folder=None):
     adapt_folder = folder_path+"adapt/"
     if not os.path.exists(adapt_folder):
         os.mkdir(adapt_folder)
-        print(" Created a new adaptation folder at:", adapt_folder)
+        print(" Created an adaptation folder at:", adapt_folder)
 
     ## Create a folder for the chckpoints results
     checkpoints_folder = folder_path+"checkpoints/"
     if not os.path.exists(checkpoints_folder):
         os.mkdir(checkpoints_folder)
-        print(" Created a new checkpoints folder at:", checkpoints_folder)
+        print(" Created a checkpoints folder at:", checkpoints_folder)
 
     ## Create a folder for the generation data scripts
     if datagen_folder is not None:
         data_folder = os.path.join(folder_path, "data/")
         if not os.path.exists(data_folder):
             os.mkdir(data_folder)
-            print(" Created a new data folder at:", data_folder)
+            print(" Created a data folder at:", data_folder)
         try:
             os.system(f"cp -r {datagen_folder}/ {data_folder}")
             print(" Attempting copy of the data generation scripts")
@@ -512,3 +512,12 @@ def setup_run_folder(folder_path, script_name, datagen_folder=None):
         data_folder = None
 
     return adapt_folder, checkpoints_folder, data_folder
+
+
+def xavier_uniform(key, shape):
+    lim = 1 / np.sqrt(shape[0])
+    return jax.random.uniform(key, shape, minval=-lim, maxval=lim)
+
+def xavier_uniform_transposed(key, shape):
+    lim = 1 / np.sqrt(shape[-1])
+    return jax.random.uniform(key, shape, minval=-lim, maxval=lim)
