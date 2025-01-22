@@ -22,9 +22,9 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 2          ## Total number of ODE families in the dataset
-nb_experts = 2
-nb_envs_per_fam = (5, 1)
+nb_families = 10          ## Total number of ODE families in the dataset
+nb_experts = 10
+nb_envs_per_fam = (16, 1)
 
 num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
 num_shots = (-1, -1)
@@ -37,8 +37,8 @@ normalize_data = False
 
 ## Learner/model hps
 context_pool_size = 1
-context_size = 4
-taylor_orders = (0, 0)
+context_size = 4*nb_experts
+taylor_orders = (1, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
 loss_contributors = nb_envs_per_fam[0]*1
 max_ret_env_states = num_envs[0]
@@ -63,11 +63,11 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 250
+nb_outer_steps = 250*3
 nb_inner_steps = (12, 12)
 nb_adapt_epochs = 500
-validate_every = 1
-print_error_every = (1, 1)
+validate_every = 1*10
+print_error_every = (1*10, 1*10)
 
 gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
@@ -79,8 +79,8 @@ meta_test = True
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/241219-203831-Test/" if meta_train else "./"
 
-data_folder = "./data_2D_invs/" if meta_train else "../../../data_2D_invs/"
-# data_folder = "./data_2D/" if meta_train else "../../data_2D/"
+# data_folder = "./data_2D_invs/" if meta_train else "../../../data_2D_invs/"
+data_folder = "./data_2D/" if meta_train else "../../data_2D/"
 
 
 #%%
@@ -278,7 +278,7 @@ if meta_train == True:
                         save_checkpoints=True, 
                         validate_every=validate_every, 
                         save_path=run_folder, 
-                        val_dataloader=val_dataloader, 
+                        # val_dataloader=val_dataloader, 
                         val_nb_steps=nb_adapt_epochs,
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
@@ -302,22 +302,31 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
+def rel_l2(y, y_hat):
+    clean_y = jnp.maximum(jnp.abs(y), 1e-6)
+    return jnp.mean(jnp.linalg.norm(y_hat-y, axis=-1)**2/jnp.linalg.norm(clean_y, axis=-1)**2)
+
 ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
                                     taylor_order=taylor_orders[1], 
                                     nb_steps=nb_adapt_epochs,
                                     print_error_every=print_error_every, 
                                     criterion_id=0,
+                                    loss_criterion=rel_l2,
                                     verbose=True,
                                     val_dataloader=val_dataloader,
                                     max_ret_env_states=max_ret_env_states,
+                                    # max_ret_env_states=8,
                                     max_adapt_batches=max_adapt_batches,
                                     stochastic=False)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
-print("Loss per InD environment:", all_ind_crit[0].tolist())
+print("Losses per InD environment:", all_ind_crit[0].tolist())
 
 ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift.squeeze() for e in range(nb_experts)]
 print("After training, the context shifts are:", jnp.array(ctx_shifts))
+
+print(f"\nLoss InD (mean)  : {np.mean(all_ind_crit[0]):.3f}")
+print(f"Loss InD (median): {ind_crit:.3f}")
 
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",

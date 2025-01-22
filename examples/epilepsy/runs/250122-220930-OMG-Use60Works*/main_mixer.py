@@ -26,12 +26,9 @@ torch.manual_seed(seed)
 ## Dataloader hps
 nb_families = 2
 nb_experts = nb_families
-use_small_train_set = True
-num_envs_train = 60 if use_small_train_set else 80
+nb_envs_per_fam = (60//nb_experts, 11420//nb_experts)   ## (Expected)
 
-nb_envs_per_fam = (num_envs_train//nb_experts, 11420//nb_experts)   ## (Expected)
-
-num_envs = (num_envs_train, 11420)
+num_envs = (60, 11420)
 num_shots = (-1, -1)
 num_workers = 24
 shuffle = False
@@ -62,7 +59,7 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 500
+nb_outer_steps = 370
 nb_inner_steps = (12, 12)
 nb_adapt_epochs = 10000
 validate_every = 10
@@ -70,13 +67,14 @@ print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
+
 gating_hyperparams = {"max_kmeans":20, "convergence_tol":1e-3, "noise_level":1e-4}
 
 context_regularization = False               ## Regularize the context with an L1 penalty
 same_expert_optstate = False                  ## Use the same optstate for all experts
 self_reweighting = False                     ## Reweight the outer loss by its own softmax
 
-meta_train = True
+meta_train = False
 meta_test = False
 
 run_folder = None if meta_train else "./"
@@ -107,8 +105,7 @@ adapt_folder, checkpoints_folder, _ = setup_run_folder(run_folder, os.path.basen
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_file = "train_small.npz" if use_small_train_set else "train.npz"
-train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+train_file, 
+train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", 
                                                skip_steps=skip_steps, 
                                                traj_prop_min=train_proportion), 
                               batch_size=num_envs[0],
@@ -116,13 +113,14 @@ train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+train_file,
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+train_file, ## TODO Do a better job of splitting the data
+val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+"train.npz", ## TODO Do a better job of splitting the data
                                              skip_steps=skip_steps,
                                              traj_prop_min=test_proportion),
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
+
 
 
 #%%
@@ -332,6 +330,7 @@ plt.savefig(run_folder+"gate_values.png")
 
 #%%
 
+nb_outer_steps = 370
 @eqx.filter_vmap(in_axes=(None, 0))
 def gate_anim_fn(network, ctx):
     return network.gating_function(ctx)

@@ -19,19 +19,16 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 2022
+seed = 2024
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
 nb_families = 2
 nb_experts = nb_families
-use_small_train_set = True
-num_envs_train = 60 if use_small_train_set else 80
+nb_envs_per_fam = (18537//nb_experts, 4635//nb_experts)   ## (Expected)
 
-nb_envs_per_fam = (num_envs_train//nb_experts, 11420//nb_experts)   ## (Expected)
-
-num_envs = (num_envs_train, 11420)
+num_envs = (18537, 4635)
 num_shots = (-1, -1)
 num_workers = 24
 shuffle = False
@@ -39,21 +36,24 @@ train_proportion = 1.0  ## Min proporrion of the trajectory for training
 test_proportion = 1.0
 
 ## Learner/model hps
-context_pool_size = 1
-context_size = 10
-taylor_orders = (0, 0)
-skip_steps = 1
-loss_contributors = num_envs[0]//nb_experts
+context_pool_size = 20
+context_size = 8
+taylor_orders = (1, 0)
+skip_steps = 2
+loss_contributors = 18537 // 100
 max_ret_env_states = num_envs[0]
 split_context = False
 shift_context = True
+annotation = "wtype"        ## For the labels, either "wtype" or other
+event_id = {'CONT': 1,
+            'FUNC': 2,}
 
 meta_learner = "hier-shPLRNN"
-data_size = 1
-hidden_size = 16
+data_size = 32
+hidden_size = 32
 latent_size = data_size
 same_expert_init = True
-tf_alpha_min = 0.5  ## Teacher forcing alpha (1. means no teacher forcing)
+tf_alpha_min = 0.0  ## Teacher forcing alpha (1. means no teacher forcing)
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -61,26 +61,24 @@ sched_factor = 1.0
 max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
+self_reweighting = False
 
-nb_outer_steps = 500
+nb_outer_steps = 1000
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 10000
+nb_adapt_epochs = 200
 validate_every = 10
 print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
-gating_hyperparams = {"max_kmeans":20, "convergence_tol":1e-3, "noise_level":1e-4}
-
 context_regularization = False               ## Regularize the context with an L1 penalty
 same_expert_optstate = False                  ## Use the same optstate for all experts
-self_reweighting = False                     ## Reweight the outer loss by its own softmax
 
 meta_train = True
 meta_test = False
 
 run_folder = None if meta_train else "./"
-# run_folder = "./runs/250103-123848-Test/" if meta_train else "./"
+# run_folder = "./runs/250120-193142-Test/" if meta_train else "./"
 
 data_folder = "./data/" if meta_train else "../../data/"
 
@@ -107,30 +105,32 @@ adapt_folder, checkpoints_folder, _ = setup_run_folder(run_folder, os.path.basen
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_file = "train_small.npz" if use_small_train_set else "train.npz"
-train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+train_file, 
-                                               skip_steps=skip_steps, 
-                                               traj_prop_min=train_proportion), 
+train_dataloader = NumpyLoader(LinguisticsDataset(data_dir=data_folder,
+                                             data_split="train", 
+                                             skip_steps=skip_steps, 
+                                             traj_prop_min=train_proportion), 
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+train_file, ## TODO Do a better job of splitting the data
-                                             skip_steps=skip_steps,
-                                             traj_prop_min=test_proportion),
-                              batch_size=num_envs[0],
-                              shuffle=shuffle,
-                              num_workers=num_workers,
-                              drop_last=False)
+# val_dataloader = NumpyLoader(LinguisticsDataset(data_dir=data_folder,
+#                                           data_split="train",
+#                                           skip_steps=skip_steps,
+#                                           traj_prop_min=test_proportion),
+#                               batch_size=num_envs[0],
+#                               shuffle=shuffle,
+#                               num_workers=num_workers,
+#                               drop_last=False)
 
+val_dataloader = train_dataloader
 
 #%%
 
 # ## Plot the trajectories in the a few environments
 
 (outs, ts), _ = next(iter(train_dataloader))
-train_labels = np.load(data_folder+"train.npz")["condition"].astype(int)
+train_labels = pd.read_csv(data_folder+'train_annotations.csv')[annotation]
 
 print("Shapes of data and t_eval:", outs.shape, ts.shape)
 
@@ -244,12 +244,11 @@ if meta_train == True:
                         save_checkpoints=True, 
                         validate_every=validate_every, 
                         save_path=run_folder, 
-                        val_dataloader=val_dataloader, 
+                        # val_dataloader=val_dataloader, 
                         val_nb_steps=nb_adapt_epochs,
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
-                        gating_hyperparams=gating_hyperparams,
                         verbose=False,
                         same_expert_optstate=same_expert_optstate,
                         key=trainer_key)
@@ -270,19 +269,19 @@ else:
 ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
-ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
-                                    taylor_order=taylor_orders[1], 
-                                    nb_steps=nb_adapt_epochs,
-                                    print_error_every=print_error_every, 
-                                    criterion_id=0,
-                                    verbose=True,
-                                    val_dataloader=val_dataloader,
-                                    max_ret_env_states=max_ret_env_states,
-                                    max_adapt_batches=max_adapt_batches,
-                                    stochastic=False)
+# ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
+#                                     taylor_order=taylor_orders[1], 
+#                                     nb_steps=nb_adapt_epochs,
+#                                     print_error_every=print_error_every, 
+#                                     criterion_id=0,
+#                                     verbose=True,
+#                                     val_dataloader=val_dataloader,
+#                                     max_ret_env_states=max_ret_env_states,
+#                                     max_adapt_batches=max_adapt_batches,
+#                                     stochastic=False)
+# print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
-print("Loss per InD environment:", all_ind_crit[0].tolist())
 
 ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift.squeeze() for e in range(nb_experts)]
 print("After training, the context shifts are:", jnp.array(ctx_shifts))
@@ -290,8 +289,8 @@ print("After training, the context shifts are:", jnp.array(ctx_shifts))
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                envs=jnp.arange(0, num_envs[0], 10).tolist(),
-                                dims=(0,0),
+                                envs=jnp.arange(0, num_envs[0], 600).tolist(),
+                                dims=(0,1),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
@@ -371,10 +370,10 @@ ani.save(run_folder+"gate_values_animation.gif", writer='pillow', fps=8)
 
 #%%
 
-perp = nb_families if nb_families > 1 else 4
-visualtester.visualize_context_clusters(perplexities=(perp, perp),
-                                        key=test_key,
-                                        save_path=run_folder+"context_clusters.png")
+# perp = nb_families if nb_families > 1 else 4
+# visualtester.visualize_context_clusters(perplexities=(perp, perp),
+#                                         key=test_key,
+#                                         save_path=run_folder+"context_clusters.png")
 
 
 
@@ -396,16 +395,17 @@ if meta_test:
     labels_adapt = []
 
     ## We want to adapt in batches of 5 environments
-    envs_per_batch = 11420 // 5
+    envs_per_batch = num_envs[1] //1
     for batch_id, i in enumerate(range(0, num_envs[1], envs_per_batch)):
     # for batch_id, i in enumerate([0, num_envs[1]-envs_per_batch]):
         print("iteration:", batch_id, "Out of total:", np.ceil(num_envs[1]/envs_per_batch).astype(int))
         print("Adapting on environments:", i, "to", i+envs_per_batch)
 
-        adapt_dataset = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
+        adapt_dataset = LinguisticsDataset(data_dir=data_folder, 
+                                    data_split="adapt",
+                                    skip_steps=skip_steps,
+                                    traj_prop_min=test_proportion,
+                                    adaptation=True)
         adapt_dataset.total_envs = envs_per_batch
         adapt_dataset.dataset = adapt_dataset.dataset[i:i+envs_per_batch, :, :, :]
         adapt_dataset.t_eval = adapt_dataset.t_eval[i:i+envs_per_batch:, :]
@@ -420,10 +420,11 @@ if meta_test:
                                     num_workers=num_workers,
                                     drop_last=False)
 
-        adapt_dataset_test = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
+        adapt_dataset_test = LinguisticsDataset(data_dir=data_folder, 
+                                            data_split="adapt",
+                                            skip_steps=skip_steps,
+                                            traj_prop_min=test_proportion,
+                                            adaptation=True)
         adapt_dataset_test.total_envs = envs_per_batch
         adapt_dataset_test.dataset = adapt_dataset_test.dataset[i:i+envs_per_batch, :, :, :]
         adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[i:i+envs_per_batch:, :]
@@ -450,7 +451,8 @@ if meta_test:
         adapt_contexts.append(learner.contexts_latest.params)
         all_losses.append(all_ood_crit[0].tolist())
 
-        labels = np.load(data_folder+"adapt.npz")["condition"].astype(int)[i:i+envs_per_batch]
+        labels = pd.read_csv(data_folder+'valid_annotations.csv')[annotation][i:i+envs_per_batch]
+        labels = np.array([event_id[l] for l in labels])
         labels_adapt.append(labels)
 
     adapt_contexts = jnp.concatenate(adapt_contexts, axis=0)
@@ -469,9 +471,9 @@ if meta_test:
 
     visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics_adapt.png",
                                     data_loader=adapt_dataloader_test,
-                                    nb_envs=1,
+                                    envs=jnp.arange(0, num_envs[1], 70).tolist(),
                                     traj=0,
-                                    dims=(0,0),     ## The Data is 1-dimensional
+                                    dims=(0,1),     ## The Data is 1-dimensional
                                     share_axes=False,
                                     key=test_key)
 
@@ -502,11 +504,13 @@ if meta_test:
 
 #%%
 X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)
+labels = pd.read_csv(data_folder+'train_annotations.csv')[annotation]
+## Events Ids are defined above 
+event_id_inv = {v: k for k, v in event_id.items()}
 
-color_table = {0:"royalblue", 1:"crimson"}
-colors = [color_table[l] for l in labels]
-conditions = {0:"Healthy", 1:"Epileptic"}
+## trusn the labels to corresponding event ids
+labels = np.array([event_id[l] for l in labels])
+
 
 ## Use PCA 
 from sklearn.decomposition import PCA
@@ -518,18 +522,18 @@ X_reduced = pca.fit_transform(X_total) if X.shape[1] > 2 else X
 
 plt.figure(figsize=(10, 7))
 
-for class_label in [0,1]:
-    marker = "^" if class_label==0 else "x"
-    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+unique_labels = np.unique(labels)
+for class_label in unique_labels:
+    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, label=event_id_inv[class_label])
 
 if meta_test:
     X_adapt_rec = pca.transform(X_adapt) if X_adapt.shape[1] > 2 else X_adapt
     labels_adapt = y_test
-    for class_label in [0,1]:
-        marker = "." if class_label==0 else "."
-        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
+    for class_label in unique_labels:
+        marker = "x"
+        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, label=event_id_inv[class_label], alpha=0.5, marker=marker)
 
-plt.legend()
+plt.legend(loc='upper right')
 
 plt.title("Contexts Clustering - PCA", fontsize=24)
 plt.xlabel("PC 1") if X.shape[1] > 1 else plt.xlabel("Ctx 1")
@@ -544,32 +548,27 @@ plt.savefig(run_folder+"clusters_pca.png", bbox_inches='tight');
 
 #%%
 X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)
-
-color_table = {0:"royalblue", 1:"crimson"}
-colors = [color_table[l] for l in labels]
-conditions = {0:"Healthy", 1:"Epileptic"}
 
 import umap
 nb_train_samples = X.shape[0]
-umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]), min_dist=0.0, spread=1.0, metric="euclidean")
+umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]), min_dist=0.0, n_neighbors=15, metric="euclidean")
 X_total = np.concatenate([X, X_adapt], axis=0) if meta_test else X
 X_reduced = umap_reducer.fit_transform(X_total) if X.shape[1] > 2 else X
 
 plt.figure(figsize=(10, 7))
 
-for class_label in [0,1]:
-    marker = "^" if class_label==0 else "x"
-    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+unique_labels = np.unique(labels)
+for class_label in unique_labels:
+    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, label=event_id_inv[class_label])
 
 if meta_test:
     X_adapt_rec = pca.transform(X_adapt) if X_adapt.shape[1] > 2 else X_adapt
     labels_adapt = y_test
-    for class_label in [0,1]:
-        marker = "." if class_label==0 else "."
-        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, c=color_table[class_label], label=conditions[class_label]+" (Test)", marker=marker, alpha=0.5)
+    for class_label in unique_labels:
+        marker = "x"
+        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, label=event_id_inv[class_label], alpha=0.5, marker=marker)
 
-plt.legend()
+plt.legend(loc='upper right')
 
 plt.title("Contexts Clustering - UMAP", fontsize=24)
 plt.xlabel("UMAP 1") if X.shape[1] > 1 else plt.xlabel("Ctx 1")
@@ -582,17 +581,15 @@ plt.savefig(run_folder+"clusters_umap.png", bbox_inches='tight');
 #%%
 
 X = learner.contexts.params
-y = np.load(data_folder+"train.npz")["condition"].astype(int)
+y = pd.read_csv(data_folder+'train_annotations.csv')[annotation]
+y = np.array([event_id[l] for l in y])
+## Turn to one-hot encoding
+# y = jax.nn.one_hot(y, 5)
 
-## Let's do the classification with SVM and a non-linear kernel
-from sklearn.svm import SVC
-clf = SVC(kernel='rbf', random_state=seed)
+## Let's do multi-class classification with a KNeighborsClassifier from sklearn
+from sklearn.neighbors import KNeighborsClassifier
+clf = KNeighborsClassifier(n_neighbors=5)
 clf.fit(X, y)
-
-# ## Let's clasify with a GMM instead
-# from sklearn.mixture import GaussianMixture
-# clf = GaussianMixture(n_components=2, random_state=seed)
-# clf.fit(X)
 
 if meta_test:
     print("SVM trained on the contexts")

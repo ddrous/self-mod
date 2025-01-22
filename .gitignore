@@ -57,6 +57,8 @@ examples/crowdsource/nohup.log
 examples/fmri/nohup.log
 examples/forced-o/nohup.log
 examples/sine-reg/nohup.log
+examples/sleep/nohup.logs
+examples/linguistics/nohup.logs
 
 ## Ingnore all folders named "tmp", recursively
 **/tmp/
@@ -129,6 +131,10 @@ examples/trends/runs/*
 examples/sleep/data/*
 examples/sleep/runs/*
 
+## The linguistics dataset
+examples/linguistics/data/*
+examples/linguistics/runs/*
+
 ## The Vortal (breathing) dataset
 examples/vortal/data/*
 examples/vortal/runs/*
@@ -200,3 +206,7 @@ examples/ode-bench/runs/250113-124059-SuperMassiveGold*/checkpoints
 !examples/ode-bench/runs/250115-023500-T1-Median*/
 !examples/lotka-v/runs/250113-174800-NewSOTA/
 !examples/trends/runs/250115-004140-3Experts-Median*/
+examples/linguistics/nohup.log
+nohup.log
+
+!examples/epilepsy/runs/250122-220930-OMG-Use60Works*/

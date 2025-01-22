@@ -733,6 +733,8 @@ class EpilepsyDataset(TimeSeriesDataset):
             raise ValueError(f"Data not found at {data_dir}")
 
         dataset = raw_data['signal'][:, None, ::skip_steps, None]
+        if not adaptation:
+            dataset = dataset[:, :60, ::skip_steps, :]
 
         n_envs, _, n_timesteps, _ = dataset.shape
 

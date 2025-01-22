@@ -2,8 +2,8 @@
 # Hierarchical Shallow Piece-Wise Recurrent Neural Network on Epilepsy Data
 
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -19,12 +19,12 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 122022
+seed = 202409
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 5
+nb_families = 2
 nb_experts = nb_families
 nb_envs_per_fam = (6925//nb_experts, 770//nb_experts)   ## (Expected)
 
@@ -40,15 +40,30 @@ context_pool_size = 1
 context_size = 10
 taylor_orders = (0, 0)
 skip_steps = 1
-loss_contributors = num_envs[0]//1
+loss_contributors = 6925 // 10
 max_ret_env_states = num_envs[0]
 split_context = False
 shift_context = False
+
 annotation = "condition"        ## For the labels, either "condition" or "subject"
+event_id = {'Sleep stage W': 1,
+            'Sleep stage 1': 2,
+            'Sleep stage 2': 3,
+            'Sleep stage 3/4': 4,
+            'Sleep stage R': 5}
+
+# annotation = "subject"
+# event_id = {'Subject 1': 0,     ## There are 7 subjects
+#             'Subject 2': 1,
+#             'Subject 3': 2,
+#             'Subject 4': 3,
+#             'Subject 5': 4,
+#             'Subject 6': 5,
+#             'Subject 7': 6}
 
 meta_learner = "hier-shPLRNN"
 data_size = 2
-hidden_size = 16
+hidden_size = 8
 latent_size = data_size
 same_expert_init = True
 tf_alpha_min = 0.0  ## Teacher forcing alpha (1. means no teacher forcing)
@@ -59,20 +74,24 @@ sched_factor = 1.0
 max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
+self_reweighting = False    ## Was true.
 
-nb_outer_steps = 2
+nb_outer_steps = 1000
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 10
+nb_adapt_epochs = 100
 validate_every = 10
 print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
+gate_noise_level = 5e-2
+gate_max_kmeans = 20                     ## Maximum number of kmeans iterations
+
 context_regularization = False               ## Regularize the context with an L1 penalty
 same_expert_optstate = False                  ## Use the same optstate for all experts
 
 meta_train = True
-meta_test = True
+meta_test = False
 
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/250120-123848-Test/" if meta_train else "./"
@@ -205,7 +224,7 @@ learner = Learner(model=model,
                 loss_contributors=loss_contributors,
                 pool_filling="NF",      ## The closest envs are used in the inner loss
                 loss_filling="NF",      ## The closest envs are used in the outer loss
-                self_reweighting=True,  ## Reweight the outer loss by its own softmax 
+                self_reweighting=self_reweighting,  ## Reweight the outer loss by its own softmax 
                 key=model_key)
 
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
@@ -246,6 +265,8 @@ if meta_train == True:
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
+                        gate_noise_level=gate_noise_level,
+                        gate_max_kmeans=gate_max_kmeans,
                         verbose=False,
                         same_expert_optstate=same_expert_optstate,
                         key=trainer_key)
@@ -263,25 +284,34 @@ else:
 
 
 #%%
-## Test and visualise the results on a test dataloader
+# ## Test and visualise the results on a test dataloader
 visualtester = DynamicsVisualTester(trainer, key=test_key)
 
-ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
-                                    taylor_order=taylor_orders[1], 
-                                    nb_steps=nb_adapt_epochs,
-                                    print_error_every=print_error_every, 
-                                    criterion_id=0,
-                                    verbose=True,
-                                    val_dataloader=val_dataloader,
-                                    max_ret_env_states=max_ret_env_states,
-                                    max_adapt_batches=max_adapt_batches,
-                                    stochastic=False)
+# def rel_l2(y, y_hat):
+#     clean_y = jnp.maximum(jnp.abs(y), 1e-6)
+#     return jnp.mean(jnp.linalg.norm(y_hat-y, axis=-1)**2/jnp.linalg.norm(clean_y, axis=-1)**2)
+
+# ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
+#                                     taylor_order=taylor_orders[1], 
+#                                     nb_steps=nb_adapt_epochs,
+#                                     print_error_every=print_error_every, 
+#                                     criterion_id=0,
+#                                     loss_criterion=rel_l2,
+#                                     verbose=True,
+#                                     val_dataloader=val_dataloader,
+#                                     max_ret_env_states=max_ret_env_states,
+#                                     # max_ret_env_states=8,
+#                                     max_adapt_batches=max_adapt_batches,
+#                                     stochastic=False)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
-print("Loss per InD environment:", all_ind_crit[0].tolist())
+# print("Losses per InD environment:", all_ind_crit[0].tolist())
 
-ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift.squeeze() for e in range(nb_experts)]
-print("After training, the context shifts are:", jnp.array(ctx_shifts))
+# ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift.squeeze() for e in range(nb_experts)]
+# print("After training, the context shifts are:", jnp.array(ctx_shifts))
+
+# print(f"\nLoss InD (mean)  : {np.mean(all_ind_crit[0]):.3f}")
+# print(f"Loss InD (median): {ind_crit:.3f}")
 
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
@@ -344,6 +374,7 @@ all_gate_vals = jnp.stack(all_gate_vals, axis=0)
 
 ## Plot the gate values as an animation
 fig, ax = plt.subplots(1, 1, figsize=(6, 7))
+# img = ax.imshow(all_gate_vals[0], aspect='auto', cmap='turbo', interpolation="nearest")
 img = ax.imshow(all_gate_vals[0], aspect='auto', cmap='turbo', interpolation="nearest")
 plt.colorbar(img)
 ax.set_xlabel("Experts")
@@ -367,10 +398,10 @@ ani.save(run_folder+"gate_values_animation.gif", writer='pillow', fps=8)
 
 #%%
 
-perp = nb_families if nb_families > 1 else 4
-visualtester.visualize_context_clusters(perplexities=(perp, perp),
-                                        key=test_key,
-                                        save_path=run_folder+"context_clusters.png")
+# perp = nb_families if nb_families > 1 else 4
+# visualtester.visualize_context_clusters(perplexities=(perp, perp),
+#                                         key=test_key,
+#                                         save_path=run_folder+"context_clusters.png")
 
 
 
@@ -505,15 +536,7 @@ labels = pd.read_csv(data_folder+'train_annotations.csv')[annotation].astype(int
 labels = np.array(labels)
 
 ## Events Ids are as follows
-event_id = {'Sleep stage W': 1,
-            'Sleep stage 1': 2,
-            'Sleep stage 2': 3,
-            'Sleep stage 3/4': 4,
-            'Sleep stage R': 5}
-
-color_table = {0: 'r', 1: 'g', 2: 'b', 3: 'c', 4: 'm', 5: 'y'}
-colors = [color_table[l] for l in labels]
-conditions = {1: "Sleep stage W", 2: "Sleep stage 1", 3: "Sleep stage 2", 4: "Sleep stage 3/4", 5: "Sleep stage R"}
+event_id_inv = {v: k for k, v in event_id.items()}
 
 ## Use PCA 
 from sklearn.decomposition import PCA
@@ -523,18 +546,20 @@ nb_train_samples = X.shape[0]
 X_total = np.concatenate([X, X_adapt], axis=0) if meta_test else X
 X_reduced = pca.fit_transform(X_total) if X.shape[1] > 2 else X
 
+
 plt.figure(figsize=(10, 7))
 
-for class_label in range(1, 6):
-    marker = "^" if class_label==0 else "x"
-    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+unique_labels = [5, 3, 4, 2, 1] if annotation=="condition" else np.unique(labels)
+for class_label in unique_labels:
+    marker = "."
+    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, label=event_id_inv[class_label], marker=marker)
 
 if meta_test:
     X_adapt_rec = pca.transform(X_adapt) if X_adapt.shape[1] > 2 else X_adapt
     labels_adapt = y_test
-    for class_label in range(1, 6):
-        marker = "." if class_label==0 else "."
-        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, c=color_table[class_label], marker=marker, alpha=0.5)
+    for class_label in unique_labels:
+        marker = "x"
+        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, label=event_id_inv[class_label], alpha=0.5, marker=marker)
 
 plt.legend(loc='upper right')
 
@@ -554,24 +579,24 @@ X = learner.contexts.params
 
 import umap
 nb_train_samples = X.shape[0]
-umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]), min_dist=0.0, spread=1.0, metric="euclidean")
+umap_reducer = umap.UMAP(n_components=2, random_state=int(test_key[0]), min_dist=0.0, n_neighbors=15, metric="euclidean")
 X_total = np.concatenate([X, X_adapt], axis=0) if meta_test else X
 X_reduced = umap_reducer.fit_transform(X_total) if X.shape[1] > 2 else X
 
 plt.figure(figsize=(10, 7))
 
-for class_label in range(1, 6):
-    marker = "^" if class_label==0 else "x"
-    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, c=color_table[class_label], label=conditions[class_label], marker=marker)
+for class_label in unique_labels:
+    marker = "."
+    plt.scatter(X_reduced[:nb_train_samples][labels==class_label, 0], X_reduced[:nb_train_samples][labels==class_label, 1], s=50, label=event_id_inv[class_label], marker=marker)
 
 if meta_test:
     X_adapt_rec = pca.transform(X_adapt) if X_adapt.shape[1] > 2 else X_adapt
     labels_adapt = y_test
-    for class_label in range(1, 6):
-        marker = "." if class_label==0 else "."
-        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, c=color_table[class_label], marker=marker, alpha=0.5)
+    for class_label in unique_labels:
+        marker = "x"
+        plt.scatter(X_reduced[nb_train_samples:][labels_adapt==class_label, 0], X_reduced[nb_train_samples:][labels_adapt==class_label, 1], s=20, label=event_id_inv[class_label], alpha=0.5, marker=marker)
 
-plt.legend()
+plt.legend(loc='upper right')
 
 plt.title("Contexts Clustering - UMAP", fontsize=24)
 plt.xlabel("UMAP 1") if X.shape[1] > 1 else plt.xlabel("Ctx 1")
