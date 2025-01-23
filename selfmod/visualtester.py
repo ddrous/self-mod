@@ -75,8 +75,8 @@ class VisualTester:
         train_mean = losses_means[criterion_id+1]
         if verbose:
             # print("\n==  Meta-Evaluation ... ==")
-            print(f"\n    Test loss value: {test_mean:.2e} ± {test_std:.2e}")
-            print(f"    Train loss value for criterion {criterion_id}: {train_mean:.2e}")
+            print(f"\n    Test loss value: {test_mean:.3e} ± {test_std:.3e}")
+            print(f"    Train loss value for criterion {criterion_id}: {train_mean:.3e}")
 
         # return mean_loss, None
         return test_mean, (test_means, test_std, train_mean, aux_losses)

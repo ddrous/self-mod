@@ -2,8 +2,8 @@
 # Neural ODE on Lotka-Volterra Dataset
 
 #%%
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -27,7 +27,7 @@ nb_families = 3          ## Total number of ODE families in the dataset
 nb_experts = nb_families
 nb_envs_per_fam = (3, 1)
 
-num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
+num_envs = (9, 4)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
@@ -47,7 +47,7 @@ shift_context = True
 
 meta_learner="NCF"
 data_size = 2
-width_main = 32*4
+width_main = 110
 depth_main = 3
 depth_data = 1
 depth_ctx = 1
@@ -61,9 +61,9 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 2
-nb_inner_steps = (2, 2)
-nb_adapt_epochs = 100
+nb_outer_steps = 3600
+nb_inner_steps = (12, 12)
+nb_adapt_epochs = 1000
 validate_every = 10
 print_error_every = (10, 10)
 
@@ -74,8 +74,8 @@ context_regularization = True               ## Regularize the context with an L1
 meta_train = True
 meta_test = True
 
-# run_folder = None if meta_train else "./"
-run_folder = "./runs/241213-150028-Test/" if meta_train else "./"
+run_folder = None if meta_train else "./"
+# run_folder = "./runs/241213-150028-Test/" if meta_train else "./"
 
 data_folder = "./data/" if meta_train else "../../data/"
 
@@ -435,54 +435,63 @@ plt.savefig(run_folder+"clusters_umap.png", bbox_inches='tight')
 #%%
 ## Adapt the model to the new dataset
 if meta_test:
-    # adapt_id = nb_envs_per_fam[1]*1+1     ## The single environment to adapt to (the difficult rectangular one)
 
-    adapt_dataset = MixerDynamicsDataset(data_dir=data_folder+"adapt_train.npz", 
-                                                   num_shots=num_shots[1], 
-                                                   skip_steps=skip_steps,
-                                                   adaptation=True)
-    # adapt_dataset.total_envs = 1
-    # adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:, :, :, :]
-    # adapt_dataset.t_eval = adapt_dataset.t_eval[adapt_id:, :]
+    ## Adapt in a sequential manner
+    adapt_losses = []
+    
+    for adapt_id in range(num_envs[1]):
 
-    adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
-                                batch_size=num_envs[1], 
-                                shuffle=shuffle,
-                                num_workers=num_workers,
-                                drop_last=False)
+        adapt_dataset = MixerDynamicsDataset(data_dir=data_folder+"adapt_train.npz", 
+                                                    num_shots=num_shots[1], 
+                                                    skip_steps=skip_steps,
+                                                    adaptation=True)
+        adapt_dataset.total_envs = 1
+        adapt_dataset.dataset = adapt_dataset.dataset[adapt_id:adapt_id+1, :, :, :]
+        # adapt_dataset.dataset = adapt_dataset.t_eval[adapt_id:, :, :]
 
-    adapt_dataset_test = MixerDynamicsDataset(data_dir=data_folder+"adapt_test.npz", 
-                                                   num_shots=num_shots[1], 
-                                                   skip_steps=skip_steps,
-                                                   adaptation=True)
-    # adapt_dataset_test.total_envs = 1
-    # adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:, :, :, :]
-    # adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[adapt_id:, :]
+        adapt_dataloader = NumpyLoader(dataset=adapt_dataset,
+                                    batch_size=1, 
+                                    shuffle=shuffle,
+                                    num_workers=num_workers,
+                                    drop_last=False)
 
-    adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
-                                batch_size=num_envs[1],
-                                shuffle=shuffle,
-                                num_workers=num_workers,
-                                drop_last=False)
+        adapt_dataset_test = MixerDynamicsDataset(data_dir=data_folder+"adapt_test.npz", 
+                                                    num_shots=num_shots[1], 
+                                                    skip_steps=skip_steps,
+                                                    adaptation=True)
+        adapt_dataset_test.total_envs = 1
+        adapt_dataset_test.dataset = adapt_dataset_test.dataset[adapt_id:adapt_id+1, :, :, :]
 
-    ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
-                                        taylor_order=taylor_orders[1], 
-                                        nb_steps=nb_adapt_epochs,
-                                        print_error_every=print_error_every, 
-                                        criterion_id=0,
-                                        verbose=True,
-                                        val_dataloader=adapt_dataloader_test,
-                                        max_ret_env_states=1,
-                                        max_adapt_batches=max_adapt_batches,
-                                        stochastic=False)
-    print("Loss per OoD environment:", all_ood_crit[0].tolist())
+        adapt_dataloader_test = NumpyLoader(dataset=adapt_dataset_test,
+                                    batch_size=1,
+                                    shuffle=shuffle,
+                                    num_workers=num_workers,
+                                    drop_last=False)
+
+        ood_crit, all_ood_crit = visualtester.evaluate(adapt_dataloader, 
+                                            taylor_order=taylor_orders[1], 
+                                            nb_steps=nb_adapt_epochs,
+                                            print_error_every=print_error_every, 
+                                            criterion_id=0,
+                                            verbose=True,
+                                            val_dataloader=adapt_dataloader_test,
+                                            max_ret_env_states=1,
+                                            max_adapt_batches=max_adapt_batches,
+                                            stochastic=False)
+
+        print("Loss per OoD environment:", all_ood_crit[0].tolist())
+
+        adapt_losses.append(ood_crit)
+
+## Print the mean loss over all environments
+print("\nMean OoD loss over all environments:", np.mean(adapt_losses))
 
 #%%
 visualtester.visualize_artefacts(save_path=adapt_folder+"artefacts.png", adaptation=True)
 
 visualtester.visualize_dynamics(save_path=adapt_folder+"dynamics.png",
                                 data_loader=adapt_dataloader_test,
-                                envs=[0,1,2,3],
+                                envs=[0],
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)

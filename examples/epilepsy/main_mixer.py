@@ -26,9 +26,9 @@ torch.manual_seed(seed)
 ## Dataloader hps
 nb_families = 2
 nb_experts = nb_families
+
 use_small_train_set = True
 num_envs_train = 60 if use_small_train_set else 80
-
 nb_envs_per_fam = (num_envs_train//nb_experts, 11420//nb_experts)   ## (Expected)
 
 num_envs = (num_envs_train, 11420)
@@ -62,7 +62,7 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 500
+nb_outer_steps = 1000
 nb_inner_steps = (12, 12)
 nb_adapt_epochs = 10000
 validate_every = 10
@@ -502,7 +502,7 @@ if meta_test:
 
 #%%
 X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)
+labels = np.load(data_folder+"train.npz")["condition"].astype(int)[:num_envs_train]
 
 color_table = {0:"royalblue", 1:"crimson"}
 colors = [color_table[l] for l in labels]
@@ -544,7 +544,7 @@ plt.savefig(run_folder+"clusters_pca.png", bbox_inches='tight');
 
 #%%
 X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)
+labels = np.load(data_folder+"train.npz")["condition"].astype(int)[:num_envs_train]
 
 color_table = {0:"royalblue", 1:"crimson"}
 colors = [color_table[l] for l in labels]
@@ -582,7 +582,7 @@ plt.savefig(run_folder+"clusters_umap.png", bbox_inches='tight');
 #%%
 
 X = learner.contexts.params
-y = np.load(data_folder+"train.npz")["condition"].astype(int)
+y = np.load(data_folder+"train.npz")["condition"].astype(int)[:num_envs_train]
 
 ## Let's do the classification with SVM and a non-linear kernel
 from sklearn.svm import SVC
