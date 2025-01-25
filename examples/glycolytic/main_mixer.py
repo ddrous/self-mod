@@ -6,7 +6,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
 
@@ -18,7 +18,7 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 202402
+seed = 2700
 np.random.seed(seed)
 torch.manual_seed(seed)
 
@@ -39,17 +39,16 @@ context_pool_size = 1
 context_size = 6
 taylor_orders = (0, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-# ivp_args = {"subdivisions":5, "integrator":RK4}
 skip_steps = 1
-loss_contributors = 3
+loss_contributors = nb_envs_per_fam[0]
 max_ret_env_states = num_envs[0]
 split_context = True
 shift_context = True
 
-meta_learner="GEPS"
-data_size = 2
-width_main = 256
-depth_main = 4
+meta_learner="CoDA"
+data_size = 7
+width_main = 202
+depth_main = 3
 depth_data = 2
 depth_ctx = 2
 intermediate_size = 32
@@ -62,15 +61,16 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 5000
+nb_outer_steps = 500
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 5000
+nb_adapt_epochs = 500
 validate_every = 10
 print_error_every = (10, 10)
+same_expert_optstate = True
 
 gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
 gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
-context_regularization = True               ## Regularize the context with an L1 penalty
+context_regularization = False               ## Regularize the context with an L1 penalty
 
 meta_train = True
 meta_test = True
@@ -180,6 +180,7 @@ def env_loss_fn(model, ctx, y_hat, y):
 ## Example context to use
 contexts = ArrayContextParams(nb_envs=num_envs[0], context_size=context_size, key=None)
 
+
 ## Parameters for a built-in NCF model
 if meta_learner == "NCF":
     expert_params = {"data_size":data_size,
@@ -228,12 +229,12 @@ learner = Learner(model=model,
                 key=model_key)
 
 
+
 model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(model, eqx.is_array)) if x is not None)
 active_model_params = sum(x.size for x in jax.tree_util.tree_leaves(eqx.filter(neuralnet.experts[0], eqx.is_array)) if x is not None)
 print("\n\nTotal number of parameters in the model:", model_params)
 print("Total number of parameters in one expert:", active_model_params)
 print("Total number of parameters in one context:", contexts.eff_context_size)
-
 
 #%%
 
@@ -268,6 +269,7 @@ if meta_train == True:
                         val_criterion_id=0, 
                         max_val_batches=max_train_batches,
                         update_gate_every=gate_update_every,
+                        same_expert_optstate=same_expert_optstate,
                         verbose=False,
                         key=trainer_key)
 else:
@@ -306,7 +308,7 @@ print("After training, the context shifts are:", jnp.array(ctx_shifts))
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                envs=jnp.arange(0, nb_envs_per_fam[0]*nb_families).tolist(),
+                                envs=jnp.arange(0, num_envs[0]).tolist(),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)

@@ -6,7 +6,7 @@
 # %autoreload 2
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 from selfmod import *
 
@@ -18,16 +18,16 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 202402
+seed = 2700
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
 nb_families = 3          ## Total number of ODE families in the dataset
 nb_experts = nb_families
-nb_envs_per_fam = (3, 1)
+nb_envs_per_fam = (7, 1)
 
-num_envs = (9, 4)
+num_envs = (21, 4)
 num_shots = (-1, -1)
 num_workers = 0
 shuffle = False
@@ -36,23 +36,22 @@ test_proportion = 1.0
 
 ## Learner/model hps
 context_pool_size = 1
-context_size = 6
+context_size = 4
 taylor_orders = (0, 0)
 ivp_args = {"return_traj":True, "max_steps":256*16, "integrator":diffrax.Tsit5(), "rtol": 1e-3, "atol":1e-6, "clip_sol":None, "adjoint": diffrax.RecursiveCheckpointAdjoint()}
-# ivp_args = {"subdivisions":5, "integrator":RK4}
 skip_steps = 1
-loss_contributors = 3
+loss_contributors = nb_envs_per_fam[0]
 max_ret_env_states = num_envs[0]
 split_context = True
 shift_context = True
 
 meta_learner="GEPS"
 data_size = 2
-width_main = 256
+width_main = 154
 depth_main = 4
-depth_data = 2
-depth_ctx = 2
-intermediate_size = 32
+depth_data = 1
+depth_ctx = 1
+intermediate_size = 64
 activation = "swish"
 
 ## Train and adapt hps
@@ -62,14 +61,14 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 5000
+nb_outer_steps = 500
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 5000
+nb_adapt_epochs = 500
 validate_every = 10
 print_error_every = (10, 10)
 
 gate_update_strategy = "least_squares"   ## "least_squares" or "gradient_descent"
-gate_update_every = 5                       ## Update the gate every x inner steps (useful in least_squares mode)
+gate_update_every = 3                       ## Update the gate every x inner steps (useful in least_squares mode)
 context_regularization = True               ## Regularize the context with an L1 penalty
 
 meta_train = True
@@ -306,7 +305,7 @@ print("After training, the context shifts are:", jnp.array(ctx_shifts))
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                envs=jnp.arange(0, nb_envs_per_fam[0]*nb_families).tolist(),
+                                envs=jnp.arange(0, num_envs[0]).tolist(),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)

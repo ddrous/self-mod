@@ -57,8 +57,10 @@ examples/crowdsource/nohup.log
 examples/fmri/nohup.log
 examples/forced-o/nohup.log
 examples/sine-reg/nohup.log
-examples/sleep/nohup.logs
-examples/linguistics/nohup.logs
+examples/sleep/nohup.log
+examples/linguistics/nohup.log
+examples/selkov/mega_nohup.log
+examples/lotka-v/mega_nohup.log
 
 ## Ingnore all folders named "tmp", recursively
 **/tmp/
@@ -140,6 +142,15 @@ examples/vortal/data/*
 examples/vortal/runs/*
 *core
 
+## The Lotka dataset
+examples/selkov/runs/*
+examples/selkov/data/*
+
+## The Glcolytic dataset
+examples/glycolytic/runs/*
+examples/glycolytic/data/*
+
+
 ## Lotka volterra experiment runs
 examples/lotka-v/runs/*
 !examples/lotka-v/runs/240721-214759-T0/
@@ -210,3 +221,4 @@ examples/linguistics/nohup.log
 nohup.log
 
 !examples/epilepsy/runs/250122-220930-OMG-Use60Works*/
+

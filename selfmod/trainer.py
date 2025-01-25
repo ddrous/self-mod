@@ -81,8 +81,16 @@ class Trainer:
             self.val_losses = []
 
         if os.path.exists(path+"opt_state_model.pkl"):
-            self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
-            self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
+            try:
+                self.opt_state_model = pickle.load(open(path+"opt_state_model.pkl", "rb"))
+            except Exception as e:
+                print(f"Error when loading the model optimiser state - {e}")
+                self.opt_state_model = None
+            try:
+                self.opt_state_ctx = pickle.load(open(path+"opt_state_ctx.pkl", "rb"))
+            except Exception as e:
+                print(f"Error when loading the context optimiser state - {e}")
+                self.opt_state_ctx = None
         else:
             print("WARNING: No optimiser state found in the provided path.")
             # self.opt_state_model = None
