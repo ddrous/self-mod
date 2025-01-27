@@ -19,15 +19,15 @@ from matplotlib import animation
 #%%
 
 ## For reproducibility
-seed = 2022
+seed = 200022
 np.random.seed(seed)
 torch.manual_seed(seed)
 
 ## Dataloader hps
-nb_families = 2
+nb_families = 1
 nb_experts = nb_families
 
-use_small_train_set = True
+use_small_train_set = False
 num_envs_train = 60 if use_small_train_set else 80
 nb_envs_per_fam = (num_envs_train//nb_experts, 11420//nb_experts)   ## (Expected)
 
@@ -62,11 +62,11 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 1000
+nb_outer_steps = 500
 nb_inner_steps = (12, 12)
 nb_adapt_epochs = 10000
-validate_every = 10
-print_error_every = (10, 10)
+validate_every = 100
+print_error_every = (100, 100)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
@@ -77,7 +77,7 @@ same_expert_optstate = False                  ## Use the same optstate for all e
 self_reweighting = False                     ## Reweight the outer loss by its own softmax
 
 meta_train = True
-meta_test = False
+meta_test = True
 
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/250103-123848-Test/" if meta_train else "./"
@@ -315,7 +315,8 @@ ax2.set_xlabel("Experts")
 ax2.set_ylabel("Environments")
 
 ## Set yticks in steps of nb_envs_per_fam[0]
-y_labels = np.arange(0, num_envs[0], nb_envs_per_fam[0])
+# y_labels = np.arange(0, num_envs[0], nb_envs_per_fam[0])
+y_labels = [0, 30, 60, 70, 80] if not use_small_train_set else [0, 30, 60]
 ax2.set_yticks(y_labels)
 ax2.set_yticklabels(y_labels)
 
@@ -327,6 +328,7 @@ ax2.set_title("Gate Values Heatmap")
 
 plt.draw()
 plt.savefig(run_folder+"gate_values.png")
+plt.savefig(run_folder+"gate_values.pdf")
 
 
 
@@ -383,7 +385,6 @@ visualtester.visualize_context_clusters(perplexities=(perp, perp),
 
 #%%[markdown]
 # ## Meta-testing
-
 
 
 #%%
