@@ -160,6 +160,7 @@ examples/lotka-v/runs/*
 
 ## The Foundational dataset
 examples/ode-bench/data_2D/*
+examples/ode-bench/data_2D_16envs/*
 examples/ode-bench/data_2D_tiny/*
 examples/ode-bench/data_2D_mid/*
 examples/ode-bench/data_2D_super_small/*
