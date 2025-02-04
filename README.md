@@ -49,13 +49,13 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
 <table>
 <tr>
 <th>
-<code class="language-python">
 <p align="left">
+<code class="language-python">
 
         from selfmod import DataLoader, Learner, Trainer, VisualTester
 
         # Load your dataset
-        loader = DataLoader(dataset="path/to/data")
+        loader = [DataLoader(dataset="path/to/data")]{style="float:right"}
 
         # Define your model and loss
         learner = Learner(model=my_model, contexts=my_ctx, loss_fn=my_loss_fn)
@@ -68,8 +68,8 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
         tester = VisualTester(trainer=trainer)
         tester.evaluate()
         tester.visualize()
-</p>
 </code>
+</p>
 </th>
 <th><img src="docs/assets/ModularCSM.png" width="200"></th>
 </tr>
