@@ -1,6 +1,8 @@
 # SelfMod: Contextual Self-Modulation Library
 
-![SelfMod Logo](logo-3.webp)
+<p align="center">
+<img src="docs/logos/logo-3.webp" alt="drawing" width="300"/>
+</p>
 
 **SelfMod** is a library for implementing **Contextual Self-Modulation (CSM)** techniques in deep learning. SelfMod is designed to make your meta-learning tasks adaptable, scalable, and intuitive, whether you're doing 1st or 2nd order optimization.
 
@@ -48,6 +50,7 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
 <tr>
 <th>
 <code class="language-python">
+<p align="left">
 
         from selfmod import DataLoader, Learner, Trainer, VisualTester
 
@@ -65,6 +68,7 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
         tester = VisualTester(trainer=trainer)
         tester.evaluate()
         tester.visualize()
+</p>
 </code>
 </th>
 <th><img src="docs/assets/ModularCSM.png" width="200"></th>
