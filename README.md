@@ -46,37 +46,7 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
 ### **Example Workflow**
 
 
-<table>
-<tr>
-<th style="text-align: left; vertical-align: top;">
-<!-- <p> -->
-<pre>
-<code class="language-python">
-    from selfmod import DataLoader, Learner, Trainer, VisualTester
-
-    # Load your dataset
-    loader = DataLoader(dataset="path/to/data")
-
-    # Define your model and loss
-    learner = Learner(model=my_model, contexts=my_ctx, loss_fn=my_loss_fn)
-
-    # Train your model
-    trainer = Trainer(learner=learner, optimizer=my_optimiser)
-    trainer.meta_train(dataloader=loader, epochs=500)
-
-    # Test and visualize your results
-    tester = VisualTester(trainer=trainer)
-    tester.evaluate()
-    tester.visualize()
-</code>
-</pre>
-<!-- </p> -->
-</th>
-<th><img src="docs/assets/ModularCSM.png" width="200"></th>
-</tr>
-</table>
-
-Solarized dark             |  Solarized Ocean
+Example Code             |  Flowchart
 :-------------------------:|:-------------------------:
 ```python
     from selfmod import DataLoader, Learner, Trainer, VisualTester
@@ -95,8 +65,7 @@ Solarized dark             |  Solarized Ocean
     tester = VisualTester(trainer=trainer)
     tester.evaluate()
     tester.visualize()
-```
-    |  ![](docs/assets/ModularCSM.png)
+``` |  <img src="docs/assets/ModularCSM.png" width="200">
 
 ---
 
