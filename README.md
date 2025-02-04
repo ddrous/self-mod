@@ -76,6 +76,28 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
 </tr>
 </table>
 
+Solarized dark             |  Solarized Ocean
+:-------------------------:|:-------------------------:
+```python
+    from selfmod import DataLoader, Learner, Trainer, VisualTester
+
+    # Load your dataset
+    loader = DataLoader(dataset="path/to/data")
+
+    # Define your model and loss
+    learner = Learner(model=my_model, contexts=my_ctx, loss_fn=my_loss_fn)
+
+    # Train your model
+    trainer = Trainer(learner=learner, optimizer=my_optimiser)
+    trainer.meta_train(dataloader=loader, epochs=500)
+
+    # Test and visualize your results
+    tester = VisualTester(trainer=trainer)
+    tester.evaluate()
+    tester.visualize()
+```
+    |  ![](docs/assets/ModularCSM.png)
+
 ---
 
 ## 📚 **Papers Using SelfMod**
