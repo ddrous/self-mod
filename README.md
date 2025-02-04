@@ -1,7 +1,7 @@
-# SelfMod: Contextual Self-Modulation Library
+# SelfMod: A Contextual Self-Modulation Library
 
 <p align="center">
-<img src="docs/logos/logo-3.webp" alt="drawing" width="300"/>
+<img src="docs/logos/logo-3.webp" alt="drawing" width="200"/>
 </p>
 
 **SelfMod** is a library for implementing **Contextual Self-Modulation (CSM)** techniques in deep learning. SelfMod is designed to make your meta-learning tasks adaptable, scalable, and intuitive, whether you're doing 1st or 2nd order optimization.
@@ -40,7 +40,7 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
    - Supports meta-training for NCF and CAVIA frameworks.
 
 4. **VisualTester:**
-   - Enables testing and visualization of results.
+   - Enables meta-testing and visualization of results.
    - Provides insightful metrics and plots for evaluation.
 
 ### **Example Workflow**
@@ -48,33 +48,29 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
 
 <table>
 <tr>
-<th>
-<p align="left">
-<code class="language-python">
+<th style="text-align: left; vertical-align: top;">
+<pre><code class="language-python">
+from selfmod import DataLoader, Learner, Trainer, VisualTester
 
-        from selfmod import DataLoader, Learner, Trainer, VisualTester
+# Load your dataset
+loader = DataLoader(dataset="path/to/data")
 
-        # Load your dataset
-        loader = [DataLoader(dataset="path/to/data")]{style="float:right"}
+# Define your model and loss
+learner = Learner(model=my_model, contexts=my_ctx, loss_fn=my_loss_fn)
 
-        # Define your model and loss
-        learner = Learner(model=my_model, contexts=my_ctx, loss_fn=my_loss_fn)
+# Train your model
+trainer = Trainer(learner=learner, optimizer=my_optimiser)
+trainer.meta_train(dataloader=loader, epochs=500)
 
-        # Train your model
-        trainer = Trainer(learner=learner, optimizer=my_optimiser)
-        trainer.meta_train(dataloader=loader, epochs=500)
-
-        # Test and visualize your results
-        tester = VisualTester(trainer=trainer)
-        tester.evaluate()
-        tester.visualize()
-</code>
-</p>
+# Test and visualize your results
+tester = VisualTester(trainer=trainer)
+tester.evaluate()
+tester.visualize()
+</code></pre>
 </th>
 <th><img src="docs/assets/ModularCSM.png" width="200"></th>
 </tr>
 </table>
-
 
 ---
 
