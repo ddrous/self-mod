@@ -46,26 +46,9 @@ SelfMod's design ensures ease of use while offering the flexibility to adapt to 
 ### **Example Workflow**
 
 
-Example Code             |  Flowchart
+Code             |  Flowchart
 :-------------------------:|:-------------------------:
-```python
-    from selfmod import DataLoader, Learner, Trainer, VisualTester
-
-    # Load your dataset
-    loader = DataLoader(dataset="path/to/data")
-
-    # Define your model and loss
-    learner = Learner(model=my_model, contexts=my_ctx, loss_fn=my_loss_fn)
-
-    # Train your model
-    trainer = Trainer(learner=learner, optimizer=my_optimiser)
-    trainer.meta_train(dataloader=loader, epochs=500)
-
-    # Test and visualize your results
-    tester = VisualTester(trainer=trainer)
-    tester.evaluate()
-    tester.visualize()
-``` |  <img src="docs/assets/ModularCSM.png" width="200">
+<img src="docs/assets/workflow.png" width="600"> |  <img src="docs/assets/ModularCSM.png" width="200">
 
 ---
 
