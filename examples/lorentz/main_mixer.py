@@ -25,35 +25,35 @@ torch.manual_seed(seed)
 
 ## Dataloader hps
 nb_families = 2
-nb_experts = nb_families
+nb_experts = 3
 
-use_small_train_set = False
-num_envs_train = 60 if use_small_train_set else 80
-nb_envs_per_fam = (num_envs_train//nb_experts, 11420//nb_experts)   ## (Expected)
-
-num_envs = (num_envs_train, 11420)
+nb_envs_per_fam = ((64+20)//2, (64+20)//2)   ## (Expected)
+num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
 num_shots = (-1, -1)
 num_workers = 24
 shuffle = False
-train_proportion = 1.0  ## Min proporrion of the trajectory for training
-test_proportion = 1.0
+
+noisy_lorentz = True
+num_train_steps = 1000
+num_adapt_steps = 5500
 
 ## Learner/model hps
 context_pool_size = 1
-context_size = 10
+context_size = 3
 taylor_orders = (0, 0)
 skip_steps = 1
-loss_contributors = num_envs[0]//nb_experts
+loss_contributors = nb_envs_per_fam[0] * nb_families
 max_ret_env_states = num_envs[0]
 split_context = False
 shift_context = True
 
 meta_learner = "hier-shPLRNN"
-data_size = 1
-hidden_size = 16
+data_size = 10
+hidden_size = 32
 latent_size = data_size
 same_expert_init = True
-tf_alpha_min = 0.5  ## Teacher forcing alpha (1. means no teacher forcing)
+tf_alpha_start = 1.0  ## Teacher forcing alpha (0. means no teacher forcing)
+tf_gamma = 0.9995      ## Teacher forcing gamma (alpha_min is multiplied by this value every outer steps)
 
 ## Train and adapt hps
 init_lrs = (1e-3, 1e-3)
@@ -62,22 +62,22 @@ max_train_batches = 1
 max_adapt_batches = 1
 proximal_betas = (10., 10.)       ## For the model, context and the gate, in that order
 
-nb_outer_steps = 500
+nb_outer_steps = 50*10
 nb_inner_steps = (12, 12)
-nb_adapt_epochs = 10000
+nb_adapt_epochs = 250
 validate_every = 100
 print_error_every = (100, 100)
 
 gate_update_strategy = "least_squares"      ## "least_squares" or "gradient_descent"
 gate_update_every = 1                       ## Update the gate every x inner steps (useful in least_squares mode)
-gating_hyperparams = {"max_kmeans":20, "convergence_tol":1e-3, "noise_level":1e-4}
+gating_hyperparams = {"max_kmeans":30, "convergence_tol":1e-3, "noise_level":1e-2}
 
 context_regularization = False               ## Regularize the context with an L1 penalty
 same_expert_optstate = False                  ## Use the same optstate for all experts
 self_reweighting = False                     ## Reweight the outer loss by its own softmax
 
 meta_train = True
-meta_test = True
+meta_test = False
 
 run_folder = None if meta_train else "./"
 # run_folder = "./runs/250103-123848-Test/" if meta_train else "./"
@@ -107,30 +107,32 @@ adapt_folder, checkpoints_folder, _ = setup_run_folder(run_folder, os.path.basen
 mother_key = jax.random.PRNGKey(seed)
 data_key, model_key, trainer_key, test_key = jax.random.split(mother_key, num=4)
 
-train_file = "train_small.npz" if use_small_train_set else "train.npz"
-train_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+train_file, 
-                                               skip_steps=skip_steps, 
-                                               traj_prop_min=train_proportion), 
+train_dataloader = NumpyLoader(LorentzDataset(data_dir=data_folder,
+                                              noisy=noisy_lorentz,
+                                               num_steps=num_train_steps,), 
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
 
-val_dataloader = NumpyLoader(EpilepsyDataset(data_dir=data_folder+train_file, ## TODO Do a better job of splitting the data
-                                             skip_steps=skip_steps,
-                                             traj_prop_min=test_proportion),
+val_dataloader = NumpyLoader(LorentzDataset(data_dir=data_folder,
+                                              noisy=noisy_lorentz,
+                                               num_steps=num_train_steps),
                               batch_size=num_envs[0],
                               shuffle=shuffle,
                               num_workers=num_workers,
                               drop_last=False)
-
 
 #%%
 
 # ## Plot the trajectories in the a few environments
 
 (outs, ts), _ = next(iter(train_dataloader))
-train_labels = np.load(data_folder+"train.npz")["condition"].astype(int)
+def get_lorentz_labels():
+    labs = np.zeros(outs.shape[0])
+    labs[:64] = 1
+    return labs.astype(int)
+train_labels = get_lorentz_labels()
 
 print("Shapes of data and t_eval:", outs.shape, ts.shape)
 
@@ -141,8 +143,10 @@ if E_plot==1:
     ax = [ax]
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown', 'r', 'g', 'b', 'c', 'm', 'y']
 xlim = 0, 1
+dim0, dim1 = 0, 1
 for e, e_ in enumerate(np.random.choice(outs.shape[0], E_plot, replace=False)):
-    ax[e].plot(ts[e_], outs[e_].squeeze(), '-', color=colors[e])
+    # ax[e].plot(ts[e_], outs[e_].squeeze(), '-', color=colors[e])
+    ax[e].plot(outs[e_, ..., dim0].squeeze(), outs[e_, ..., dim1].squeeze(), '-', color=colors[e])
     ax[e].set_title(f"Env {e_}" + f" - Class {train_labels[e_]}")
     if e >= E_plot-3:
         ax[e].set_xlabel("Normalized Time")
@@ -158,13 +162,26 @@ plt.savefig(run_folder+"train_trajectories.png")
 #%%
 
 
+def nll_loss(inp, target, log_cov):
+    md = 0.5 * jnp.sum((inp - target)**2 / jnp.exp(log_cov), axis=-1)
+    logdet = 0.5 * log_cov.sum(axis=-1)
+    return jnp.mean(logdet + md)
 
 def env_loss_fn(model, ctx, y_hat, y):
     """
     Loss function for one environment. Leading dimension of y_hat corresponds to the pool size !
     """
 
-    term1 = jnp.mean((y_hat-y)**2)
+    # term1 = jnp.mean((y_hat-y)**2)
+
+    if hasattr(model, "vectorfield"):
+        log_cov = model.vectorfield.neuralnet.cov_model(ctx)
+        term1 = nll_loss(y_hat, y, log_cov)
+    else:
+        # log_cov = model.cov_model(ctx)
+        # log_cov = jnp.zeros_like(y_hat)
+        term1 = jnp.mean((y_hat-y)**2)
+
     if context_regularization:
         term2 = jnp.mean(jnp.abs(ctx))
         loss_val = term1 + 1e-3*term2
@@ -186,7 +203,8 @@ expert_params = {"data_size":data_size,
                 "latent_size":latent_size,
                 "context_size":context_size,
                 "ctx_utils":None,
-                "tf_alpha_min":tf_alpha_min,
+                "tf_alpha_start":tf_alpha_start,
+                "tf_gamma":tf_gamma,
                 "shift_context":shift_context}
 
 model = DirectMapping(MixER_S2S(key=model_key,
@@ -259,6 +277,11 @@ else:
     trainer.restore_trainer(path=run_folder)
 
 
+#%%
+## Put the model in eval mode to avoid any issues later on
+# trainer.learner.model = trainer.learner.inference_mode(trainer.learner.model)
+
+
 
 #%%[markdown]
 # ## Post-training analysis
@@ -290,8 +313,8 @@ print("After training, the context shifts are:", jnp.array(ctx_shifts))
 #%%
 visualtester.visualize_dynamics(save_path=run_folder+"dynamics.png",
                                 data_loader=val_dataloader,
-                                envs=jnp.arange(0, num_envs[0], 10).tolist(),
-                                dims=(0,0),
+                                envs=jnp.arange(0, num_envs[0], 1).tolist(),
+                                dims=(0,1),
                                 traj=0,
                                 share_axes=False,
                                 key=test_key)
@@ -315,8 +338,7 @@ ax2.set_xlabel("Experts")
 ax2.set_ylabel("Environments")
 
 ## Set yticks in steps of nb_envs_per_fam[0]
-# y_labels = np.arange(0, num_envs[0], nb_envs_per_fam[0])
-y_labels = [0, 30, 60, 70, 80] if not use_small_train_set else [0, 30, 60]
+y_labels = np.array([0, 64, 84])
 ax2.set_yticks(y_labels)
 ax2.set_yticklabels(y_labels)
 
@@ -397,16 +419,15 @@ if meta_test:
     labels_adapt = []
 
     ## We want to adapt in batches of 5 environments
-    envs_per_batch = 11420 // 5
+    envs_per_batch = 84
     for batch_id, i in enumerate(range(0, num_envs[1], envs_per_batch)):
-    # for batch_id, i in enumerate([0, num_envs[1]-envs_per_batch]):
         print("iteration:", batch_id, "Out of total:", np.ceil(num_envs[1]/envs_per_batch).astype(int))
         print("Adapting on environments:", i, "to", i+envs_per_batch)
 
-        adapt_dataset = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
+        adapt_dataset = LorentzDataset(data_dir=data_folder, 
+                                        noisy=noisy_lorentz,
+                                        num_steps=num_adapt_steps,
+                                        adaptation=True)
         adapt_dataset.total_envs = envs_per_batch
         adapt_dataset.dataset = adapt_dataset.dataset[i:i+envs_per_batch, :, :, :]
         adapt_dataset.t_eval = adapt_dataset.t_eval[i:i+envs_per_batch:, :]
@@ -421,10 +442,10 @@ if meta_test:
                                     num_workers=num_workers,
                                     drop_last=False)
 
-        adapt_dataset_test = EpilepsyDataset(data_dir=data_folder+"adapt.npz", 
-                                                skip_steps=skip_steps,
-                                                traj_prop_min=test_proportion,
-                                                adaptation=True)
+        adapt_dataset_test = LorentzDataset(data_dir=data_folder, 
+                                            noisy=noisy_lorentz,
+                                            num_steps=num_adapt_steps,
+                                            adaptation=True)
         adapt_dataset_test.total_envs = envs_per_batch
         adapt_dataset_test.dataset = adapt_dataset_test.dataset[i:i+envs_per_batch, :, :, :]
         adapt_dataset_test.t_eval = adapt_dataset_test.t_eval[i:i+envs_per_batch:, :]
@@ -451,7 +472,7 @@ if meta_test:
         adapt_contexts.append(learner.contexts_latest.params)
         all_losses.append(all_ood_crit[0].tolist())
 
-        labels = np.load(data_folder+"adapt.npz")["condition"].astype(int)[i:i+envs_per_batch]
+        labels = get_lorentz_labels()[i:i+envs_per_batch]
         labels_adapt.append(labels)
 
     adapt_contexts = jnp.concatenate(adapt_contexts, axis=0)
@@ -472,7 +493,7 @@ if meta_test:
                                     data_loader=adapt_dataloader_test,
                                     nb_envs=1,
                                     traj=0,
-                                    dims=(0,0),     ## The Data is 1-dimensional
+                                    dims=(0,1),     ## The Data is 1-dimensional
                                     share_axes=False,
                                     key=test_key)
 
@@ -503,11 +524,11 @@ if meta_test:
 
 #%%
 X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)[:num_envs_train]
+labels = get_lorentz_labels()[:num_envs[0]]
 
 color_table = {0:"royalblue", 1:"crimson"}
 colors = [color_table[l] for l in labels]
-conditions = {0:"Healthy", 1:"Epileptic"}
+conditions = {0:"Lorentz96", 1:"Lorentz63"}
 
 ## Use PCA 
 from sklearn.decomposition import PCA
@@ -545,11 +566,11 @@ plt.savefig(run_folder+"clusters_pca.png", bbox_inches='tight');
 
 #%%
 X = learner.contexts.params
-labels = np.load(data_folder+"train.npz")["condition"].astype(int)[:num_envs_train]
+labels = get_lorentz_labels()[:num_envs[0]]
 
 color_table = {0:"royalblue", 1:"crimson"}
 colors = [color_table[l] for l in labels]
-conditions = {0:"Healthy", 1:"Epileptic"}
+conditions = {0:"Lorentz96", 1:"Lorentz63"}
 
 import umap
 nb_train_samples = X.shape[0]
@@ -583,7 +604,7 @@ plt.savefig(run_folder+"clusters_umap.png", bbox_inches='tight');
 #%%
 
 X = learner.contexts.params
-y = np.load(data_folder+"train.npz")["condition"].astype(int)[:num_envs_train]
+y = get_lorentz_labels()[:num_envs[0]]
 
 ## Let's do the classification with SVM and a non-linear kernel
 from sklearn.svm import SVC

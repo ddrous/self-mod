@@ -721,6 +721,34 @@ class TimeSeriesDataset:
         return self.total_envs
 
 
+
+class LorentzDataset(TimeSeriesDataset):
+    """
+    For the Lorentz 63+96 datatasets from https://github.com/DurstewitzLab/HierarchicalDSR/tree/main/data
+    """
+    def __init__(self, data_dir, noisy=True, num_steps=5500, adaptation=False):
+        try:
+            data63 = torch.load(f"{data_dir}/{"noisy_" if noisy else "full_"}63.pt").numpy()
+            data96 = torch.load(f"{data_dir}/{"noisy_" if noisy else "full_"}96.pt").numpy()
+            
+            data63 = np.concatenate([data63, np.zeros((data63.shape[0], data63.shape[1], data96.shape[2]-data63.shape[2]))], axis=-1)           ## 96 has more dimensions
+            data96 = data96[:, :data63.shape[1]]        ## 96 is always the longest
+            raw_data = np.concatenate([data63, data96], axis=0)
+
+            t_eval = np.linspace(0, 1, data63.shape[1])
+        except:
+            raise ValueError(f"Data not found at {data_dir}")
+
+        dataset = raw_data[:, None, :num_steps, :]
+        n_envs, _, n_timesteps, _ = dataset.shape
+
+        ## Duplicate t_eval for each environment
+        t_eval = np.repeat(t_eval[None, :num_steps], n_envs, axis=0)
+
+        super().__init__(dataset, t_eval, adaptation, 1.0, True)
+
+
+
 class EpilepsyDataset(TimeSeriesDataset):
     """
     For the Epilepsy2 dataset from Time Series Classification

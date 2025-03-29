@@ -116,6 +116,9 @@ examples/sine-reg/runs/*
 examples/forced-o/runs/*
 !examples/forced-o/runs/Experiment-InfDim
 
+## The Lorentz dataset
+examples/lorentz/data/*
+examples/lorentz/runs/*
 
 ## The Epilptic EEG dataset
 examples/epilepsy/data/*

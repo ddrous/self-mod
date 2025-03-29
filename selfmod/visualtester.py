@@ -36,10 +36,10 @@ class VisualTester:
 
         ## Adapt and extract the losses for each batch of environment
         losses, _, state_data = self.trainer.meta_test(dataloader, 
-                                            nb_steps=nb_steps,
+                                            nb_steps=nb_steps, 
                                             # nb_inner_steps=nb_inner_steps, 
-                                            max_adapt_batches=max_adapt_batches,
-                                            print_error_every=print_error_every,
+                                            max_adapt_batches=max_adapt_batches, 
+                                            print_error_every=print_error_every, 
                                             taylor_order=taylor_order, 
                                             val_dataloader=val_dataloader,
                                             max_ret_env_states=max_ret_env_states,
@@ -139,7 +139,7 @@ class VisualTester:
 
         ax['D'].set_xlabel("Iterations")
         ax['D'].set_title("Loss Terms")
-        ax['D'].set_yscale('log')
+        ax['D'].set_yscale('linear' if np.any(losses_model[:,0]<0) else 'log')
         ax['D'].legend()
         if ylim is not None:
             ax['D'].set_ylim(ylim)
@@ -668,6 +668,8 @@ class DynamicsVisualTester(VisualTester):
 
         # model = self.trainer.learner.model
         model = self.trainer.learner.reset_model(taylor_order=0, verbose=False)
+        model = self.trainer.learner.inference_mode(model)
+
         _, X, X_hat = self.trainer.learner.batch_predict(model, contexts, batch)
 
         # print("Are THERE anu NANs in X_hat?", jnp.any(jnp.isnan(X_hat)))

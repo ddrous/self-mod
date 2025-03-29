@@ -157,6 +157,9 @@ class Learner:
 
                 new_model = self.reset_model_expert(model, model.vectorfield.neuralnet.experts[0])    ## Reset the expert model without CSM
 
+                ## Put the model in inference mode if any is available
+                # new_model = self.inference_mode(new_model)
+
                 expert_losses = []
                 nb_experts = len(model.vectorfield.neuralnet.experts)
                 if model.vectorfield.neuralnet.split_context:
@@ -284,6 +287,28 @@ class Learner:
             else:
                 raise ValueError("The model type is not supported")
         return model
+
+    def inference_mode(self, model):
+        """ Sets the model in inference mode 
+            This is done by setting any inference leaf attribute in the PyTree to True
+        """
+        def is_leaf(m):
+            """ Check if the object is a leaf, i.e. as an "inference" attribute """
+            if hasattr(m, "inference"):
+                return True
+            else:
+                return False
+
+        def map_func(m):
+            """ Jax tree map function """
+            if hasattr(m, "inference"):
+                m = eqx.tree_at(lambda x: x.inference, m, True)
+            return m
+
+        model = jax.tree.map(map_func, model, is_leaf=is_leaf)
+
+        return model
+
 
 
 
@@ -2020,7 +2045,8 @@ class RootRNN(eqx.Module):
         z0 = jnp.zeros(xs_gt.shape[1])
 
         def f(z, x_gt):
-            z_curr = alpha*z + (1-alpha)*x_gt     ## Teacher-Forcing
+            # z_curr = alpha*z + (1-alpha)*x_gt     ## Teacher-Forcing
+            z_curr = (1-alpha)*z + alpha*x_gt     ## Teacher-Forcing        ## NEW
             z_next = A@z_curr + W1@jax.nn.relu(W2@z_curr + h2) + h1
             return z_next, z_next
 
@@ -2039,9 +2065,12 @@ class Expert_HierShPLRNN(eqx.Module):
 
     shift_context:bool
     ctx_shift: jnp.ndarray
-    tf_alpha_min: float
 
-    def __init__(self, data_size, latent_size, hidden_size, context_size, shift_context=None, ctx_utils=None, tf_alpha_min=1.0, key=None):
+    tf_utils: np.ndarray
+
+    inference: bool
+
+    def __init__(self, data_size, latent_size, hidden_size, context_size, shift_context=None, ctx_utils=None, tf_alpha_start=1.0, tf_gamma=0.9, key=None):
         self.data_size = data_size
         self.latent_size = latent_size
 
@@ -2052,14 +2081,29 @@ class Expert_HierShPLRNN(eqx.Module):
 
         self.shift_context = shift_context
         self.ctx_shift = jnp.array([0.])
-        self.tf_alpha_min = tf_alpha_min
+
+        self.tf_utils = jnp.array((tf_alpha_start, tf_gamma), dtype=np.float32)
+
+        self.inference = False      ## Indicates whether trainng so we can use teacher forcing
+
+    def update_alpha(self, alpha_min):
+        """ Update the minimum alpha value for the teacher forcing """
+        new_model = eqx.tree_at(lambda x: x.tf_alpha_min, self, alpha_min)
+        return new_model
 
     def __call__(self, xts, ctx):
         if self.shift_context:
             ctx = ctx + self.ctx_shift
 
         subject_weights = self.hyperlayer(ctx)
-        subject_weights = subject_weights.at[-1].max(self.tf_alpha_min)    ## Clip the alpha value
+        ## If inference, replace alpha with zero
+        if self.inference:
+            # subject_weights = subject_weights.at[-1].set(0.)
+            subject_weights = subject_weights.at[-1].set(self.tf_utils[0])      ## Set the alpha value
+        else:       ## Training
+            # tf_alpha = self.tf_utils[0]
+            # subject_weights = subject_weights.at[-1].max(self.tf_utils[0])    ## Clip the alpha value
+            subject_weights = subject_weights.at[-1].set(self.tf_utils[0])      ## Set the alpha value
 
         shapes, treedef, _ = self.root_network.root_utils
         subject_params = unflatten_pytree(subject_weights, shapes, treedef)
@@ -2071,6 +2115,7 @@ class MixER_S2S(eqx.Module):
     """ MixER, but to sequence to sequence models """
     experts: list
     gate:jnp.ndarray
+    cov_model: eqx.Module
 
     n_experts: int
     split_context: bool
@@ -2087,7 +2132,7 @@ class MixER_S2S(eqx.Module):
                  same_expert_init=True, 
                  use_gate_bias=True, 
                  gate_update_strategy="least_squares", 
-                 **expert_params):
+                 **expert_params): 
 
         self.split_context = split_context
 
@@ -2106,6 +2151,9 @@ class MixER_S2S(eqx.Module):
         self.meta_learner = meta_learner
         if self.meta_learner == "hier-shPLRNN":
             self.experts = [Expert_HierShPLRNN(**expert_params, key=keys[i]) for i in range(nb_experts)]
+            ## Define a subject specific logcov model: a MLP from the context to the data_size (all deined in **expert_params)
+            # self.cov_model = eqx.nn.MLP(expert_params["context_size"], expert_params["data_size"], 128, 1, jax.nn.softplus, use_bias=False, key=keys[-1])
+            self.cov_model = eqx.nn.Linear(expert_params["context_size"], expert_params["data_size"], use_bias=False, key=keys[-1])
             pass
         else:
             raise ValueError("Meta-learner not recognised !")

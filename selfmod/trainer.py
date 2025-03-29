@@ -526,6 +526,27 @@ class NCFTrainer(Trainer):
             if not os.path.exists(backup_folder):
                 os.makedirs(backup_folder)
 
+
+
+        # @eqx.filter_jit
+        def zerofy_tf_alpha(module):
+            """ Set the tf alpha parameter to zero """
+            def is_leaf(m):
+                if hasattr(m, 'tf_utils'):
+                    return True
+                else:
+                    return False
+            def update_tf_alpha_min(m):
+                if hasattr(m, 'tf_utils'):
+                    return eqx.tree_at(lambda m:m.tf_utils, m, jnp.array((0., 0.)))
+                else:
+                    return m
+            new_module = jax.tree.map(update_tf_alpha_min, module, is_leaf=is_leaf)
+
+            return new_module
+
+
+
         @eqx.filter_jit
         def train_step_model(model, model_aux, contexts, batch, weightings, opt_state, key):            ## TODO stop the model from updateing the weights
             print('     ### Compiling function "train_step" for the model ...  ')
@@ -538,6 +559,10 @@ class NCFTrainer(Trainer):
                 return loss + proximal_reg_model * diff_norm / 2., (*aux_data, diff_norm)
 
             (loss, aux_data), grads = eqx.filter_value_and_grad(prox_loss_fn, has_aux=True)(model, contexts, batch, weightings, key)
+
+            ## Set the gradient wrt the tf_alpha to zero
+            if model.vectorfield.neuralnet.meta_learner == "hier-shPLRNN":
+                grads = zerofy_tf_alpha(grads)
 
             if same_expert_optstate:
                 ## Let's make all experts share the same opt_state
@@ -626,16 +651,18 @@ class NCFTrainer(Trainer):
 
                     ## if cluster_points is empty, then skip this update step and wait
                     if cluster_points.shape[0] == 0:
-                        if True:
-                            print(f"❌ Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
-                        return model, contexts, loss, None, jnp.zeros((nb_envs, nb_experts))
+                        # if True:
+                        #     print(f"❌ Cluster {j} is empty. Skipping gating least squares and waiting for next turn.")
+                        # return model, contexts, loss, None, jnp.zeros((nb_envs, nb_experts))
+                        pass    ## TODO: Check if this is the right thing to do
                     else:
                         centroids = centroids.at[j].set(jnp.mean(cluster_points, axis=0))
 
                 ## Check for convergence
                 if jnp.allclose(centroids, old_centroids, atol=gate_convergence_tol):
                     if True:
-                        print(f"✔️ Gating k-means converged after {i+1} iterations", flush=False)
+                        if verbose:
+                            print(f"✔️ Gating k-means converged after {i+1} iterations", flush=False)
                     break
 
             if i == max_iter-1:
@@ -647,7 +674,17 @@ class NCFTrainer(Trainer):
             expert_cluster_losses = []
             for j in range(nb_clusters):
                 # expert_cluster_losses.append(expert_losses[cluster_assignments==j].mean(axis=0))
-                expert_cluster_losses.append(jnp.median(expert_losses[cluster_assignments==j], axis=0))
+                # expert_cluster_losses.append(jnp.median(expert_losses[cluster_assignments==j], axis=0))
+
+                ## TODO more general way to aggregate the losses
+                expert_losses_j = expert_losses[cluster_assignments==j]
+                if len(expert_losses_j) > 0:
+                    expert_cluster_losses.append(jnp.median(expert_losses_j, axis=0))
+                else:
+                    # expert_cluster_losses.append(jnp.zeros(nb_experts)*jnp.inf)
+                    expert_cluster_losses.append(jnp.ones(nb_experts))
+
+
             all_expert_cluster_losses = jnp.stack(expert_cluster_losses, axis=0)
 
             if verbose:
@@ -680,6 +717,40 @@ class NCFTrainer(Trainer):
             model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.gate, model, W)
 
             return model, contexts, loss, centroids, Y
+
+
+        @eqx.filter_jit
+        def update_tf_alpha(model):
+            """ Update the alpha_min parameter of the model """
+            # if model.vectorfield.neuralnet.meta_learner=="hier-shPLRNN":
+            #     updated_experts = []
+            #     for e in model.vectorfield.neuralnet.experts:
+            #         new_tf_alpha_min = e.tf_alpha_min*e.tf_gamma
+            #         # new_e = e.update_tf_alpha_min(new_tf_alpha_min)
+            #         new_e = eqx.tree_at(lambda m:m.tf_alpha_min, e, new_tf_alpha_min)
+            #         updated_experts.append(new_e)
+            #     new_model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.experts, model, updated_experts)
+
+            # ## Compare the python hash ID of the old and the new model
+            # print(f"    Old type alpha: {type(e.tf_alpha_min)}")
+            # print(f"    New type alpha_min: {type(new_tf_alpha_min)}")
+
+            ## DO the same thing above using jax.tree.map
+            def is_leaf(m):
+                if hasattr(m, 'tf_utils'):
+                    return True
+                else:
+                    return False
+            def update_tf_alpha_min(m):
+                if hasattr(m, 'tf_utils'):
+                    new_tf_alpha = m.tf_utils[0]*m.tf_utils[1]
+                    return eqx.tree_at(lambda m:m.tf_utils, m, jnp.array((new_tf_alpha, m.tf_utils[1])))
+                else:
+                    return m
+            new_model = jax.tree.map(update_tf_alpha_min, model, is_leaf=is_leaf)
+
+            return new_model, new_model.vectorfield.neuralnet.experts[0].tf_utils[0]
+
 
 
         if val_dataloader is not None:
@@ -774,6 +845,12 @@ class NCFTrainer(Trainer):
 
                         all_env_losses = all_env_losses.at[loss_contrs].set(term1)
                         loss_epochs_model.append(loss_model)
+
+                    ########## If meta-learner uses generalised teacher-forcing, then update its tf_alpha_min ##########
+                    model, new_tf_alpha_min = update_tf_alpha(model)
+                    if out_step%validate_every==0 or out_step==nb_outer_steps-1:
+                        print(f"    Updated the tf_alpha to : {new_tf_alpha_min:.4f}\n", flush=True)
+
 
                     losses_model.append(jnp.median(jnp.array(loss_epochs_model)))
                     losses_ctx.append(jnp.median(jnp.array(loss_epochs_ctx)))
@@ -1343,8 +1420,9 @@ class NCFTrainer(Trainer):
             print_error_every = (print_error_every, print_error_every)
         print_every_batch, print_every_epoch = print_error_every
 
-        ## This is useful if we want to disable the taylor expansion
+        ## This is useful if we want to disable the taylor expansion, and place the model in inference mode
         model = self.learner.reset_model(taylor_order, verbose=verbose)
+        # model = self.learner.inference_mode(model)      ### If the expert have two modes (like the shPLRNN)
 
         if optimizer is None:       ## To continue a previous adaptation
             if hasattr(self, 'opt_ctx'):
