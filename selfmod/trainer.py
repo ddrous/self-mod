@@ -722,34 +722,36 @@ class NCFTrainer(Trainer):
         @eqx.filter_jit
         def update_tf_alpha(model):
             """ Update the alpha_min parameter of the model """
-            # if model.vectorfield.neuralnet.meta_learner=="hier-shPLRNN":
-            #     updated_experts = []
-            #     for e in model.vectorfield.neuralnet.experts:
-            #         new_tf_alpha_min = e.tf_alpha_min*e.tf_gamma
-            #         # new_e = e.update_tf_alpha_min(new_tf_alpha_min)
-            #         new_e = eqx.tree_at(lambda m:m.tf_alpha_min, e, new_tf_alpha_min)
-            #         updated_experts.append(new_e)
-            #     new_model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.experts, model, updated_experts)
+            if model.vectorfield.neuralnet.meta_learner=="hier-shPLRNN":
+                #     updated_experts = []
+                #     for e in model.vectorfield.neuralnet.experts:
+                #         new_tf_alpha_min = e.tf_alpha_min*e.tf_gamma
+                #         # new_e = e.update_tf_alpha_min(new_tf_alpha_min)
+                #         new_e = eqx.tree_at(lambda m:m.tf_alpha_min, e, new_tf_alpha_min)
+                #         updated_experts.append(new_e)
+                #     new_model = eqx.tree_at(lambda m:m.vectorfield.neuralnet.experts, model, updated_experts)
 
-            # ## Compare the python hash ID of the old and the new model
-            # print(f"    Old type alpha: {type(e.tf_alpha_min)}")
-            # print(f"    New type alpha_min: {type(new_tf_alpha_min)}")
+                # ## Compare the python hash ID of the old and the new model
+                # print(f"    Old type alpha: {type(e.tf_alpha_min)}")
+                # print(f"    New type alpha_min: {type(new_tf_alpha_min)}")
 
-            ## DO the same thing above using jax.tree.map
-            def is_leaf(m):
-                if hasattr(m, 'tf_utils'):
-                    return True
-                else:
-                    return False
-            def update_tf_alpha_min(m):
-                if hasattr(m, 'tf_utils'):
-                    new_tf_alpha = m.tf_utils[0]*m.tf_utils[1]
-                    return eqx.tree_at(lambda m:m.tf_utils, m, jnp.array((new_tf_alpha, m.tf_utils[1])))
-                else:
-                    return m
-            new_model = jax.tree.map(update_tf_alpha_min, model, is_leaf=is_leaf)
+                ## DO the same thing above using jax.tree.map
+                def is_leaf(m):
+                    if hasattr(m, 'tf_utils'):
+                        return True
+                    else:
+                        return False
+                def update_tf_alpha_min(m):
+                    if hasattr(m, 'tf_utils'):
+                        new_tf_alpha = m.tf_utils[0]*m.tf_utils[1]
+                        return eqx.tree_at(lambda m:m.tf_utils, m, jnp.array((new_tf_alpha, m.tf_utils[1])))
+                    else:
+                        return m
+                new_model = jax.tree.map(update_tf_alpha_min, model, is_leaf=is_leaf)
 
-            return new_model, new_model.vectorfield.neuralnet.experts[0].tf_utils[0]
+                return new_model, new_model.vectorfield.neuralnet.experts[0].tf_utils[0]
+            else:
+                return model, 1.
 
 
 

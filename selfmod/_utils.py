@@ -537,8 +537,8 @@ def compute_and_smooth_power_spectrum(x, smoothing=1.0):
     if x.ndim == 2:
         x = x[None]
     x_ =  (x - x.mean(axis=1, keepdims=True)) / x.std(axis=1, keepdims=True)
-    fft_real = np.fft.rfft(x_.cpu(), axis=1)
-    ps = np.abs(fft_real)**2 * 2 / len(x_)
+    fft_real = jnp.fft.rfft(x_, axis=1)
+    ps = jnp.abs(fft_real)**2 * 2 / len(x_)
     if smoothing > 0:
         ps = gaussian_filter1d(ps, smoothing, axis=1)
     return ps / ps.sum(axis=1, keepdims=True)
@@ -547,14 +547,15 @@ def hellinger_distance(p, q):
     """Hellinger distance between two power spectra.
     Args:
         p, q: Power spectra. Shape (S, w, dz)."""
-    return np.sqrt(1 - np.sum(np.sqrt(p * q), axis=1))
+    return jnp.sqrt(1 - jnp.sum(jnp.sqrt(p * q), axis=1))
 
 def power_spectrum_error(p, q):
     """Power spectrum error between two power spectra.
     Simply averages the hellinger distance over the observations.
     Args:
         p, q: Power spectra. Shape (S, w, dz)."""
-    return hellinger_distance(p, q).mean(axis=-1)
+    # return hellinger_distance(p, q).mean(axis=-1)
+    return hellinger_distance(p, q)
 
 
 

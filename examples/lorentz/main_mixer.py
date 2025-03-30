@@ -25,7 +25,7 @@ torch.manual_seed(seed)
 
 ## Dataloader hps
 nb_families = 2
-nb_experts = 3
+nb_experts = 5
 
 nb_envs_per_fam = ((64+20)//2, (64+20)//2)   ## (Expected)
 num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
@@ -305,8 +305,33 @@ ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader,
                                     stochastic=False)
 
 visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
-print("Loss per InD environment:", all_ind_crit[0].tolist())
+print("MSE Loss per InD environment:", all_ind_crit[0].tolist())
 
+
+#%%
+def hellinger_criterion(y_hat, y):
+    """ Hellinger distance between two time series """
+    pspec_y = compute_and_smooth_power_spectrum(y, 0.0)
+    # jax.debug.print("Materialise y_hat {}", jnp.isfinite(y_hat).any())
+    pspec_y_hat = compute_and_smooth_power_spectrum(y_hat+1e-7, 0.0)        ## Some dimension might be zero
+    return power_spectrum_error(pspec_y_hat, pspec_y)
+
+ind_crit, all_ind_crit = visualtester.evaluate(train_dataloader, 
+                                    taylor_order=taylor_orders[1], 
+                                    nb_steps=nb_adapt_epochs,
+                                    print_error_every=print_error_every, 
+                                    loss_criterion=hellinger_criterion,
+                                    criterion_id=0,
+                                    verbose=True,
+                                    val_dataloader=val_dataloader,
+                                    max_ret_env_states=max_ret_env_states,
+                                    max_adapt_batches=max_adapt_batches,
+                                    stochastic=False)
+
+visualtester.visualize_artefacts(save_path=run_folder+"artefacts.png", ylim=None)
+print("Hellinger Loss per InD environment:", all_ind_crit[0].tolist())
+
+#%%
 ctx_shifts = [learner.model.vectorfield.neuralnet.experts[e].ctx_shift.squeeze() for e in range(nb_experts)]
 print("After training, the context shifts are:", jnp.array(ctx_shifts))
 
