@@ -1,0 +1,3968 @@
+
+############# Contextual Self-Modulation #############
+
+Jax version: 0.4.35
+Available devices: [CudaDevice(id=0)]
+Created a new run folder at: ./runs/_04_GEPSRuns/250330-203210/
+ Backed up run script and module files 
+ Created an adaptation folder at: ./runs/_04_GEPSRuns/250330-203210/adapt/
+ Created a checkpoints folder at: ./runs/_04_GEPSRuns/250330-203210/checkpoints/
+ Created a data folder at: ./runs/_04_GEPSRuns/250330-203210/data/
+ Attempting copy of the data generation scripts
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Typical shapes of data and t_eval: (10, 4, 20, 2) (10, 20)
+
+Using 5 environments to estimate the global training loss function ...
+
+
+Total number of parameters in the model: 10548
+Total number of parameters in one context: 4
+
+Loading model and results from ./runs/_04_GEPSRuns/250330-203210/ folder ...
+
+WARNING: No training history found at all. Using tens.
+WARNING: No validation history found at all. Using ten.
+WARNING: No optimiser state found in the provided path.
+Unable to load training checkpoints - '[Errno 2] No such file or directory: 'runs/_04_GEPSRuns/250330-203210/model.eqx''
+Starting from scratch ...
+
+
+=== Beginning Meta-Training ... ===
+    Number of examples in a batch along envs: 10
+    Maximum number of batches (along envs): 1
+    Total number of epochs: 1
+    Number of outer minimizations: 250
+    Maximum numbers of inner steps per outer minimizations: (12, 12)
+    Training on 1 batches
+    Validating on 1 batches
+     ### Compiling function "train_step" for the contexts ...  
+     ### Compiling function "train_step" for the model ...  
+20:32:29      Epoch:   0      Batch:   0      OuterStep:   0      LossModel: 0.61519110     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 16.9104Contributing envs to the losses:  [8 9 5 6 7]
+Gate values for each environment (all envs): 
+ [[0.380272   0.6197281 ]
+ [0.38028657 0.6197135 ]
+ [0.38031635 0.6196837 ]
+ [0.38028812 0.61971194]
+ [0.38031474 0.6196853 ]
+ [0.3813424  0.6186575 ]
+ [0.38042295 0.619577  ]
+ [0.38041887 0.61958116]
+ [0.38180023 0.6181997 ]
+ [0.38180152 0.61819845]]
+20:32:30      Epoch:   0      Batch:   0      OuterStep:   1      LossModel: 0.22236180     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.3833Contributing envs to the losses:  [5 9 8 4 6]
+Gate values for each environment (all envs): 
+ [[0.379564   0.6204361 ]
+ [0.37955162 0.62044847]
+ [0.37960833 0.62039167]
+ [0.37952283 0.6204772 ]
+ [0.37977505 0.6202251 ]
+ [0.38154894 0.61845106]
+ [0.37963983 0.6203602 ]
+ [0.37939623 0.62060386]
+ [0.3824281  0.6175719 ]
+ [0.3824294  0.6175707 ]]
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.69253373
+        Saving best model so far ...
+20:32:33      Epoch:   0      Batch:   0      OuterStep:   2      LossModel: 0.21478130     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.5533Contributing envs to the losses:  [7 2 0 1 3]
+Gate values for each environment (all envs): 
+ [[0.3784506  0.6215494 ]
+ [0.37848732 0.6215127 ]
+ [0.37848946 0.6215105 ]
+ [0.37852278 0.6214772 ]
+ [0.37902537 0.6209746 ]
+ [0.38198018 0.6180198 ]
+ [0.37924838 0.6207517 ]
+ [0.37852728 0.6214728 ]
+ [0.38295755 0.6170424 ]
+ [0.38292557 0.6170745 ]]
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+        Validation Criterion: 0.63047975
+        Saving best model so far ...
+20:32:34      Epoch:   0      Batch:   0      OuterStep:   3      LossModel: 0.18966545     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.4595Contributing envs to the losses:  [0 2 1 3 7]
+Gate values for each environment (all envs): 
+ [[0.37731257 0.6226874 ]
+ [0.3771793  0.62282073]
+ [0.37727228 0.6227277 ]
+ [0.3772536  0.6227464 ]
+ [0.37806395 0.621936  ]
+ [0.382656   0.617344  ]
+ [0.37974066 0.62025934]
+ [0.37769005 0.6223099 ]
+ [0.38360092 0.61639917]
+ [0.38349935 0.6165007 ]]
+        Validation Criterion: 0.58910030
+        Saving best model so far ...
+20:32:35      Epoch:   0      Batch:   0      OuterStep:   4      LossModel: 0.18039283     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.4748Contributing envs to the losses:  [4 7 2 0 1]
+Gate values for each environment (all envs): 
+ [[0.37612388 0.6238761 ]
+ [0.37607765 0.6239224 ]
+ [0.37641028 0.6235897 ]
+ [0.37605157 0.6239485 ]
+ [0.37728274 0.62271726]
+ [0.38392317 0.6160768 ]
+ [0.3806817  0.61931837]
+ [0.37720928 0.62279075]
+ [0.3845392  0.6154609 ]
+ [0.38435367 0.6156463 ]]
+        Validation Criterion: 0.52393228
+        Saving best model so far ...
+20:32:36      Epoch:   0      Batch:   0      OuterStep:   5      LossModel: 0.09267217     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6083Contributing envs to the losses:  [9 8 5 6 7]
+Gate values for each environment (all envs): 
+ [[0.3748703  0.6251297 ]
+ [0.37494949 0.6250505 ]
+ [0.3756372  0.62436277]
+ [0.37483585 0.62516415]
+ [0.37655    0.62345004]
+ [0.3846343  0.6153656 ]
+ [0.38108072 0.6189193 ]
+ [0.37685126 0.62314874]
+ [0.38525638 0.6147436 ]
+ [0.38513592 0.6148641 ]]
+        Validation Criterion: 0.49149233
+        Saving best model so far ...
+20:32:37      Epoch:   0      Batch:   0      OuterStep:   6      LossModel: 0.41874614     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9556Contributing envs to the losses:  [3 1 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.37418675 0.6258133 ]
+ [0.37431854 0.62568146]
+ [0.37526652 0.62473345]
+ [0.3741072  0.62589276]
+ [0.37581703 0.62418294]
+ [0.38448814 0.61551195]
+ [0.3808866  0.6191134 ]
+ [0.37698206 0.6230179 ]
+ [0.38610935 0.61389065]
+ [0.3858666  0.6141334 ]]
+        Validation Criterion: 0.46944460
+        Saving best model so far ...
+20:32:38      Epoch:   0      Batch:   0      OuterStep:   7      LossModel: 0.80275410     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6594Contributing envs to the losses:  [8 9 5 6 7]
+Gate values for each environment (all envs): 
+ [[0.3737749  0.6262252 ]
+ [0.3738468  0.6261532 ]
+ [0.37459624 0.62540376]
+ [0.37318444 0.62681556]
+ [0.3749034  0.6250965 ]
+ [0.38404015 0.6159599 ]
+ [0.38083768 0.6191623 ]
+ [0.37740737 0.6225926 ]
+ [0.38663697 0.613363  ]
+ [0.3862254  0.6137746 ]]
+        Validation Criterion: 0.45496979
+        Saving best model so far ...
+20:32:39      Epoch:   0      Batch:   0      OuterStep:   8      LossModel: 0.01143196     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.5397Contributing envs to the losses:  [0 1 2 4 3]
+Gate values for each environment (all envs): 
+ [[0.37321526 0.6267847 ]
+ [0.3732989  0.6267011 ]
+ [0.37376922 0.6262308 ]
+ [0.37254515 0.6274549 ]
+ [0.37401703 0.62598294]
+ [0.3837499  0.6162501 ]
+ [0.38145378 0.6185461 ]
+ [0.37825766 0.62174237]
+ [0.38696977 0.6130302 ]
+ [0.3864397  0.61356026]]
+        Validation Criterion: 0.43595171
+        Saving best model so far ...
+20:32:40      Epoch:   0      Batch:   0      OuterStep:   9      LossModel: 0.44985509     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7128Contributing envs to the losses:  [8 9 5 6 7]
+Gate values for each environment (all envs): 
+ [[0.37269047 0.62730956]
+ [0.37272084 0.62727916]
+ [0.37326184 0.62673813]
+ [0.372148   0.627852  ]
+ [0.37350315 0.6264969 ]
+ [0.3839401  0.6160599 ]
+ [0.38225245 0.6177476 ]
+ [0.37903723 0.62096286]
+ [0.3871589  0.61284107]
+ [0.38667414 0.61332583]]
+        Validation Criterion: 0.42102417
+        Saving best model so far ...
+20:32:41      Epoch:   0      Batch:   0      OuterStep:  10      LossModel: 0.22099705     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0137Contributing envs to the losses:  [5 6 9 8 7]
+Gate values for each environment (all envs): 
+ [[0.37220675 0.6277932 ]
+ [0.372286   0.62771404]
+ [0.37282568 0.6271744 ]
+ [0.37182257 0.62817746]
+ [0.37298566 0.62701434]
+ [0.38422507 0.615775  ]
+ [0.38274232 0.6172577 ]
+ [0.3794758  0.6205243 ]
+ [0.38726747 0.6127326 ]
+ [0.3868749  0.6131251 ]]
+        Validation Criterion: 0.41084456
+        Saving best model so far ...
+20:32:43      Epoch:   0      Batch:   0      OuterStep:  11      LossModel: 0.70050800     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9841Contributing envs to the losses:  [6 5 7 9 8]
+Gate values for each environment (all envs): 
+ [[0.37191296 0.628087  ]
+ [0.37198782 0.6280122 ]
+ [0.3723887  0.62761134]
+ [0.37157065 0.62842935]
+ [0.37253523 0.62746483]
+ [0.3846427  0.61535734]
+ [0.38335782 0.61664224]
+ [0.38004172 0.6199583 ]
+ [0.38736048 0.6126395 ]
+ [0.387095   0.612905  ]]
+        Validation Criterion: 0.39906415
+        Saving best model so far ...
+20:32:44      Epoch:   0      Batch:   0      OuterStep:  12      LossModel: 0.01054617     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8530Contributing envs to the losses:  [6 5 7 9 8]
+Gate values for each environment (all envs): 
+ [[0.3710898  0.6289102 ]
+ [0.37110478 0.6288952 ]
+ [0.37151128 0.6284888 ]
+ [0.37088412 0.6291158 ]
+ [0.37161636 0.62838364]
+ [0.3850057  0.61499435]
+ [0.38391072 0.61608934]
+ [0.38055947 0.6194405 ]
+ [0.3874616  0.6125384 ]
+ [0.38733765 0.61266243]]
+        Validation Criterion: 0.38732132
+        Saving best model so far ...
+20:32:45      Epoch:   0      Batch:   0      OuterStep:  13      LossModel: 0.32962835     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9971Contributing envs to the losses:  [1 3 2 4 0]
+Gate values for each environment (all envs): 
+ [[0.37062538 0.62937456]
+ [0.3707449  0.62925506]
+ [0.37111542 0.62888455]
+ [0.3704525  0.62954754]
+ [0.3711698  0.62883025]
+ [0.38537037 0.6146296 ]
+ [0.38449946 0.61550057]
+ [0.38111722 0.6188828 ]
+ [0.38761252 0.6123875 ]
+ [0.387627   0.61237293]]
+        Validation Criterion: 0.37867230
+        Saving best model so far ...
+20:32:47      Epoch:   0      Batch:   0      OuterStep:  14      LossModel: 0.00946494     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1033Contributing envs to the losses:  [0 1 4 3 2]
+Gate values for each environment (all envs): 
+ [[0.37014347 0.6298565 ]
+ [0.37018675 0.6298133 ]
+ [0.37051782 0.62948215]
+ [0.3700094  0.6299906 ]
+ [0.37058842 0.6294116 ]
+ [0.38575134 0.61424863]
+ [0.38514704 0.61485296]
+ [0.38175303 0.61824703]
+ [0.3877922  0.6122078 ]
+ [0.38795096 0.6120491 ]]
+        Validation Criterion: 0.37091395
+        Saving best model so far ...
+20:32:48      Epoch:   0      Batch:   0      OuterStep:  15      LossModel: 0.00913916     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1366Contributing envs to the losses:  [9 8 5 6 7]
+Gate values for each environment (all envs): 
+ [[0.36994427 0.6300557 ]
+ [0.37008473 0.62991524]
+ [0.370422   0.629578  ]
+ [0.36989012 0.6301099 ]
+ [0.37041688 0.62958306]
+ [0.38608158 0.6139184 ]
+ [0.38569045 0.61430955]
+ [0.38231608 0.6176839 ]
+ [0.38795924 0.6120408 ]
+ [0.38823697 0.611763  ]]
+        Validation Criterion: 0.36341241
+        Saving best model so far ...
+20:32:50      Epoch:   0      Batch:   0      OuterStep:  16      LossModel: 0.00909436     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1769Contributing envs to the losses:  [3 1 2 4 0]
+Gate values for each environment (all envs): 
+ [[0.36983702 0.63016295]
+ [0.36987856 0.63012135]
+ [0.37016234 0.6298377 ]
+ [0.36976185 0.6302381 ]
+ [0.37022117 0.62977886]
+ [0.38637456 0.6136254 ]
+ [0.3862191  0.613781  ]
+ [0.38292387 0.61707616]
+ [0.3881172  0.6118828 ]
+ [0.38853833 0.61146176]]
+        Validation Criterion: 0.35575578
+        Saving best model so far ...
+20:32:52      Epoch:   0      Batch:   0      OuterStep:  17      LossModel: 0.56760621     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.6784Contributing envs to the losses:  [6 5 8 9 7]
+Gate values for each environment (all envs): 
+ [[0.3696723  0.6303277 ]
+ [0.36975607 0.63024396]
+ [0.37005433 0.6299457 ]
+ [0.3696444  0.63035554]
+ [0.37006164 0.62993836]
+ [0.38656193 0.6134381 ]
+ [0.38663837 0.6133616 ]
+ [0.38348097 0.6165191 ]
+ [0.38823298 0.61176705]
+ [0.3888197  0.6111803 ]]
+        Validation Criterion: 0.33792171
+        Saving best model so far ...
+20:32:53      Epoch:   0      Batch:   0      OuterStep:  18      LossModel: 0.01458082     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9466Contributing envs to the losses:  [4 1 3 2 0]
+Gate values for each environment (all envs): 
+ [[0.3694335  0.63056654]
+ [0.3695302  0.6304698 ]
+ [0.36978966 0.63021034]
+ [0.3694798  0.63052016]
+ [0.3697705  0.6302295 ]
+ [0.38652351 0.6134765 ]
+ [0.3868452  0.61315477]
+ [0.38397703 0.616023  ]
+ [0.38823092 0.6117691 ]
+ [0.3890366  0.6109634 ]]
+        Validation Criterion: 0.27813435
+        Saving best model so far ...
+20:32:54      Epoch:   0      Batch:   0      OuterStep:  19      LossModel: 0.12063362     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8905Contributing envs to the losses:  [9 8 6 5 7]
+Gate values for each environment (all envs): 
+ [[0.36931178 0.63068813]
+ [0.3693502  0.63064986]
+ [0.36957237 0.63042766]
+ [0.36943486 0.6305651 ]
+ [0.36952585 0.63047415]
+ [0.38685635 0.6131437 ]
+ [0.3878681  0.61213195]
+ [0.38574404 0.614256  ]
+ [0.3884555  0.61154455]
+ [0.38979712 0.6102029 ]]
+        Validation Criterion: 0.08562370
+        Saving best model so far ...
+20:32:55      Epoch:   0      Batch:   0      OuterStep:  20      LossModel: 0.01445653     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7201Contributing envs to the losses:  [4 3 1 2 0]
+Gate values for each environment (all envs): 
+ [[0.36867693 0.63132304]
+ [0.36854625 0.63145375]
+ [0.36869577 0.63130426]
+ [0.3687438  0.63125616]
+ [0.36866674 0.63133335]
+ [0.38584846 0.6141516 ]
+ [0.3870839  0.6129161 ]
+ [0.3877413  0.61225873]
+ [0.38749528 0.6125047 ]
+ [0.38871154 0.6112884 ]]
+        Validation Criterion: 0.14921644
+20:32:56      Epoch:   0      Batch:   0      OuterStep:  21      LossModel: 0.08154970     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7324Contributing envs to the losses:  [6 7 5 8 9]
+Gate values for each environment (all envs): 
+ [[0.3682047  0.63179535]
+ [0.36810103 0.631899  ]
+ [0.36818197 0.63181806]
+ [0.36836606 0.63163394]
+ [0.36810848 0.6318914 ]
+ [0.384946   0.6150541 ]
+ [0.3855936  0.61440635]
+ [0.3870089  0.6129911 ]
+ [0.3869837  0.6130163 ]
+ [0.38833305 0.611667  ]]
+        Validation Criterion: 0.10962758
+20:32:57      Epoch:   0      Batch:   0      OuterStep:  22      LossModel: 0.01015938     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8124Contributing envs to the losses:  [1 4 3 2 0]
+Gate values for each environment (all envs): 
+ [[0.36754242 0.63245755]
+ [0.36743128 0.6325688 ]
+ [0.3675268  0.6324732 ]
+ [0.3676822  0.6323178 ]
+ [0.3674519  0.6325481 ]
+ [0.3843368  0.61566323]
+ [0.38574404 0.6142559 ]
+ [0.38654247 0.6134575 ]
+ [0.38539842 0.61460155]
+ [0.3867555  0.6132446 ]]
+        Validation Criterion: 0.11985990
+20:32:58      Epoch:   0      Batch:   0      OuterStep:  23      LossModel: 0.06627557     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7511Contributing envs to the losses:  [7 6 5 9 8]
+Gate values for each environment (all envs): 
+ [[0.3672475  0.6327525 ]
+ [0.36721736 0.63278264]
+ [0.36734465 0.6326554 ]
+ [0.36738238 0.6326176 ]
+ [0.3672766  0.6327234 ]
+ [0.38433585 0.6156642 ]
+ [0.38582048 0.6141795 ]
+ [0.38614005 0.61385995]
+ [0.3848983  0.6151017 ]
+ [0.386195   0.613805  ]]
+        Validation Criterion: 0.05747529
+        Saving best model so far ...
+20:32:59      Epoch:   0      Batch:   0      OuterStep:  24      LossModel: 0.05351802     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7732Contributing envs to the losses:  [1 3 4 2 0]
+Gate values for each environment (all envs): 
+ [[0.36684537 0.6331547 ]
+ [0.36678877 0.63321126]
+ [0.36688685 0.63311315]
+ [0.3669768  0.63302326]
+ [0.3668115  0.6331885 ]
+ [0.38355803 0.616442  ]
+ [0.38489574 0.61510426]
+ [0.3855654  0.6144346 ]
+ [0.3850034  0.6149966 ]
+ [0.38621688 0.6137831 ]]
+        Validation Criterion: 0.05463119
+        Saving best model so far ...
+20:33:01      Epoch:   0      Batch:   0      OuterStep:  25      LossModel: 0.04708317     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7758Contributing envs to the losses:  [5 6 8 9 7]
+Gate values for each environment (all envs): 
+ [[0.3665576  0.6334424 ]
+ [0.36648646 0.63351357]
+ [0.36655566 0.63344437]
+ [0.36669698 0.633303  ]
+ [0.36646062 0.6335394 ]
+ [0.38380212 0.6161979 ]
+ [0.38488778 0.61511225]
+ [0.38540804 0.61459196]
+ [0.38515264 0.6148473 ]
+ [0.3863     0.61370003]]
+        Validation Criterion: 0.04548002
+        Saving best model so far ...
+20:33:02      Epoch:   0      Batch:   0      OuterStep:  26      LossModel: 0.01026803     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7506Contributing envs to the losses:  [2 1 3 4 0]
+Gate values for each environment (all envs): 
+ [[0.3665786  0.6334214 ]
+ [0.3665076  0.6334924 ]
+ [0.3665519  0.6334481 ]
+ [0.36674488 0.63325506]
+ [0.3664478  0.63355213]
+ [0.3841131  0.615887  ]
+ [0.38521808 0.6147819 ]
+ [0.38552052 0.6144794 ]
+ [0.38524246 0.6147576 ]
+ [0.38635686 0.6136431 ]]
+        Validation Criterion: 0.04539703
+        Saving best model so far ...
+20:33:03      Epoch:   0      Batch:   0      OuterStep:  27      LossModel: 0.01021008     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7641Contributing envs to the losses:  [4 0 1 2 3]
+Gate values for each environment (all envs): 
+ [[0.36653554 0.6334644 ]
+ [0.36643806 0.63356197]
+ [0.36646172 0.63353825]
+ [0.36669546 0.6333046 ]
+ [0.3663585  0.63364154]
+ [0.38398784 0.61601216]
+ [0.38526678 0.6147332 ]
+ [0.38568658 0.6143134 ]
+ [0.38523751 0.6147624 ]
+ [0.38635394 0.6136461 ]]
+        Validation Criterion: 0.04452642
+        Saving best model so far ...
+20:33:04      Epoch:   0      Batch:   0      OuterStep:  28      LossModel: 0.04273737     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7404Contributing envs to the losses:  [9 8 6 5 7]
+Gate values for each environment (all envs): 
+ [[0.3665281  0.6334719 ]
+ [0.36643615 0.6335638 ]
+ [0.36645088 0.6335491 ]
+ [0.36667413 0.6333259 ]
+ [0.36634022 0.6336598 ]
+ [0.3839947  0.61600536]
+ [0.3852477  0.61475223]
+ [0.38580424 0.61419576]
+ [0.3852514  0.6147486 ]
+ [0.3863624  0.6136376 ]]
+        Validation Criterion: 0.04326256
+        Saving best model so far ...
+20:33:05      Epoch:   0      Batch:   0      OuterStep:  29      LossModel: 0.04071515     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7320Contributing envs to the losses:  [6 7 5 9 8]
+Gate values for each environment (all envs): 
+ [[0.3665112  0.6334888 ]
+ [0.36641794 0.63358206]
+ [0.3664211  0.63357884]
+ [0.36663982 0.6333602 ]
+ [0.36630863 0.6336914 ]
+ [0.3840127  0.61598736]
+ [0.38524267 0.6147573 ]
+ [0.3858276  0.61417246]
+ [0.38524103 0.61475897]
+ [0.38634714 0.6136528 ]]
+        Validation Criterion: 0.04283939
+        Saving best model so far ...
+20:33:06      Epoch:   0      Batch:   0      OuterStep:  30      LossModel: 0.02496234     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7129Contributing envs to the losses:  [5 8 6 9 7]
+Gate values for each environment (all envs): 
+ [[0.36644617 0.6335538 ]
+ [0.36633226 0.6336677 ]
+ [0.36631402 0.63368595]
+ [0.36656827 0.63343173]
+ [0.36620098 0.6337991 ]
+ [0.38404402 0.61595607]
+ [0.3852705  0.61472946]
+ [0.38582715 0.6141729 ]
+ [0.38525745 0.61474264]
+ [0.38635686 0.61364317]]
+        Validation Criterion: 0.04162166
+        Saving best model so far ...
+20:33:07      Epoch:   0      Batch:   0      OuterStep:  31      LossModel: 0.00996871     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7646Contributing envs to the losses:  [2 0 1 3 4]
+Gate values for each environment (all envs): 
+ [[0.36640155 0.6335984 ]
+ [0.3662824  0.6337176 ]
+ [0.366249   0.63375103]
+ [0.36652625 0.63347375]
+ [0.3661302  0.63386977]
+ [0.38408345 0.61591655]
+ [0.38531554 0.6146844 ]
+ [0.38583308 0.614167  ]
+ [0.38529643 0.6147036 ]
+ [0.38638276 0.61361724]]
+        Validation Criterion: 0.04077655
+        Saving best model so far ...
+20:33:08      Epoch:   0      Batch:   0      OuterStep:  32      LossModel: 0.02408300     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6987Contributing envs to the losses:  [4 2 0 1 3]
+Gate values for each environment (all envs): 
+ [[0.36638626 0.6336137 ]
+ [0.3662647  0.6337353 ]
+ [0.366219   0.633781  ]
+ [0.36650664 0.63349336]
+ [0.3660948  0.6339052 ]
+ [0.38410333 0.6158967 ]
+ [0.38532618 0.6146738 ]
+ [0.3858461  0.61415386]
+ [0.38531438 0.61468565]
+ [0.3863899  0.6136101 ]]
+        Validation Criterion: 0.03971621
+        Saving best model so far ...
+20:33:09      Epoch:   0      Batch:   0      OuterStep:  33      LossModel: 0.02372501     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7851Contributing envs to the losses:  [7 6 5 8 9]
+Gate values for each environment (all envs): 
+ [[0.36638328 0.63361675]
+ [0.36625066 0.63374937]
+ [0.36619163 0.6338083 ]
+ [0.36648872 0.6335113 ]
+ [0.3660666  0.6339334 ]
+ [0.38411006 0.61588997]
+ [0.38533092 0.614669  ]
+ [0.385858   0.614142  ]
+ [0.3853232  0.6146768 ]
+ [0.3863918  0.6136082 ]]
+        Validation Criterion: 0.03943730
+        Saving best model so far ...
+20:33:10      Epoch:   0      Batch:   0      OuterStep:  34      LossModel: 0.03683664     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7464Contributing envs to the losses:  [2 0 1 3 4]
+Gate values for each environment (all envs): 
+ [[0.36636043 0.63363963]
+ [0.36621767 0.63378227]
+ [0.36614746 0.6338526 ]
+ [0.36645702 0.63354295]
+ [0.36602128 0.6339788 ]
+ [0.3841356  0.61586446]
+ [0.38535276 0.6146472 ]
+ [0.38587773 0.6141223 ]
+ [0.38534126 0.6146587 ]
+ [0.38640484 0.6135952 ]]
+        Validation Criterion: 0.03841292
+        Saving best model so far ...
+20:33:11      Epoch:   0      Batch:   0      OuterStep:  35      LossModel: 0.03601976     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7070Contributing envs to the losses:  [7 6 5 8 9]
+Gate values for each environment (all envs): 
+ [[0.36632666 0.6336733 ]
+ [0.3661786  0.63382137]
+ [0.36609823 0.6339017 ]
+ [0.3664192  0.63358074]
+ [0.36597043 0.63402957]
+ [0.38414362 0.61585647]
+ [0.38536754 0.6146324 ]
+ [0.38589904 0.61410093]
+ [0.3853481  0.6146519 ]
+ [0.38640684 0.6135932 ]]
+        Validation Criterion: 0.03777812
+        Saving best model so far ...
+20:33:12      Epoch:   0      Batch:   0      OuterStep:  36      LossModel: 0.03544822     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7098Contributing envs to the losses:  [9 8 6 5 7]
+Gate values for each environment (all envs): 
+ [[0.36628994 0.63371   ]
+ [0.36613578 0.6338642 ]
+ [0.3660452  0.6339548 ]
+ [0.36637357 0.6336264 ]
+ [0.36591738 0.6340826 ]
+ [0.38415897 0.6158411 ]
+ [0.3853758  0.61462426]
+ [0.385918   0.6140821 ]
+ [0.385366   0.61463404]
+ [0.38641295 0.6135871 ]]
+        Validation Criterion: 0.03683563
+        Saving best model so far ...
+20:33:13      Epoch:   0      Batch:   0      OuterStep:  37      LossModel: 0.03464498     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7169Contributing envs to the losses:  [1 0 3 2 4]
+Gate values for each environment (all envs): 
+ [[0.36624765 0.63375235]
+ [0.36608824 0.6339117 ]
+ [0.36599073 0.63400924]
+ [0.36632597 0.633674  ]
+ [0.36586323 0.63413686]
+ [0.38418213 0.6158179 ]
+ [0.38538796 0.61461204]
+ [0.38592622 0.6140738 ]
+ [0.3853795  0.6146205 ]
+ [0.38642433 0.6135757 ]]
+        Validation Criterion: 0.03597416
+        Saving best model so far ...
+20:33:14      Epoch:   0      Batch:   0      OuterStep:  38      LossModel: 0.03412876     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6881Contributing envs to the losses:  [8 9 5 6 7]
+Gate values for each environment (all envs): 
+ [[0.36621177 0.6337882 ]
+ [0.36604685 0.6339532 ]
+ [0.36594296 0.63405704]
+ [0.36628643 0.6337136 ]
+ [0.36581498 0.6341851 ]
+ [0.38420516 0.61579484]
+ [0.38541886 0.61458117]
+ [0.38594168 0.6140583 ]
+ [0.38540122 0.6145988 ]
+ [0.38644412 0.61355597]]
+        Validation Criterion: 0.03493056
+        Saving best model so far ...
+20:33:15      Epoch:   0      Batch:   0      OuterStep:  39      LossModel: 0.02151241     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6776Contributing envs to the losses:  [9 8 6 5 7]
+Gate values for each environment (all envs): 
+ [[0.3661846  0.6338154 ]
+ [0.36601543 0.6339846 ]
+ [0.36590737 0.6340926 ]
+ [0.36625472 0.63374525]
+ [0.3657791  0.6342209 ]
+ [0.38420442 0.6157956 ]
+ [0.3854157  0.6145843 ]
+ [0.38595963 0.6140404 ]
+ [0.38540697 0.61459297]
+ [0.386444   0.613556  ]]
+        Validation Criterion: 0.03422611
+        Saving best model so far ...
+20:33:16      Epoch:   0      Batch:   0      OuterStep:  40      LossModel: 0.00970700     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6884Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36613733 0.6338627 ]
+ [0.36596113 0.63403887]
+ [0.36585182 0.6341481 ]
+ [0.36620444 0.6337956 ]
+ [0.365723   0.6342769 ]
+ [0.38423544 0.6157646 ]
+ [0.3854226  0.6145774 ]
+ [0.38597077 0.6140292 ]
+ [0.3854154  0.6145846 ]
+ [0.3864435  0.6135565 ]]
+        Validation Criterion: 0.03374406
+        Saving best model so far ...
+20:33:17      Epoch:   0      Batch:   0      OuterStep:  41      LossModel: 0.00966169     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6852Contributing envs to the losses:  [4 2 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36611748 0.6338825 ]
+ [0.36594158 0.6340584 ]
+ [0.36582854 0.6341714 ]
+ [0.36618528 0.63381475]
+ [0.36570093 0.6342991 ]
+ [0.38427156 0.6157285 ]
+ [0.38545692 0.6145431 ]
+ [0.3859783  0.61402166]
+ [0.385443   0.614557  ]
+ [0.38646778 0.6135322 ]]
+        Validation Criterion: 0.03303608
+        Saving best model so far ...
+20:33:18      Epoch:   0      Batch:   0      OuterStep:  42      LossModel: 0.03196613     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6990Contributing envs to the losses:  [5 6 8 7 9]
+Gate values for each environment (all envs): 
+ [[0.366104   0.633896  ]
+ [0.36592683 0.6340732 ]
+ [0.36581114 0.6341888 ]
+ [0.36616814 0.6338318 ]
+ [0.365686   0.634314  ]
+ [0.3842596  0.6157404 ]
+ [0.3854467  0.6145534 ]
+ [0.38598135 0.6140187 ]
+ [0.38544878 0.6145512 ]
+ [0.38646063 0.6135394 ]]
+        Validation Criterion: 0.03245898
+        Saving best model so far ...
+20:33:20      Epoch:   0      Batch:   0      OuterStep:  43      LossModel: 0.02069042     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7524Contributing envs to the losses:  [1 0 3 2 4]
+Gate values for each environment (all envs): 
+ [[0.3660843  0.63391566]
+ [0.36589968 0.6341004 ]
+ [0.36578423 0.6342157 ]
+ [0.36614272 0.6338573 ]
+ [0.36566207 0.63433796]
+ [0.38427874 0.6157212 ]
+ [0.3854442  0.6145558 ]
+ [0.3859836  0.6140164 ]
+ [0.38544524 0.6145548 ]
+ [0.3864511  0.6135489 ]]
+        Validation Criterion: 0.03163787
+        Saving best model so far ...
+20:33:21      Epoch:   0      Batch:   0      OuterStep:  44      LossModel: 0.02040313     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7139Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36606893 0.63393104]
+ [0.36588296 0.63411707]
+ [0.36576447 0.63423556]
+ [0.3661217  0.6338783 ]
+ [0.36564204 0.6343579 ]
+ [0.3843526  0.6156475 ]
+ [0.38548836 0.61451167]
+ [0.38600948 0.6139905 ]
+ [0.38548306 0.614517  ]
+ [0.38648993 0.6135101 ]]
+        Validation Criterion: 0.03104347
+        Saving best model so far ...
+20:33:22      Epoch:   0      Batch:   0      OuterStep:  45      LossModel: 0.03074899     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7047Contributing envs to the losses:  [9 8 5 6 7]
+Gate values for each environment (all envs): 
+ [[0.3660669  0.63393307]
+ [0.36587778 0.6341222 ]
+ [0.3657579  0.63424206]
+ [0.36611938 0.63388056]
+ [0.36563948 0.6343605 ]
+ [0.38436204 0.615638  ]
+ [0.38551107 0.61448896]
+ [0.38605055 0.6139495 ]
+ [0.38551348 0.6144866 ]
+ [0.38651338 0.61348665]]
+        Validation Criterion: 0.03048800
+        Saving best model so far ...
+20:33:23      Epoch:   0      Batch:   0      OuterStep:  46      LossModel: 0.03037224     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7237Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36605453 0.6339454 ]
+ [0.36586055 0.6341395 ]
+ [0.36574247 0.6342575 ]
+ [0.36610132 0.6338987 ]
+ [0.3656294  0.6343707 ]
+ [0.38436794 0.6156321 ]
+ [0.3855006  0.61449945]
+ [0.3860585  0.6139415 ]
+ [0.38550892 0.61449105]
+ [0.38650075 0.61349934]]
+        Validation Criterion: 0.02974408
+        Saving best model so far ...
+20:33:24      Epoch:   0      Batch:   0      OuterStep:  47      LossModel: 0.02982441     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7186Contributing envs to the losses:  [6 7 5 8 9]
+Gate values for each environment (all envs): 
+ [[0.3660321  0.63396794]
+ [0.3658355  0.6341645 ]
+ [0.36571744 0.63428247]
+ [0.36607084 0.63392913]
+ [0.36560455 0.6343955 ]
+ [0.38439706 0.61560297]
+ [0.38549507 0.61450493]
+ [0.38604912 0.6139509 ]
+ [0.38550228 0.6144977 ]
+ [0.38647956 0.61352044]]
+        Validation Criterion: 0.02874541
+        Saving best model so far ...
+20:33:25      Epoch:   0      Batch:   0      OuterStep:  48      LossModel: 0.00946777     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7569Contributing envs to the losses:  [9 8 6 5 7]
+Gate values for each environment (all envs): 
+ [[0.36600587 0.6339941 ]
+ [0.3658055  0.6341945 ]
+ [0.36568943 0.6343106 ]
+ [0.36604398 0.633956  ]
+ [0.3655801  0.63441986]
+ [0.38438997 0.61561006]
+ [0.38547763 0.6145224 ]
+ [0.38603708 0.61396295]
+ [0.38548216 0.61451787]
+ [0.38644996 0.61355   ]]
+        Validation Criterion: 0.02840517
+        Saving best model so far ...
+20:33:26      Epoch:   0      Batch:   0      OuterStep:  49      LossModel: 0.01926414     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7536Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36598727 0.63401276]
+ [0.365787   0.634213  ]
+ [0.36567494 0.634325  ]
+ [0.36602396 0.63397604]
+ [0.36557132 0.6344287 ]
+ [0.38441005 0.61559   ]
+ [0.38547406 0.614526  ]
+ [0.38603124 0.6139688 ]
+ [0.38547873 0.61452127]
+ [0.38643846 0.6135615 ]]
+        Validation Criterion: 0.02741781
+        Saving best model so far ...
+20:33:27      Epoch:   0      Batch:   0      OuterStep:  50      LossModel: 0.00940157     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7354Contributing envs to the losses:  [7 6 5 8 9]
+Gate values for each environment (all envs): 
+ [[0.36597833 0.6340216 ]
+ [0.36577827 0.6342218 ]
+ [0.36566606 0.6343339 ]
+ [0.36601344 0.6339866 ]
+ [0.36556548 0.63443446]
+ [0.38444602 0.6155541 ]
+ [0.38546488 0.61453515]
+ [0.3860273  0.61397266]
+ [0.385471   0.6145291 ]
+ [0.3864224  0.61357754]]
+        Validation Criterion: 0.02717935
+        Saving best model so far ...
+20:33:28      Epoch:   0      Batch:   0      OuterStep:  51      LossModel: 0.02834506     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7692Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36596176 0.63403827]
+ [0.3657581  0.63424194]
+ [0.36565202 0.634348  ]
+ [0.36599407 0.63400596]
+ [0.3655561  0.6344439 ]
+ [0.38447776 0.61552227]
+ [0.38547048 0.6145295 ]
+ [0.38602665 0.6139733 ]
+ [0.3854751  0.6145249 ]
+ [0.3864149  0.6135851 ]]
+        Validation Criterion: 0.02630738
+        Saving best model so far ...
+20:33:29      Epoch:   0      Batch:   0      OuterStep:  52      LossModel: 0.00932617     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7778Contributing envs to the losses:  [9 8 6 7 5]
+Gate values for each environment (all envs): 
+ [[0.36595008 0.6340499 ]
+ [0.36574486 0.6342552 ]
+ [0.36564228 0.6343577 ]
+ [0.36597875 0.6340212 ]
+ [0.3655515  0.63444847]
+ [0.38451484 0.61548513]
+ [0.38548064 0.61451936]
+ [0.38603076 0.61396915]
+ [0.38548115 0.6145189 ]
+ [0.38640955 0.6135905 ]]
+        Validation Criterion: 0.02581750
+        Saving best model so far ...
+20:33:30      Epoch:   0      Batch:   0      OuterStep:  53      LossModel: 0.02757009     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.6830Contributing envs to the losses:  [9 8 6 7 5]
+Gate values for each environment (all envs): 
+ [[0.36594287 0.6340571 ]
+ [0.36573592 0.63426405]
+ [0.36563507 0.63436496]
+ [0.3659704  0.63402957]
+ [0.3655483  0.63445175]
+ [0.38457668 0.6154234 ]
+ [0.38548943 0.61451054]
+ [0.38603085 0.61396915]
+ [0.3854888  0.61451113]
+ [0.3864     0.61359996]]
+        Validation Criterion: 0.02525860
+        Saving best model so far ...
+20:33:31      Epoch:   0      Batch:   0      OuterStep:  54      LossModel: 0.02723054     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7165Contributing envs to the losses:  [7 6 5 8 9]
+Gate values for each environment (all envs): 
+ [[0.36593398 0.634066  ]
+ [0.36572853 0.63427144]
+ [0.3656313  0.6343687 ]
+ [0.3659627  0.63403726]
+ [0.36554658 0.6344534 ]
+ [0.3846296  0.61537033]
+ [0.38551044 0.61448956]
+ [0.38603252 0.61396754]
+ [0.3855072  0.6144928 ]
+ [0.3864032  0.6135968 ]]
+        Validation Criterion: 0.02436582
+        Saving best model so far ...
+20:33:32      Epoch:   0      Batch:   0      OuterStep:  55      LossModel: 0.02673241     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7631Contributing envs to the losses:  [7 6 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.36592788 0.6340721 ]
+ [0.36572313 0.6342768 ]
+ [0.36562893 0.63437104]
+ [0.36595458 0.63404536]
+ [0.36554822 0.6344518 ]
+ [0.3846944  0.6153056 ]
+ [0.38552406 0.61447597]
+ [0.38603625 0.6139638 ]
+ [0.38551518 0.6144848 ]
+ [0.38640016 0.61359984]]
+        Validation Criterion: 0.02401966
+        Saving best model so far ...
+20:33:34      Epoch:   0      Batch:   0      OuterStep:  56      LossModel: 0.00922422     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8266Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36592105 0.6340789 ]
+ [0.36571687 0.6342832 ]
+ [0.36562583 0.6343741 ]
+ [0.36594623 0.6340537 ]
+ [0.3655479  0.6344521 ]
+ [0.38472944 0.6152706 ]
+ [0.3855351  0.6144649 ]
+ [0.38604322 0.61395675]
+ [0.3855259  0.61447406]
+ [0.38639626 0.6136037 ]]
+        Validation Criterion: 0.02376994
+        Saving best model so far ...
+20:33:35      Epoch:   0      Batch:   0      OuterStep:  57      LossModel: 0.02648416     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7340Contributing envs to the losses:  [7 6 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.3659002  0.63409984]
+ [0.3656955  0.6343045 ]
+ [0.365608   0.63439196]
+ [0.36592397 0.63407606]
+ [0.36553726 0.6344628 ]
+ [0.38474524 0.6152547 ]
+ [0.38552788 0.61447215]
+ [0.38603356 0.61396646]
+ [0.38552085 0.6144791 ]
+ [0.3863812  0.6136188 ]]
+        Validation Criterion: 0.02330697
+        Saving best model so far ...
+20:33:36      Epoch:   0      Batch:   0      OuterStep:  58      LossModel: 0.00915684     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7804Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.3658936  0.63410646]
+ [0.36568946 0.63431054]
+ [0.3656057  0.6343943 ]
+ [0.36591727 0.63408273]
+ [0.3655389  0.63446105]
+ [0.3847804  0.6152196 ]
+ [0.38552514 0.61447483]
+ [0.3860146  0.61398536]
+ [0.38552025 0.6144797 ]
+ [0.38636446 0.61363554]]
+        Validation Criterion: 0.02298032
+        Saving best model so far ...
+20:33:37      Epoch:   0      Batch:   0      OuterStep:  59      LossModel: 0.00912128     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7868Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.36587924 0.6341208 ]
+ [0.36567274 0.6343273 ]
+ [0.3655956  0.63440436]
+ [0.365901   0.63409895]
+ [0.36552954 0.63447046]
+ [0.38480207 0.61519784]
+ [0.3855356  0.6144644 ]
+ [0.38600403 0.613996  ]
+ [0.38552502 0.61447495]
+ [0.3863633  0.61363673]]
+        Validation Criterion: 0.02301218
+20:33:38      Epoch:   0      Batch:   0      OuterStep:  60      LossModel: 0.00907197     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7736Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36586744 0.6341325 ]
+ [0.3656632  0.63433677]
+ [0.3655879  0.6344121 ]
+ [0.36589006 0.6341099 ]
+ [0.3655263  0.63447374]
+ [0.3847971  0.61520284]
+ [0.38552633 0.6144737 ]
+ [0.38597804 0.61402196]
+ [0.38551563 0.6144844 ]
+ [0.38633484 0.61366516]]
+        Validation Criterion: 0.02296417
+        Saving best model so far ...
+20:33:39      Epoch:   0      Batch:   0      OuterStep:  61      LossModel: 0.01745219     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8445Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.3658379  0.6341621 ]
+ [0.36563343 0.6343665 ]
+ [0.36556154 0.6344385 ]
+ [0.3658569  0.6341431 ]
+ [0.36550826 0.63449174]
+ [0.3847914  0.6152086 ]
+ [0.38550448 0.6144956 ]
+ [0.38594827 0.61405176]
+ [0.38550958 0.61449045]
+ [0.38631913 0.61368084]]
+        Validation Criterion: 0.02266498
+        Saving best model so far ...
+20:33:40      Epoch:   0      Batch:   0      OuterStep:  62      LossModel: 0.01737104     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7877Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36582315 0.6341768 ]
+ [0.36562064 0.6343794 ]
+ [0.36555126 0.6344487 ]
+ [0.36584496 0.63415504]
+ [0.36549848 0.6345016 ]
+ [0.3848326  0.6151674 ]
+ [0.38553    0.61447   ]
+ [0.3859401  0.6140599 ]
+ [0.38552582 0.61447424]
+ [0.38632092 0.613679  ]]
+        Validation Criterion: 0.02246981
+        Saving best model so far ...
+20:33:42      Epoch:   0      Batch:   0      OuterStep:  63      LossModel: 0.00894937     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7683Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3658121  0.63418794]
+ [0.36561078 0.6343892 ]
+ [0.36554593 0.634454  ]
+ [0.36583304 0.63416696]
+ [0.36549735 0.6345026 ]
+ [0.38483873 0.6151613 ]
+ [0.38554245 0.6144576 ]
+ [0.38593718 0.61406285]
+ [0.38553956 0.61446047]
+ [0.38632292 0.6136771 ]]
+        Validation Criterion: 0.02224546
+        Saving best model so far ...
+20:33:43      Epoch:   0      Batch:   0      OuterStep:  64      LossModel: 0.01716877     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1783Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36580002 0.63420004]
+ [0.36559892 0.6344011 ]
+ [0.36553422 0.6344659 ]
+ [0.36581796 0.63418204]
+ [0.36548823 0.63451177]
+ [0.38487762 0.6151223 ]
+ [0.3855611  0.61443895]
+ [0.38594806 0.61405194]
+ [0.3855594  0.61444056]
+ [0.38634408 0.6136559 ]]
+        Validation Criterion: 0.02213571
+        Saving best model so far ...
+20:33:44      Epoch:   0      Batch:   0      OuterStep:  65      LossModel: 0.02534873     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7150Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36579055 0.6342094 ]
+ [0.36558846 0.6344115 ]
+ [0.36552802 0.634472  ]
+ [0.3658099  0.63419014]
+ [0.36548248 0.63451755]
+ [0.38490576 0.6150943 ]
+ [0.38559    0.61441   ]
+ [0.38597158 0.6140284 ]
+ [0.38558683 0.6144132 ]
+ [0.38635907 0.61364096]]
+        Validation Criterion: 0.02191873
+        Saving best model so far ...
+20:33:45      Epoch:   0      Batch:   0      OuterStep:  66      LossModel: 0.01699144     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8102Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3657806  0.6342194 ]
+ [0.3655779  0.63442206]
+ [0.36552238 0.6344776 ]
+ [0.3658004  0.63419956]
+ [0.36547822 0.6345218 ]
+ [0.3849154  0.6150845 ]
+ [0.38560125 0.6143988 ]
+ [0.38597327 0.6140267 ]
+ [0.38559613 0.61440384]
+ [0.38636148 0.6136385 ]]
+        Validation Criterion: 0.02187236
+        Saving best model so far ...
+20:33:46      Epoch:   0      Batch:   0      OuterStep:  67      LossModel: 0.02498136     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7600Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36575922 0.63424075]
+ [0.36555472 0.6344452 ]
+ [0.36550158 0.63449836]
+ [0.3657785  0.6342215 ]
+ [0.36546084 0.6345392 ]
+ [0.3849573  0.6150427 ]
+ [0.3856247  0.6143753 ]
+ [0.38596934 0.61403066]
+ [0.3856117  0.61438835]
+ [0.38636422 0.6136357 ]]
+        Validation Criterion: 0.02171899
+        Saving best model so far ...
+20:33:48      Epoch:   0      Batch:   0      OuterStep:  68      LossModel: 0.01682844     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7878Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36574677 0.63425326]
+ [0.36554602 0.634454  ]
+ [0.3654905  0.6345095 ]
+ [0.36576676 0.63423324]
+ [0.36545128 0.63454866]
+ [0.3849698  0.6150302 ]
+ [0.38563925 0.6143608 ]
+ [0.38597324 0.6140267 ]
+ [0.38562113 0.6143789 ]
+ [0.38637903 0.61362094]]
+        Validation Criterion: 0.02173594
+20:33:49      Epoch:   0      Batch:   0      OuterStep:  69      LossModel: 0.01676700     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8615Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3657348  0.63426524]
+ [0.3655317  0.6344683 ]
+ [0.36547917 0.63452077]
+ [0.36575338 0.63424665]
+ [0.3654449  0.63455504]
+ [0.38498217 0.61501783]
+ [0.38563672 0.61436325]
+ [0.38597563 0.61402434]
+ [0.38564047 0.61435956]
+ [0.3863854  0.61361456]]
+        Validation Criterion: 0.02147899
+        Saving best model so far ...
+20:33:50      Epoch:   0      Batch:   0      OuterStep:  70      LossModel: 0.01673928     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7658Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36572474 0.6342753 ]
+ [0.3655219  0.6344781 ]
+ [0.36547247 0.63452756]
+ [0.3657444  0.63425565]
+ [0.3654391  0.63456094]
+ [0.38501614 0.61498386]
+ [0.3856788  0.6143211 ]
+ [0.38599485 0.61400515]
+ [0.38567162 0.6143283 ]
+ [0.38640568 0.61359435]]
+        Validation Criterion: 0.02149843
+20:33:51      Epoch:   0      Batch:   0      OuterStep:  71      LossModel: 0.01664877     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8057Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36571917 0.63428086]
+ [0.3655179  0.6344821 ]
+ [0.36547104 0.634529  ]
+ [0.3657399  0.63426006]
+ [0.36544046 0.6345595 ]
+ [0.38505438 0.61494565]
+ [0.38571966 0.6142804 ]
+ [0.3860216  0.6139784 ]
+ [0.3857137  0.6142863 ]
+ [0.38644466 0.61355543]]
+        Validation Criterion: 0.02156154
+20:33:52      Epoch:   0      Batch:   0      OuterStep:  72      LossModel: 0.01657485     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7874Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36571178 0.63428825]
+ [0.36550975 0.63449025]
+ [0.36546382 0.6345361 ]
+ [0.36573187 0.6342681 ]
+ [0.36543515 0.6345648 ]
+ [0.38509846 0.61490154]
+ [0.38574174 0.6142582 ]
+ [0.38604936 0.61395067]
+ [0.38574773 0.6142522 ]
+ [0.38647208 0.61352795]]
+        Validation Criterion: 0.02137936
+        Saving best model so far ...
+20:33:53      Epoch:   0      Batch:   0      OuterStep:  73      LossModel: 0.00874279     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7985Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.3657062  0.63429374]
+ [0.36550325 0.63449675]
+ [0.36545712 0.6345428 ]
+ [0.36572364 0.63427633]
+ [0.36543128 0.6345687 ]
+ [0.3851191  0.61488086]
+ [0.3857677  0.61423236]
+ [0.38606656 0.61393344]
+ [0.38577417 0.61422586]
+ [0.38649896 0.613501  ]]
+        Validation Criterion: 0.02140615
+20:33:55      Epoch:   0      Batch:   0      OuterStep:  74      LossModel: 0.01647582     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8638Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36567894 0.63432103]
+ [0.3654746  0.63452536]
+ [0.36543572 0.6345643 ]
+ [0.36569753 0.63430244]
+ [0.36541227 0.63458776]
+ [0.38511875 0.6148812 ]
+ [0.3857772  0.6142228 ]
+ [0.3860726  0.61392736]
+ [0.38577875 0.6142212 ]
+ [0.38649732 0.6135027 ]]
+        Validation Criterion: 0.02173412
+20:33:56      Epoch:   0      Batch:   0      OuterStep:  75      LossModel: 0.01642945     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8420Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.36566642 0.63433355]
+ [0.36546278 0.63453716]
+ [0.36542284 0.6345772 ]
+ [0.36568514 0.6343149 ]
+ [0.36540353 0.63459647]
+ [0.38515225 0.61484766]
+ [0.3857714  0.6142286 ]
+ [0.38606447 0.6139356 ]
+ [0.38578713 0.6142128 ]
+ [0.3864936  0.6135064 ]]
+        Validation Criterion: 0.02139714
+20:33:57      Epoch:   0      Batch:   0      OuterStep:  76      LossModel: 0.02408994     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8460Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.36563605 0.63436395]
+ [0.36542988 0.6345701 ]
+ [0.365395   0.634605  ]
+ [0.36565006 0.63434994]
+ [0.36537647 0.6346235 ]
+ [0.38512832 0.6148717 ]
+ [0.385757   0.61424303]
+ [0.38604492 0.6139551 ]
+ [0.38577577 0.61422414]
+ [0.38647792 0.613522  ]]
+        Validation Criterion: 0.02111011
+        Saving best model so far ...
+20:33:58      Epoch:   0      Batch:   0      OuterStep:  77      LossModel: 0.00862375     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9052Contributing envs to the losses:  [5 6 8 7 9]
+Gate values for each environment (all envs): 
+ [[0.36559495 0.634405  ]
+ [0.365388   0.634612  ]
+ [0.36535552 0.6346444 ]
+ [0.3656109  0.6343891 ]
+ [0.36534128 0.6346587 ]
+ [0.38514742 0.61485267]
+ [0.3857625  0.61423755]
+ [0.38603854 0.6139615 ]
+ [0.38577366 0.61422634]
+ [0.38647398 0.61352605]]
+        Validation Criterion: 0.02151848
+20:33:59      Epoch:   0      Batch:   0      OuterStep:  78      LossModel: 0.02391907     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8484Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36555713 0.63444287]
+ [0.3653531  0.6346469 ]
+ [0.36532107 0.6346789 ]
+ [0.36557516 0.63442475]
+ [0.36530784 0.63469213]
+ [0.38513225 0.61486775]
+ [0.3857528  0.6142472 ]
+ [0.38603172 0.61396825]
+ [0.38576478 0.6142352 ]
+ [0.38646376 0.61353624]]
+        Validation Criterion: 0.02113019
+20:34:01      Epoch:   0      Batch:   0      OuterStep:  79      LossModel: 0.02378296     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8654Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.36554438 0.6344556 ]
+ [0.3653402  0.63465977]
+ [0.3653116  0.6346884 ]
+ [0.36556485 0.6344351 ]
+ [0.36529902 0.63470095]
+ [0.38519502 0.614805  ]
+ [0.38579226 0.61420774]
+ [0.38604382 0.6139562 ]
+ [0.38580126 0.61419874]
+ [0.3864941  0.61350596]]
+        Validation Criterion: 0.02084892
+        Saving best model so far ...
+20:34:02      Epoch:   0      Batch:   0      OuterStep:  80      LossModel: 0.00856425     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8770Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36554313 0.6344568 ]
+ [0.36533496 0.6346651 ]
+ [0.3653064  0.63469356]
+ [0.36556312 0.63443685]
+ [0.3652978  0.63470215]
+ [0.3852274  0.6147726 ]
+ [0.3858437  0.61415637]
+ [0.38608578 0.61391425]
+ [0.3858587  0.61414135]
+ [0.3865438  0.61345625]]
+        Validation Criterion: 0.02111153
+20:34:03      Epoch:   0      Batch:   0      OuterStep:  81      LossModel: 0.02363596     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8534Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36552104 0.6344789 ]
+ [0.36531034 0.6346896 ]
+ [0.36528456 0.6347154 ]
+ [0.36553574 0.6344643 ]
+ [0.3652801  0.6347199 ]
+ [0.38518915 0.6148109 ]
+ [0.3858061  0.61419386]
+ [0.38610116 0.6138989 ]
+ [0.3858437  0.6141563 ]
+ [0.38652363 0.61347634]]
+        Validation Criterion: 0.02108536
+20:34:04      Epoch:   0      Batch:   0      OuterStep:  82      LossModel: 0.00852455     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8106Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.36550108 0.6344989 ]
+ [0.3652921  0.63470787]
+ [0.3652666  0.6347334 ]
+ [0.36551532 0.63448465]
+ [0.36526248 0.63473755]
+ [0.3852499  0.6147501 ]
+ [0.38582823 0.6141718 ]
+ [0.3860645  0.61393553]
+ [0.38583267 0.6141674 ]
+ [0.38651508 0.61348486]]
+        Validation Criterion: 0.02121082
+20:34:05      Epoch:   0      Batch:   0      OuterStep:  83      LossModel: 0.02346300     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8545Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.3654865  0.63451344]
+ [0.3652781  0.63472193]
+ [0.3652554  0.6347446 ]
+ [0.36550674 0.6344932 ]
+ [0.36525267 0.63474727]
+ [0.3852376  0.61476237]
+ [0.38585106 0.614149  ]
+ [0.3860597  0.6139403 ]
+ [0.38585493 0.6141451 ]
+ [0.38652506 0.613475  ]]
+        Validation Criterion: 0.02088609
+20:34:07      Epoch:   0      Batch:   0      OuterStep:  84      LossModel: 0.02337195     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8560Contributing envs to the losses:  [9 7 8 6 5]
+Gate values for each environment (all envs): 
+ [[0.3654751  0.63452494]
+ [0.36526635 0.6347336 ]
+ [0.36524507 0.63475496]
+ [0.36549506 0.63450503]
+ [0.36524343 0.63475657]
+ [0.38526025 0.6147397 ]
+ [0.3858448  0.6141553 ]
+ [0.3860901  0.61390984]
+ [0.38587824 0.6141218 ]
+ [0.38653865 0.6134614 ]]
+        Validation Criterion: 0.02066363
+        Saving best model so far ...
+20:34:08      Epoch:   0      Batch:   0      OuterStep:  85      LossModel: 0.01585695     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8387Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36545768 0.6345422 ]
+ [0.36524567 0.6347543 ]
+ [0.3652245  0.63477546]
+ [0.36547104 0.634529  ]
+ [0.36522505 0.6347749 ]
+ [0.38526627 0.6147337 ]
+ [0.38585338 0.61414665]
+ [0.3861     0.6139    ]
+ [0.38588217 0.6141178 ]
+ [0.38654506 0.6134549 ]]
+        Validation Criterion: 0.02063855
+        Saving best model so far ...
+20:34:09      Epoch:   0      Batch:   0      OuterStep:  86      LossModel: 0.02314890     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8037Contributing envs to the losses:  [5 6 8 7 9]
+Gate values for each environment (all envs): 
+ [[0.36543828 0.6345617 ]
+ [0.3652261  0.6347739 ]
+ [0.36520654 0.63479346]
+ [0.36545503 0.63454497]
+ [0.36520872 0.63479125]
+ [0.3853109  0.6146892 ]
+ [0.38589376 0.61410624]
+ [0.38612145 0.6138785 ]
+ [0.38591564 0.6140843 ]
+ [0.38656944 0.61343056]]
+        Validation Criterion: 0.02063434
+        Saving best model so far ...
+20:34:10      Epoch:   0      Batch:   0      OuterStep:  87      LossModel: 0.01574175     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8548Contributing envs to the losses:  [5 6 8 7 9]
+Gate values for each environment (all envs): 
+ [[0.36543024 0.63456976]
+ [0.3652174  0.6347826 ]
+ [0.36520058 0.63479936]
+ [0.3654505  0.63454944]
+ [0.36520517 0.63479483]
+ [0.38534755 0.61465245]
+ [0.38593242 0.6140676 ]
+ [0.38615945 0.6138405 ]
+ [0.38596666 0.61403334]
+ [0.38661978 0.61338025]]
+        Validation Criterion: 0.02079197
+20:34:11      Epoch:   0      Batch:   0      OuterStep:  88      LossModel: 0.02301764     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8172Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3654107  0.6345893 ]
+ [0.36519632 0.63480365]
+ [0.36517897 0.634821  ]
+ [0.36542535 0.6345747 ]
+ [0.36518446 0.6348155 ]
+ [0.38529813 0.61470187]
+ [0.38588434 0.6141157 ]
+ [0.38614866 0.61385137]
+ [0.3859268  0.61407316]
+ [0.3865768  0.6134231 ]]
+        Validation Criterion: 0.02075326
+20:34:13      Epoch:   0      Batch:   0      OuterStep:  89      LossModel: 0.01564545     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8768Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36534572 0.6346542 ]
+ [0.36512712 0.634873  ]
+ [0.36511448 0.63488555]
+ [0.36535847 0.6346415 ]
+ [0.36512485 0.6348752 ]
+ [0.38531193 0.61468804]
+ [0.38585612 0.61414397]
+ [0.38610464 0.6138954 ]
+ [0.38589674 0.6141032 ]
+ [0.3865306  0.61346936]]
+        Validation Criterion: 0.02052909
+        Saving best model so far ...
+20:34:14      Epoch:   0      Batch:   0      OuterStep:  90      LossModel: 0.01561735     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9127Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36532682 0.63467324]
+ [0.36511543 0.6348846 ]
+ [0.3651024  0.63489753]
+ [0.36535138 0.63464856]
+ [0.36511046 0.63488954]
+ [0.38532895 0.61467105]
+ [0.38586923 0.6141308 ]
+ [0.3860905  0.6139095 ]
+ [0.38590488 0.6140951 ]
+ [0.38653803 0.6134619 ]]
+        Validation Criterion: 0.02064441
+20:34:15      Epoch:   0      Batch:   0      OuterStep:  91      LossModel: 0.02276398     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.7959Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3653168  0.63468313]
+ [0.36510283 0.6348972 ]
+ [0.3650906  0.6349094 ]
+ [0.36533776 0.6346622 ]
+ [0.36510083 0.6348992 ]
+ [0.38529202 0.61470795]
+ [0.38584828 0.61415166]
+ [0.38608688 0.6139131 ]
+ [0.3858907  0.61410934]
+ [0.3865235  0.6134765 ]]
+        Validation Criterion: 0.02052266
+        Saving best model so far ...
+20:34:16      Epoch:   0      Batch:   0      OuterStep:  92      LossModel: 0.00834935     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9317Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.365278   0.63472193]
+ [0.36505824 0.63494176]
+ [0.36504886 0.6349511 ]
+ [0.36529344 0.63470656]
+ [0.3650634  0.6349366 ]
+ [0.38530234 0.61469764]
+ [0.38585317 0.6141468 ]
+ [0.38607487 0.61392516]
+ [0.38588247 0.61411756]
+ [0.3865082  0.6134919 ]]
+        Validation Criterion: 0.02054023
+20:34:18      Epoch:   0      Batch:   0      OuterStep:  93      LossModel: 0.00833137     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8187Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3652626  0.6347374 ]
+ [0.36504522 0.6349548 ]
+ [0.36503667 0.6349634 ]
+ [0.3652826  0.6347174 ]
+ [0.36505082 0.63494915]
+ [0.3853501  0.6146499 ]
+ [0.38589963 0.61410034]
+ [0.38610893 0.61389107]
+ [0.3859443  0.6140557 ]
+ [0.38655832 0.61344165]]
+        Validation Criterion: 0.02026095
+        Saving best model so far ...
+20:34:19      Epoch:   0      Batch:   0      OuterStep:  94      LossModel: 0.00830206     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8696Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36526525 0.6347348 ]
+ [0.36505002 0.6349499 ]
+ [0.36504158 0.6349584 ]
+ [0.36528775 0.6347122 ]
+ [0.3650578  0.63494223]
+ [0.3853519  0.6146481 ]
+ [0.38588947 0.6141106 ]
+ [0.3861271  0.6138728 ]
+ [0.38594627 0.6140538 ]
+ [0.38657844 0.6134216 ]]
+        Validation Criterion: 0.02044000
+20:34:20      Epoch:   0      Batch:   0      OuterStep:  95      LossModel: 0.00827462     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8817Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.36523214 0.63476783]
+ [0.3650103  0.63498974]
+ [0.3650046  0.6349954 ]
+ [0.36524618 0.6347538 ]
+ [0.36502743 0.6349726 ]
+ [0.38536167 0.6146384 ]
+ [0.38589373 0.61410624]
+ [0.38611874 0.6138813 ]
+ [0.3859474  0.6140526 ]
+ [0.38656476 0.61343527]]
+        Validation Criterion: 0.02039281
+20:34:21      Epoch:   0      Batch:   0      OuterStep:  96      LossModel: 0.02242979     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8193Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36521167 0.6347883 ]
+ [0.36498824 0.63501173]
+ [0.36498675 0.6350132 ]
+ [0.36522806 0.63477194]
+ [0.36501065 0.6349893 ]
+ [0.38538796 0.61461204]
+ [0.3859102  0.6140898 ]
+ [0.38612947 0.61387056]
+ [0.38596654 0.61403346]
+ [0.3865734  0.6134266 ]]
+        Validation Criterion: 0.02025073
+        Saving best model so far ...
+20:34:23      Epoch:   0      Batch:   0      OuterStep:  97      LossModel: 0.02236082     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8346Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3651948  0.6348052 ]
+ [0.364974   0.63502604]
+ [0.36497197 0.635028  ]
+ [0.36521378 0.6347862 ]
+ [0.36499554 0.63500446]
+ [0.3853874  0.61461264]
+ [0.3859199  0.6140801 ]
+ [0.3861375  0.6138625 ]
+ [0.3859747  0.6140253 ]
+ [0.38659054 0.6134094 ]]
+        Validation Criterion: 0.02011251
+        Saving best model so far ...
+20:34:24      Epoch:   0      Batch:   0      OuterStep:  98      LossModel: 0.00822345     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0083Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36515254 0.63484746]
+ [0.36492726 0.6350727 ]
+ [0.36492586 0.63507414]
+ [0.3651692  0.6348308 ]
+ [0.36495215 0.6350479 ]
+ [0.38538724 0.6146128 ]
+ [0.38591194 0.614088  ]
+ [0.3861357  0.6138643 ]
+ [0.38596484 0.6140351 ]
+ [0.38658077 0.6134193 ]]
+        Validation Criterion: 0.02033209
+20:34:25      Epoch:   0      Batch:   0      OuterStep:  99      LossModel: 0.00819544     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9393Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.36512554 0.63487446]
+ [0.36489883 0.63510114]
+ [0.36490068 0.63509935]
+ [0.36514392 0.63485605]
+ [0.36492783 0.6350721 ]
+ [0.38539445 0.61460555]
+ [0.3859095  0.6140905 ]
+ [0.38612416 0.6138758 ]
+ [0.38597247 0.6140276 ]
+ [0.38656515 0.61343485]]
+        Validation Criterion: 0.02027337
+20:34:27      Epoch:   0      Batch:   0      OuterStep: 100      LossModel: 0.00817190     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9207Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.365107   0.634893  ]
+ [0.3648804  0.63511956]
+ [0.36488435 0.6351157 ]
+ [0.36512554 0.63487446]
+ [0.3649142  0.63508576]
+ [0.38542038 0.6145797 ]
+ [0.38592896 0.614071  ]
+ [0.3861293  0.6138708 ]
+ [0.3860026  0.6139974 ]
+ [0.38662392 0.613376  ]]
+        Validation Criterion: 0.01992946
+        Saving best model so far ...
+20:34:28      Epoch:   0      Batch:   0      OuterStep: 101      LossModel: 0.02218267     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8158Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36509982 0.6349002 ]
+ [0.36487255 0.6351275 ]
+ [0.3648786  0.63512135]
+ [0.36511782 0.63488215]
+ [0.36491114 0.63508886]
+ [0.38548863 0.61451143]
+ [0.38600203 0.61399806]
+ [0.38621143 0.6137886 ]
+ [0.38607383 0.61392623]
+ [0.386644   0.613356  ]]
+        Validation Criterion: 0.02027133
+20:34:29      Epoch:   0      Batch:   0      OuterStep: 102      LossModel: 0.00813351     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9423Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36507845 0.63492155]
+ [0.36484876 0.63515127]
+ [0.36485377 0.63514626]
+ [0.3650952  0.63490486]
+ [0.36488962 0.6351103 ]
+ [0.385384   0.614616  ]
+ [0.38586402 0.614136  ]
+ [0.3861232  0.6138768 ]
+ [0.38596743 0.61403257]
+ [0.38657913 0.6134209 ]]
+        Validation Criterion: 0.02086090
+20:34:30      Epoch:   0      Batch:   0      OuterStep: 103      LossModel: 0.00821174     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9259Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36504462 0.63495535]
+ [0.364814   0.635186  ]
+ [0.36482358 0.6351765 ]
+ [0.3650603  0.63493973]
+ [0.3648613  0.6351387 ]
+ [0.38582805 0.614172  ]
+ [0.3863045  0.6136955 ]
+ [0.38634074 0.61365926]
+ [0.38630068 0.6136993 ]
+ [0.3868715  0.61312854]]
+        Validation Criterion: 0.02029490
+20:34:32      Epoch:   0      Batch:   0      OuterStep: 104      LossModel: 0.00810161     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0558Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.365275   0.634725  ]
+ [0.36505508 0.63494486]
+ [0.36505675 0.6349433 ]
+ [0.36531723 0.6346828 ]
+ [0.36508647 0.6349136 ]
+ [0.38592803 0.614072  ]
+ [0.38654613 0.6134539 ]
+ [0.38664785 0.6133521 ]
+ [0.38659844 0.6134016 ]
+ [0.38718218 0.6128178 ]]
+        Validation Criterion: 0.02087313
+20:34:33      Epoch:   0      Batch:   0      OuterStep: 105      LossModel: 0.02197733     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0541Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36526287 0.63473713]
+ [0.36500973 0.6349903 ]
+ [0.365021   0.63497907]
+ [0.36525849 0.6347415 ]
+ [0.36506823 0.63493174]
+ [0.38585    0.61415   ]
+ [0.38628125 0.6137187 ]
+ [0.3866346  0.6133655 ]
+ [0.38649037 0.61350965]
+ [0.38709778 0.6129022 ]]
+        Validation Criterion: 0.02039767
+20:34:35      Epoch:   0      Batch:   0      OuterStep: 106      LossModel: 0.00805913     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9983Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36513296 0.6348671 ]
+ [0.36488998 0.63511   ]
+ [0.36490253 0.6350975 ]
+ [0.36513886 0.6348611 ]
+ [0.3649482  0.6350518 ]
+ [0.385917   0.614083  ]
+ [0.38639933 0.6136007 ]
+ [0.38655916 0.6134408 ]
+ [0.38643163 0.6135684 ]
+ [0.3869927  0.6130073 ]]
+        Validation Criterion: 0.01997931
+20:34:36      Epoch:   0      Batch:   0      OuterStep: 107      LossModel: 0.00803152     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9385Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.3651395  0.6348605 ]
+ [0.3649112  0.6350888 ]
+ [0.3649226  0.6350774 ]
+ [0.36517137 0.6348286 ]
+ [0.36496273 0.63503724]
+ [0.3858245  0.6141755 ]
+ [0.3863581  0.61364186]
+ [0.3865405  0.61345947]
+ [0.38643748 0.6135625 ]
+ [0.38701662 0.6129834 ]]
+        Validation Criterion: 0.01964157
+        Saving best model so far ...
+20:34:37      Epoch:   0      Batch:   0      OuterStep: 108      LossModel: 0.02176392     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9838Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36510366 0.6348963 ]
+ [0.36485618 0.6351438 ]
+ [0.3648722  0.6351278 ]
+ [0.36511037 0.63488954]
+ [0.36492404 0.635076  ]
+ [0.3859053  0.6140947 ]
+ [0.38635194 0.6136481 ]
+ [0.38657036 0.6134296 ]
+ [0.38646778 0.6135322 ]
+ [0.38705385 0.6129462 ]]
+        Validation Criterion: 0.01955651
+        Saving best model so far ...
+20:34:39      Epoch:   0      Batch:   0      OuterStep: 109      LossModel: 0.02163292     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8664Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.3650704  0.6349296 ]
+ [0.36482882 0.6351712 ]
+ [0.3648426  0.6351574 ]
+ [0.36508515 0.6349149 ]
+ [0.36489207 0.6351079 ]
+ [0.385798   0.61420196]
+ [0.3863203  0.6136797 ]
+ [0.38655448 0.6134456 ]
+ [0.38641977 0.6135803 ]
+ [0.38700816 0.6129918 ]]
+        Validation Criterion: 0.01990367
+20:34:40      Epoch:   0      Batch:   0      OuterStep: 110      LossModel: 0.01478938     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9199Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36503094 0.63496906]
+ [0.3647913  0.6352087 ]
+ [0.3648053  0.6351947 ]
+ [0.3650508  0.63494915]
+ [0.3648554  0.63514465]
+ [0.3857866  0.61421335]
+ [0.38624847 0.6137516 ]
+ [0.38646778 0.6135322 ]
+ [0.38635257 0.6136474 ]
+ [0.38692722 0.61307275]]
+        Validation Criterion: 0.02021447
+20:34:41      Epoch:   0      Batch:   0      OuterStep: 111      LossModel: 0.00797382     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0072Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36498672 0.6350133 ]
+ [0.36474258 0.63525736]
+ [0.36475882 0.6352411 ]
+ [0.36500168 0.63499826]
+ [0.36481154 0.6351885 ]
+ [0.38579667 0.6142033 ]
+ [0.38627645 0.6137236 ]
+ [0.3864491  0.6135509 ]
+ [0.386354   0.6136461 ]
+ [0.38692558 0.6130744 ]]
+        Validation Criterion: 0.01977524
+20:34:43      Epoch:   0      Batch:   0      OuterStep: 112      LossModel: 0.01467753     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9597Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36497253 0.63502747]
+ [0.36472958 0.6352705 ]
+ [0.36474827 0.6352517 ]
+ [0.36499417 0.6350059 ]
+ [0.3648027  0.6351972 ]
+ [0.38577488 0.6142251 ]
+ [0.38625485 0.6137452 ]
+ [0.3864605  0.61353946]
+ [0.38633484 0.61366516]
+ [0.38690537 0.6130946 ]]
+        Validation Criterion: 0.01972297
+20:34:44      Epoch:   0      Batch:   0      OuterStep: 113      LossModel: 0.01460414     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8976Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36495444 0.6350456 ]
+ [0.3647087  0.63529134]
+ [0.36472785 0.63527215]
+ [0.3649726  0.6350274 ]
+ [0.36478612 0.6352139 ]
+ [0.38577595 0.61422396]
+ [0.38623384 0.6137662 ]
+ [0.38644043 0.61355954]
+ [0.38633907 0.6136609 ]
+ [0.38690343 0.6130966 ]]
+        Validation Criterion: 0.01966674
+20:34:45      Epoch:   0      Batch:   0      OuterStep: 114      LossModel: 0.01461480     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9544Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3649325  0.6350675 ]
+ [0.3646844  0.6353156 ]
+ [0.36470446 0.6352955 ]
+ [0.3649482  0.6350517 ]
+ [0.3647646  0.6352354 ]
+ [0.38575748 0.6142425 ]
+ [0.386235   0.613765  ]
+ [0.38643175 0.61356825]
+ [0.38634056 0.61365944]
+ [0.3868835  0.6131165 ]]
+        Validation Criterion: 0.01973406
+20:34:47      Epoch:   0      Batch:   0      OuterStep: 115      LossModel: 0.01454450     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0080Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3648982  0.63510185]
+ [0.3646473  0.6353527 ]
+ [0.36466986 0.63533014]
+ [0.36491314 0.63508683]
+ [0.36472768 0.63527226]
+ [0.38576087 0.6142391 ]
+ [0.38622463 0.6137754 ]
+ [0.3864248  0.61357516]
+ [0.3863282  0.6136717 ]
+ [0.38688073 0.61311924]]
+        Validation Criterion: 0.01960235
+20:34:48      Epoch:   0      Batch:   0      OuterStep: 116      LossModel: 0.00790383     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9133Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3648814  0.63511854]
+ [0.3646291  0.6353709 ]
+ [0.36465144 0.63534856]
+ [0.36489868 0.6351014 ]
+ [0.3647104  0.6352896 ]
+ [0.38578206 0.61421794]
+ [0.38625008 0.61374986]
+ [0.38643807 0.6135619 ]
+ [0.38635662 0.61364335]
+ [0.3868952  0.6131047 ]]
+        Validation Criterion: 0.01946997
+        Saving best model so far ...
+20:34:49      Epoch:   0      Batch:   0      OuterStep: 117      LossModel: 0.02111256     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8505Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3648719  0.6351281 ]
+ [0.36461842 0.63538164]
+ [0.364642   0.635358  ]
+ [0.3648896  0.6351104 ]
+ [0.36470458 0.63529545]
+ [0.38585022 0.6141498 ]
+ [0.3863091  0.613691  ]
+ [0.38650265 0.6134973 ]
+ [0.38641232 0.6135876 ]
+ [0.38695946 0.6130405 ]]
+        Validation Criterion: 0.01947357
+20:34:51      Epoch:   0      Batch:   0      OuterStep: 118      LossModel: 0.01444601     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9372Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36485037 0.63514966]
+ [0.36459494 0.63540506]
+ [0.36461893 0.6353811 ]
+ [0.36486772 0.6351323 ]
+ [0.36468494 0.63531506]
+ [0.38585508 0.6141449 ]
+ [0.38628778 0.61371225]
+ [0.38650674 0.6134932 ]
+ [0.38641545 0.6135845 ]
+ [0.38697293 0.6130271 ]]
+        Validation Criterion: 0.01934954
+        Saving best model so far ...
+20:34:52      Epoch:   0      Batch:   0      OuterStep: 119      LossModel: 0.00787241     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0328Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3648158  0.63518417]
+ [0.36456126 0.6354388 ]
+ [0.36458325 0.63541675]
+ [0.36483598 0.6351641 ]
+ [0.3646495  0.6353504 ]
+ [0.38586038 0.6141396 ]
+ [0.38629022 0.61370975]
+ [0.3864978  0.6135022 ]
+ [0.38642758 0.6135725 ]
+ [0.38697043 0.61302966]]
+        Validation Criterion: 0.01929266
+        Saving best model so far ...
+20:34:53      Epoch:   0      Batch:   0      OuterStep: 120      LossModel: 0.02092830     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8794Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3647969  0.6352031 ]
+ [0.36454242 0.6354576 ]
+ [0.36456752 0.6354325 ]
+ [0.36481902 0.635181  ]
+ [0.3646317  0.6353682 ]
+ [0.38591826 0.61408174]
+ [0.38636723 0.6136328 ]
+ [0.38654253 0.6134575 ]
+ [0.3864616  0.6135384 ]
+ [0.38700274 0.61299723]]
+        Validation Criterion: 0.01941740
+20:34:55      Epoch:   0      Batch:   0      OuterStep: 121      LossModel: 0.02067679     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.8201Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3647876  0.63521236]
+ [0.3645316  0.63546836]
+ [0.36455777 0.6354422 ]
+ [0.36480847 0.6351915 ]
+ [0.36462364 0.63537633]
+ [0.38590622 0.6140938 ]
+ [0.38631997 0.6136801 ]
+ [0.38656098 0.613439  ]
+ [0.3864651  0.6135349 ]
+ [0.38701496 0.6129851 ]]
+        Validation Criterion: 0.01924523
+        Saving best model so far ...
+20:34:56      Epoch:   0      Batch:   0      OuterStep: 122      LossModel: 0.00784153     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9780Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36475572 0.6352443 ]
+ [0.36449403 0.635506  ]
+ [0.36451954 0.6354804 ]
+ [0.36477193 0.6352281 ]
+ [0.36458942 0.6354106 ]
+ [0.38590503 0.61409503]
+ [0.38633862 0.6136614 ]
+ [0.3865314  0.6134686 ]
+ [0.38645488 0.61354506]
+ [0.3869993  0.6130007 ]]
+        Validation Criterion: 0.01947088
+20:34:57      Epoch:   0      Batch:   0      OuterStep: 123      LossModel: 0.02065619     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0069Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36472297 0.63527703]
+ [0.36446014 0.6355398 ]
+ [0.36448583 0.6355142 ]
+ [0.36474237 0.63525754]
+ [0.36455572 0.6354443 ]
+ [0.3858677  0.61413234]
+ [0.38626844 0.61373156]
+ [0.3864905  0.6135095 ]
+ [0.38642994 0.6135701 ]
+ [0.3869542  0.6130459 ]]
+        Validation Criterion: 0.01919221
+        Saving best model so far ...
+20:34:59      Epoch:   0      Batch:   0      OuterStep: 124      LossModel: 0.02058982     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9616Contributing envs to the losses:  [5 6 8 7 9]
+Gate values for each environment (all envs): 
+ [[0.36468127 0.63531876]
+ [0.36441833 0.6355816 ]
+ [0.36444664 0.63555336]
+ [0.36470217 0.6352979 ]
+ [0.3645184  0.63548154]
+ [0.3858821  0.6141179 ]
+ [0.38630506 0.6136949 ]
+ [0.38649192 0.6135081 ]
+ [0.3864408  0.61355925]
+ [0.38695666 0.61304337]]
+        Validation Criterion: 0.01925372
+20:35:00      Epoch:   0      Batch:   0      OuterStep: 125      LossModel: 0.01410139     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0028Contributing envs to the losses:  [6 8 7 5 9]
+Gate values for each environment (all envs): 
+ [[0.3646677  0.6353323 ]
+ [0.36440203 0.63559794]
+ [0.3644306  0.63556933]
+ [0.3646884  0.63531166]
+ [0.36450243 0.63549757]
+ [0.38592046 0.61407954]
+ [0.38633284 0.6136672 ]
+ [0.38651833 0.6134817 ]
+ [0.38646153 0.6135385 ]
+ [0.38698348 0.61301655]]
+        Validation Criterion: 0.01918072
+        Saving best model so far ...
+20:35:02      Epoch:   0      Batch:   0      OuterStep: 126      LossModel: 0.02042702     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0183Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3646422  0.6353578 ]
+ [0.3643745  0.63562554]
+ [0.36440265 0.63559735]
+ [0.36466077 0.63533926]
+ [0.3644748  0.63552517]
+ [0.38593763 0.61406237]
+ [0.38632852 0.6136715 ]
+ [0.38653186 0.61346817]
+ [0.38647318 0.61352676]
+ [0.38699532 0.6130047 ]]
+        Validation Criterion: 0.01898690
+        Saving best model so far ...
+20:35:03      Epoch:   0      Batch:   0      OuterStep: 127      LossModel: 0.01407189     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0948Contributing envs to the losses:  [9 7 8 6 5]
+Gate values for each environment (all envs): 
+ [[0.3646096  0.6353904 ]
+ [0.36434117 0.63565886]
+ [0.3643695  0.63563055]
+ [0.36463022 0.6353698 ]
+ [0.36444426 0.63555574]
+ [0.38594645 0.61405355]
+ [0.38635176 0.6136483 ]
+ [0.3865306  0.61346936]
+ [0.38648808 0.6135119 ]
+ [0.38699454 0.6130055 ]]
+        Validation Criterion: 0.01905080
+20:35:04      Epoch:   0      Batch:   0      OuterStep: 128      LossModel: 0.01400269     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0138Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36458495 0.6354151 ]
+ [0.36431488 0.6356851 ]
+ [0.36434323 0.6356568 ]
+ [0.36460605 0.6353939 ]
+ [0.36441788 0.6355821 ]
+ [0.38595968 0.6140403 ]
+ [0.38634583 0.61365414]
+ [0.38653937 0.61346066]
+ [0.38649282 0.6135072 ]
+ [0.38701606 0.61298394]]
+        Validation Criterion: 0.01895306
+        Saving best model so far ...
+20:35:06      Epoch:   0      Batch:   0      OuterStep: 129      LossModel: 0.00777071     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0179Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36457056 0.63542944]
+ [0.36429852 0.6357015 ]
+ [0.36432722 0.6356728 ]
+ [0.36459148 0.63540846]
+ [0.36440206 0.63559794]
+ [0.38595495 0.614045  ]
+ [0.38636878 0.6136312 ]
+ [0.38656476 0.61343527]
+ [0.38653907 0.6134609 ]
+ [0.38703114 0.6129689 ]]
+        Validation Criterion: 0.01907029
+20:35:07      Epoch:   0      Batch:   0      OuterStep: 130      LossModel: 0.02021341     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9313Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3645474  0.6354526 ]
+ [0.3642715  0.6357285 ]
+ [0.36430293 0.63569707]
+ [0.364566   0.635434  ]
+ [0.36438152 0.6356185 ]
+ [0.3859842  0.61401576]
+ [0.3863422  0.6136578 ]
+ [0.3865361  0.61346394]
+ [0.38649642 0.6135036 ]
+ [0.38700795 0.612992  ]]
+        Validation Criterion: 0.01889483
+        Saving best model so far ...
+20:35:09      Epoch:   0      Batch:   0      OuterStep: 131      LossModel: 0.02007156     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0000Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36451986 0.6354801 ]
+ [0.36424533 0.6357547 ]
+ [0.3642754  0.6357246 ]
+ [0.36453718 0.6354629 ]
+ [0.36435574 0.63564426]
+ [0.3859971  0.6140029 ]
+ [0.3864091  0.61359096]
+ [0.38657373 0.61342627]
+ [0.38655165 0.6134483 ]
+ [0.38703883 0.6129612 ]]
+        Validation Criterion: 0.01909930
+20:35:10      Epoch:   0      Batch:   0      OuterStep: 132      LossModel: 0.00774061     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0984Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36449167 0.6355083 ]
+ [0.3642142  0.6357858 ]
+ [0.36424515 0.6357549 ]
+ [0.36451194 0.6354881 ]
+ [0.3643262  0.63567376]
+ [0.38587514 0.6141249 ]
+ [0.38622624 0.61377376]
+ [0.386482   0.613518  ]
+ [0.38642165 0.6135783 ]
+ [0.38692474 0.61307526]]
+        Validation Criterion: 0.01889708
+20:35:12      Epoch:   0      Batch:   0      OuterStep: 133      LossModel: 0.01993246     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3535Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3644353  0.63556474]
+ [0.3641569  0.6358431 ]
+ [0.36419085 0.6358092 ]
+ [0.36445352 0.63554645]
+ [0.36427355 0.6357265 ]
+ [0.38594386 0.6140561 ]
+ [0.38632292 0.613677  ]
+ [0.38646916 0.6135309 ]
+ [0.38644874 0.61355126]
+ [0.38692304 0.6130769 ]]
+        Validation Criterion: 0.01902458
+20:35:13      Epoch:   0      Batch:   0      OuterStep: 134      LossModel: 0.00771683     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1300Contributing envs to the losses:  [9 7 8 6 5]
+Gate values for each environment (all envs): 
+ [[0.36442375 0.63557625]
+ [0.3641486  0.6358514 ]
+ [0.3641781  0.6358219 ]
+ [0.36444706 0.6355529 ]
+ [0.36425978 0.6357403 ]
+ [0.3858613  0.61413866]
+ [0.38623178 0.6137682 ]
+ [0.38644806 0.613552  ]
+ [0.38642022 0.61357975]
+ [0.38691217 0.6130879 ]]
+        Validation Criterion: 0.01880440
+        Saving best model so far ...
+20:35:15      Epoch:   0      Batch:   0      OuterStep: 135      LossModel: 0.01376017     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0214Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3644051  0.6355949 ]
+ [0.36412552 0.6358745 ]
+ [0.36415687 0.6358431 ]
+ [0.36442527 0.6355747 ]
+ [0.36424014 0.6357599 ]
+ [0.38589787 0.6141021 ]
+ [0.38625813 0.6137419 ]
+ [0.386431   0.61356896]
+ [0.38640434 0.6135957 ]
+ [0.38687235 0.61312765]]
+        Validation Criterion: 0.02128393
+20:35:16      Epoch:   0      Batch:   0      OuterStep: 136      LossModel: 0.00770226     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0490Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.364436   0.635564  ]
+ [0.36415792 0.63584214]
+ [0.36419338 0.6358067 ]
+ [0.36446065 0.6355393 ]
+ [0.3642772  0.6357227 ]
+ [0.38644803 0.613552  ]
+ [0.38691828 0.6130817 ]
+ [0.38700637 0.6129936 ]
+ [0.38700563 0.6129944 ]
+ [0.38747206 0.61252797]]
+        Validation Criterion: 0.01850696
+        Saving best model so far ...
+20:35:18      Epoch:   0      Batch:   0      OuterStep: 137      LossModel: 0.01387875     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0707Contributing envs to the losses:  [5 6 8 7 9]
+Gate values for each environment (all envs): 
+ [[0.36448365 0.6355164 ]
+ [0.36419892 0.6358011 ]
+ [0.36423206 0.635768  ]
+ [0.3645076  0.63549244]
+ [0.36431703 0.635683  ]
+ [0.38623214 0.61376786]
+ [0.38654128 0.6134587 ]
+ [0.386989   0.613011  ]
+ [0.3868895  0.6131105 ]
+ [0.38745388 0.6125462 ]]
+        Validation Criterion: 0.01996935
+20:35:19      Epoch:   0      Batch:   0      OuterStep: 138      LossModel: 0.02025516     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1439Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3642676  0.6357324 ]
+ [0.36396205 0.63603795]
+ [0.36400017 0.63599986]
+ [0.3642633  0.6357367 ]
+ [0.364099   0.63590103]
+ [0.3859556  0.6140444 ]
+ [0.38629994 0.6137001 ]
+ [0.38650838 0.6134916 ]
+ [0.38656476 0.61343527]
+ [0.38708082 0.6129192 ]]
+        Validation Criterion: 0.01740559
+        Saving best model so far ...
+20:35:21      Epoch:   0      Batch:   0      OuterStep: 139      LossModel: 0.01986808     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9199Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36415058 0.6358495 ]
+ [0.36386365 0.63613635]
+ [0.3638963  0.63610363]
+ [0.364172   0.63582796]
+ [0.36398822 0.6360117 ]
+ [0.3860255  0.6139745 ]
+ [0.38641387 0.6135861 ]
+ [0.38661522 0.6133848 ]
+ [0.3865962  0.61340386]
+ [0.3871081  0.61289185]]
+        Validation Criterion: 0.01778488
+20:35:22      Epoch:   0      Batch:   0      OuterStep: 140      LossModel: 0.01370519     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1677Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36411148 0.6358885 ]
+ [0.36382696 0.636173  ]
+ [0.3638595  0.6361405 ]
+ [0.3641387  0.63586134]
+ [0.3639479  0.6360521 ]
+ [0.38567522 0.61432475]
+ [0.3859792  0.6140208 ]
+ [0.3863819  0.6136181 ]
+ [0.38631538 0.61368465]
+ [0.3868903  0.61310977]]
+        Validation Criterion: 0.01718351
+        Saving best model so far ...
+20:35:24      Epoch:   0      Batch:   0      OuterStep: 141      LossModel: 0.00762963     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1439Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.363933   0.636067  ]
+ [0.36363018 0.6363698 ]
+ [0.36366978 0.6363302 ]
+ [0.3639347  0.6360653 ]
+ [0.36376962 0.63623047]
+ [0.3854647  0.61453533]
+ [0.38583013 0.6141699 ]
+ [0.38604257 0.61395746]
+ [0.3860624  0.61393756]
+ [0.3865579  0.6134422 ]]
+        Validation Criterion: 0.01788051
+20:35:25      Epoch:   0      Batch:   0      OuterStep: 142      LossModel: 0.00761295     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2211Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36384898 0.636151  ]
+ [0.36356574 0.63643426]
+ [0.36359963 0.63640046]
+ [0.36387855 0.63612145]
+ [0.36369133 0.6363086 ]
+ [0.3853177  0.6146823 ]
+ [0.38570818 0.6142918 ]
+ [0.3859405  0.6140595 ]
+ [0.38596883 0.6140312 ]
+ [0.38646957 0.6135304 ]]
+        Validation Criterion: 0.01772617
+20:35:27      Epoch:   0      Batch:   0      OuterStep: 143      LossModel: 0.01944896     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0753Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36383054 0.63616943]
+ [0.36354196 0.63645804]
+ [0.36358082 0.6364192 ]
+ [0.36385214 0.6361479 ]
+ [0.36367467 0.6363253 ]
+ [0.38533375 0.6146662 ]
+ [0.3856538  0.61434627]
+ [0.3858767  0.61412334]
+ [0.38588488 0.6141152 ]
+ [0.38639688 0.6136031 ]]
+        Validation Criterion: 0.01776223
+20:35:28      Epoch:   0      Batch:   0      OuterStep: 144      LossModel: 0.01921313     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9802Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36378732 0.6362127 ]
+ [0.36349297 0.63650703]
+ [0.3635322  0.6364679 ]
+ [0.363798   0.636202  ]
+ [0.36363292 0.63636714]
+ [0.38536698 0.61463296]
+ [0.38573378 0.6142663 ]
+ [0.38589963 0.6141004 ]
+ [0.38593298 0.614067  ]
+ [0.3864069  0.6135931 ]]
+        Validation Criterion: 0.01751390
+20:35:30      Epoch:   0      Batch:   0      OuterStep: 145      LossModel: 0.01923511     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0525Contributing envs to the losses:  [9 7 8 6 5]
+Gate values for each environment (all envs): 
+ [[0.3637567  0.63624334]
+ [0.36346465 0.63653535]
+ [0.36350256 0.6364974 ]
+ [0.36377472 0.6362252 ]
+ [0.36360058 0.6363994 ]
+ [0.38537958 0.61462045]
+ [0.3856924  0.6143076 ]
+ [0.38589698 0.614103  ]
+ [0.3859107  0.61408937]
+ [0.3864029  0.6135971 ]]
+        Validation Criterion: 0.01781943
+20:35:31      Epoch:   0      Batch:   0      OuterStep: 146      LossModel: 0.00759291     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2382Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36371088 0.6362891 ]
+ [0.36341533 0.6365847 ]
+ [0.36345562 0.63654435]
+ [0.3637309  0.6362691 ]
+ [0.36355218 0.6364478 ]
+ [0.38526997 0.61473006]
+ [0.3856315  0.6143685 ]
+ [0.3858226  0.6141774 ]
+ [0.38584104 0.6141589 ]
+ [0.38630563 0.61369437]]
+        Validation Criterion: 0.01776853
+20:35:33      Epoch:   0      Batch:   0      OuterStep: 147      LossModel: 0.01328300     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1065Contributing envs to the losses:  [6 7 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.36364236 0.6363576 ]
+ [0.36334413 0.6366559 ]
+ [0.36338377 0.63661623]
+ [0.36365736 0.63634264]
+ [0.36348274 0.6365173 ]
+ [0.38533285 0.6146672 ]
+ [0.3856431  0.61435694]
+ [0.3858159  0.614184  ]
+ [0.38582194 0.614178  ]
+ [0.38629267 0.61370736]]
+        Validation Criterion: 0.01789651
+20:35:35      Epoch:   0      Batch:   0      OuterStep: 148      LossModel: 0.00757155     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1224Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.3636277  0.63637227]
+ [0.36333433 0.6366656 ]
+ [0.3633703  0.63662964]
+ [0.36364928 0.6363507 ]
+ [0.36346936 0.63653064]
+ [0.38536462 0.6146354 ]
+ [0.38566905 0.61433095]
+ [0.3858423  0.6141577 ]
+ [0.38586733 0.6141326 ]
+ [0.38632792 0.6136721 ]]
+        Validation Criterion: 0.02582405
+20:35:36      Epoch:   0      Batch:   0      OuterStep: 149      LossModel: 0.02085166     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0937Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36347854 0.63652146]
+ [0.36316866 0.63683134]
+ [0.3632114  0.6367886 ]
+ [0.3634841  0.636516  ]
+ [0.36331683 0.6366832 ]
+ [0.38471514 0.61528486]
+ [0.38492948 0.6150706 ]
+ [0.3851386  0.61486137]
+ [0.38523635 0.6147637 ]
+ [0.38568628 0.61431366]]
+        Validation Criterion: 0.01972475
+20:35:38      Epoch:   0      Batch:   0      OuterStep: 150      LossModel: 0.02024385     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0170Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.36323953 0.6367605 ]
+ [0.3629343  0.6370657 ]
+ [0.36297938 0.63702065]
+ [0.36324036 0.63675964]
+ [0.36308637 0.63691366]
+ [0.3849598  0.6150402 ]
+ [0.38540012 0.61459994]
+ [0.38532397 0.61467606]
+ [0.38526276 0.6147373 ]
+ [0.38558078 0.6144192 ]]
+        Validation Criterion: 0.02025509
+20:35:39      Epoch:   0      Batch:   0      OuterStep: 151      LossModel: 0.01343732     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1383Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36331147 0.63668853]
+ [0.36303538 0.6369647 ]
+ [0.36306617 0.63693386]
+ [0.36335602 0.63664395]
+ [0.36316043 0.63683957]
+ [0.38457015 0.6154299 ]
+ [0.38468087 0.61531913]
+ [0.38502875 0.6149712 ]
+ [0.38504645 0.6149535 ]
+ [0.38550043 0.6144995 ]]
+        Validation Criterion: 0.01773585
+20:35:41      Epoch:   0      Batch:   0      OuterStep: 152      LossModel: 0.00758737     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0476Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.36337647 0.63662356]
+ [0.36308533 0.6369147 ]
+ [0.36312106 0.63687897]
+ [0.36339784 0.6366022 ]
+ [0.36322024 0.6367798 ]
+ [0.38480207 0.61519784]
+ [0.38522652 0.6147735 ]
+ [0.38525695 0.61474305]
+ [0.38521338 0.61478657]
+ [0.38557127 0.6144287 ]]
+        Validation Criterion: 0.01902660
+20:35:42      Epoch:   0      Batch:   0      OuterStep: 153      LossModel: 0.00755678     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1686Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36340103 0.636599  ]
+ [0.36309916 0.6369009 ]
+ [0.36313933 0.63686067]
+ [0.3634141  0.6365859 ]
+ [0.36324108 0.6367589 ]
+ [0.38492084 0.61507916]
+ [0.38510317 0.61489683]
+ [0.38535497 0.61464506]
+ [0.3854056  0.61459446]
+ [0.38583398 0.614166  ]]
+        Validation Criterion: 0.02195170
+20:35:44      Epoch:   0      Batch:   0      OuterStep: 154      LossModel: 0.01315358     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1625Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.3633756  0.63662434]
+ [0.36306798 0.63693196]
+ [0.3631054  0.63689464]
+ [0.3633899  0.6366101 ]
+ [0.36320928 0.63679075]
+ [0.38504335 0.6149567 ]
+ [0.38528788 0.6147122 ]
+ [0.38530686 0.61469316]
+ [0.38545993 0.61454004]
+ [0.38578236 0.6142176 ]]
+        Validation Criterion: 0.02929949
+20:35:45      Epoch:   0      Batch:   0      OuterStep: 155      LossModel: 0.01990804     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9183Contributing envs to the losses:  [6 5 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.36339056 0.6366095 ]
+ [0.36308625 0.6369138 ]
+ [0.36312002 0.63688   ]
+ [0.3634109  0.6365891 ]
+ [0.3632218  0.63677824]
+ [0.38541114 0.61458886]
+ [0.3856433  0.6143567 ]
+ [0.38561782 0.6143822 ]
+ [0.38566366 0.6143364 ]
+ [0.38591012 0.6140899 ]]
+        Validation Criterion: 0.02631634
+20:35:47      Epoch:   0      Batch:   0      OuterStep: 156      LossModel: 0.00762537     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2286Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36369517 0.6363048 ]
+ [0.36339787 0.6366021 ]
+ [0.3634251  0.63657486]
+ [0.3637309  0.63626903]
+ [0.3635189  0.6364811 ]
+ [0.38657993 0.61342007]
+ [0.38674757 0.61325246]
+ [0.38648596 0.613514  ]
+ [0.38672718 0.6132728 ]
+ [0.38691655 0.6130835 ]]
+        Validation Criterion: 0.02207669
+20:35:48      Epoch:   0      Batch:   0      OuterStep: 157      LossModel: 0.01775136     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1343Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.3637533  0.63624674]
+ [0.36342627 0.63657373]
+ [0.3634589  0.6365411 ]
+ [0.36375552 0.6362445 ]
+ [0.36356804 0.63643193]
+ [0.38522133 0.61477864]
+ [0.38537437 0.61462563]
+ [0.38575065 0.61424935]
+ [0.38588053 0.61411947]
+ [0.3863378  0.61366224]]
+        Validation Criterion: 0.02794620
+20:35:50      Epoch:   0      Batch:   0      OuterStep: 158      LossModel: 0.02256636     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1462Contributing envs to the losses:  [2 4 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36338043 0.6366195 ]
+ [0.36303365 0.6369664 ]
+ [0.36307123 0.6369288 ]
+ [0.36335212 0.6366479 ]
+ [0.3631985  0.63680154]
+ [0.38586158 0.6141384 ]
+ [0.38593388 0.6140661 ]
+ [0.3859187  0.61408126]
+ [0.38627362 0.6137264 ]
+ [0.38648865 0.6135113 ]]
+        Validation Criterion: 0.02218467
+20:35:51      Epoch:   0      Batch:   0      OuterStep: 159      LossModel: 0.01357513     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0990Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.3636139  0.63638604]
+ [0.3633118  0.63668823]
+ [0.36332893 0.63667107]
+ [0.36367    0.63633   ]
+ [0.36342362 0.63657635]
+ [0.38648316 0.6135168 ]
+ [0.3868019  0.6131981 ]
+ [0.3868568  0.6131432 ]
+ [0.38710016 0.61289984]
+ [0.3874383  0.61256176]]
+        Validation Criterion: 0.01498556
+        Saving best model so far ...
+20:35:53      Epoch:   0      Batch:   0      OuterStep: 160      LossModel: 0.00746523     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3538Contributing envs to the losses:  [4 2 1 3 0]
+Gate values for each environment (all envs): 
+ [[0.36373788 0.6362621 ]
+ [0.3634109  0.6365891 ]
+ [0.3634364  0.6365636 ]
+ [0.3637622  0.6362378 ]
+ [0.36354342 0.6364566 ]
+ [0.38703433 0.61296564]
+ [0.3871903  0.6128097 ]
+ [0.38742173 0.61257833]
+ [0.38757345 0.6124266 ]
+ [0.38793415 0.61206585]]
+        Validation Criterion: 0.32284084
+20:35:55      Epoch:   0      Batch:   0      OuterStep: 161      LossModel: 0.02092668     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0261Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36330488 0.63669515]
+ [0.36292064 0.63707936]
+ [0.36296487 0.6370352 ]
+ [0.36324528 0.63675475]
+ [0.36310956 0.6368905 ]
+ [0.3829995  0.6170005 ]
+ [0.38312715 0.61687285]
+ [0.38337103 0.61662894]
+ [0.38365346 0.61634654]
+ [0.38401625 0.6159837 ]]
+        Validation Criterion: 0.03065568
+20:35:56      Epoch:   0      Batch:   0      OuterStep: 162      LossModel: 0.06463492     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0990Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36160693 0.6383931 ]
+ [0.3613026  0.6386974 ]
+ [0.36135346 0.6386466 ]
+ [0.36158803 0.63841194]
+ [0.36148635 0.6385136 ]
+ [0.3818661  0.61813396]
+ [0.38190654 0.6180935 ]
+ [0.3819694  0.61803067]
+ [0.3824875  0.6175126 ]
+ [0.38280925 0.61719084]]
+        Validation Criterion: 0.02108722
+20:35:58      Epoch:   0      Batch:   0      OuterStep: 163      LossModel: 0.00817738     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1901Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.36093405 0.639066  ]
+ [0.36068952 0.63931054]
+ [0.36073017 0.6392699 ]
+ [0.360997   0.63900304]
+ [0.3608351  0.639165  ]
+ [0.3816373  0.61836267]
+ [0.38188732 0.6181127 ]
+ [0.38193232 0.6180677 ]
+ [0.3818323  0.61816764]
+ [0.38204077 0.6179592 ]]
+        Validation Criterion: 0.07838740
+20:35:59      Epoch:   0      Batch:   0      OuterStep: 164      LossModel: 0.00729581     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0803Contributing envs to the losses:  [6 5 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.3617021  0.6382979 ]
+ [0.3614616  0.6385384 ]
+ [0.36148462 0.63851535]
+ [0.36179852 0.6382015 ]
+ [0.36157733 0.6384227 ]
+ [0.38281086 0.6171891 ]
+ [0.3831686  0.61683136]
+ [0.3832028  0.61679727]
+ [0.38313293 0.61686707]
+ [0.38342035 0.61657965]]
+        Validation Criterion: 0.01862676
+20:36:01      Epoch:   0      Batch:   0      OuterStep: 165      LossModel: 0.02401653     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9765Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36182892 0.6381711 ]
+ [0.36152124 0.63847876]
+ [0.3615613  0.6384387 ]
+ [0.36183235 0.6381677 ]
+ [0.3616897  0.6383103 ]
+ [0.383007   0.61699307]
+ [0.38339102 0.616609  ]
+ [0.38355958 0.6164405 ]
+ [0.38349256 0.6165075 ]
+ [0.3838592  0.61614084]]
+        Validation Criterion: 0.01856646
+20:36:02      Epoch:   0      Batch:   0      OuterStep: 166      LossModel: 0.01406997     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1298Contributing envs to the losses:  [4 2 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36169258 0.63830745]
+ [0.36136365 0.63863635]
+ [0.36140788 0.6385921 ]
+ [0.361678   0.638322  ]
+ [0.36154613 0.6384539 ]
+ [0.38240921 0.6175908 ]
+ [0.3827687  0.6172313 ]
+ [0.3829557  0.6170443 ]
+ [0.38289395 0.6171061 ]
+ [0.38327748 0.6167225 ]]
+        Validation Criterion: 0.02465698
+20:36:04      Epoch:   0      Batch:   0      OuterStep: 167      LossModel: 0.01984699     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1912Contributing envs to the losses:  [7 8 6 5 9]
+Gate values for each environment (all envs): 
+ [[0.36114818 0.6388518 ]
+ [0.36083564 0.6391644 ]
+ [0.36087853 0.6391215 ]
+ [0.36114684 0.63885313]
+ [0.36101106 0.63898903]
+ [0.3819734  0.6180266 ]
+ [0.38231608 0.6176839 ]
+ [0.38244632 0.6175538 ]
+ [0.38240066 0.61759937]
+ [0.38276142 0.6172386 ]]
+        Validation Criterion: 0.01533160
+20:36:05      Epoch:   0      Batch:   0      OuterStep: 168      LossModel: 0.01957879     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1414Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36108795 0.6389121 ]
+ [0.36080644 0.63919353]
+ [0.3608423  0.6391578 ]
+ [0.36112988 0.6388702 ]
+ [0.36095428 0.6390458 ]
+ [0.38180527 0.6181947 ]
+ [0.3821722  0.6178278 ]
+ [0.38229766 0.61770236]
+ [0.38216597 0.61783403]
+ [0.38250324 0.6174967 ]]
+        Validation Criterion: 0.01512965
+20:36:07      Epoch:   0      Batch:   0      OuterStep: 169      LossModel: 0.01323566     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3629Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.36107862 0.63892144]
+ [0.36077136 0.6392287 ]
+ [0.3608124  0.6391877 ]
+ [0.3610898  0.6389102 ]
+ [0.36093774 0.6390622 ]
+ [0.38185206 0.61814797]
+ [0.38221455 0.61778545]
+ [0.3823588  0.6176412 ]
+ [0.38222608 0.61777395]
+ [0.3825669  0.61743313]]
+        Validation Criterion: 0.01525883
+20:36:09      Epoch:   0      Batch:   0      OuterStep: 170      LossModel: 0.00734256     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4021Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36101934 0.6389806 ]
+ [0.36070827 0.63929176]
+ [0.36074713 0.6392529 ]
+ [0.36103326 0.63896674]
+ [0.36087573 0.63912433]
+ [0.38187376 0.6181262 ]
+ [0.38222966 0.6177704 ]
+ [0.38238505 0.6176149 ]
+ [0.38225546 0.61774457]
+ [0.38260722 0.6173928 ]]
+        Validation Criterion: 0.01492245
+        Saving best model so far ...
+20:36:10      Epoch:   0      Batch:   0      OuterStep: 171      LossModel: 0.01878338     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9785Contributing envs to the losses:  [7 8 6 5 9]
+Gate values for each environment (all envs): 
+ [[0.36099544 0.6390046 ]
+ [0.36069384 0.6393061 ]
+ [0.36072987 0.63927007]
+ [0.3610272  0.63897276]
+ [0.36085123 0.63914883]
+ [0.3818796  0.6181205 ]
+ [0.38223642 0.6177636 ]
+ [0.38238865 0.6176113 ]
+ [0.38225707 0.61774296]
+ [0.38260958 0.61739045]]
+        Validation Criterion: 0.01485570
+        Saving best model so far ...
+20:36:12      Epoch:   0      Batch:   0      OuterStep: 172      LossModel: 0.01854645     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1701Contributing envs to the losses:  [4 2 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36095458 0.63904536]
+ [0.36064893 0.63935107]
+ [0.36068705 0.639313  ]
+ [0.36098063 0.63901937]
+ [0.360808   0.63919204]
+ [0.3818935  0.61810654]
+ [0.38221934 0.6177806 ]
+ [0.38238478 0.6176152 ]
+ [0.38225958 0.6177404 ]
+ [0.38258103 0.61741894]]
+        Validation Criterion: 0.01493036
+20:36:14      Epoch:   0      Batch:   0      OuterStep: 173      LossModel: 0.01843195     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2467Contributing envs to the losses:  [6 7 5 8 9]
+Gate values for each environment (all envs): 
+ [[0.36085603 0.639144  ]
+ [0.36054188 0.6394581 ]
+ [0.36058047 0.63941956]
+ [0.3608719  0.639128  ]
+ [0.36070323 0.63929677]
+ [0.3818925  0.61810756]
+ [0.38221705 0.61778295]
+ [0.38237503 0.61762494]
+ [0.38225576 0.6177443 ]
+ [0.382584   0.61741596]]
+        Validation Criterion: 0.01520682
+20:36:16      Epoch:   0      Batch:   0      OuterStep: 174      LossModel: 0.00737170     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.6107Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36084893 0.63915104]
+ [0.36054245 0.6394575 ]
+ [0.36057523 0.6394248 ]
+ [0.36087874 0.63912135]
+ [0.3606956  0.63930446]
+ [0.38190204 0.61809796]
+ [0.38222474 0.61777526]
+ [0.3823687  0.6176313 ]
+ [0.3822601  0.6177399 ]
+ [0.3825916  0.6174084 ]]
+        Validation Criterion: 0.01527233
+20:36:17      Epoch:   0      Batch:   0      OuterStep: 175      LossModel: 0.01823767     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2533Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36082497 0.63917506]
+ [0.36051023 0.63948977]
+ [0.3605481  0.6394519 ]
+ [0.36084864 0.63915133]
+ [0.3606692  0.6393308 ]
+ [0.38192725 0.61807275]
+ [0.38223    0.6177701 ]
+ [0.38237956 0.61762047]
+ [0.38227245 0.6177276 ]
+ [0.38259432 0.61740565]]
+        Validation Criterion: 0.01527620
+20:36:19      Epoch:   0      Batch:   0      OuterStep: 176      LossModel: 0.01815257     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3951Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36079973 0.6392003 ]
+ [0.36048558 0.63951445]
+ [0.36052018 0.6394798 ]
+ [0.36082467 0.6391753 ]
+ [0.3606425  0.63935757]
+ [0.38194168 0.6180583 ]
+ [0.38222882 0.6177712 ]
+ [0.3823843  0.6176157 ]
+ [0.38227198 0.617728  ]
+ [0.3825962  0.61740386]]
+        Validation Criterion: 0.01543607
+20:36:21      Epoch:   0      Batch:   0      OuterStep: 177      LossModel: 0.00737009     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4135Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3607704  0.6392296 ]
+ [0.3604572  0.6395428 ]
+ [0.36048988 0.63951015]
+ [0.36079586 0.63920414]
+ [0.36061236 0.6393877 ]
+ [0.38195276 0.61804724]
+ [0.38222614 0.6177739 ]
+ [0.38238582 0.6176142 ]
+ [0.38228008 0.61771995]
+ [0.38260078 0.6173992 ]]
+        Validation Criterion: 0.01553492
+20:36:23      Epoch:   0      Batch:   0      OuterStep: 178      LossModel: 0.01800937     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2467Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36074385 0.6392562 ]
+ [0.36042935 0.6395706 ]
+ [0.36046398 0.63953596]
+ [0.3607709  0.6392292 ]
+ [0.36058408 0.6394159 ]
+ [0.38196838 0.6180317 ]
+ [0.3822346  0.6177654 ]
+ [0.38238353 0.6176165 ]
+ [0.3822931  0.6177069 ]
+ [0.38260964 0.6173904 ]]
+        Validation Criterion: 0.01562717
+20:36:24      Epoch:   0      Batch:   0      OuterStep: 179      LossModel: 0.01803607     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3140Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.36071616 0.63928384]
+ [0.36040133 0.6395987 ]
+ [0.3604344  0.63956565]
+ [0.3607419  0.6392581 ]
+ [0.36055592 0.6394442 ]
+ [0.38197842 0.6180216 ]
+ [0.3822352  0.61776483]
+ [0.3823781  0.6176219 ]
+ [0.38229516 0.61770487]
+ [0.38260344 0.6173966 ]]
+        Validation Criterion: 0.01572676
+20:36:26      Epoch:   0      Batch:   0      OuterStep: 180      LossModel: 0.01265493     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3111Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36067268 0.63932735]
+ [0.36035645 0.63964355]
+ [0.3603874  0.6396127 ]
+ [0.36069936 0.6393007 ]
+ [0.3605103  0.63948965]
+ [0.38198516 0.6180148 ]
+ [0.38222528 0.6177747 ]
+ [0.382366   0.617634  ]
+ [0.3822935  0.61770654]
+ [0.3826064  0.6173936 ]]
+        Validation Criterion: 0.01583016
+20:36:28      Epoch:   0      Batch:   0      OuterStep: 181      LossModel: 0.00736397     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3319Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36064628 0.6393538 ]
+ [0.36032638 0.6396736 ]
+ [0.36036122 0.6396388 ]
+ [0.3606724  0.63932765]
+ [0.36048228 0.6395178 ]
+ [0.38199067 0.6180093 ]
+ [0.3822118  0.61778814]
+ [0.38234928 0.6176507 ]
+ [0.38229823 0.6177017 ]
+ [0.38260072 0.61739933]]
+        Validation Criterion: 0.01584706
+20:36:30      Epoch:   0      Batch:   0      OuterStep: 182      LossModel: 0.01254269     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3409Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36061957 0.63938046]
+ [0.3603006  0.6396994 ]
+ [0.3603332  0.6396668 ]
+ [0.3606455  0.63935447]
+ [0.36045566 0.63954437]
+ [0.38199306 0.61800694]
+ [0.3822068  0.61779314]
+ [0.3823427  0.61765736]
+ [0.38229612 0.6177039 ]
+ [0.38260084 0.6173992 ]]
+        Validation Criterion: 0.01598759
+20:36:31      Epoch:   0      Batch:   0      OuterStep: 183      LossModel: 0.01774430     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2588Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3605977  0.63940233]
+ [0.36027932 0.63972074]
+ [0.36031124 0.63968873]
+ [0.36062658 0.6393735 ]
+ [0.3604329  0.6395671 ]
+ [0.3820055  0.6179945 ]
+ [0.38220695 0.6177931 ]
+ [0.38234034 0.6176596 ]
+ [0.3822969  0.6177032 ]
+ [0.3826011  0.61739886]]
+        Validation Criterion: 0.01596698
+20:36:33      Epoch:   0      Batch:   0      OuterStep: 184      LossModel: 0.01769166     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3939Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36057767 0.6394223 ]
+ [0.36025685 0.63974315]
+ [0.3602884  0.63971156]
+ [0.36060485 0.63939524]
+ [0.36041084 0.63958913]
+ [0.38201076 0.6179893 ]
+ [0.38219765 0.6178024 ]
+ [0.38232386 0.61767614]
+ [0.38229966 0.61770034]
+ [0.38260168 0.6173983 ]]
+        Validation Criterion: 0.01597387
+20:36:35      Epoch:   0      Batch:   0      OuterStep: 185      LossModel: 0.01249474     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3124Contributing envs to the losses:  [4 2 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.3605536  0.63944644]
+ [0.36023113 0.63976896]
+ [0.3602627  0.6397373 ]
+ [0.36058068 0.6394193 ]
+ [0.36038473 0.6396153 ]
+ [0.3820105  0.6179895 ]
+ [0.38219032 0.61780965]
+ [0.38231906 0.61768097]
+ [0.38230553 0.61769444]
+ [0.3825912  0.6174089 ]]
+        Validation Criterion: 0.01604299
+20:36:37      Epoch:   0      Batch:   0      OuterStep: 186      LossModel: 0.01243915     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3426Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.36053076 0.63946927]
+ [0.36021036 0.63978964]
+ [0.36024055 0.6397595 ]
+ [0.36055857 0.63944143]
+ [0.360363   0.63963705]
+ [0.3820183  0.6179818 ]
+ [0.38220125 0.6177988 ]
+ [0.38233435 0.61766565]
+ [0.38231218 0.6176878 ]
+ [0.38259792 0.6174021 ]]
+        Validation Criterion: 0.01618990
+20:36:39      Epoch:   0      Batch:   0      OuterStep: 187      LossModel: 0.01241093     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2319Contributing envs to the losses:  [4 2 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.3605201  0.63947994]
+ [0.36019617 0.6398039 ]
+ [0.36022717 0.63977283]
+ [0.3605463  0.6394537 ]
+ [0.36034983 0.6396502 ]
+ [0.38203093 0.61796904]
+ [0.3821947  0.61780536]
+ [0.3823284  0.6176716 ]
+ [0.3823069  0.61769307]
+ [0.38260365 0.6173963 ]]
+        Validation Criterion: 0.01626119
+20:36:40      Epoch:   0      Batch:   0      OuterStep: 188      LossModel: 0.00733859     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4062Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.3604957  0.6395044 ]
+ [0.36017147 0.63982856]
+ [0.3602015  0.6397985 ]
+ [0.36052188 0.63947815]
+ [0.36032453 0.63967544]
+ [0.38203722 0.6179627 ]
+ [0.38219786 0.61780214]
+ [0.3823159  0.6176841 ]
+ [0.3823148  0.6176852 ]
+ [0.38260323 0.61739683]]
+        Validation Criterion: 0.01627291
+20:36:42      Epoch:   0      Batch:   0      OuterStep: 189      LossModel: 0.01739131     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4202Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3604786  0.63952136]
+ [0.3601549  0.63984513]
+ [0.36018214 0.63981783]
+ [0.36050352 0.6394965 ]
+ [0.3603058  0.6396943 ]
+ [0.38203827 0.6179617 ]
+ [0.38219675 0.6178033 ]
+ [0.38231325 0.6176867 ]
+ [0.38232425 0.6176758 ]
+ [0.38260457 0.61739546]]
+        Validation Criterion: 0.01625447
+20:36:44      Epoch:   0      Batch:   0      OuterStep: 190      LossModel: 0.00732705     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4866Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3604631  0.6395369 ]
+ [0.36013627 0.6398637 ]
+ [0.36016494 0.63983506]
+ [0.36048818 0.6395118 ]
+ [0.3602889  0.6397111 ]
+ [0.38206127 0.6179388 ]
+ [0.3821878  0.61781216]
+ [0.38232347 0.61767656]
+ [0.38232592 0.61767405]
+ [0.38261366 0.6173864 ]]
+        Validation Criterion: 0.01626926
+20:36:46      Epoch:   0      Batch:   0      OuterStep: 191      LossModel: 0.01735070     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3699Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3604414  0.6395586 ]
+ [0.36011574 0.63988423]
+ [0.36014426 0.63985574]
+ [0.3604673  0.6395327 ]
+ [0.36026886 0.63973117]
+ [0.38206154 0.6179384 ]
+ [0.38219205 0.6178079 ]
+ [0.38232508 0.61767495]
+ [0.38233116 0.61766887]
+ [0.38261625 0.6173838 ]]
+        Validation Criterion: 0.01632843
+20:36:48      Epoch:   0      Batch:   0      OuterStep: 192      LossModel: 0.01230342     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2421Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36042565 0.6395743 ]
+ [0.36009896 0.63990104]
+ [0.360126   0.639874  ]
+ [0.36045003 0.63955   ]
+ [0.36025152 0.6397486 ]
+ [0.38204804 0.6179519 ]
+ [0.3821897  0.6178103 ]
+ [0.38231036 0.6176896 ]
+ [0.3823308  0.61766917]
+ [0.38261595 0.617384  ]]
+        Validation Criterion: 0.01630114
+20:36:49      Epoch:   0      Batch:   0      OuterStep: 193      LossModel: 0.01722822     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2276Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.3604008  0.63959926]
+ [0.36007127 0.6399287 ]
+ [0.3601001  0.6398999 ]
+ [0.36042458 0.63957536]
+ [0.36022517 0.6397748 ]
+ [0.38206586 0.61793417]
+ [0.38217875 0.6178212 ]
+ [0.38229468 0.61770535]
+ [0.38232526 0.6176748 ]
+ [0.38261735 0.6173827 ]]
+        Validation Criterion: 0.01631284
+20:36:51      Epoch:   0      Batch:   0      OuterStep: 194      LossModel: 0.01718141     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0302Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36038342 0.63961655]
+ [0.36005375 0.6399462 ]
+ [0.36008433 0.63991565]
+ [0.36040938 0.6395906 ]
+ [0.3602076  0.63979244]
+ [0.3820993  0.61790067]
+ [0.3822201  0.61777985]
+ [0.38234198 0.617658  ]
+ [0.3823679  0.61763215]
+ [0.3826474  0.61735266]]
+        Validation Criterion: 0.01643148
+20:36:53      Epoch:   0      Batch:   0      OuterStep: 195      LossModel: 0.00731063     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3036Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.360361   0.63963896]
+ [0.36003122 0.63996875]
+ [0.36005792 0.6399421 ]
+ [0.36038607 0.6396139 ]
+ [0.36018163 0.63981843]
+ [0.38208747 0.6179125 ]
+ [0.3822     0.61780006]
+ [0.3823199  0.6176802 ]
+ [0.3823549  0.6176451 ]
+ [0.38263968 0.61736035]]
+        Validation Criterion: 0.01647759
+20:36:54      Epoch:   0      Batch:   0      OuterStep: 196      LossModel: 0.01706515     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0783Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3603432  0.63965684]
+ [0.36001244 0.6399875 ]
+ [0.36003822 0.63996184]
+ [0.36036828 0.6396317 ]
+ [0.3601628  0.63983715]
+ [0.38210914 0.61789083]
+ [0.38219705 0.617803  ]
+ [0.38231796 0.6176821 ]
+ [0.3823766  0.6176234 ]
+ [0.38263556 0.6173645 ]]
+        Validation Criterion: 0.01649958
+20:36:56      Epoch:   0      Batch:   0      OuterStep: 197      LossModel: 0.01214307     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2460Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36032334 0.63967675]
+ [0.35999247 0.6400075 ]
+ [0.36001694 0.63998306]
+ [0.36034748 0.63965255]
+ [0.36014152 0.63985854]
+ [0.38211375 0.61788625]
+ [0.3822029  0.6177971 ]
+ [0.38231674 0.61768323]
+ [0.3823707  0.61762935]
+ [0.38264823 0.6173518 ]]
+        Validation Criterion: 0.01655496
+20:36:58      Epoch:   0      Batch:   0      OuterStep: 198      LossModel: 0.01212814     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3436Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.36029893 0.63970107]
+ [0.35996616 0.6400338 ]
+ [0.35999212 0.6400079 ]
+ [0.36032468 0.6396754 ]
+ [0.36011854 0.6398815 ]
+ [0.38211858 0.6178814 ]
+ [0.38219562 0.61780435]
+ [0.382317   0.61768305]
+ [0.38236633 0.6176337 ]
+ [0.38265273 0.61734724]]
+        Validation Criterion: 0.01653000
+20:36:59      Epoch:   0      Batch:   0      OuterStep: 199      LossModel: 0.01693686     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1893Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.36027953 0.6397205 ]
+ [0.35994664 0.64005345]
+ [0.35997108 0.6400289 ]
+ [0.36030567 0.63969433]
+ [0.3600965  0.63990355]
+ [0.3821221  0.61787796]
+ [0.38219032 0.61780965]
+ [0.38231036 0.6176896 ]
+ [0.38237643 0.61762357]
+ [0.382652   0.6173481 ]]
+        Validation Criterion: 0.01654967
+20:37:01      Epoch:   0      Batch:   0      OuterStep: 200      LossModel: 0.00729299     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4510Contributing envs to the losses:  [2 4 1 0 3]
+Gate values for each environment (all envs): 
+ [[0.3602407  0.6397593 ]
+ [0.35990688 0.64009315]
+ [0.35993105 0.64006895]
+ [0.36026555 0.6397345 ]
+ [0.36005655 0.6399435 ]
+ [0.38212243 0.6178776 ]
+ [0.38219017 0.61780983]
+ [0.38230368 0.6176963 ]
+ [0.38237518 0.6176248 ]
+ [0.38264984 0.61735016]]
+        Validation Criterion: 0.01669947
+20:37:03      Epoch:   0      Batch:   0      OuterStep: 201      LossModel: 0.01202064     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1806Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.3602169  0.63978314]
+ [0.35988167 0.64011836]
+ [0.35990748 0.6400925 ]
+ [0.36024216 0.6397578 ]
+ [0.36003286 0.63996714]
+ [0.38207448 0.6179255 ]
+ [0.38214487 0.61785513]
+ [0.38225326 0.6177468 ]
+ [0.38233718 0.6176628 ]
+ [0.38259983 0.61740017]]
+        Validation Criterion: 0.01661776
+20:37:04      Epoch:   0      Batch:   0      OuterStep: 202      LossModel: 0.01678394     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9810Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.3602019  0.6397981 ]
+ [0.35986587 0.6401341 ]
+ [0.35988995 0.64010996]
+ [0.36022624 0.6397738 ]
+ [0.36001682 0.63998324]
+ [0.38207766 0.6179224 ]
+ [0.38214946 0.6178506 ]
+ [0.38226363 0.6177364 ]
+ [0.38233322 0.6176668 ]
+ [0.38260585 0.61739415]]
+        Validation Criterion: 0.01666102
+20:37:06      Epoch:   0      Batch:   0      OuterStep: 203      LossModel: 0.00728145     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2980Contributing envs to the losses:  [6 7 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.360179   0.63982105]
+ [0.35984454 0.64015543]
+ [0.3598666  0.64013344]
+ [0.3602041  0.6397959 ]
+ [0.3599939  0.6400061 ]
+ [0.38206828 0.61793166]
+ [0.3821162  0.6178838 ]
+ [0.38223767 0.6177624 ]
+ [0.38232088 0.61767906]
+ [0.38259476 0.61740524]]
+        Validation Criterion: 0.01665340
+20:37:08      Epoch:   0      Batch:   0      OuterStep: 204      LossModel: 0.01666515     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1484Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3601467  0.63985324]
+ [0.3598104  0.6401896 ]
+ [0.35983232 0.6401677 ]
+ [0.3601707  0.6398293 ]
+ [0.35995984 0.6400402 ]
+ [0.38205427 0.61794573]
+ [0.3820988  0.61790127]
+ [0.3822136  0.6177864 ]
+ [0.3823144  0.6176856 ]
+ [0.38257414 0.6174259 ]]
+        Validation Criterion: 0.01662507
+20:37:10      Epoch:   0      Batch:   0      OuterStep: 205      LossModel: 0.00726903     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3956Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3601228  0.6398772 ]
+ [0.3597859  0.6402141 ]
+ [0.35980654 0.6401935 ]
+ [0.360146   0.639854  ]
+ [0.3599346  0.64006543]
+ [0.38208663 0.61791337]
+ [0.38212588 0.61787415]
+ [0.38223872 0.6177613 ]
+ [0.38232046 0.6176796 ]
+ [0.38259238 0.61740756]]
+        Validation Criterion: 0.01673082
+20:37:11      Epoch:   0      Batch:   0      OuterStep: 206      LossModel: 0.00726375     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2841Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3601087  0.6398913 ]
+ [0.35977155 0.6402285 ]
+ [0.35979274 0.6402072 ]
+ [0.36013293 0.6398671 ]
+ [0.35992035 0.6400797 ]
+ [0.3820882  0.61791176]
+ [0.3821336  0.6178664 ]
+ [0.3822542  0.6177459 ]
+ [0.38233882 0.6176612 ]
+ [0.38260642 0.6173936 ]]
+        Validation Criterion: 0.01671109
+20:37:13      Epoch:   0      Batch:   0      OuterStep: 207      LossModel: 0.00725618     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.7136Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3600974  0.63990253]
+ [0.35976002 0.64023995]
+ [0.35978156 0.64021844]
+ [0.36012268 0.6398773 ]
+ [0.3599082  0.64009184]
+ [0.38209292 0.6179071 ]
+ [0.3821273  0.6178727 ]
+ [0.3822432  0.6177568 ]
+ [0.382352   0.61764795]
+ [0.38260785 0.6173921 ]]
+        Validation Criterion: 0.01667353
+20:37:15      Epoch:   0      Batch:   0      OuterStep: 208      LossModel: 0.00725156     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3602Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3600783  0.63992167]
+ [0.3597405  0.6402595 ]
+ [0.35975984 0.6402402 ]
+ [0.3601024  0.6398977 ]
+ [0.359889   0.64011097]
+ [0.38209942 0.61790055]
+ [0.3821209  0.6178791 ]
+ [0.38223848 0.61776155]
+ [0.38236022 0.6176398 ]
+ [0.38260972 0.61739033]]
+        Validation Criterion: 0.01677155
+20:37:17      Epoch:   0      Batch:   0      OuterStep: 209      LossModel: 0.01645218     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2110Contributing envs to the losses:  [6 7 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.36005998 0.63994   ]
+ [0.35972124 0.64027876]
+ [0.35974145 0.64025855]
+ [0.3600845  0.63991547]
+ [0.3598718  0.6401282 ]
+ [0.38209885 0.61790115]
+ [0.38210958 0.6178905 ]
+ [0.38224158 0.6177584 ]
+ [0.38233012 0.6176699 ]
+ [0.38260195 0.617398  ]]
+        Validation Criterion: 0.01681635
+20:37:19      Epoch:   0      Batch:   0      OuterStep: 210      LossModel: 0.00723968     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3932Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.3600307  0.63996935]
+ [0.3596903  0.6403097 ]
+ [0.35971108 0.6402889 ]
+ [0.36005378 0.6399462 ]
+ [0.35984048 0.6401595 ]
+ [0.38209587 0.6179041 ]
+ [0.38210598 0.617894  ]
+ [0.3822501  0.6177499 ]
+ [0.38234475 0.6176552 ]
+ [0.38260376 0.6173963 ]]
+        Validation Criterion: 0.01677171
+20:37:21      Epoch:   0      Batch:   0      OuterStep: 211      LossModel: 0.00723217     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4488Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.360015   0.63998497]
+ [0.35967597 0.64032406]
+ [0.35969582 0.6403042 ]
+ [0.36003903 0.63996094]
+ [0.35982382 0.6401761 ]
+ [0.38212344 0.6178765 ]
+ [0.38214266 0.6178574 ]
+ [0.38225755 0.6177425 ]
+ [0.38237563 0.6176244 ]
+ [0.3826303  0.6173698 ]]
+        Validation Criterion: 0.01687300
+20:37:22      Epoch:   0      Batch:   0      OuterStep: 212      LossModel: 0.01636262     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1569Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.3600286  0.6399714 ]
+ [0.35968906 0.6403109 ]
+ [0.35970804 0.6402919 ]
+ [0.3600523  0.63994765]
+ [0.35983846 0.6401616 ]
+ [0.38217375 0.6178262 ]
+ [0.38217622 0.6178238 ]
+ [0.38230175 0.61769825]
+ [0.38241056 0.6175895 ]
+ [0.38265574 0.61734426]]
+        Validation Criterion: 0.01685197
+20:37:24      Epoch:   0      Batch:   0      OuterStep: 213      LossModel: 0.01174706     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2713Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.360036   0.63996404]
+ [0.35969362 0.6403064 ]
+ [0.35971257 0.64028746]
+ [0.36005658 0.6399435 ]
+ [0.3598438  0.6401562 ]
+ [0.38222155 0.6177784 ]
+ [0.3822206  0.61777943]
+ [0.38235    0.61765003]
+ [0.3824512  0.6175488 ]
+ [0.3827058  0.6172942 ]]
+        Validation Criterion: 0.01690437
+20:37:26      Epoch:   0      Batch:   0      OuterStep: 214      LossModel: 0.00721834     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3065Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3600219  0.6399781 ]
+ [0.35968024 0.64031976]
+ [0.3596979  0.6403021 ]
+ [0.3600428  0.6399572 ]
+ [0.35982972 0.6401703 ]
+ [0.38222945 0.61777055]
+ [0.38222903 0.617771  ]
+ [0.38235256 0.61764747]
+ [0.38246408 0.61753595]
+ [0.38272133 0.61727864]]
+        Validation Criterion: 0.01697804
+20:37:28      Epoch:   0      Batch:   0      OuterStep: 215      LossModel: 0.00720977     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4140Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.36000592 0.6399941 ]
+ [0.35966504 0.64033496]
+ [0.35968238 0.64031756]
+ [0.36002964 0.6399703 ]
+ [0.35981244 0.64018756]
+ [0.38222674 0.6177733 ]
+ [0.38222104 0.61777896]
+ [0.3823404  0.6176596 ]
+ [0.38247025 0.61752975]
+ [0.38271433 0.6172857 ]]
+        Validation Criterion: 0.01696547
+20:37:30      Epoch:   0      Batch:   0      OuterStep: 216      LossModel: 0.01614755     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2945Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.35998365 0.6400163 ]
+ [0.3596402  0.64035976]
+ [0.35965708 0.6403429 ]
+ [0.3600036  0.6399964 ]
+ [0.35978973 0.6402103 ]
+ [0.38221928 0.6177807 ]
+ [0.38221192 0.61778814]
+ [0.38232726 0.6176728 ]
+ [0.38245696 0.6175431 ]
+ [0.38270527 0.6172948 ]]
+        Validation Criterion: 0.01688099
+20:37:31      Epoch:   0      Batch:   0      OuterStep: 217      LossModel: 0.01612694     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2308Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.35995805 0.64004195]
+ [0.35961288 0.6403871 ]
+ [0.35963246 0.6403675 ]
+ [0.35997915 0.64002085]
+ [0.35976428 0.6402357 ]
+ [0.38223383 0.6177662 ]
+ [0.3822158  0.6177842 ]
+ [0.3823215  0.6176785 ]
+ [0.3824669  0.6175331 ]
+ [0.3827057  0.6172943 ]]
+        Validation Criterion: 0.01702868
+20:37:33      Epoch:   0      Batch:   0      OuterStep: 218      LossModel: 0.01606312     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2822Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.35991442 0.64008564]
+ [0.3595679  0.64043206]
+ [0.35958436 0.6404156 ]
+ [0.3599351  0.64006484]
+ [0.35971636 0.64028364]
+ [0.38222677 0.61777323]
+ [0.38221163 0.6177883 ]
+ [0.38233352 0.61766654]
+ [0.38246682 0.6175332 ]
+ [0.38271278 0.6172872 ]]
+        Validation Criterion: 0.01706868
+20:37:35      Epoch:   0      Batch:   0      OuterStep: 219      LossModel: 0.01597490     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2976Contributing envs to the losses:  [6 7 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.35987356 0.64012647]
+ [0.3595283  0.64047176]
+ [0.3595432  0.6404568 ]
+ [0.35989657 0.64010346]
+ [0.35967663 0.6403234 ]
+ [0.382185   0.617815  ]
+ [0.3821693  0.61783075]
+ [0.3823005  0.61769956]
+ [0.38242814 0.61757183]
+ [0.38267437 0.6173257 ]]
+        Validation Criterion: 0.01708644
+20:37:36      Epoch:   0      Batch:   0      OuterStep: 220      LossModel: 0.01152710     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2103Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3598451  0.6401549 ]
+ [0.35949722 0.64050275]
+ [0.35951275 0.64048725]
+ [0.35986614 0.6401338 ]
+ [0.35964453 0.64035547]
+ [0.38219944 0.6178006 ]
+ [0.38217297 0.617827  ]
+ [0.38229233 0.6177077 ]
+ [0.38242307 0.61757696]
+ [0.38266382 0.6173362 ]]
+        Validation Criterion: 0.01715722
+20:37:38      Epoch:   0      Batch:   0      OuterStep: 221      LossModel: 0.00719368     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3499Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.35983095 0.640169  ]
+ [0.35948235 0.6405176 ]
+ [0.35949823 0.64050174]
+ [0.35985205 0.6401479 ]
+ [0.3596298  0.6403702 ]
+ [0.38218674 0.6178133 ]
+ [0.38215333 0.61784667]
+ [0.38228467 0.61771536]
+ [0.38242203 0.617578  ]
+ [0.38266903 0.61733097]]
+        Validation Criterion: 0.01719500
+20:37:40      Epoch:   0      Batch:   0      OuterStep: 222      LossModel: 0.01580299     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2113Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.35981318 0.64018685]
+ [0.3594674  0.64053255]
+ [0.35948056 0.64051944]
+ [0.35983542 0.6401646 ]
+ [0.35961345 0.6403866 ]
+ [0.3821964  0.61780363]
+ [0.3821539  0.61784613]
+ [0.38229322 0.61770684]
+ [0.38242903 0.61757106]
+ [0.3826621  0.6173379 ]]
+        Validation Criterion: 0.01724141
+20:37:42      Epoch:   0      Batch:   0      OuterStep: 223      LossModel: 0.01143109     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4150Contributing envs to the losses:  [6 7 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.35979915 0.64020085]
+ [0.35945162 0.6405484 ]
+ [0.35946512 0.64053494]
+ [0.35982156 0.64017844]
+ [0.3595983  0.6404017 ]
+ [0.38220996 0.61779004]
+ [0.3821657  0.61783427]
+ [0.38230652 0.6176934 ]
+ [0.3824429  0.6175571 ]
+ [0.3826703  0.6173297 ]]
+        Validation Criterion: 0.01729052
+20:37:43      Epoch:   0      Batch:   0      OuterStep: 224      LossModel: 0.01569671     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0762Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.35978442 0.6402156 ]
+ [0.35943657 0.64056337]
+ [0.3594489  0.64055103]
+ [0.35980633 0.64019364]
+ [0.35958332 0.6404167 ]
+ [0.3822158  0.6177842 ]
+ [0.38217852 0.6178215 ]
+ [0.38230515 0.61769485]
+ [0.38244522 0.61755484]
+ [0.38268298 0.61731696]]
+        Validation Criterion: 0.01743737
+20:37:45      Epoch:   0      Batch:   0      OuterStep: 225      LossModel: 0.00718055     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4590Contributing envs to the losses:  [2 4 0 1 3]
+Gate values for each environment (all envs): 
+ [[0.35974574 0.6402543 ]
+ [0.3593954  0.64060456]
+ [0.35940897 0.64059097]
+ [0.3597662  0.64023376]
+ [0.3595412  0.6404588 ]
+ [0.3821754  0.6178247 ]
+ [0.3821217  0.61787826]
+ [0.3822567  0.6177433 ]
+ [0.38241354 0.6175865 ]
+ [0.38263714 0.61736286]]
+        Validation Criterion: 0.01732192
+20:37:47      Epoch:   0      Batch:   0      OuterStep: 226      LossModel: 0.00717164     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3685Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.35974085 0.6402592 ]
+ [0.35939234 0.64060766]
+ [0.35940537 0.64059466]
+ [0.359765   0.640235  ]
+ [0.35953632 0.64046365]
+ [0.38226393 0.6177361 ]
+ [0.38219428 0.6178057 ]
+ [0.38231662 0.61768335]
+ [0.3824737  0.6175263 ]
+ [0.3827057  0.6172943 ]]
+        Validation Criterion: 0.01762050
+20:37:49      Epoch:   0      Batch:   0      OuterStep: 227      LossModel: 0.01133660     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2156Contributing envs to the losses:  [6 7 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.35975423 0.6402457 ]
+ [0.3594065  0.6405935 ]
+ [0.3594163  0.64058375]
+ [0.3597727  0.6402272 ]
+ [0.35954893 0.6404511 ]
+ [0.3822321  0.6177679 ]
+ [0.3821856  0.6178144 ]
+ [0.3823161  0.6176839 ]
+ [0.38246092 0.6175391 ]
+ [0.38269418 0.6173058 ]]
+        Validation Criterion: 0.01753759
+20:37:50      Epoch:   0      Batch:   0      OuterStep: 228      LossModel: 0.01554052     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2623Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.35972026 0.6402797 ]
+ [0.35936856 0.6406315 ]
+ [0.35938    0.64062   ]
+ [0.3597393  0.64026064]
+ [0.35951415 0.6404858 ]
+ [0.38219598 0.61780405]
+ [0.382143   0.617857  ]
+ [0.38228455 0.6177155 ]
+ [0.38245302 0.6175469 ]
+ [0.38267377 0.61732626]]
+        Validation Criterion: 0.01737857
+20:37:52      Epoch:   0      Batch:   0      OuterStep: 229      LossModel: 0.00716279     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4398Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3596776  0.6403224 ]
+ [0.3593279  0.6406721 ]
+ [0.35933948 0.6406605 ]
+ [0.35970083 0.64029914]
+ [0.35947177 0.64052814]
+ [0.3822102  0.6177898 ]
+ [0.3821345  0.6178655 ]
+ [0.38227567 0.61772436]
+ [0.38243845 0.6175616 ]
+ [0.3826643  0.6173357 ]]
+        Validation Criterion: 0.01758579
+20:37:54      Epoch:   0      Batch:   0      OuterStep: 230      LossModel: 0.00715645     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4187Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.35964656 0.64035344]
+ [0.35929513 0.6407049 ]
+ [0.35930613 0.6406939 ]
+ [0.35966766 0.64033234]
+ [0.35943896 0.64056104]
+ [0.38216385 0.6178361 ]
+ [0.3820995  0.6179005 ]
+ [0.38224036 0.6177597 ]
+ [0.38240644 0.6175936 ]
+ [0.38262755 0.6173724 ]]
+        Validation Criterion: 0.01746955
+20:37:56      Epoch:   0      Batch:   0      OuterStep: 231      LossModel: 0.01122407     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2127Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.35962972 0.6403703 ]
+ [0.35927886 0.64072114]
+ [0.35928872 0.64071125]
+ [0.3596489  0.64035106]
+ [0.35942268 0.64057726]
+ [0.3822057  0.61779433]
+ [0.38214535 0.61785465]
+ [0.38226053 0.6177395 ]
+ [0.38242742 0.6175726 ]
+ [0.3826556  0.61734444]]
+        Validation Criterion: 0.01780598
+20:37:58      Epoch:   0      Batch:   0      OuterStep: 232      LossModel: 0.00714693     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3460Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.3596232  0.6403768 ]
+ [0.35927093 0.64072907]
+ [0.35928142 0.6407186 ]
+ [0.35964212 0.64035785]
+ [0.35941413 0.6405859 ]
+ [0.38216838 0.6178316 ]
+ [0.38208598 0.617914  ]
+ [0.3822341  0.61776584]
+ [0.38240162 0.6175984 ]
+ [0.38263443 0.6173656 ]]
+        Validation Criterion: 0.01762953
+20:38:00      Epoch:   0      Batch:   0      OuterStep: 233      LossModel: 0.00714137     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4151Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.35957927 0.6404207 ]
+ [0.3592247  0.64077526]
+ [0.35923558 0.64076436]
+ [0.359597   0.640403  ]
+ [0.3593698  0.6406302 ]
+ [0.38212547 0.6178745 ]
+ [0.38204086 0.6179592 ]
+ [0.38217595 0.617824  ]
+ [0.3823649  0.61763513]
+ [0.38259184 0.61740816]]
+        Validation Criterion: 0.01754412
+20:38:02      Epoch:   0      Batch:   0      OuterStep: 234      LossModel: 0.00713418     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4549Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.359555   0.640445  ]
+ [0.3592039  0.6407961 ]
+ [0.35921317 0.6407868 ]
+ [0.35957536 0.6404246 ]
+ [0.3593472  0.64065284]
+ [0.38213435 0.6178656 ]
+ [0.38206244 0.61793756]
+ [0.38217467 0.61782527]
+ [0.38237026 0.61762977]
+ [0.38257462 0.6174254 ]]
+        Validation Criterion: 0.01771884
+20:38:03      Epoch:   0      Batch:   0      OuterStep: 235      LossModel: 0.01521647     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 0.9700Contributing envs to the losses:  [7 8 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.35954288 0.6404571 ]
+ [0.3591924  0.64080757]
+ [0.3592002  0.64079976]
+ [0.35956213 0.6404379 ]
+ [0.359334   0.640666  ]
+ [0.38211814 0.6178819 ]
+ [0.38202563 0.6179744 ]
+ [0.3821643  0.61783576]
+ [0.38232473 0.61767524]
+ [0.3825612  0.61743873]]
+        Validation Criterion: 0.01781579
+20:38:05      Epoch:   0      Batch:   0      OuterStep: 236      LossModel: 0.01500947     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2275Contributing envs to the losses:  [6 7 8 5 9]
+Gate values for each environment (all envs): 
+ [[0.35946283 0.64053714]
+ [0.35910636 0.64089364]
+ [0.35911748 0.6408825 ]
+ [0.3594813  0.64051867]
+ [0.35925186 0.64074814]
+ [0.38210326 0.61789674]
+ [0.38200426 0.6179957 ]
+ [0.3821489  0.61785114]
+ [0.3823185  0.6176815 ]
+ [0.38254339 0.6174566 ]]
+        Validation Criterion: 0.01788820
+20:38:07      Epoch:   0      Batch:   0      OuterStep: 237      LossModel: 0.00713525     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4001Contributing envs to the losses:  [3 0 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.3594025  0.64059746]
+ [0.35904667 0.64095336]
+ [0.35905436 0.6409456 ]
+ [0.35942295 0.640577  ]
+ [0.35918748 0.6408126 ]
+ [0.38211334 0.61788666]
+ [0.3820266  0.6179734 ]
+ [0.38215706 0.617843  ]
+ [0.3823287  0.6176714 ]
+ [0.38254476 0.61745524]]
+        Validation Criterion: 0.01819597
+20:38:08      Epoch:   0      Batch:   0      OuterStep: 238      LossModel: 0.00713040     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2389Contributing envs to the losses:  [4 2 0 1 3]
+Gate values for each environment (all envs): 
+ [[0.35937965 0.64062035]
+ [0.35902286 0.64097714]
+ [0.35903132 0.6409686 ]
+ [0.35939878 0.6406012 ]
+ [0.3591637  0.64083624]
+ [0.3820131  0.617987  ]
+ [0.3819225  0.61807746]
+ [0.38207072 0.6179292 ]
+ [0.38224763 0.6177524 ]
+ [0.38247684 0.61752313]]
+        Validation Criterion: 0.01805291
+20:38:10      Epoch:   0      Batch:   0      OuterStep: 239      LossModel: 0.01502326     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.2326Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.35936296 0.640637  ]
+ [0.35900787 0.64099216]
+ [0.3590164  0.64098364]
+ [0.35938206 0.6406179 ]
+ [0.35915032 0.64084965]
+ [0.3820865  0.6179135 ]
+ [0.381966   0.618034  ]
+ [0.38210663 0.61789334]
+ [0.3822851  0.61771494]
+ [0.38249156 0.6175085 ]]
+        Validation Criterion: 0.01825886
+20:38:12      Epoch:   0      Batch:   0      OuterStep: 240      LossModel: 0.00712432     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4162Contributing envs to the losses:  [0 3 1 2 4]
+Gate values for each environment (all envs): 
+ [[0.35938233 0.64061767]
+ [0.3590249  0.6409751 ]
+ [0.35903317 0.64096683]
+ [0.35940263 0.64059734]
+ [0.3591673  0.64083266]
+ [0.3820439  0.61795616]
+ [0.3819301  0.6180699 ]
+ [0.3820618  0.61793816]
+ [0.38225392 0.6177461 ]
+ [0.3824674  0.6175327 ]]
+        Validation Criterion: 0.01813458
+20:38:14      Epoch:   0      Batch:   0      OuterStep: 241      LossModel: 0.01487330     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1254Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.3593245  0.6406755 ]
+ [0.35896364 0.64103633]
+ [0.35897058 0.64102936]
+ [0.35933757 0.6406624 ]
+ [0.35910702 0.6408929 ]
+ [0.38203785 0.6179622 ]
+ [0.38192853 0.61807144]
+ [0.38204297 0.61795706]
+ [0.38224497 0.61775506]
+ [0.38244176 0.6175583 ]]
+        Validation Criterion: 0.01813871
+20:38:15      Epoch:   0      Batch:   0      OuterStep: 242      LossModel: 0.01087618     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1232Contributing envs to the losses:  [2 4 0 1 3]
+Gate values for each environment (all envs): 
+ [[0.35929856 0.6407015 ]
+ [0.35894087 0.6410591 ]
+ [0.35894668 0.64105326]
+ [0.3593167  0.6406833 ]
+ [0.3590801  0.64091986]
+ [0.38208836 0.61791164]
+ [0.38196504 0.61803496]
+ [0.38209492 0.6179051 ]
+ [0.38225815 0.6177418 ]
+ [0.38246793 0.61753213]]
+        Validation Criterion: 0.01899105
+20:38:17      Epoch:   0      Batch:   0      OuterStep: 243      LossModel: 0.00711536     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4020Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.35928193 0.6407181 ]
+ [0.35892206 0.6410779 ]
+ [0.35892573 0.64107424]
+ [0.3593017  0.6406983 ]
+ [0.35906047 0.64093953]
+ [0.3821814  0.61781865]
+ [0.38204926 0.61795074]
+ [0.3821867  0.61781335]
+ [0.38234696 0.6176531 ]
+ [0.38252252 0.6174775 ]]
+        Validation Criterion: 0.02010091
+20:38:19      Epoch:   0      Batch:   0      OuterStep: 244      LossModel: 0.00711011     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3221Contributing envs to the losses:  [2 4 0 1 3]
+Gate values for each environment (all envs): 
+ [[0.3592697  0.64073026]
+ [0.3589105  0.64108944]
+ [0.35891527 0.64108473]
+ [0.35929027 0.64070976]
+ [0.35904902 0.64095104]
+ [0.3821696  0.6178304 ]
+ [0.382071   0.61792904]
+ [0.382206   0.61779404]
+ [0.38234895 0.61765105]
+ [0.38255885 0.61744124]]
+        Validation Criterion: 0.02017176
+20:38:21      Epoch:   0      Batch:   0      OuterStep: 245      LossModel: 0.01088305     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.4059Contributing envs to the losses:  [4 2 0 1 3]
+Gate values for each environment (all envs): 
+ [[0.35926607 0.64073396]
+ [0.35890785 0.6410921 ]
+ [0.35891137 0.64108866]
+ [0.35928875 0.64071125]
+ [0.35904709 0.6409529 ]
+ [0.38209456 0.6179055 ]
+ [0.38201112 0.6179889 ]
+ [0.38215268 0.6178473 ]
+ [0.38232908 0.61767095]
+ [0.3825777  0.6174223 ]]
+        Validation Criterion: 0.01840437
+20:38:23      Epoch:   0      Batch:   0      OuterStep: 246      LossModel: 0.00709669     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3949Contributing envs to the losses:  [9 8 7 6 5]
+Gate values for each environment (all envs): 
+ [[0.359236   0.640764  ]
+ [0.3588751  0.64112484]
+ [0.3588784  0.64112157]
+ [0.35925564 0.6407444 ]
+ [0.35901475 0.6409853 ]
+ [0.38210577 0.6178943 ]
+ [0.38195324 0.61804676]
+ [0.3821267  0.6178733 ]
+ [0.38230214 0.61769783]
+ [0.38252768 0.6174724 ]]
+        Validation Criterion: 0.01755030
+20:38:24      Epoch:   0      Batch:   0      OuterStep: 247      LossModel: 0.01446915     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.0896Contributing envs to the losses:  [1 3 0 2 4]
+Gate values for each environment (all envs): 
+ [[0.35921922 0.6407808 ]
+ [0.35885796 0.64114195]
+ [0.35886237 0.64113754]
+ [0.35923767 0.6407623 ]
+ [0.3589979  0.64100206]
+ [0.38206702 0.61793303]
+ [0.3819478  0.6180521 ]
+ [0.38211825 0.61788183]
+ [0.3822881  0.6177119 ]
+ [0.38251925 0.6174808 ]]
+        Validation Criterion: 0.01807806
+20:38:26      Epoch:   0      Batch:   0      OuterStep: 248      LossModel: 0.00709346     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.3738Contributing envs to the losses:  [5 6 7 8 9]
+Gate values for each environment (all envs): 
+ [[0.35917938 0.64082056]
+ [0.35881695 0.641183  ]
+ [0.35882202 0.64117795]
+ [0.35919747 0.64080256]
+ [0.358957   0.641043  ]
+ [0.38206333 0.6179367 ]
+ [0.38197023 0.6180298 ]
+ [0.38210425 0.6178957 ]
+ [0.38230625 0.6176937 ]
+ [0.38253003 0.61747   ]]
+        Validation Criterion: 0.01836897
+20:38:28      Epoch:   0      Batch:   0      OuterStep: 249      LossModel: 0.01424682     LossTerm2: 0.00000000     LossGates: 0.00000000      Time/Step(s): 1.1346Contributing envs to the losses:  [8 7 6 9 5]
+Gate values for each environment (all envs): 
+ [[0.35914758 0.6408524 ]
+ [0.35878602 0.64121395]
+ [0.35878903 0.641211  ]
+ [0.3591674  0.64083254]
+ [0.3589245  0.64107555]
+ [0.3820753  0.61792475]
+ [0.38196275 0.6180372 ]
+ [0.38211152 0.61788857]
+ [0.38230652 0.61769354]
+ [0.3825206  0.61747944]]
+        Validation Criterion: 0.01871470
+
+Total gradient descent training time: 0 hours 6 mins 15 secs
+Using any previously defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 10
+    Maximum number of batches (along envs): 1
+    Reusing contexts for adaptation on the single bach
+
+    Test loss value: 1.282e+00 ± 1.338e+00
+    Train loss value for criterion 0: 0.000e+00
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [2 0 1]
+    Visualized context dimensions along y: [3 2 3]
+Saving artefacts in: ./runs/_04_GEPSRuns/250330-203210/artefacts.png
+Losses per InD environment: [1.8246349096298218, 3.7015271186828613, 2.9691073894500732, 2.5112833976745605, 1.4771367311477661, 0.10042916983366013, 0.06342826038599014, 0.053579747676849365, 0.07559885084629059, 0.04663801193237305]
+After training, the context shifts are: [ 0.         -0.06892245]
+
+Loss InD (mean)  : 1.282
+Loss InD (median): 1.282
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+
+==  Begining in-domain dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 1)
+    Using contexts from meta-training.
+Testing finished. Figure saved in: ./runs/_04_GEPSRuns/250330-203210/dynamics.png
+
+==  Begining context clusters visualisation ... ==
+    Visualising the parameters (either vectors or function weights)
+    Visualising predictions from the contexts (reconstituted as functions)
+WARNING: No context utilities found, meaning inf dim context are not used. Using randoms.
+Saving context clusters in: ./runs/_04_GEPSRuns/250330-203210/context_clusters.png
+2025-03-30 20:38:43.384440: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:479] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2025-03-30 20:38:43.393920: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:10575] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2025-03-30 20:38:43.393942: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1442] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-03-30 20:38:43.701992: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/umap/umap_.py:1952: UserWarning: n_jobs value 1 overridden to 1 by setting random_state. Use no seed for parallelism.
+  warn(
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/site-packages/umap/umap_.py:2462: UserWarning: n_neighbors is larger than the dataset size; truncating to X.shape[0] - 1
+  warn(
+Using any previously defined optimizer for adapation
+
+=== Beginning Meta-Testing ... ===
+    Number of examples in a batch along envs: 2
+    Maximum number of batches (along envs): 1
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+Epoch:   0      Batch:   0      Loss: 1.07198668     ContextsNorm: 0.00000000
+Epoch:   1      Batch:   0      Loss: 1.05518055     ContextsNorm: 0.00000000
+Epoch:   2      Batch:   0      Loss: 1.03854620     ContextsNorm: 0.00000000
+Epoch:   3      Batch:   0      Loss: 1.02142620     ContextsNorm: 0.00000000
+Epoch:   4      Batch:   0      Loss: 1.00391173     ContextsNorm: 0.00000000
+Epoch:   5      Batch:   0      Loss: 0.98673624     ContextsNorm: 0.00000000
+Epoch:   6      Batch:   0      Loss: 0.96877074     ContextsNorm: 0.00000000
+Epoch:   7      Batch:   0      Loss: 0.95102525     ContextsNorm: 0.00000000
+Epoch:   8      Batch:   0      Loss: 0.93324006     ContextsNorm: 0.00000000
+Epoch:   9      Batch:   0      Loss: 0.91553277     ContextsNorm: 0.00000000
+Epoch:  10      Batch:   0      Loss: 0.89809585     ContextsNorm: 0.00000000
+Epoch:  11      Batch:   0      Loss: 0.88109589     ContextsNorm: 0.00000000
+Epoch:  12      Batch:   0      Loss: 0.86415511     ContextsNorm: 0.00000000
+Epoch:  13      Batch:   0      Loss: 0.84776771     ContextsNorm: 0.00000000
+Epoch:  14      Batch:   0      Loss: 0.83215940     ContextsNorm: 0.00000000
+Epoch:  15      Batch:   0      Loss: 0.81655067     ContextsNorm: 0.00000000
+Epoch:  16      Batch:   0      Loss: 0.80171156     ContextsNorm: 0.00000000
+Epoch:  17      Batch:   0      Loss: 0.78746855     ContextsNorm: 0.00000000
+Epoch:  18      Batch:   0      Loss: 0.77374738     ContextsNorm: 0.00000000
+Epoch:  19      Batch:   0      Loss: 0.76056212     ContextsNorm: 0.00000000
+Epoch:  20      Batch:   0      Loss: 0.74812376     ContextsNorm: 0.00000000
+Epoch:  21      Batch:   0      Loss: 0.73616308     ContextsNorm: 0.00000000
+Epoch:  22      Batch:   0      Loss: 0.72480351     ContextsNorm: 0.00000000
+Epoch:  23      Batch:   0      Loss: 0.71381533     ContextsNorm: 0.00000000
+Epoch:  24      Batch:   0      Loss: 0.70307785     ContextsNorm: 0.00000000
+Epoch:  25      Batch:   0      Loss: 0.69263697     ContextsNorm: 0.00000000
+Epoch:  26      Batch:   0      Loss: 0.68286556     ContextsNorm: 0.00000000
+Epoch:  27      Batch:   0      Loss: 0.67314887     ContextsNorm: 0.00000000
+Epoch:  28      Batch:   0      Loss: 0.66367185     ContextsNorm: 0.00000000
+Epoch:  29      Batch:   0      Loss: 0.65432602     ContextsNorm: 0.00000000
+Epoch:  30      Batch:   0      Loss: 0.64511585     ContextsNorm: 0.00000000
+Epoch:  31      Batch:   0      Loss: 0.63595629     ContextsNorm: 0.00000000
+Epoch:  32      Batch:   0      Loss: 0.62677640     ContextsNorm: 0.00000000
+Epoch:  33      Batch:   0      Loss: 0.61753660     ContextsNorm: 0.00000000
+Epoch:  34      Batch:   0      Loss: 0.60827070     ContextsNorm: 0.00000000
+Epoch:  35      Batch:   0      Loss: 0.59878749     ContextsNorm: 0.00000000
+Epoch:  36      Batch:   0      Loss: 0.58915544     ContextsNorm: 0.00000000
+Epoch:  37      Batch:   0      Loss: 0.57925171     ContextsNorm: 0.00000000
+Epoch:  38      Batch:   0      Loss: 0.56907725     ContextsNorm: 0.00000000
+Epoch:  39      Batch:   0      Loss: 0.55857503     ContextsNorm: 0.00000000
+Epoch:  40      Batch:   0      Loss: 0.54767877     ContextsNorm: 0.00000000
+Epoch:  41      Batch:   0      Loss: 0.53635055     ContextsNorm: 0.00000000
+Epoch:  42      Batch:   0      Loss: 0.52457887     ContextsNorm: 0.00000000
+Epoch:  43      Batch:   0      Loss: 0.51229918     ContextsNorm: 0.00000000
+Epoch:  44      Batch:   0      Loss: 0.49944666     ContextsNorm: 0.00000000
+Epoch:  45      Batch:   0      Loss: 0.48608577     ContextsNorm: 0.00000000
+Epoch:  46      Batch:   0      Loss: 0.47210929     ContextsNorm: 0.00000000
+Epoch:  47      Batch:   0      Loss: 0.45754027     ContextsNorm: 0.00000000
+Epoch:  48      Batch:   0      Loss: 0.44239420     ContextsNorm: 0.00000000
+Epoch:  49      Batch:   0      Loss: 0.42666909     ContextsNorm: 0.00000000
+Epoch:  50      Batch:   0      Loss: 0.41043302     ContextsNorm: 0.00000000
+Epoch:  51      Batch:   0      Loss: 0.39366168     ContextsNorm: 0.00000000
+Epoch:  52      Batch:   0      Loss: 0.37651211     ContextsNorm: 0.00000000
+Epoch:  53      Batch:   0      Loss: 0.35910925     ContextsNorm: 0.00000000
+Epoch:  54      Batch:   0      Loss: 0.34163839     ContextsNorm: 0.00000000
+Epoch:  55      Batch:   0      Loss: 0.32429603     ContextsNorm: 0.00000000
+Epoch:  56      Batch:   0      Loss: 0.30727172     ContextsNorm: 0.00000000
+Epoch:  57      Batch:   0      Loss: 0.29068121     ContextsNorm: 0.00000000
+Epoch:  58      Batch:   0      Loss: 0.27484891     ContextsNorm: 0.00000000
+Epoch:  59      Batch:   0      Loss: 0.25994566     ContextsNorm: 0.00000000
+Epoch:  60      Batch:   0      Loss: 0.24596813     ContextsNorm: 0.00000000
+Epoch:  61      Batch:   0      Loss: 0.23302375     ContextsNorm: 0.00000000
+Epoch:  62      Batch:   0      Loss: 0.22129095     ContextsNorm: 0.00000000
+Epoch:  63      Batch:   0      Loss: 0.21054706     ContextsNorm: 0.00000000
+Epoch:  64      Batch:   0      Loss: 0.20085871     ContextsNorm: 0.00000000
+Epoch:  65      Batch:   0      Loss: 0.19215508     ContextsNorm: 0.00000000
+Epoch:  66      Batch:   0      Loss: 0.18427020     ContextsNorm: 0.00000000
+Epoch:  67      Batch:   0      Loss: 0.17717400     ContextsNorm: 0.00000000
+Epoch:  68      Batch:   0      Loss: 0.17076227     ContextsNorm: 0.00000000
+Epoch:  69      Batch:   0      Loss: 0.16495118     ContextsNorm: 0.00000000
+Epoch:  70      Batch:   0      Loss: 0.15973279     ContextsNorm: 0.00000000
+Epoch:  71      Batch:   0      Loss: 0.15491724     ContextsNorm: 0.00000000
+Epoch:  72      Batch:   0      Loss: 0.15055704     ContextsNorm: 0.00000000
+Epoch:  73      Batch:   0      Loss: 0.14655423     ContextsNorm: 0.00000000
+Epoch:  74      Batch:   0      Loss: 0.14294404     ContextsNorm: 0.00000000
+Epoch:  75      Batch:   0      Loss: 0.13955934     ContextsNorm: 0.00000000
+Epoch:  76      Batch:   0      Loss: 0.13629961     ContextsNorm: 0.00000000
+Epoch:  77      Batch:   0      Loss: 0.13343748     ContextsNorm: 0.00000000
+Epoch:  78      Batch:   0      Loss: 0.13069887     ContextsNorm: 0.00000000
+Epoch:  79      Batch:   0      Loss: 0.12818030     ContextsNorm: 0.00000000
+Epoch:  80      Batch:   0      Loss: 0.12578551     ContextsNorm: 0.00000000
+Epoch:  81      Batch:   0      Loss: 0.12353733     ContextsNorm: 0.00000000
+Epoch:  82      Batch:   0      Loss: 0.12144853     ContextsNorm: 0.00000000
+Epoch:  83      Batch:   0      Loss: 0.11947253     ContextsNorm: 0.00000000
+Epoch:  84      Batch:   0      Loss: 0.11760752     ContextsNorm: 0.00000000
+Epoch:  85      Batch:   0      Loss: 0.11582404     ContextsNorm: 0.00000000
+Epoch:  86      Batch:   0      Loss: 0.11422078     ContextsNorm: 0.00000000
+Epoch:  87      Batch:   0      Loss: 0.11257981     ContextsNorm: 0.00000000
+Epoch:  88      Batch:   0      Loss: 0.11103921     ContextsNorm: 0.00000000
+Epoch:  89      Batch:   0      Loss: 0.10955806     ContextsNorm: 0.00000000
+Epoch:  90      Batch:   0      Loss: 0.10813202     ContextsNorm: 0.00000000
+Epoch:  91      Batch:   0      Loss: 0.10673788     ContextsNorm: 0.00000000
+Epoch:  92      Batch:   0      Loss: 0.10543105     ContextsNorm: 0.00000000
+Epoch:  93      Batch:   0      Loss: 0.10414328     ContextsNorm: 0.00000000
+Epoch:  94      Batch:   0      Loss: 0.10289814     ContextsNorm: 0.00000000
+Epoch:  95      Batch:   0      Loss: 0.10172037     ContextsNorm: 0.00000000
+Epoch:  96      Batch:   0      Loss: 0.10056281     ContextsNorm: 0.00000000
+Epoch:  97      Batch:   0      Loss: 0.09942333     ContextsNorm: 0.00000000
+Epoch:  98      Batch:   0      Loss: 0.09836292     ContextsNorm: 0.00000000
+Epoch:  99      Batch:   0      Loss: 0.09727633     ContextsNorm: 0.00000000
+Epoch: 100      Batch:   0      Loss: 0.09623794     ContextsNorm: 0.00000000
+Epoch: 101      Batch:   0      Loss: 0.09524286     ContextsNorm: 0.00000000
+Epoch: 102      Batch:   0      Loss: 0.09423882     ContextsNorm: 0.00000000
+Epoch: 103      Batch:   0      Loss: 0.09330906     ContextsNorm: 0.00000000
+Epoch: 104      Batch:   0      Loss: 0.09234984     ContextsNorm: 0.00000000
+Epoch: 105      Batch:   0      Loss: 0.09143521     ContextsNorm: 0.00000000
+Epoch: 106      Batch:   0      Loss: 0.09052572     ContextsNorm: 0.00000000
+Epoch: 107      Batch:   0      Loss: 0.08965498     ContextsNorm: 0.00000000
+Epoch: 108      Batch:   0      Loss: 0.08878139     ContextsNorm: 0.00000000
+Epoch: 109      Batch:   0      Loss: 0.08792910     ContextsNorm: 0.00000000
+Epoch: 110      Batch:   0      Loss: 0.08706298     ContextsNorm: 0.00000000
+Epoch: 111      Batch:   0      Loss: 0.08625643     ContextsNorm: 0.00000000
+Epoch: 112      Batch:   0      Loss: 0.08545620     ContextsNorm: 0.00000000
+Epoch: 113      Batch:   0      Loss: 0.08466559     ContextsNorm: 0.00000000
+Epoch: 114      Batch:   0      Loss: 0.08386757     ContextsNorm: 0.00000000
+Epoch: 115      Batch:   0      Loss: 0.08310346     ContextsNorm: 0.00000000
+Epoch: 116      Batch:   0      Loss: 0.08236263     ContextsNorm: 0.00000000
+Epoch: 117      Batch:   0      Loss: 0.08161233     ContextsNorm: 0.00000000
+Epoch: 118      Batch:   0      Loss: 0.08088767     ContextsNorm: 0.00000000
+Epoch: 119      Batch:   0      Loss: 0.08016343     ContextsNorm: 0.00000000
+Epoch: 120      Batch:   0      Loss: 0.07945160     ContextsNorm: 0.00000000
+Epoch: 121      Batch:   0      Loss: 0.07876521     ContextsNorm: 0.00000000
+Epoch: 122      Batch:   0      Loss: 0.07806473     ContextsNorm: 0.00000000
+Epoch: 123      Batch:   0      Loss: 0.07739065     ContextsNorm: 0.00000000
+Epoch: 124      Batch:   0      Loss: 0.07672888     ContextsNorm: 0.00000000
+Epoch: 125      Batch:   0      Loss: 0.07606620     ContextsNorm: 0.00000000
+Epoch: 126      Batch:   0      Loss: 0.07542720     ContextsNorm: 0.00000000
+Epoch: 127      Batch:   0      Loss: 0.07477683     ContextsNorm: 0.00000000
+Epoch: 128      Batch:   0      Loss: 0.07416344     ContextsNorm: 0.00000000
+Epoch: 129      Batch:   0      Loss: 0.07353272     ContextsNorm: 0.00000000
+Epoch: 130      Batch:   0      Loss: 0.07292996     ContextsNorm: 0.00000000
+Epoch: 131      Batch:   0      Loss: 0.07231186     ContextsNorm: 0.00000000
+Epoch: 132      Batch:   0      Loss: 0.07172981     ContextsNorm: 0.00000000
+Epoch: 133      Batch:   0      Loss: 0.07116470     ContextsNorm: 0.00000000
+Epoch: 134      Batch:   0      Loss: 0.07053535     ContextsNorm: 0.00000000
+Epoch: 135      Batch:   0      Loss: 0.06997272     ContextsNorm: 0.00000000
+Epoch: 136      Batch:   0      Loss: 0.06942028     ContextsNorm: 0.00000000
+Epoch: 137      Batch:   0      Loss: 0.06887206     ContextsNorm: 0.00000000
+Epoch: 138      Batch:   0      Loss: 0.06833576     ContextsNorm: 0.00000000
+Epoch: 139      Batch:   0      Loss: 0.06780794     ContextsNorm: 0.00000000
+Epoch: 140      Batch:   0      Loss: 0.06729573     ContextsNorm: 0.00000000
+Epoch: 141      Batch:   0      Loss: 0.06677368     ContextsNorm: 0.00000000
+Epoch: 142      Batch:   0      Loss: 0.06628256     ContextsNorm: 0.00000000
+Epoch: 143      Batch:   0      Loss: 0.06577794     ContextsNorm: 0.00000000
+Epoch: 144      Batch:   0      Loss: 0.06529504     ContextsNorm: 0.00000000
+Epoch: 145      Batch:   0      Loss: 0.06481450     ContextsNorm: 0.00000000
+Epoch: 146      Batch:   0      Loss: 0.06436067     ContextsNorm: 0.00000000
+Epoch: 147      Batch:   0      Loss: 0.06389042     ContextsNorm: 0.00000000
+Epoch: 148      Batch:   0      Loss: 0.06343950     ContextsNorm: 0.00000000
+Epoch: 149      Batch:   0      Loss: 0.06299897     ContextsNorm: 0.00000000
+Epoch: 150      Batch:   0      Loss: 0.06255660     ContextsNorm: 0.00000000
+Epoch: 151      Batch:   0      Loss: 0.06213464     ContextsNorm: 0.00000000
+Epoch: 152      Batch:   0      Loss: 0.06172293     ContextsNorm: 0.00000000
+Epoch: 153      Batch:   0      Loss: 0.06131486     ContextsNorm: 0.00000000
+Epoch: 154      Batch:   0      Loss: 0.06090710     ContextsNorm: 0.00000000
+Epoch: 155      Batch:   0      Loss: 0.06051432     ContextsNorm: 0.00000000
+Epoch: 156      Batch:   0      Loss: 0.06013438     ContextsNorm: 0.00000000
+Epoch: 157      Batch:   0      Loss: 0.05976014     ContextsNorm: 0.00000000
+Epoch: 158      Batch:   0      Loss: 0.05939445     ContextsNorm: 0.00000000
+Epoch: 159      Batch:   0      Loss: 0.05901139     ContextsNorm: 0.00000000
+Epoch: 160      Batch:   0      Loss: 0.05866365     ContextsNorm: 0.00000000
+Epoch: 161      Batch:   0      Loss: 0.05831349     ContextsNorm: 0.00000000
+Epoch: 162      Batch:   0      Loss: 0.05799364     ContextsNorm: 0.00000000
+Epoch: 163      Batch:   0      Loss: 0.05766988     ContextsNorm: 0.00000000
+Epoch: 164      Batch:   0      Loss: 0.05733892     ContextsNorm: 0.00000000
+Epoch: 165      Batch:   0      Loss: 0.05700730     ContextsNorm: 0.00000000
+Epoch: 166      Batch:   0      Loss: 0.05672277     ContextsNorm: 0.00000000
+Epoch: 167      Batch:   0      Loss: 0.05641884     ContextsNorm: 0.00000000
+Epoch: 168      Batch:   0      Loss: 0.05612325     ContextsNorm: 0.00000000
+Epoch: 169      Batch:   0      Loss: 0.05583381     ContextsNorm: 0.00000000
+Epoch: 170      Batch:   0      Loss: 0.05555343     ContextsNorm: 0.00000000
+Epoch: 171      Batch:   0      Loss: 0.05529523     ContextsNorm: 0.00000000
+Epoch: 172      Batch:   0      Loss: 0.05502374     ContextsNorm: 0.00000000
+Epoch: 173      Batch:   0      Loss: 0.05476740     ContextsNorm: 0.00000000
+Epoch: 174      Batch:   0      Loss: 0.05450785     ContextsNorm: 0.00000000
+Epoch: 175      Batch:   0      Loss: 0.05425919     ContextsNorm: 0.00000000
+Epoch: 176      Batch:   0      Loss: 0.05403770     ContextsNorm: 0.00000000
+Epoch: 177      Batch:   0      Loss: 0.05379978     ContextsNorm: 0.00000000
+Epoch: 178      Batch:   0      Loss: 0.05355578     ContextsNorm: 0.00000000
+Epoch: 179      Batch:   0      Loss: 0.05336104     ContextsNorm: 0.00000000
+Epoch: 180      Batch:   0      Loss: 0.05313654     ContextsNorm: 0.00000000
+Epoch: 181      Batch:   0      Loss: 0.05292498     ContextsNorm: 0.00000000
+Epoch: 182      Batch:   0      Loss: 0.05274316     ContextsNorm: 0.00000000
+Epoch: 183      Batch:   0      Loss: 0.05253801     ContextsNorm: 0.00000000
+Epoch: 184      Batch:   0      Loss: 0.05234623     ContextsNorm: 0.00000000
+Epoch: 185      Batch:   0      Loss: 0.05217016     ContextsNorm: 0.00000000
+Epoch: 186      Batch:   0      Loss: 0.05197894     ContextsNorm: 0.00000000
+Epoch: 187      Batch:   0      Loss: 0.05182252     ContextsNorm: 0.00000000
+Epoch: 188      Batch:   0      Loss: 0.05164849     ContextsNorm: 0.00000000
+Epoch: 189      Batch:   0      Loss: 0.05147038     ContextsNorm: 0.00000000
+Epoch: 190      Batch:   0      Loss: 0.05132612     ContextsNorm: 0.00000000
+Epoch: 191      Batch:   0      Loss: 0.05116272     ContextsNorm: 0.00000000
+Epoch: 192      Batch:   0      Loss: 0.05102787     ContextsNorm: 0.00000000
+Epoch: 193      Batch:   0      Loss: 0.05086121     ContextsNorm: 0.00000000
+Epoch: 194      Batch:   0      Loss: 0.05072464     ContextsNorm: 0.00000000
+Epoch: 195      Batch:   0      Loss: 0.05059247     ContextsNorm: 0.00000000
+Epoch: 196      Batch:   0      Loss: 0.05046140     ContextsNorm: 0.00000000
+Epoch: 197      Batch:   0      Loss: 0.05032128     ContextsNorm: 0.00000000
+Epoch: 198      Batch:   0      Loss: 0.05020653     ContextsNorm: 0.00000000
+Epoch: 199      Batch:   0      Loss: 0.05378135     ContextsNorm: 0.00000000
+Epoch: 200      Batch:   0      Loss: 0.04997507     ContextsNorm: 0.00000000
+Epoch: 201      Batch:   0      Loss: 0.04984936     ContextsNorm: 0.00000000
+Epoch: 202      Batch:   0      Loss: 0.05360555     ContextsNorm: 0.00000000
+Epoch: 203      Batch:   0      Loss: 0.05359038     ContextsNorm: 0.00000000
+Epoch: 204      Batch:   0      Loss: 0.05356503     ContextsNorm: 0.00000000
+Epoch: 205      Batch:   0      Loss: 0.05352803     ContextsNorm: 0.00000000
+Epoch: 206      Batch:   0      Loss: 0.05345266     ContextsNorm: 0.00000000
+Epoch: 207      Batch:   0      Loss: 0.05339010     ContextsNorm: 0.00000000
+Epoch: 208      Batch:   0      Loss: 0.04920451     ContextsNorm: 0.00000000
+Epoch: 209      Batch:   0      Loss: 0.05334044     ContextsNorm: 0.00000000
+Epoch: 210      Batch:   0      Loss: 0.05321332     ContextsNorm: 0.00000000
+Epoch: 211      Batch:   0      Loss: 0.05318774     ContextsNorm: 0.00000000
+Epoch: 212      Batch:   0      Loss: 0.05325443     ContextsNorm: 0.00000000
+Epoch: 213      Batch:   0      Loss: 0.05316113     ContextsNorm: 0.00000000
+Epoch: 214      Batch:   0      Loss: 0.05291755     ContextsNorm: 0.00000000
+Epoch: 215      Batch:   0      Loss: 0.05286812     ContextsNorm: 0.00000000
+Epoch: 216      Batch:   0      Loss: 0.05274393     ContextsNorm: 0.00000000
+Epoch: 217      Batch:   0      Loss: 0.05285607     ContextsNorm: 0.00000000
+Epoch: 218      Batch:   0      Loss: 0.05273319     ContextsNorm: 0.00000000
+Epoch: 219      Batch:   0      Loss: 0.05249192     ContextsNorm: 0.00000000
+Epoch: 220      Batch:   0      Loss: 0.05257602     ContextsNorm: 0.00000000
+Epoch: 221      Batch:   0      Loss: 0.05241466     ContextsNorm: 0.00000000
+Epoch: 222      Batch:   0      Loss: 0.05228763     ContextsNorm: 0.00000000
+Epoch: 223      Batch:   0      Loss: 0.05229738     ContextsNorm: 0.00000000
+Epoch: 224      Batch:   0      Loss: 0.05212311     ContextsNorm: 0.00000000
+Epoch: 225      Batch:   0      Loss: 0.05217837     ContextsNorm: 0.00000000
+Epoch: 226      Batch:   0      Loss: 0.05213369     ContextsNorm: 0.00000000
+Epoch: 227      Batch:   0      Loss: 0.05202488     ContextsNorm: 0.00000000
+Epoch: 228      Batch:   0      Loss: 0.05194456     ContextsNorm: 0.00000000
+Epoch: 229      Batch:   0      Loss: 0.05195589     ContextsNorm: 0.00000000
+Epoch: 230      Batch:   0      Loss: 0.04819529     ContextsNorm: 0.00000000
+Epoch: 231      Batch:   0      Loss: 0.04816304     ContextsNorm: 0.00000000
+Epoch: 232      Batch:   0      Loss: 0.05161674     ContextsNorm: 0.00000000
+Epoch: 233      Batch:   0      Loss: 0.04807027     ContextsNorm: 0.00000000
+Epoch: 234      Batch:   0      Loss: 0.05159832     ContextsNorm: 0.00000000
+Epoch: 235      Batch:   0      Loss: 0.05152868     ContextsNorm: 0.00000000
+Epoch: 236      Batch:   0      Loss: 0.05148457     ContextsNorm: 0.00000000
+Epoch: 237      Batch:   0      Loss: 0.05142814     ContextsNorm: 0.00000000
+Epoch: 238      Batch:   0      Loss: 0.04785503     ContextsNorm: 0.00000000
+Epoch: 239      Batch:   0      Loss: 0.05139568     ContextsNorm: 0.00000000
+Epoch: 240      Batch:   0      Loss: 0.04776712     ContextsNorm: 0.00000000
+Epoch: 241      Batch:   0      Loss: 0.05125415     ContextsNorm: 0.00000000
+Epoch: 242      Batch:   0      Loss: 0.05125814     ContextsNorm: 0.00000000
+Epoch: 243      Batch:   0      Loss: 0.04762703     ContextsNorm: 0.00000000
+Epoch: 244      Batch:   0      Loss: 0.04759516     ContextsNorm: 0.00000000
+Epoch: 245      Batch:   0      Loss: 0.04754097     ContextsNorm: 0.00000000
+Epoch: 246      Batch:   0      Loss: 0.04748574     ContextsNorm: 0.00000000
+Epoch: 247      Batch:   0      Loss: 0.04742930     ContextsNorm: 0.00000000
+Epoch: 248      Batch:   0      Loss: 0.05110902     ContextsNorm: 0.00000000
+Epoch: 249      Batch:   0      Loss: 0.05103723     ContextsNorm: 0.00000000
+Epoch: 250      Batch:   0      Loss: 0.04728454     ContextsNorm: 0.00000000
+Epoch: 251      Batch:   0      Loss: 0.04723675     ContextsNorm: 0.00000000
+Epoch: 252      Batch:   0      Loss: 0.04718510     ContextsNorm: 0.00000000
+Epoch: 253      Batch:   0      Loss: 0.05097442     ContextsNorm: 0.00000000
+Epoch: 254      Batch:   0      Loss: 0.05109945     ContextsNorm: 0.00000000
+Epoch: 255      Batch:   0      Loss: 0.05093585     ContextsNorm: 0.00000000
+Epoch: 256      Batch:   0      Loss: 0.05096526     ContextsNorm: 0.00000000
+Epoch: 257      Batch:   0      Loss: 0.05093314     ContextsNorm: 0.00000000
+Epoch: 258      Batch:   0      Loss: 0.05096615     ContextsNorm: 0.00000000
+Epoch: 259      Batch:   0      Loss: 0.05076014     ContextsNorm: 0.00000000
+Epoch: 260      Batch:   0      Loss: 0.05071723     ContextsNorm: 0.00000000
+Epoch: 261      Batch:   0      Loss: 0.05082643     ContextsNorm: 0.00000000
+Epoch: 262      Batch:   0      Loss: 0.05083602     ContextsNorm: 0.00000000
+Epoch: 263      Batch:   0      Loss: 0.05057293     ContextsNorm: 0.00000000
+Epoch: 264      Batch:   0      Loss: 0.05051748     ContextsNorm: 0.00000000
+Epoch: 265      Batch:   0      Loss: 0.04676960     ContextsNorm: 0.00000000
+Epoch: 266      Batch:   0      Loss: 0.04674822     ContextsNorm: 0.00000000
+Epoch: 267      Batch:   0      Loss: 0.05043656     ContextsNorm: 0.00000000
+Epoch: 268      Batch:   0      Loss: 0.05045068     ContextsNorm: 0.00000000
+Epoch: 269      Batch:   0      Loss: 0.05037617     ContextsNorm: 0.00000000
+Epoch: 270      Batch:   0      Loss: 0.04665525     ContextsNorm: 0.00000000
+Epoch: 271      Batch:   0      Loss: 0.05037825     ContextsNorm: 0.00000000
+Epoch: 272      Batch:   0      Loss: 0.04661692     ContextsNorm: 0.00000000
+Epoch: 273      Batch:   0      Loss: 0.05020183     ContextsNorm: 0.00000000
+Epoch: 274      Batch:   0      Loss: 0.05029146     ContextsNorm: 0.00000000
+Epoch: 275      Batch:   0      Loss: 0.04653452     ContextsNorm: 0.00000000
+Epoch: 276      Batch:   0      Loss: 0.04650559     ContextsNorm: 0.00000000
+Epoch: 277      Batch:   0      Loss: 0.05029649     ContextsNorm: 0.00000000
+Epoch: 278      Batch:   0      Loss: 0.05019079     ContextsNorm: 0.00000000
+Epoch: 279      Batch:   0      Loss: 0.05007058     ContextsNorm: 0.00000000
+Epoch: 280      Batch:   0      Loss: 0.05004015     ContextsNorm: 0.00000000
+Epoch: 281      Batch:   0      Loss: 0.04636799     ContextsNorm: 0.00000000
+Epoch: 282      Batch:   0      Loss: 0.05011160     ContextsNorm: 0.00000000
+Epoch: 283      Batch:   0      Loss: 0.04999877     ContextsNorm: 0.00000000
+Epoch: 284      Batch:   0      Loss: 0.04996167     ContextsNorm: 0.00000000
+Epoch: 285      Batch:   0      Loss: 0.05003199     ContextsNorm: 0.00000000
+Epoch: 286      Batch:   0      Loss: 0.04624679     ContextsNorm: 0.00000000
+Epoch: 287      Batch:   0      Loss: 0.04995689     ContextsNorm: 0.00000000
+Epoch: 288      Batch:   0      Loss: 0.04620665     ContextsNorm: 0.00000000
+Epoch: 289      Batch:   0      Loss: 0.04983522     ContextsNorm: 0.00000000
+Epoch: 290      Batch:   0      Loss: 0.04616294     ContextsNorm: 0.00000000
+Epoch: 291      Batch:   0      Loss: 0.04980136     ContextsNorm: 0.00000000
+Epoch: 292      Batch:   0      Loss: 0.04981412     ContextsNorm: 0.00000000
+Epoch: 293      Batch:   0      Loss: 0.04982604     ContextsNorm: 0.00000000
+Epoch: 294      Batch:   0      Loss: 0.04607397     ContextsNorm: 0.00000000
+Epoch: 295      Batch:   0      Loss: 0.04604957     ContextsNorm: 0.00000000
+Epoch: 296      Batch:   0      Loss: 0.04969520     ContextsNorm: 0.00000000
+Epoch: 297      Batch:   0      Loss: 0.04599937     ContextsNorm: 0.00000000
+Epoch: 298      Batch:   0      Loss: 0.04970295     ContextsNorm: 0.00000000
+Epoch: 299      Batch:   0      Loss: 0.04968072     ContextsNorm: 0.00000000
+Epoch: 300      Batch:   0      Loss: 0.04967499     ContextsNorm: 0.00000000
+Epoch: 301      Batch:   0      Loss: 0.04966560     ContextsNorm: 0.00000000
+Epoch: 302      Batch:   0      Loss: 0.04975472     ContextsNorm: 0.00000000
+Epoch: 303      Batch:   0      Loss: 0.04963441     ContextsNorm: 0.00000000
+Epoch: 304      Batch:   0      Loss: 0.04586452     ContextsNorm: 0.00000000
+Epoch: 305      Batch:   0      Loss: 0.04585156     ContextsNorm: 0.00000000
+Epoch: 306      Batch:   0      Loss: 0.04962754     ContextsNorm: 0.00000000
+Epoch: 307      Batch:   0      Loss: 0.04975235     ContextsNorm: 0.00000000
+Epoch: 308      Batch:   0      Loss: 0.04579736     ContextsNorm: 0.00000000
+Epoch: 309      Batch:   0      Loss: 0.04956124     ContextsNorm: 0.00000000
+Epoch: 310      Batch:   0      Loss: 0.04575529     ContextsNorm: 0.00000000
+Epoch: 311      Batch:   0      Loss: 0.04954607     ContextsNorm: 0.00000000
+Epoch: 312      Batch:   0      Loss: 0.04946621     ContextsNorm: 0.00000000
+Epoch: 313      Batch:   0      Loss: 0.04943396     ContextsNorm: 0.00000000
+Epoch: 314      Batch:   0      Loss: 0.04569047     ContextsNorm: 0.00000000
+Epoch: 315      Batch:   0      Loss: 0.04937172     ContextsNorm: 0.00000000
+Epoch: 316      Batch:   0      Loss: 0.04950808     ContextsNorm: 0.00000000
+Epoch: 317      Batch:   0      Loss: 0.04933272     ContextsNorm: 0.00000000
+Epoch: 318      Batch:   0      Loss: 0.04944551     ContextsNorm: 0.00000000
+Epoch: 319      Batch:   0      Loss: 0.04933188     ContextsNorm: 0.00000000
+Epoch: 320      Batch:   0      Loss: 0.04560965     ContextsNorm: 0.00000000
+Epoch: 321      Batch:   0      Loss: 0.04933073     ContextsNorm: 0.00000000
+Epoch: 322      Batch:   0      Loss: 0.04925423     ContextsNorm: 0.00000000
+Epoch: 323      Batch:   0      Loss: 0.04923027     ContextsNorm: 0.00000000
+Epoch: 324      Batch:   0      Loss: 0.04557688     ContextsNorm: 0.00000000
+Epoch: 325      Batch:   0      Loss: 0.04925652     ContextsNorm: 0.00000000
+Epoch: 326      Batch:   0      Loss: 0.04554770     ContextsNorm: 0.00000000
+Epoch: 327      Batch:   0      Loss: 0.04912335     ContextsNorm: 0.00000000
+Epoch: 328      Batch:   0      Loss: 0.04917980     ContextsNorm: 0.00000000
+Epoch: 329      Batch:   0      Loss: 0.04917755     ContextsNorm: 0.00000000
+Epoch: 330      Batch:   0      Loss: 0.04909218     ContextsNorm: 0.00000000
+Epoch: 331      Batch:   0      Loss: 0.04911428     ContextsNorm: 0.00000000
+Epoch: 332      Batch:   0      Loss: 0.04909144     ContextsNorm: 0.00000000
+Epoch: 333      Batch:   0      Loss: 0.04908748     ContextsNorm: 0.00000000
+Epoch: 334      Batch:   0      Loss: 0.04901890     ContextsNorm: 0.00000000
+Epoch: 335      Batch:   0      Loss: 0.04547374     ContextsNorm: 0.00000000
+Epoch: 336      Batch:   0      Loss: 0.04546917     ContextsNorm: 0.00000000
+Epoch: 337      Batch:   0      Loss: 0.04896277     ContextsNorm: 0.00000000
+Epoch: 338      Batch:   0      Loss: 0.04543847     ContextsNorm: 0.00000000
+Epoch: 339      Batch:   0      Loss: 0.04542059     ContextsNorm: 0.00000000
+Epoch: 340      Batch:   0      Loss: 0.04539384     ContextsNorm: 0.00000000
+Epoch: 341      Batch:   0      Loss: 0.04895218     ContextsNorm: 0.00000000
+Epoch: 342      Batch:   0      Loss: 0.04894301     ContextsNorm: 0.00000000
+Epoch: 343      Batch:   0      Loss: 0.04898825     ContextsNorm: 0.00000000
+Epoch: 344      Batch:   0      Loss: 0.04531068     ContextsNorm: 0.00000000
+Epoch: 345      Batch:   0      Loss: 0.04900010     ContextsNorm: 0.00000000
+Epoch: 346      Batch:   0      Loss: 0.04527153     ContextsNorm: 0.00000000
+Epoch: 347      Batch:   0      Loss: 0.04893697     ContextsNorm: 0.00000000
+Epoch: 348      Batch:   0      Loss: 0.04522989     ContextsNorm: 0.00000000
+Epoch: 349      Batch:   0      Loss: 0.04897057     ContextsNorm: 0.00000000
+Epoch: 350      Batch:   0      Loss: 0.04898153     ContextsNorm: 0.00000000
+Epoch: 351      Batch:   0      Loss: 0.04518087     ContextsNorm: 0.00000000
+Epoch: 352      Batch:   0      Loss: 0.04889981     ContextsNorm: 0.00000000
+Epoch: 353      Batch:   0      Loss: 0.04888228     ContextsNorm: 0.00000000
+Epoch: 354      Batch:   0      Loss: 0.04513814     ContextsNorm: 0.00000000
+Epoch: 355      Batch:   0      Loss: 0.04887014     ContextsNorm: 0.00000000
+Epoch: 356      Batch:   0      Loss: 0.04894094     ContextsNorm: 0.00000000
+Epoch: 357      Batch:   0      Loss: 0.04508560     ContextsNorm: 0.00000000
+Epoch: 358      Batch:   0      Loss: 0.04887058     ContextsNorm: 0.00000000
+Epoch: 359      Batch:   0      Loss: 0.04896455     ContextsNorm: 0.00000000
+Epoch: 360      Batch:   0      Loss: 0.04903418     ContextsNorm: 0.00000000
+Epoch: 361      Batch:   0      Loss: 0.04880046     ContextsNorm: 0.00000000
+Epoch: 362      Batch:   0      Loss: 0.04884441     ContextsNorm: 0.00000000
+Epoch: 363      Batch:   0      Loss: 0.04888751     ContextsNorm: 0.00000000
+Epoch: 364      Batch:   0      Loss: 0.04504087     ContextsNorm: 0.00000000
+Epoch: 365      Batch:   0      Loss: 0.04874280     ContextsNorm: 0.00000000
+Epoch: 366      Batch:   0      Loss: 0.04873611     ContextsNorm: 0.00000000
+Epoch: 367      Batch:   0      Loss: 0.04882790     ContextsNorm: 0.00000000
+Epoch: 368      Batch:   0      Loss: 0.04865259     ContextsNorm: 0.00000000
+Epoch: 369      Batch:   0      Loss: 0.04873807     ContextsNorm: 0.00000000
+Epoch: 370      Batch:   0      Loss: 0.04877531     ContextsNorm: 0.00000000
+Epoch: 371      Batch:   0      Loss: 0.04869309     ContextsNorm: 0.00000000
+Epoch: 372      Batch:   0      Loss: 0.04860868     ContextsNorm: 0.00000000
+Epoch: 373      Batch:   0      Loss: 0.04864326     ContextsNorm: 0.00000000
+Epoch: 374      Batch:   0      Loss: 0.04506658     ContextsNorm: 0.00000000
+Epoch: 375      Batch:   0      Loss: 0.04507486     ContextsNorm: 0.00000000
+Epoch: 376      Batch:   0      Loss: 0.04506945     ContextsNorm: 0.00000000
+Epoch: 377      Batch:   0      Loss: 0.04861378     ContextsNorm: 0.00000000
+Epoch: 378      Batch:   0      Loss: 0.04503081     ContextsNorm: 0.00000000
+Epoch: 379      Batch:   0      Loss: 0.04860266     ContextsNorm: 0.00000000
+Epoch: 380      Batch:   0      Loss: 0.04499876     ContextsNorm: 0.00000000
+Epoch: 381      Batch:   0      Loss: 0.04497236     ContextsNorm: 0.00000000
+Epoch: 382      Batch:   0      Loss: 0.04856446     ContextsNorm: 0.00000000
+Epoch: 383      Batch:   0      Loss: 0.04875300     ContextsNorm: 0.00000000
+Epoch: 384      Batch:   0      Loss: 0.04861217     ContextsNorm: 0.00000000
+Epoch: 385      Batch:   0      Loss: 0.04860672     ContextsNorm: 0.00000000
+Epoch: 386      Batch:   0      Loss: 0.04488986     ContextsNorm: 0.00000000
+Epoch: 387      Batch:   0      Loss: 0.04879889     ContextsNorm: 0.00000000
+Epoch: 388      Batch:   0      Loss: 0.04486745     ContextsNorm: 0.00000000
+Epoch: 389      Batch:   0      Loss: 0.04862345     ContextsNorm: 0.00000000
+Epoch: 390      Batch:   0      Loss: 0.04865566     ContextsNorm: 0.00000000
+Epoch: 391      Batch:   0      Loss: 0.04859888     ContextsNorm: 0.00000000
+Epoch: 392      Batch:   0      Loss: 0.04482521     ContextsNorm: 0.00000000
+Epoch: 393      Batch:   0      Loss: 0.04854342     ContextsNorm: 0.00000000
+Epoch: 394      Batch:   0      Loss: 0.04480919     ContextsNorm: 0.00000000
+Epoch: 395      Batch:   0      Loss: 0.04872236     ContextsNorm: 0.00000000
+Epoch: 396      Batch:   0      Loss: 0.04478392     ContextsNorm: 0.00000000
+Epoch: 397      Batch:   0      Loss: 0.04864812     ContextsNorm: 0.00000000
+Epoch: 398      Batch:   0      Loss: 0.04475801     ContextsNorm: 0.00000000
+Epoch: 399      Batch:   0      Loss: 0.04851737     ContextsNorm: 0.00000000
+Epoch: 400      Batch:   0      Loss: 0.04855531     ContextsNorm: 0.00000000
+Epoch: 401      Batch:   0      Loss: 0.04857206     ContextsNorm: 0.00000000
+Epoch: 402      Batch:   0      Loss: 0.04851763     ContextsNorm: 0.00000000
+Epoch: 403      Batch:   0      Loss: 0.04855039     ContextsNorm: 0.00000000
+Epoch: 404      Batch:   0      Loss: 0.04856364     ContextsNorm: 0.00000000
+Epoch: 405      Batch:   0      Loss: 0.04843542     ContextsNorm: 0.00000000
+Epoch: 406      Batch:   0      Loss: 0.04847133     ContextsNorm: 0.00000000
+Epoch: 407      Batch:   0      Loss: 0.04473932     ContextsNorm: 0.00000000
+Epoch: 408      Batch:   0      Loss: 0.04845080     ContextsNorm: 0.00000000
+Epoch: 409      Batch:   0      Loss: 0.04831720     ContextsNorm: 0.00000000
+Epoch: 410      Batch:   0      Loss: 0.04473954     ContextsNorm: 0.00000000
+Epoch: 411      Batch:   0      Loss: 0.04472706     ContextsNorm: 0.00000000
+Epoch: 412      Batch:   0      Loss: 0.04842297     ContextsNorm: 0.00000000
+Epoch: 413      Batch:   0      Loss: 0.04836257     ContextsNorm: 0.00000000
+Epoch: 414      Batch:   0      Loss: 0.04834880     ContextsNorm: 0.00000000
+Epoch: 415      Batch:   0      Loss: 0.04470316     ContextsNorm: 0.00000000
+Epoch: 416      Batch:   0      Loss: 0.04830831     ContextsNorm: 0.00000000
+Epoch: 417      Batch:   0      Loss: 0.04468551     ContextsNorm: 0.00000000
+Epoch: 418      Batch:   0      Loss: 0.04827495     ContextsNorm: 0.00000000
+Epoch: 419      Batch:   0      Loss: 0.04465762     ContextsNorm: 0.00000000
+Epoch: 420      Batch:   0      Loss: 0.04832075     ContextsNorm: 0.00000000
+Epoch: 421      Batch:   0      Loss: 0.04463903     ContextsNorm: 0.00000000
+Epoch: 422      Batch:   0      Loss: 0.04461736     ContextsNorm: 0.00000000
+Epoch: 423      Batch:   0      Loss: 0.04836893     ContextsNorm: 0.00000000
+Epoch: 424      Batch:   0      Loss: 0.04458642     ContextsNorm: 0.00000000
+Epoch: 425      Batch:   0      Loss: 0.04830686     ContextsNorm: 0.00000000
+Epoch: 426      Batch:   0      Loss: 0.04841278     ContextsNorm: 0.00000000
+Epoch: 427      Batch:   0      Loss: 0.04834555     ContextsNorm: 0.00000000
+Epoch: 428      Batch:   0      Loss: 0.04834376     ContextsNorm: 0.00000000
+Epoch: 429      Batch:   0      Loss: 0.04843415     ContextsNorm: 0.00000000
+Epoch: 430      Batch:   0      Loss: 0.04844637     ContextsNorm: 0.00000000
+Epoch: 431      Batch:   0      Loss: 0.04834383     ContextsNorm: 0.00000000
+Epoch: 432      Batch:   0      Loss: 0.04452422     ContextsNorm: 0.00000000
+Epoch: 433      Batch:   0      Loss: 0.04827727     ContextsNorm: 0.00000000
+Epoch: 434      Batch:   0      Loss: 0.04838364     ContextsNorm: 0.00000000
+Epoch: 435      Batch:   0      Loss: 0.04840694     ContextsNorm: 0.00000000
+Epoch: 436      Batch:   0      Loss: 0.04828283     ContextsNorm: 0.00000000
+Epoch: 437      Batch:   0      Loss: 0.04822415     ContextsNorm: 0.00000000
+Epoch: 438      Batch:   0      Loss: 0.04818492     ContextsNorm: 0.00000000
+Epoch: 439      Batch:   0      Loss: 0.04825269     ContextsNorm: 0.00000000
+Epoch: 440      Batch:   0      Loss: 0.04814934     ContextsNorm: 0.00000000
+Epoch: 441      Batch:   0      Loss: 0.04811868     ContextsNorm: 0.00000000
+Epoch: 442      Batch:   0      Loss: 0.04810331     ContextsNorm: 0.00000000
+Epoch: 443      Batch:   0      Loss: 0.04814266     ContextsNorm: 0.00000000
+Epoch: 444      Batch:   0      Loss: 0.04808097     ContextsNorm: 0.00000000
+Epoch: 445      Batch:   0      Loss: 0.04464297     ContextsNorm: 0.00000000
+Epoch: 446      Batch:   0      Loss: 0.04464810     ContextsNorm: 0.00000000
+Epoch: 447      Batch:   0      Loss: 0.04463549     ContextsNorm: 0.00000000
+Epoch: 448      Batch:   0      Loss: 0.04462670     ContextsNorm: 0.00000000
+Epoch: 449      Batch:   0      Loss: 0.04807232     ContextsNorm: 0.00000000
+Epoch: 450      Batch:   0      Loss: 0.04459364     ContextsNorm: 0.00000000
+Epoch: 451      Batch:   0      Loss: 0.04456570     ContextsNorm: 0.00000000
+Epoch: 452      Batch:   0      Loss: 0.04811952     ContextsNorm: 0.00000000
+Epoch: 453      Batch:   0      Loss: 0.04817620     ContextsNorm: 0.00000000
+Epoch: 454      Batch:   0      Loss: 0.04449549     ContextsNorm: 0.00000000
+Epoch: 455      Batch:   0      Loss: 0.04813311     ContextsNorm: 0.00000000
+Epoch: 456      Batch:   0      Loss: 0.04445995     ContextsNorm: 0.00000000
+Epoch: 457      Batch:   0      Loss: 0.04814901     ContextsNorm: 0.00000000
+Epoch: 458      Batch:   0      Loss: 0.04820808     ContextsNorm: 0.00000000
+Epoch: 459      Batch:   0      Loss: 0.04441405     ContextsNorm: 0.00000000
+Epoch: 460      Batch:   0      Loss: 0.04440034     ContextsNorm: 0.00000000
+Epoch: 461      Batch:   0      Loss: 0.04818087     ContextsNorm: 0.00000000
+Epoch: 462      Batch:   0      Loss: 0.04825792     ContextsNorm: 0.00000000
+Epoch: 463      Batch:   0      Loss: 0.04822484     ContextsNorm: 0.00000000
+Epoch: 464      Batch:   0      Loss: 0.04833594     ContextsNorm: 0.00000000
+Epoch: 465      Batch:   0      Loss: 0.04819717     ContextsNorm: 0.00000000
+Epoch: 466      Batch:   0      Loss: 0.04813247     ContextsNorm: 0.00000000
+Epoch: 467      Batch:   0      Loss: 0.04433970     ContextsNorm: 0.00000000
+Epoch: 468      Batch:   0      Loss: 0.04433887     ContextsNorm: 0.00000000
+Epoch: 469      Batch:   0      Loss: 0.04812647     ContextsNorm: 0.00000000
+Epoch: 470      Batch:   0      Loss: 0.04809801     ContextsNorm: 0.00000000
+Epoch: 471      Batch:   0      Loss: 0.04822046     ContextsNorm: 0.00000000
+Epoch: 472      Batch:   0      Loss: 0.04802299     ContextsNorm: 0.00000000
+Epoch: 473      Batch:   0      Loss: 0.04816326     ContextsNorm: 0.00000000
+Epoch: 474      Batch:   0      Loss: 0.04808560     ContextsNorm: 0.00000000
+Epoch: 475      Batch:   0      Loss: 0.04806421     ContextsNorm: 0.00000000
+Epoch: 476      Batch:   0      Loss: 0.04810804     ContextsNorm: 0.00000000
+Epoch: 477      Batch:   0      Loss: 0.04796355     ContextsNorm: 0.00000000
+Epoch: 478      Batch:   0      Loss: 0.04438779     ContextsNorm: 0.00000000
+Epoch: 479      Batch:   0      Loss: 0.04798221     ContextsNorm: 0.00000000
+Epoch: 480      Batch:   0      Loss: 0.04439741     ContextsNorm: 0.00000000
+Epoch: 481      Batch:   0      Loss: 0.04438853     ContextsNorm: 0.00000000
+Epoch: 482      Batch:   0      Loss: 0.04797281     ContextsNorm: 0.00000000
+Epoch: 483      Batch:   0      Loss: 0.04800867     ContextsNorm: 0.00000000
+Epoch: 484      Batch:   0      Loss: 0.04793144     ContextsNorm: 0.00000000
+Epoch: 485      Batch:   0      Loss: 0.04795458     ContextsNorm: 0.00000000
+Epoch: 486      Batch:   0      Loss: 0.04436590     ContextsNorm: 0.00000000
+Epoch: 487      Batch:   0      Loss: 0.04435048     ContextsNorm: 0.00000000
+Epoch: 488      Batch:   0      Loss: 0.04434887     ContextsNorm: 0.00000000
+Epoch: 489      Batch:   0      Loss: 0.04806521     ContextsNorm: 0.00000000
+Epoch: 490      Batch:   0      Loss: 0.04791872     ContextsNorm: 0.00000000
+Epoch: 491      Batch:   0      Loss: 0.04429406     ContextsNorm: 0.00000000
+Epoch: 492      Batch:   0      Loss: 0.04795681     ContextsNorm: 0.00000000
+Epoch: 493      Batch:   0      Loss: 0.04798616     ContextsNorm: 0.00000000
+Epoch: 494      Batch:   0      Loss: 0.04815265     ContextsNorm: 0.00000000
+Epoch: 495      Batch:   0      Loss: 0.04804869     ContextsNorm: 0.00000000
+Epoch: 496      Batch:   0      Loss: 0.04796519     ContextsNorm: 0.00000000
+Epoch: 497      Batch:   0      Loss: 0.04795330     ContextsNorm: 0.00000000
+Epoch: 498      Batch:   0      Loss: 0.04426166     ContextsNorm: 0.00000000
+Epoch: 499      Batch:   0      Loss: 0.04426340     ContextsNorm: 0.00000000
+
+Total gradient descent training time: 0 hours 0 mins 15 secs
+
+    Test loss value: 7.089e-03 ± 0.000e+00
+    Train loss value for criterion 0: 4.426e-02
+Loss per OoD environment: [0.007088877260684967]
+
+==  Begining artefacts visualisation ... ==
+    Visualized context dimensions along x: [2 0 1]
+    Visualized context dimensions along y: [3 2 3]
+Saving artefacts in: ./runs/_04_GEPSRuns/250330-203210/adapt/artefacts.png
+/home/gb21553/miniconda3/envs/jax/lib/python3.12/multiprocessing/popen_fork.py:66: RuntimeWarning: os.fork() was called. os.fork() is incompatible with multithreaded code, and JAX is multithreaded, so this will likely lead to a deadlock.
+  self.pid = os.fork()
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+
+==  Begining out-of-distribution dynamics visualisation ... ==
+    Trajectory id: 0
+    Visualized dimensions: (0, 1)
+    Using contexts from meta-testing.
+Testing finished. Figure saved in: ./runs/_04_GEPSRuns/250330-203210/adapt/dynamics.png
+
+==  Begining context clusters visualisation ... ==
+    Visualising the parameters (either vectors or function weights)
+    Visualising predictions from the contexts (reconstituted as functions)
+WARNING: No context utilities found, meaning inf dim context are not used. Using randoms.
+Saving context clusters in: ./runs/_04_GEPSRuns/250330-203210/adapt/context_clusters.png

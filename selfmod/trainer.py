@@ -850,7 +850,7 @@ class NCFTrainer(Trainer):
 
                     ########## If meta-learner uses generalised teacher-forcing, then update its tf_alpha_min ##########
                     model, new_tf_alpha_min = update_tf_alpha(model)
-                    if out_step%validate_every==0 or out_step==nb_outer_steps-1:
+                    if (model.vectorfield.neuralnet.meta_learner=="hier-shPLRNN") and (out_step%validate_every==0 or out_step==nb_outer_steps-1):
                         print(f"    Updated the tf_alpha to : {new_tf_alpha_min:.4f}\n", flush=True)
 
 

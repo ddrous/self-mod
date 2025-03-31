@@ -25,7 +25,7 @@ torch.manual_seed(seed)
 
 ## Dataloader hps
 nb_families = 2
-nb_experts = 5
+nb_experts = 6
 
 nb_envs_per_fam = ((64+20)//2, (64+20)//2)   ## (Expected)
 num_envs = (nb_envs_per_fam[0]*nb_families, nb_envs_per_fam[1]*nb_families)
