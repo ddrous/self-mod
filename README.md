@@ -1,7 +1,7 @@
 # SelfMod: A Contextual Self-Modulation Library
 
 <p align="center">
-<img src="docs/logos/logo-3.webp" alt="drawing" width="200"/>
+<img src="docs/logos/logo-3.webp" alt="drawing" width="300"/>
 </p>
 
 **SelfMod** is a library for implementing **Contextual Self-Modulation (CSM)** techniques in deep learning. SelfMod is designed to make your meta-learning tasks adaptable, scalable, and intuitive, whether you're doing 1st or 2nd order optimization.
