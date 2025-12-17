@@ -12,7 +12,8 @@ import time
 import os
 
 import equinox as eqx
-from selfmod import CelebADataLoader, sbplot, plt
+import diffrax
+from selfmod import CelebADataLoader, sbplot, plt, VNet
 
 import torch
 from PIL import Image
@@ -20,6 +21,11 @@ from torchvision.transforms import transforms
 import pandas as pd
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+
+# ## JAX debug the NaNs
+# from jax import config
+# config.update("jax_debug_nans", True)
+
 
 #%%
 MOTHER_KEY = jax.random.PRNGKey(2026)
@@ -29,16 +35,13 @@ RUN_FOLDDER = '../runs/'+time.strftime("%y%m%d-%H%M%S")+'/'
 if not os.path.exists(RUN_FOLDDER):
     os.mkdir(RUN_FOLDDER)
 print("Using run folder:", RUN_FOLDDER)
-
-## Copy this file into the run folder for future reference
 os.system(f"cp {__file__} {RUN_FOLDDER}")
 
 DATA_FOLDER="../data/"
-BATCH_SIZE = 1024*4
-EPOCHS = 100
+BATCH_SIZE = 512*8
+EPOCHS = 20
 LR=1e-3
-IMG_SIZE = [32, 32, 3]
-# LATENT_DIM = 32*32*3
+IMG_SIZE = [64, 64, 3]
 LATENT_DIM = 128
 
 
@@ -101,12 +104,6 @@ train_dataloader = DataLoader(dataset=train_dataset,
 # print(len(train_dataset))
 
 
-
-
-
-
-#%%
-
 class Downsample2D(eqx.Module):
     """ Downsample 2D image by a factor: https://docs.kidger.site/equinox/examples/unet/ """
     factor: int
@@ -132,13 +129,17 @@ class Upsample2D(eqx.Module):
         return jnp.reshape(y, [C, H * self.factor, W * self.factor])
 
 
+
+#%%
+
 class Encoder(eqx.Module):
-    """ Encoder with convolutions and dense layers"""
+    """ Encoder with convolutions and ODE solver"""
     img_size: list
     kernel_size: list
     latent_dim: int
 
-    layers: list
+    compress_layers: list
+    vf_layers: eqx.Module
 
     def __init__(self, img_size, kernel_size, latent_dim, key):
         self.img_size = img_size
@@ -148,33 +149,59 @@ class Encoder(eqx.Module):
         layer_keys = jax.random.split(key, 4)
         H, W, C = self.img_size
 
-        self.layers = [
-            eqx.nn.Conv2d(C, 8, kernel_size, padding="SAME", key=layer_keys[0]),
+        self.compress_layers = [
+            eqx.nn.Conv2d(C, 6, kernel_size, padding="SAME", key=layer_keys[0]),
+            Downsample2D(factor=2),
+            eqx.nn.PReLU(init_alpha=0.),
+            eqx.nn.Conv2d(6, 8, kernel_size, padding="SAME", key=layer_keys[0]),
             Downsample2D(factor=2),
             eqx.nn.PReLU(init_alpha=0.),
             eqx.nn.Conv2d(8, 12, kernel_size, padding="SAME", key=layer_keys[1]),
             Downsample2D(factor=2),
             eqx.nn.PReLU(init_alpha=0.),
             lambda x: x.flatten(),
-            eqx.nn.Linear(12*H*W//(4*4), 48, key=layer_keys[2]),
+            eqx.nn.Linear(12*H*W//(8*8), 48, key=layer_keys[2]),
             eqx.nn.PReLU(init_alpha=0.),
             eqx.nn.Linear(48, 2*latent_dim, key=layer_keys[3])
         ]
 
+        self.vf_layers = eqx.nn.MLP(in_size=2*latent_dim+1, out_size=2*latent_dim, width_size=128, depth=4, key=layer_keys[0])
+
     def __call__(self, x):
+
+        ### First, compress the image into a latent vector
         z = x
-        for layer in self.layers:
+        for layer in self.compress_layers:
             z = layer(z)
+
+        def vectorfield(t, y, args):
+            dy = jnp.concatenate([jnp.array([t]), y], axis=-1)
+            dy = self.vf_layers(dy)
+            return dy
+
+        ## Solve a differential equation from t=0 to t=1, usign diffrax
+        sol = diffrax.diffeqsolve(
+            diffrax.ODETerm(vectorfield),
+            diffrax.Dopri5(),
+            t0=0,
+            t1=1,
+            dt0=0.1,
+            y0=z,
+            args=None,
+            max_steps=512,
+        )
+        z = sol.ys[-1]
         return z
 
 
 class Decoder(eqx.Module):
-    """ Decoder with dense layers and deconvolutions"""
+    """ Decoder with dense layers and deconvolutions """
     img_size: list
     kernel_size: list
     latent_dim: int
 
-    layers: list
+    decompress_layers: list
+    vf_layers: list
 
     def __init__(self, img_size, kernel_size, latent_dim, key):
         self.img_size = img_size
@@ -184,26 +211,49 @@ class Decoder(eqx.Module):
         layer_keys = jax.random.split(key, 4)
         H, W, C = self.img_size
 
-        self.layers = [
+        self.decompress_layers = [
             eqx.nn.Linear(latent_dim, 48, key=layer_keys[0]),
             eqx.nn.PReLU(init_alpha=0.),
-            eqx.nn.Linear(48, 12*H*W//(4*4), key=layer_keys[1]),
+            eqx.nn.Linear(48, 12*H*W//(8*8), key=layer_keys[1]),
             eqx.nn.PReLU(init_alpha=0.),
-            lambda x: x.reshape((12, H//4, W//4)),
+            lambda x: x.reshape((12, H//8, W//8)),
             Upsample2D(factor=2),
             eqx.nn.ConvTranspose2d(12, 8, kernel_size, padding="SAME", key=layer_keys[2]),
             eqx.nn.PReLU(init_alpha=0.),
             Upsample2D(factor=2),
-            eqx.nn.ConvTranspose2d(8, C, kernel_size, padding="SAME", key=layer_keys[3]),
+            eqx.nn.ConvTranspose2d(8, 6, kernel_size, padding="SAME", key=layer_keys[3]),
+            eqx.nn.PReLU(init_alpha=0.),
+            Upsample2D(factor=2),
+            eqx.nn.ConvTranspose2d(6, C, kernel_size, padding="SAME", key=layer_keys[3]),
             jax.nn.sigmoid
         ]
 
-    def __call__(self, z):
-        x = z
-        for layer in self.layers:
-            x = layer(x)
-        return x
+        self.vf_layers = eqx.nn.MLP(in_size=latent_dim+1, out_size=latent_dim, width_size=128, depth=4, key=layer_keys[0])
 
+    def __call__(self, z):
+        
+        def vectorfield(t, y, args):
+            dy = jnp.concatenate([jnp.array([t]), y], axis=-1)
+            dy = self.vf_layers(dy)
+            return dy
+
+        ## Solve a differential equation from t=0 to t=1, usign diffrax
+        sol = diffrax.diffeqsolve(
+            diffrax.ODETerm(vectorfield),
+            diffrax.Dopri5(),
+            t0=0,
+            t1=1,
+            dt0=0.1,
+            y0=z,
+            max_steps=512,
+        )
+
+        ## Now, decompress the latent vector into an image
+        x_recon = sol.ys[-1]
+        for layer in self.decompress_layers:
+            x_recon = layer(x_recon)
+
+        return x_recon
 
 
 class VAE(eqx.Module):
@@ -231,7 +281,7 @@ class VAE(eqx.Module):
         z = mu + eps*jnp.exp(0.5*logvar)
         return self.decoder(z), mu, logvar
 
-model = VAE(img_size=IMG_SIZE, kernel_size=[5, 5], latent_dim=LATENT_DIM, key=model_key)
+model = VAE(img_size=IMG_SIZE, kernel_size=[3, 3], latent_dim=LATENT_DIM, key=model_key)
 
 ## Count the number of parameters
 count_enc = np.sum([p.size for p in jax.tree.leaves(model.encoder) if isinstance(p, jnp.ndarray)])
@@ -251,7 +301,8 @@ opt_state = optimizer.init(eqx.filter(model, eqx.is_array))
 
 ## Loss function
 def loss_fn(model, xs, keys):
-    recon_xs, mus, logvars = jax.vmap(model)(xs, keys)
+    recon_xs, mus, logvars = eqx.filter_vmap(model)(xs, keys)
+    # print("ALl shapes:", xs.shape, recon_xs.shape, mus.shape, logvars.shape)
     BCE = jnp.sum(-xs*jnp.log(recon_xs) - (1-xs)*jnp.log(1-recon_xs), axis=(1,2,3))
     KLD = -0.5 * jnp.sum(1 + logvars - mus**2 - jnp.exp(logvars), axis=1)
     return jnp.mean(BCE + KLD)
@@ -322,7 +373,7 @@ plt.savefig(RUN_FOLDDER+"elbo_loss.png")
 
 ## Test and plot the decoder
 zs = jax.random.normal(test_key, (64, LATENT_DIM))
-samples = jax.vmap(model.decoder)(zs).reshape((64, 1, 32, 32, 3))
+samples = jax.vmap(model.decoder)(zs).reshape((64, 1, IMG_SIZE[0], IMG_SIZE[1], 3))
 
 plt.figure(figsize=(8, 8))
 for i in range(64):
@@ -342,3 +393,5 @@ eqx.tree_serialise_leaves(RUN_FOLDDER+"decoder.eqx", model.decoder)
 ## In case we run with nohup
 if os.path.exists("nohup.log"):
     os.system(f"cp nohup.log {RUN_FOLDDER}")
+# %%
+

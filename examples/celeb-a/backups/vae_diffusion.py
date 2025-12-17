@@ -35,13 +35,16 @@ RUN_FOLDDER = '../runs/'+time.strftime("%y%m%d-%H%M%S")+'/'
 if not os.path.exists(RUN_FOLDDER):
     os.mkdir(RUN_FOLDDER)
 print("Using run folder:", RUN_FOLDDER)
+os.system(f"cp {__file__} {RUN_FOLDDER}")
 
 DATA_FOLDER="../data/"
-BATCH_SIZE = 1024*2
-EPOCHS = 25
-LR=1e-2
-IMG_SIZE = [32, 32, 3]
-LATENT_DIM = 32*32*3
+BATCH_SIZE = 512
+EPOCHS = 10
+LR=1e-3
+IMG_SIZE = [64, 64, 3]
+LATENT_DIM = np.prod(IMG_SIZE)
+LEVELS = 4
+DEPTH = 16
 
 
 #%%
@@ -130,11 +133,11 @@ class Encoder(eqx.Module):
 
             VNet(input_shape=[C*2, H, W],
                  output_shape=[C*2, H, W], 
-                 levels=2, 
-                 depth=4, 
+                 levels=LEVELS, 
+                 depth=DEPTH, 
                  kernel_size=kernel_size, 
                  activation=jax.nn.relu, 
-                 final_activation=jax.nn.sigmoid, 
+                 final_activation=lambda x: x, 
                  batch_norm=False, 
                  dropout_rate=0.,
                 key=layer_keys[0]),
@@ -155,7 +158,7 @@ class Encoder(eqx.Module):
         ## Solve a differential equation from t=0 to t=1, usign diffrax
         sol = diffrax.diffeqsolve(
             diffrax.ODETerm(vectorfield),
-            diffrax.Euler(),
+            diffrax.Dopri5(),
             t0=0,
             t1=1,
             dt0=0.1,
@@ -187,11 +190,11 @@ class Decoder(eqx.Module):
             lambda z: z.reshape((C, H, W)),
             VNet(input_shape=[C, H, W],
                  output_shape=[C, H, W], 
-                 levels=2, 
-                 depth=4, 
+                 levels=LEVELS, 
+                 depth=DEPTH, 
                  kernel_size=kernel_size, 
                  activation=jax.nn.relu, 
-                 final_activation=jax.nn.sigmoid, 
+                 final_activation=lambda x: x, 
                 batch_norm=False,
                 dropout_rate=0.,
                 key=layer_keys[0]),
@@ -209,7 +212,7 @@ class Decoder(eqx.Module):
         ## Solve a differential equation from t=0 to t=1, usign diffrax
         sol = diffrax.diffeqsolve(
             diffrax.ODETerm(vectorfield),
-            diffrax.Euler(),
+            diffrax.Dopri5(),
             t0=0,
             t1=1,
             dt0=0.1,
@@ -268,8 +271,8 @@ opt_state = optimizer.init(eqx.filter(model, eqx.is_array))
 def loss_fn(model, xs, keys):
     recon_xs, mus, logvars = eqx.filter_vmap(model)(xs, keys)
     # print("ALl shapes:", xs.shape, recon_xs.shape, mus.shape, logvars.shape)
-    BCE = jnp.sum(-xs*jnp.log(recon_xs) - (1-xs)*jnp.log(1-recon_xs), axis=(1,2,3))
-    KLD = -0.5 * jnp.sum(1 + logvars - mus**2 - jnp.exp(logvars), axis=1)
+    BCE = jnp.mean(-xs*jnp.log(recon_xs) - (1-xs)*jnp.log(1-recon_xs), axis=(1,2,3))
+    KLD = -0.5 * jnp.mean(1 + logvars - mus**2 - jnp.exp(logvars), axis=1)
     return jnp.mean(BCE + KLD)
 
 @eqx.filter_jit
@@ -338,7 +341,7 @@ plt.savefig(RUN_FOLDDER+"elbo_loss.png")
 
 ## Test and plot the decoder
 zs = jax.random.normal(test_key, (64, LATENT_DIM))
-samples = jax.vmap(model.decoder)(zs).reshape((64, 1, 32, 32, 3))
+samples = jax.vmap(model.decoder)(zs).reshape((64, 1, IMG_SIZE[0], IMG_SIZE[1], 3))
 
 plt.figure(figsize=(8, 8))
 for i in range(64):
