@@ -12,7 +12,8 @@ import time
 import os
 
 import equinox as eqx
-from selfmod import CelebADataLoader, sbplot, plt
+import diffrax
+from selfmod import CelebADataLoader, sbplot, plt, VNet
 
 import torch
 from PIL import Image
@@ -20,6 +21,11 @@ from torchvision.transforms import transforms
 import pandas as pd
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+
+# ## JAX debug the NaNs
+# from jax import config
+# config.update("jax_debug_nans", True)
+
 
 #%%
 MOTHER_KEY = jax.random.PRNGKey(2026)
@@ -31,7 +37,7 @@ if not os.path.exists(RUN_FOLDDER):
 print("Using run folder:", RUN_FOLDDER)
 
 DATA_FOLDER="../data/"
-BATCH_SIZE = 1024*4
+BATCH_SIZE = 1024*2
 EPOCHS = 25
 LR=1e-2
 IMG_SIZE = [32, 32, 3]
@@ -103,33 +109,8 @@ train_dataloader = DataLoader(dataset=train_dataset,
 
 #%%
 
-class Downsample2D(eqx.Module):
-    """ Downsample 2D image by a factor: https://docs.kidger.site/equinox/examples/unet/ """
-    factor: int
-    def __init__(self, factor):
-        self.factor = factor
-
-    def __call__(self, y):
-        C, H, W = y.shape
-        y = jnp.reshape(y, [C, H // self.factor, self.factor, W // self.factor, self.factor])
-        return jnp.max(y, axis=[2, 4])
-
-
-class Upsample2D(eqx.Module):
-    """ Upsample 2D image by a factor: https://docs.kidger.site/equinox/examples/unet/ """
-    factor: int
-    def __init__(self, factor):
-        self.factor = factor
-
-    def __call__(self, y):
-        C, H, W = y.shape
-        y = jnp.reshape(y, [C, H, 1, W, 1])
-        y = jnp.tile(y, [1, 1, self.factor, 1, self.factor])
-        return jnp.reshape(y, [C, H * self.factor, W * self.factor])
-
-
 class Encoder(eqx.Module):
-    """ Encoder with convolutions and dense layers"""
+    """ Encoder with convolutions and ODE solver"""
     img_size: list
     kernel_size: list
     latent_dim: int
@@ -145,22 +126,44 @@ class Encoder(eqx.Module):
         H, W, C = self.img_size
 
         self.layers = [
-            eqx.nn.Conv2d(C, 8, kernel_size, padding="SAME", key=layer_keys[0]),
-            Downsample2D(factor=2),
-            eqx.nn.PReLU(init_alpha=0.),
-            eqx.nn.Conv2d(8, 12, kernel_size, padding="SAME", key=layer_keys[1]),
-            Downsample2D(factor=2),
-            eqx.nn.PReLU(init_alpha=0.),
+            lambda x: x.reshape((C*2, H, W)),
+
+            VNet(input_shape=[C*2, H, W],
+                 output_shape=[C*2, H, W], 
+                 levels=2, 
+                 depth=4, 
+                 kernel_size=kernel_size, 
+                 activation=jax.nn.relu, 
+                 final_activation=jax.nn.sigmoid, 
+                 batch_norm=False, 
+                 dropout_rate=0.,
+                key=layer_keys[0]),
+
             lambda x: x.flatten(),
-            eqx.nn.Linear(12*H*W//(4*4), 48, key=layer_keys[2]),
-            eqx.nn.PReLU(init_alpha=0.),
-            eqx.nn.Linear(48, 2*latent_dim, key=layer_keys[3])
         ]
 
     def __call__(self, x):
-        z = x
-        for layer in self.layers:
-            z = layer(z)
+
+        def vectorfield(t, y, args):
+            # print("Inputput shapes:", y.shape)
+            dy = y
+            for layer in self.layers:
+                dy = layer(dy)
+            # print("Output shapes:", dy.shape)
+            return dy
+
+        ## Solve a differential equation from t=0 to t=1, usign diffrax
+        sol = diffrax.diffeqsolve(
+            diffrax.ODETerm(vectorfield),
+            diffrax.Euler(),
+            t0=0,
+            t1=1,
+            dt0=0.1,
+            y0=jnp.concatenate([x.flatten(), jnp.zeros_like(x).flatten()]),
+            args=None,
+            max_steps=512,
+        )
+        z = sol.ys[-1]
         return z
 
 
@@ -181,25 +184,41 @@ class Decoder(eqx.Module):
         H, W, C = self.img_size
 
         self.layers = [
-            eqx.nn.Linear(latent_dim, 48, key=layer_keys[0]),
-            eqx.nn.PReLU(init_alpha=0.),
-            eqx.nn.Linear(48, 12*H*W//(4*4), key=layer_keys[1]),
-            eqx.nn.PReLU(init_alpha=0.),
-            lambda x: x.reshape((12, H//4, W//4)),
-            Upsample2D(factor=2),
-            eqx.nn.ConvTranspose2d(12, 8, kernel_size, padding="SAME", key=layer_keys[2]),
-            eqx.nn.PReLU(init_alpha=0.),
-            Upsample2D(factor=2),
-            eqx.nn.ConvTranspose2d(8, C, kernel_size, padding="SAME", key=layer_keys[3]),
-            jax.nn.sigmoid
+            lambda z: z.reshape((C, H, W)),
+            VNet(input_shape=[C, H, W],
+                 output_shape=[C, H, W], 
+                 levels=2, 
+                 depth=4, 
+                 kernel_size=kernel_size, 
+                 activation=jax.nn.relu, 
+                 final_activation=jax.nn.sigmoid, 
+                batch_norm=False,
+                dropout_rate=0.,
+                key=layer_keys[0]),
+            lambda y: y.flatten(),
         ]
 
     def __call__(self, z):
-        x = z
-        for layer in self.layers:
-            x = layer(x)
-        return x
+        
+        def vectorfield(t, y, args):
+            dy = y
+            for layer in self.layers:
+                dy = layer(dy)
+            return dy
 
+        ## Solve a differential equation from t=0 to t=1, usign diffrax
+        sol = diffrax.diffeqsolve(
+            diffrax.ODETerm(vectorfield),
+            diffrax.Euler(),
+            t0=0,
+            t1=1,
+            dt0=0.1,
+            y0=z,
+            max_steps=512,
+        )
+        x_recon = sol.ys.reshape(self.img_size[2], self.img_size[0], self.img_size[1])
+
+        return jax.nn.sigmoid(x_recon)
 
 
 class VAE(eqx.Module):
@@ -247,7 +266,8 @@ opt_state = optimizer.init(eqx.filter(model, eqx.is_array))
 
 ## Loss function
 def loss_fn(model, xs, keys):
-    recon_xs, mus, logvars = jax.vmap(model)(xs, keys)
+    recon_xs, mus, logvars = eqx.filter_vmap(model)(xs, keys)
+    # print("ALl shapes:", xs.shape, recon_xs.shape, mus.shape, logvars.shape)
     BCE = jnp.sum(-xs*jnp.log(recon_xs) - (1-xs)*jnp.log(1-recon_xs), axis=(1,2,3))
     KLD = -0.5 * jnp.sum(1 + logvars - mus**2 - jnp.exp(logvars), axis=1)
     return jnp.mean(BCE + KLD)
