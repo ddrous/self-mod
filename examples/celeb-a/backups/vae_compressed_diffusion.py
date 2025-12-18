@@ -367,6 +367,57 @@ plt.savefig(RUN_FOLDDER+"elbo_loss.png")
 
 
 
+#%%## Load the trained model
+model = eqx.tree_deserialise_leaves(RUN_FOLDDER+"model.eqx", model)
+
+
+
+## Plot the output of the encoder, side by side with with some samples from the normal distribution
+zs = jax.random.normal(test_key, (16, LATENT_DIM)).reshape((16, IMG_SIZE[0], IMG_SIZE[1], IMG_SIZE[2]))
+
+images = next(iter(train_dataloader))
+images = jnp.asarray(images)
+enc_zs = jax.vmap(model.encoder)(images[:16])
+enc_zs, logvar = jnp.split(enc_zs, 2, axis=-1)
+recon_img = jax.vmap(model.decoder)(enc_zs).reshape((16, IMG_SIZE[0], IMG_SIZE[1], IMG_SIZE[2]))  ## Using mean !!
+enc_zs = enc_zs.reshape((16, IMG_SIZE[0], IMG_SIZE[1], IMG_SIZE[2]))
+
+# plt.figure(figsize=(8, 4))
+# for i in range(16):
+#     plt.subplot(4, 8, 2*i + 1)
+#     # plt.imshow(images[i].squeeze())
+#     plt.imshow(enc_zs[i].squeeze())
+#     plt.axis('off')
+
+#     plt.subplot(4, 8, 2*i + 2)
+#     plt.imshow(zs[i])
+#     plt.axis('off')
+# plt.draw()
+
+# Now, I want to plot four plots for each of the 16 samples: top left: original image, top right: reconstructed image, bottom left: encoded z, bottom right: random sample from normal distribution
+
+# plt.figure(figsize=(4*8, 4*8))
+fig, axs = plt.subplots(16, 4, figsize=(4*4, 4*16))
+for i in range(16):
+    axs[i, 0].imshow(images[i].squeeze())
+    axs[i, 0].set_title("Original Image")
+    axs[i, 0].axis('off')
+
+    axs[i, 1].imshow(recon_img[i].squeeze())
+    axs[i, 1].set_title("Reconstructed Image")
+    axs[i, 1].axis('off')
+
+    axs[i, 2].imshow(enc_zs[i].squeeze())
+    axs[i, 2].set_title("Encoded z (mean)")
+    axs[i, 2].axis('off')
+
+    axs[i, 3].imshow(zs[i])
+    axs[i, 3].set_title("Random z ~ N(0,1)")
+    axs[i, 3].axis('off')
+plt.tight_layout()
+plt.draw()
+
+
 
 
 #%%
@@ -394,4 +445,6 @@ eqx.tree_serialise_leaves(RUN_FOLDDER+"decoder.eqx", model.decoder)
 if os.path.exists("nohup.log"):
     os.system(f"cp nohup.log {RUN_FOLDDER}")
 # %%
+
+
 

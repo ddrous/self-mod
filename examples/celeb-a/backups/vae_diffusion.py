@@ -38,7 +38,7 @@ print("Using run folder:", RUN_FOLDDER)
 os.system(f"cp {__file__} {RUN_FOLDDER}")
 
 DATA_FOLDER="../data/"
-BATCH_SIZE = 512
+BATCH_SIZE = 256
 EPOCHS = 10
 LR=1e-3
 IMG_SIZE = [64, 64, 3]
