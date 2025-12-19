@@ -1,4 +1,4 @@
-"""## Train a Shared-ODE VAE with Cycle Consistency """
+"""## Train a Shared-ODE VAE with Cycle Consistency and Early Stopping """
 
 # %load_ext autoreload
 # %autoreload 2
@@ -33,11 +33,12 @@ print("Using run folder:", RUN_FOLDER)
 
 DATA_FOLDER = "../data/"  # Update this to your path
 BATCH_SIZE = 128*8
-EPOCHS = 100
-LR = 1e-3
+EPOCHS = 3
+PATIENCE = 200  # Stop if no improvement for this many steps
+LR = 1e-4
 IMG_SIZE = [64, 64, 3]
-LATENT_DIM = 256
-CONV_BASE_DEPTH = 32 # Increased slightly for better capacity
+LATENT_DIM = 128
+CONV_BASE_DEPTH = 32 
 
 #%%
 ## Define keys
@@ -279,7 +280,8 @@ class VAE(eqx.Module):
         
         # 2. Decode (Training path - bypasses ODE)
         x_rec = self.decode_training(z_enc)
-        
+        # x_rec = self.generate(z_lat)
+
         return x_rec, z_enc, z_lat
 
 model = VAE(img_size=IMG_SIZE, kernel_size=[3, 3], latent_dim=LATENT_DIM, key=model_key)
@@ -302,7 +304,46 @@ def calculate_gaussian_kl(z):
     kl_per_dim = -0.5 * (1 + logvar - mu**2 - var)
     return jnp.mean(kl_per_dim)
 
+def mmd_loss_gaussian(z_batch, key, sigma=1.0):
+    """ Maximum Mean Discrepancy between z_batch and N(0, 1) using IMQ kernel. """
+    batch_size, n_features = z_batch.shape
+    z_true = jax.random.normal(key, shape=z_batch.shape)
+    
+    def compute_kernel(x, y):
+        C = 2.0 * n_features * sigma
+        x_exp = jnp.expand_dims(x, 1)
+        y_exp = jnp.expand_dims(y, 0)
+        dists_sq = jnp.sum((x_exp - y_exp)**2, axis=-1)
+        return C / (C + dists_sq)
+
+    k_zz = compute_kernel(z_batch, z_batch)
+    k_tt = compute_kernel(z_true, z_true)
+    k_zt = compute_kernel(z_batch, z_true)
+    
+    return jnp.mean(k_zz) + jnp.mean(k_tt) - 2 * jnp.mean(k_zt)
+
+
+def swd_loss_gaussian(z_batch, key, num_projections=50):
+    """ Sliced Wasserstein Distance between z_batch and N(0, 1). """
+    batch_size, n_features = z_batch.shape
+    key_z, key_theta = jax.random.split(key)
+    
+    z_true = jax.random.normal(key_z, shape=z_batch.shape)
+    theta = jax.random.normal(key_theta, shape=(n_features, num_projections))
+    theta = theta / jnp.sqrt(jnp.sum(theta**2, axis=0, keepdims=True))
+    
+    proj_z = jnp.dot(z_batch, theta)       # (B, P)
+    proj_true = jnp.dot(z_true, theta)     # (B, P)
+    
+    proj_z_sorted = jnp.sort(proj_z, axis=0)
+    proj_true_sorted = jnp.sort(proj_true, axis=0)
+    
+    return jnp.mean((proj_z_sorted - proj_true_sorted)**2)
+    
+
 def loss_fn(model, xs, key):
+    # keys = jax.random.split(key, xs.shape[0])
+
     # x_rec: Reconstructed image
     # z_enc: Compressed features (Input to ODE)
     # z_lat: Latent noise (Output of ODE)
@@ -311,21 +352,26 @@ def loss_fn(model, xs, key):
     # 1. Reconstruction Loss (MSE)
     #    Strictly connects Compressor <-> Decompressor
     recon_loss = jnp.mean((xs - x_rec) ** 2)
+    # recon_loss = -jnp.mean(xs * jnp.log(x_rec + 1e-6) + (1 - xs) * jnp.log(1 - x_rec + 1e-6))
     
     # 2. Latent KL (Minimize)
     #    Forces the END of the ODE (z_lat) to be Gaussian
-    kl_latent = calculate_gaussian_kl(z_lat)
+    # kl_latent = calculate_gaussian_kl(z_lat)
+    # kl_latent = swd_loss_gaussian(z_lat, key, num_projections=100)
+    kl_latent = mmd_loss_gaussian(z_lat, key, sigma=1.0)
     
     # 3. Feature Negative KL (Minimize negative => Maximize Divergence)
     #    Forces the START of the ODE (z_enc) to be NON-Gaussian
-    kl_feature = calculate_gaussian_kl(z_enc)
-    # consistency_loss = -1.0 * kl_feature 
-    consistency_loss = jax.nn.relu(1.0 - kl_feature)
-    
+    # kl_feature = calculate_gaussian_kl(z_enc)
+    kl_feature = swd_loss_gaussian(z_enc, key, num_projections=100)
+    consistency_loss = jax.nn.relu(1.0 - kl_feature) + 1e-4 ## offset is good for plotting 
+
+    # consistency_loss = 1e-1
+
     # Weights
     w_recon = 1.0
     w_kl = 0.1          # Standard VAE weight
-    w_consistency = 0.1 # Don't push too hard or it might explode
+    w_consistency = 1.0 # Don't push too hard or it might explode
     
     total_loss = (w_recon * recon_loss) + (w_kl * kl_latent) + (w_consistency * consistency_loss)
     
@@ -333,8 +379,7 @@ def loss_fn(model, xs, key):
 
 @eqx.filter_jit
 def train_step(model, xs, opt_state, key):
-    keys = jax.random.split(key, xs.shape[0])
-    (loss, aux), grads = eqx.filter_value_and_grad(loss_fn, has_aux=True)(model, xs, keys)
+    (loss, aux), grads = eqx.filter_value_and_grad(loss_fn, has_aux=True)(model, xs, key)
     updates, opt_state = optimizer.update(grads, opt_state)
     model = eqx.apply_updates(model, updates)
     return model, opt_state, loss, aux
@@ -344,13 +389,19 @@ opt_state = optimizer.init(eqx.filter(model, eqx.is_array))
 
 #%%
 # ==========================================
-# 5. Training Loop
+# 5. Training Loop with Early Stopping
 # ==========================================
 
 losses = []
 aux_history = {"recon":[], "kl_lat":[], "neg_kl_feat":[], "total":[]}
 
-print("Starting training...")
+# --- EARLY STOPPING STATE ---
+best_train_loss = np.inf
+steps_without_improvement = 0
+stop_training = False
+# -----------------------------
+
+print(f"Starting training with Patience: {PATIENCE} steps...")
 start_time = time.time()
 
 for epoch in range(EPOCHS):
@@ -369,6 +420,23 @@ for epoch in range(EPOCHS):
         trainer_key, _ = jax.random.split(trainer_key)
         model, opt_state, loss, aux = train_step(model, images, opt_state, trainer_key)
         
+        current_loss_val = loss.item()
+        
+        # --- EARLY STOPPING CHECK (Step Level) ---
+        if current_loss_val < best_train_loss:
+            best_train_loss = current_loss_val
+            steps_without_improvement = 0
+            # Save the best model immediately
+            eqx.tree_serialise_leaves(RUN_FOLDER + "best_model.eqx", model)
+        else:
+            steps_without_improvement += 1
+            
+        if steps_without_improvement >= PATIENCE:
+            print(f"\n\n[Early Stopping] No improvement for {PATIENCE} steps. Best Loss: {best_train_loss:.6f}")
+            stop_training = True
+            break
+        # ------------------------------------------
+
         epoch_loss += loss
         epoch_aux += np.array(aux)
         steps += 1
@@ -378,22 +446,28 @@ for epoch in range(EPOCHS):
         aux_history["total"].append(loss)
         
         if i % 10 == 0:
-            print(f"Ep {epoch} | St {i} | L: {loss:.4f} | Rec: {aux[0]:.4f} | KL(Lat): {aux[1]:.2f} | -KL(Feat): {aux[2]:.2f}", end="\r")
+            # print(f"Ep {epoch} | St {i} | L: {loss:.4f} | Best: {best_train_loss:.4f} | Pat: {steps_without_improvement}/{PATIENCE}", end="\r")
+            print(f"Ep {epoch} | Step {i} | Loss(Total): {loss:.4f} | Best(Total): {best_train_loss:.4f} | Recons: {aux[0]:.4f} | KL(Lat): {aux[1]:.4f} | -KL(Feat): {aux[2]:.4f} | Pat: {steps_without_improvement}/{PATIENCE}", end="\r")
+
+    if stop_training:
+        break
 
     if steps > 0:
         avg_loss = epoch_loss / steps
         avg_aux = epoch_aux / steps
         losses.append(avg_loss)
-        
-        print(f"\nEpoch {epoch} Done. Loss: {avg_loss:.4f} | Rec: {avg_aux[0]:.4f} | KL(N): {avg_aux[1]:.2f} | -KL(F): {avg_aux[2]:.2f}")
+        print(f"\nEpoch {epoch} Done. Loss: {avg_loss:.4f} | Rec: {avg_aux[0]:.4f} | KL(N): {avg_aux[1]:.4f} | -KL(F): {avg_aux[2]:.4f}")
 
 end_time = time.time()
 print(f"Training finished in {end_time - start_time:.2f}s")
-eqx.tree_serialise_leaves(RUN_FOLDER + "model.eqx", model)
+
+# IMPORTANT: Load the best model back for visualization
+print("Loading best model for visualization...")
+model = eqx.tree_deserialise_leaves(RUN_FOLDER + "best_model.eqx", model)
 
 
 #%%
-# Plot Loss
+# Plot Loss 
 plt.figure(figsize=(10, 5))
 # plt.plot(losses, label="Total", linewidth=2)
 plt.plot(aux_history["total"], label="Total", linestyle="-", linewidth=2)
