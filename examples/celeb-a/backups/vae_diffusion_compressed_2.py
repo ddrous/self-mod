@@ -34,7 +34,7 @@ print("Using run folder:", RUN_FOLDER)
 
 DATA_FOLDER = "../data/"  # Update this to your path
 BATCH_SIZE = 128*16
-EPOCHS = 1
+EPOCHS = 5
 LR = 1e-3
 IMG_SIZE = [64, 64, 3]
 LATENT_DIM = 256
@@ -483,3 +483,21 @@ print("   - If Blue != Green: The ODE integration is not invertible (Consistency
 # - We have two independent vf_layers MLPs in Encoder and Decoder. But the decoder's is an EMA of the encoder's? (like JEPA). We enforce this via stop gradient as well. 
 
 # - This should avoid needing a reconstruciton loss in pixel space, like Yann LeCun keeps suggesting.
+
+
+#%%
+## Small experiment to check tha the vector field is different from its initialisation
+orig_model = VAE(img_size=IMG_SIZE, kernel_size=[3, 3], latent_dim=LATENT_DIM, key=model_key)
+trained_model = model
+
+print(trained_model.vf_layers.layers[0].weight.shape)
+
+vf_diff = jnp.mean(jnp.abs(orig_model.vf_layers.layers[0].weight - trained_model.vf_layers.layers[0].weight))
+
+print(f"Mean absolute difference in first VF layer weights: {vf_diff:.6f}")
+
+
+
+# %%
+#%%
+
